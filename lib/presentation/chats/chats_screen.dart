@@ -75,12 +75,14 @@ class ChatsScreen extends StatelessWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
                     radius: 28,
-                    backgroundImage: NetworkImage(partner.avatarUrl),
+                    backgroundColor: thread.isGroup ? BanteraTheme.primaryColor.withOpacity(0.1) : Colors.transparent,
+                    backgroundImage: thread.isGroup ? null : NetworkImage(partner.avatarUrl),
+                    child: thread.isGroup ? const Icon(Icons.group, color: BanteraTheme.primaryColor) : null,
                   ),
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(partner.displayName, style: Theme.of(context).textTheme.titleMedium),
+                      Text(thread.isGroup ? 'Weekend Meetup' : partner.displayName, style: Theme.of(context).textTheme.titleMedium),
                       Text('5m ago', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 12)),
                     ],
                   ),

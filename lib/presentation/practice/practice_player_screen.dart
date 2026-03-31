@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../../core/theme.dart';
 import '../../domain/models/models.dart';
 import 'record_compare_sheet.dart';
 
@@ -70,9 +69,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (widget.mediaItem.cues.isEmpty) return const Scaffold(body: Center(child: Text('No cues')));
 
     final cue = widget.mediaItem.cues[_currentCueIndex];
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: BanteraTheme.backgroundLight,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         title: Text('${_currentCueIndex + 1} / ${widget.mediaItem.cues.length}'),
         centerTitle: true,
@@ -88,9 +88,16 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: [
-                  CircleAvatar(radius: 12, backgroundImage: NetworkImage(widget.mediaItem.creator.avatarUrl)),
-                  const SizedBox(width: 8),
-                  Text(widget.mediaItem.title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14)),
+                   CircleAvatar(radius: 12, backgroundImage: NetworkImage(widget.mediaItem.creator.avatarUrl)),
+                   const SizedBox(width: 8),
+                   Expanded(
+                     child: Text(
+                       widget.mediaItem.title, 
+                       style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14),
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+                     ),
+                   ),
                 ],
               ),
             ),
@@ -100,11 +107,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 onTap: _togglePlay,
                 child: Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: BanteraTheme.surfaceColorLight,
-                    borderRadius: BorderRadius.circular(24),
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
@@ -116,66 +123,39 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Subtitle Display area
-                      if (_subtitleState == SubtitleState.hidden)
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(CupertinoIcons.eye_slash_fill, size: 48, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            Text('Listen carefully...', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey[400])),
-                          ],
-                        )
-                      else if (_subtitleState == SubtitleState.original)
-                        Text(
-                          cue.originalText,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
-                        )
-                      else
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              cue.originalText,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              cue.translatedText,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: BanteraTheme.primaryColor,
-                                  ),
-                            ),
-                          ],
+                      // Subtitle Display area Custom Polished
+                      Expanded(
+                        child: Center(
+                          child: _buildSubtitleContent(cue, colorScheme),
                         ),
-
-                      const Spacer(),
+                      ),
                       
                       // Mock Waveform
                       Container(
-                        height: 40,
+                        height: 48,
                         width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: BanteraTheme.backgroundLight,
-                          borderRadius: BorderRadius.circular(8),
+                          color: colorScheme.background,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: List.generate(40, (index) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              width: 3,
-                              height: (index % 5 + 1) * 6.0,
-                              color: index % 3 == 0 ? BanteraTheme.primaryColor : Colors.grey[300],
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: List.generate(30, (index) {
+                            return Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                height: (index % 4 + 1) * 8.0,
+                                decoration: BoxDecoration(
+                                  color: index % 3 == 0 ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
                             );
                           }),
                         ),
                       ),
-                      
                     ],
                   ),
                 ),
@@ -184,14 +164,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             
             // Subtitle Toggle Actions
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton.icon(
-                    onPressed: _cycleSubtitleState,
-                    icon: Icon(_subtitleState == SubtitleState.hidden ? CupertinoIcons.eye : CupertinoIcons.textformat),
-                    label: Text(_subtitleState == SubtitleState.hidden ? 'Reveal' : 'Translate'),
+                     style: OutlinedButton.styleFrom(
+                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                     ),
+                     onPressed: _cycleSubtitleState,
+                     icon: Icon(_subtitleState == SubtitleState.hidden ? CupertinoIcons.eye : CupertinoIcons.textformat),
+                     label: Text(
+                       _subtitleState == SubtitleState.hidden ? 'Reveal' : 'Translate',
+                       style: const TextStyle(fontWeight: FontWeight.bold),
+                     ),
                   ),
                 ],
               ),
@@ -199,28 +186,30 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
             // Controls Timeline
             Container(
-              padding: const EdgeInsets.only(top: 24, bottom: 16, left: 32, right: 32),
+              padding: const EdgeInsets.only(top: 16, bottom: 24, left: 32, right: 32),
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        iconSize: 32,
+                        iconSize: 36,
                         icon: const Icon(CupertinoIcons.backward_fill),
-                        color: _currentCueIndex > 0 ? BanteraTheme.textPrimaryLight : Colors.grey[300],
+                        color: _currentCueIndex > 0 ? colorScheme.onSurface : colorScheme.onSurface.withOpacity(0.2),
                         onPressed: _prevCue,
                       ),
+                      const SizedBox(width: 24),
                       IconButton(
-                        iconSize: 64,
+                        iconSize: 72,
                         icon: Icon(_isPlaying ? CupertinoIcons.pause_circle_fill : CupertinoIcons.play_circle_fill),
-                        color: BanteraTheme.primaryColor,
+                        color: colorScheme.primary,
                         onPressed: _togglePlay,
                       ),
+                      const SizedBox(width: 24),
                       IconButton(
-                        iconSize: 32,
+                        iconSize: 36,
                         icon: const Icon(CupertinoIcons.forward_fill),
-                        color: _currentCueIndex < widget.mediaItem.cues.length - 1 ? BanteraTheme.textPrimaryLight : Colors.grey[300],
+                        color: _currentCueIndex < widget.mediaItem.cues.length - 1 ? colorScheme.onSurface : colorScheme.onSurface.withOpacity(0.2),
                         onPressed: _nextCue,
                       ),
                     ],
@@ -229,9 +218,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionBtn(CupertinoIcons.bookmark, 'Note', () {}),
-                      _buildActionBtn(CupertinoIcons.mic_solid, 'Compare', _openCompareSheet, isHighlight: true),
-                      _buildActionBtn(CupertinoIcons.reply, 'Replay', () {}),
+                      _buildActionBtn(CupertinoIcons.bookmark, 'Note', () {}, colorScheme),
+                      _buildActionBtn(CupertinoIcons.mic_solid, 'Compare', _openCompareSheet, colorScheme, isHighlight: true),
+                      _buildActionBtn(CupertinoIcons.reply, 'Replay', () {}, colorScheme),
                     ],
                   ),
                 ],
@@ -243,21 +232,69 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
-  Widget _buildActionBtn(IconData icon, String label, VoidCallback onTap, {bool isHighlight = false}) {
+  Widget _buildSubtitleContent(Cue cue, ColorScheme colorScheme) {
+    if (_subtitleState == SubtitleState.hidden) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+           Icon(CupertinoIcons.ear, size: 64, color: colorScheme.primary.withOpacity(0.4)),
+           const SizedBox(height: 16),
+           Text(
+             'Listen carefully...', 
+             style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colorScheme.primary.withOpacity(0.6)),
+           ),
+        ],
+      );
+    } else if (_subtitleState == SubtitleState.original) {
+      return Text(
+        cue.originalText,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32, height: 1.3),
+      );
+    } else {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            cue.originalText,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28, height: 1.3),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              cue.translatedText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: colorScheme.primary,
+                  ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildActionBtn(IconData icon, String label, VoidCallback onTap, ColorScheme colorScheme, {bool isHighlight = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: isHighlight ? BanteraTheme.primaryColor : Colors.white,
-            foregroundColor: isHighlight ? Colors.white : BanteraTheme.primaryColor,
+            backgroundColor: isHighlight ? colorScheme.primary : colorScheme.surface,
+            foregroundColor: isHighlight ? colorScheme.onPrimary : colorScheme.primary,
             child: Icon(icon, size: 28),
           ),
           const SizedBox(height: 8),
           Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
-            color: isHighlight ? BanteraTheme.primaryColor : BanteraTheme.textSecondaryLight,
+            fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
+            color: isHighlight ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.6),
           )),
         ],
       ),

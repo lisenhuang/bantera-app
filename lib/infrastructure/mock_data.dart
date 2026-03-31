@@ -3,8 +3,8 @@ import '../domain/models/models.dart';
 class MockData {
   static final User currentUser = User(
     id: 'u1',
-    displayName: 'Eason',
-    avatarUrl: 'https://i.pravatar.cc/150?u=eason',
+    displayName: 'Ethan',
+    avatarUrl: 'https://i.pravatar.cc/150?u=ethan',
     firstLanguage: 'Chinese',
     learningLanguage: 'English',
     level: 'Intermediate (B1)',

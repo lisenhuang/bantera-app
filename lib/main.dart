@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme.dart';
+import 'core/settings_notifier.dart';
 import 'presentation/main_scaffold.dart';
 
 void main() {
@@ -11,11 +12,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Bantera',
-      theme: BanteraTheme.lightTheme,
-      home: const MainScaffold(),
-      debugShowCheckedModeBanner: false,
+    return ListenableBuilder(
+      listenable: SettingsNotifier.instance,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Bantera',
+          theme: BanteraTheme.lightTheme,
+          darkTheme: BanteraTheme.darkTheme,
+          themeMode: SettingsNotifier.instance.themeMode,
+          home: const MainScaffold(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
