@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'core/theme.dart';
+import 'presentation/main_scaffold.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,34 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Bantera',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Bantera'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: const Center(
-        child: Text('hello world'),
-      ),
+      theme: BanteraTheme.lightTheme,
+      home: const MainScaffold(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
