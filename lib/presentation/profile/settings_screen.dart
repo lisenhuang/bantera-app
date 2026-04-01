@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/api_config_notifier.dart';
+import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
+import '../auth/api_base_url_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -11,9 +14,14 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Settings'),
       ),
       body: ListenableBuilder(
-        listenable: SettingsNotifier.instance,
+        listenable: Listenable.merge([
+          ApiConfigNotifier.instance,
+          SettingsNotifier.instance,
+          AuthSessionNotifier.instance,
+        ]),
         builder: (context, _) {
           final settings = SettingsNotifier.instance;
+          final auth = AuthSessionNotifier.instance;
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -58,11 +66,44 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildSectionHeader(context, 'Account (Mock)'),
+              _buildSectionHeader(context, 'Environment'),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.link),
+                  title: const Text('API Base URL'),
+                  subtitle: Text(ApiConfigNotifier.instance.baseUrl),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    final changed = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (context) => const ApiBaseUrlScreen(),
+                      ),
+                    );
+
+                    if (changed == true && context.mounted) {
+                      auth.signOut();
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, 'Account'),
               Card(
                 margin: EdgeInsets.zero,
                 child: Column(
                   children: [
+                    ListTile(
+                      leading: const Icon(Icons.verified_user_outlined),
+                      title: Text(auth.session?.accountLabel ?? 'Signed out'),
+                      subtitle: Text(
+                        auth.session == null
+                            ? 'No active Bantera session'
+                            : 'Signed in with ${auth.session!.providerLabel}',
+                      ),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.person),
                       title: const Text('Edit Profile'),
@@ -80,7 +121,13 @@ class SettingsScreen extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Icons.logout, color: Colors.red),
                       title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
-                      onTap: () {},
+                      onTap: auth.session == null
+                          ? null
+                          : () {
+                              auth.signOut();
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
+                            },
                     ),
                   ],
                 ),
