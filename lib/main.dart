@@ -9,7 +9,10 @@ import 'presentation/main_scaffold.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ApiConfigNotifier.instance.initialize();
+  await Future.wait([
+    ApiConfigNotifier.instance.initialize(),
+    SettingsNotifier.instance.initialize(),
+  ]);
   runApp(const MyApp());
 }
 
