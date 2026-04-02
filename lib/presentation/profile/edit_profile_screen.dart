@@ -63,7 +63,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      ProfileAvatar(radius: 48, imageUrl: _profile.avatarUrl),
+                      ProfileAvatar(
+                        radius: 48,
+                        imageUrl: _profile.avatarUrl,
+                        imagePath: _profile.avatarImagePath,
+                      ),
                       if (_profile.isUploadingImage)
                         const SizedBox(
                           width: 112,

@@ -52,7 +52,11 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                ProfileAvatar(radius: 48, imageUrl: profile.avatarUrl),
+                ProfileAvatar(
+                  radius: 48,
+                  imageUrl: profile.avatarUrl,
+                  imagePath: profile.avatarImagePath,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   profile.displayName,

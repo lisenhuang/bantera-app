@@ -6,6 +6,38 @@ class UserProfile {
   UserProfile({required this.id, required this.name, this.avatarUrl});
 }
 
+class UploadedVideo {
+  final String id;
+  final String userId;
+  final String originalFileName;
+  final String transcriptText;
+  final String transcriptLanguage;
+  final bool isPublic;
+  final int durationMs;
+  final int fileSizeBytes;
+  final int? videoWidth;
+  final int? videoHeight;
+  final String videoContentType;
+  final String? videoUrl;
+  final DateTime createdAt;
+
+  UploadedVideo({
+    required this.id,
+    required this.userId,
+    required this.originalFileName,
+    required this.transcriptText,
+    required this.transcriptLanguage,
+    required this.isPublic,
+    required this.durationMs,
+    required this.fileSizeBytes,
+    required this.videoWidth,
+    required this.videoHeight,
+    required this.videoContentType,
+    required this.videoUrl,
+    required this.createdAt,
+  });
+}
+
 class User {
   final String id;
   final String displayName;

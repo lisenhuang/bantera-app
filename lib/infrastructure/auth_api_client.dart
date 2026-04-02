@@ -125,6 +125,84 @@ class AuthApiClient {
     }
   }
 
+  Future<UploadedVideo> uploadVideo({
+    required String accessToken,
+    required File videoFile,
+    required String transcriptText,
+    required String transcriptLanguage,
+    required bool isPublic,
+    required int durationMs,
+    required int? videoWidth,
+    required int? videoHeight,
+  }) async {
+    try {
+      final filename = videoFile.uri.pathSegments.isNotEmpty
+          ? videoFile.uri.pathSegments.last
+          : 'bantera-video.mp4';
+      final boundary =
+          'bantera-${DateTime.now().microsecondsSinceEpoch.toRadixString(16)}';
+
+      final request = await _httpClient.postUrl(_resolve('/api/me/videos'));
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(
+        HttpHeaders.authorizationHeader,
+        'Bearer $accessToken',
+      );
+      request.headers.set(
+        HttpHeaders.contentTypeHeader,
+        'multipart/form-data; boundary=$boundary',
+      );
+
+      void writeField(String name, String value) {
+        request.write('--$boundary\r\n');
+        request.write('Content-Disposition: form-data; name="$name"\r\n\r\n');
+        request.write(value);
+        request.write('\r\n');
+      }
+
+      writeField('transcriptText', transcriptText);
+      writeField('transcriptLanguage', transcriptLanguage);
+      writeField('isPublic', isPublic.toString());
+      writeField('durationMs', durationMs.toString());
+      if (videoWidth != null) {
+        writeField('videoWidth', videoWidth.toString());
+      }
+      if (videoHeight != null) {
+        writeField('videoHeight', videoHeight.toString());
+      }
+
+      request.write('--$boundary\r\n');
+      request.write(
+        'Content-Disposition: form-data; name="file"; filename="$filename"\r\n',
+      );
+      request.write(
+        'Content-Type: ${_videoContentTypeForPath(filename)}\r\n\r\n',
+      );
+      await request.addStream(videoFile.openRead());
+      request.write('\r\n--$boundary--\r\n');
+
+      final response = await request.close();
+      final json = await _parseJsonResponse(response);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return _uploadedVideoFromJson(json);
+      }
+
+      _throwApiException(json, response.statusCode);
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
   Future<AuthTokenResponse> _postAuth(
     String path,
     Map<String, dynamic> payload,
@@ -222,6 +300,24 @@ class AuthApiClient {
     );
   }
 
+  UploadedVideo _uploadedVideoFromJson(Map<String, dynamic> json) {
+    return UploadedVideo(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      originalFileName: json['originalFileName'] as String,
+      transcriptText: json['transcriptText'] as String,
+      transcriptLanguage: json['transcriptLanguage'] as String,
+      isPublic: json['isPublic'] as bool,
+      durationMs: (json['durationMs'] as num).toInt(),
+      fileSizeBytes: (json['fileSizeBytes'] as num).toInt(),
+      videoWidth: (json['videoWidth'] as num?)?.toInt(),
+      videoHeight: (json['videoHeight'] as num?)?.toInt(),
+      videoContentType: json['videoContentType'] as String,
+      videoUrl: json['videoUrl'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
   Uri _resolve(String path) {
     final baseUrl = ApiConfigNotifier.instance.baseUrl;
     final baseUri = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/');
@@ -244,6 +340,17 @@ class AuthApiClient {
       return 'image/heif';
     }
     return 'image/jpeg';
+  }
+
+  static String _videoContentTypeForPath(String filename) {
+    final normalized = filename.toLowerCase();
+    if (normalized.endsWith('.mov')) {
+      return 'video/quicktime';
+    }
+    if (normalized.endsWith('.m4v')) {
+      return 'video/x-m4v';
+    }
+    return 'video/mp4';
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
+import '../infrastructure/user_profile_cache_store.dart';
 import 'auth_session_notifier.dart';
 
 class UserProfileNotifier extends ChangeNotifier {
@@ -15,9 +16,12 @@ class UserProfileNotifier extends ChangeNotifier {
   static final UserProfileNotifier instance = UserProfileNotifier._();
 
   final AuthApiClient _apiClient = AuthApiClient.instance;
+  final UserProfileCacheStore _cacheStore = UserProfileCacheStore.instance;
 
   AuthSession? _observedSession;
   UserProfile? _profile;
+  String? _avatarImagePath;
+  String? _activeCacheKey;
   bool _isLoading = false;
   bool _isSavingName = false;
   bool _isUploadingImage = false;
@@ -29,6 +33,7 @@ class UserProfileNotifier extends ChangeNotifier {
   bool get isUploadingImage => _isUploadingImage;
   bool get isBusy => _isLoading || _isSavingName || _isUploadingImage;
   String? get errorMessage => _errorMessage;
+  String? get avatarImagePath => _avatarImagePath;
   String? get avatarUrl => _profile?.avatarUrl;
 
   String get displayName {
@@ -47,7 +52,10 @@ class UserProfileNotifier extends ChangeNotifier {
     return 'Bantera user';
   }
 
-  Future<void> loadProfile({bool force = false}) async {
+  Future<void> loadProfile({
+    bool force = false,
+    bool showLoadingState = true,
+  }) async {
     final session = AuthSessionNotifier.instance.session;
     if (session == null) {
       _clearState(notify: force);
@@ -59,17 +67,34 @@ class UserProfileNotifier extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    if (showLoadingState) {
+      notifyListeners();
+    }
+
+    final requestCacheKey = session.cacheKey;
 
     try {
-      _profile = await _apiClient.fetchMyProfile(
+      final profile = await _apiClient.fetchMyProfile(
         accessToken: session.accessToken,
       );
+      if (!_isCurrentCacheKey(requestCacheKey)) {
+        return;
+      }
+
+      await _applyRemoteProfile(requestCacheKey, profile);
     } on AuthApiException catch (error) {
+      if (!_isCurrentCacheKey(requestCacheKey)) {
+        return;
+      }
       _errorMessage = error.message;
-    } finally {
-      _isLoading = false;
       notifyListeners();
+    } finally {
+      if (_isCurrentCacheKey(requestCacheKey)) {
+        _isLoading = false;
+        if (showLoadingState) {
+          notifyListeners();
+        }
+      }
     }
   }
 
@@ -91,10 +116,11 @@ class UserProfileNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _profile = await _apiClient.updateMyProfile(
+      final updatedProfile = await _apiClient.updateMyProfile(
         accessToken: session.accessToken,
         name: normalizedName,
       );
+      await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;
     } on AuthApiException catch (error) {
       _errorMessage = error.message;
@@ -117,9 +143,14 @@ class UserProfileNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _profile = await _apiClient.uploadMyProfileImage(
+      final updatedProfile = await _apiClient.uploadMyProfileImage(
         accessToken: session.accessToken,
         imageFile: imageFile,
+      );
+      await _applyRemoteProfile(
+        session.cacheKey,
+        updatedProfile,
+        avatarSourceFile: imageFile,
       );
       return true;
     } on AuthApiException catch (error) {
@@ -150,15 +181,18 @@ class UserProfileNotifier extends ChangeNotifier {
 
     _observedSession = session;
     if (session == null) {
+      _activeCacheKey = null;
       _clearState();
       return;
     }
 
-    unawaited(loadProfile(force: true));
+    _activeCacheKey = session.cacheKey;
+    unawaited(_restoreCachedProfileAndRefresh(session));
   }
 
   void _clearState({bool notify = true}) {
     _profile = null;
+    _avatarImagePath = null;
     _errorMessage = null;
     _isLoading = false;
     _isSavingName = false;
@@ -171,5 +205,90 @@ class UserProfileNotifier extends ChangeNotifier {
   void _setError(String message) {
     _errorMessage = message;
     notifyListeners();
+  }
+
+  Future<void> _restoreCachedProfileAndRefresh(AuthSession session) async {
+    final cacheKey = session.cacheKey;
+    final cached = await _cacheStore.read(cacheKey);
+    if (!_isCurrentCacheKey(cacheKey)) {
+      return;
+    }
+
+    if (cached != null) {
+      _profile = cached.profile;
+      _avatarImagePath = cached.avatarPath;
+      _errorMessage = null;
+      notifyListeners();
+    }
+
+    await loadProfile(force: true, showLoadingState: _profile == null);
+  }
+
+  Future<void> _applyRemoteProfile(
+    String cacheKey,
+    UserProfile profile, {
+    File? avatarSourceFile,
+  }) async {
+    if (!_isCurrentCacheKey(cacheKey)) {
+      return;
+    }
+
+    final previousAvatarUrl = _profile?.avatarUrl;
+    _profile = profile;
+    _errorMessage = null;
+    await _cacheStore.write(cacheKey, profile, avatarPath: _avatarImagePath);
+    notifyListeners();
+
+    if (profile.avatarUrl == null || profile.avatarUrl!.trim().isEmpty) {
+      if (_avatarImagePath != null) {
+        await _cacheStore.clearAvatar(cacheKey);
+        _avatarImagePath = null;
+        await _cacheStore.write(cacheKey, profile, avatarPath: null);
+        if (_isCurrentCacheKey(cacheKey)) {
+          notifyListeners();
+        }
+      }
+      return;
+    }
+
+    if (avatarSourceFile != null) {
+      final cachedPath = await _cacheStore.cacheAvatarFromFile(
+        cacheKey,
+        avatarSourceFile,
+      );
+      if (!_isCurrentCacheKey(cacheKey)) {
+        return;
+      }
+
+      if (cachedPath != null) {
+        _avatarImagePath = cachedPath;
+        await _cacheStore.write(cacheKey, profile, avatarPath: cachedPath);
+        notifyListeners();
+      }
+      return;
+    }
+
+    final shouldRefreshAvatar =
+        _avatarImagePath == null || previousAvatarUrl != profile.avatarUrl;
+    if (!shouldRefreshAvatar) {
+      return;
+    }
+
+    final cachedPath = await _cacheStore.cacheAvatarFromUrl(
+      cacheKey,
+      profile.avatarUrl!,
+    );
+    if (!_isCurrentCacheKey(cacheKey) || cachedPath == null) {
+      return;
+    }
+
+    _avatarImagePath = cachedPath;
+    await _cacheStore.write(cacheKey, profile, avatarPath: cachedPath);
+    notifyListeners();
+  }
+
+  bool _isCurrentCacheKey(String cacheKey) {
+    return _activeCacheKey == cacheKey &&
+        AuthSessionNotifier.instance.session?.cacheKey == cacheKey;
   }
 }

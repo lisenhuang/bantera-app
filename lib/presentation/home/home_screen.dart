@@ -49,7 +49,11 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      ProfileAvatar(radius: 28, imageUrl: profile.avatarUrl),
+                      ProfileAvatar(
+                        radius: 28,
+                        imageUrl: profile.avatarUrl,
+                        imagePath: profile.avatarImagePath,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 32),

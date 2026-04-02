@@ -1,13 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_config_notifier.dart';
 import '../infrastructure/auth_api_client.dart';
 
-enum AuthProviderType {
-  email,
-  apple,
-}
+enum AuthProviderType { email, apple }
 
 class AuthSession {
   const AuthSession({
@@ -27,9 +26,38 @@ class AuthSession {
   final String refreshToken;
 
   String get providerLabel => switch (provider) {
-        AuthProviderType.email => 'Email',
-        AuthProviderType.apple => 'Apple',
-      };
+    AuthProviderType.email => 'Email',
+    AuthProviderType.apple => 'Apple',
+  };
+
+  String get cacheKey {
+    final subject = _jwtSubject(accessToken);
+    if (subject != null && subject.isNotEmpty) {
+      return '${provider.name}:$subject';
+    }
+
+    return '${provider.name}:${accountLabel.trim().toLowerCase()}';
+  }
+
+  static String? _jwtSubject(String token) {
+    final parts = token.split('.');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    try {
+      final normalized = base64Url.normalize(parts[1]);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final payload = jsonDecode(decoded);
+      if (payload is Map<String, dynamic>) {
+        return payload['sub']?.toString();
+      }
+    } catch (_) {
+      return null;
+    }
+
+    return null;
+  }
 }
 
 class AuthSessionNotifier extends ChangeNotifier {

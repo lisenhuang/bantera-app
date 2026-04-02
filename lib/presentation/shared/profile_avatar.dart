@@ -1,22 +1,36 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({super.key, required this.radius, this.imageUrl});
+  const ProfileAvatar({
+    super.key,
+    required this.radius,
+    this.imageUrl,
+    this.imagePath,
+  });
 
   final double radius;
   final String? imageUrl;
+  final String? imagePath;
 
   @override
   Widget build(BuildContext context) {
     final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
+    final hasLocalImage = imagePath != null && imagePath!.trim().isNotEmpty;
+    final imageProvider = hasLocalImage
+        ? FileImage(File(imagePath!)) as ImageProvider<Object>
+        : hasImage
+        ? NetworkImage(imageUrl!)
+        : null;
 
     return CircleAvatar(
       radius: radius,
-      foregroundImage: hasImage ? NetworkImage(imageUrl!) : null,
+      foregroundImage: imageProvider,
       backgroundColor: Theme.of(
         context,
       ).colorScheme.primary.withValues(alpha: 0.12),
-      child: hasImage
+      child: imageProvider != null
           ? null
           : Icon(
               Icons.person,

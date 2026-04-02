@@ -5,7 +5,9 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Bantera requires microphone access to record practice audio and chat messages.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Bantera needs photo library access so you can choose a profile image.</string>
+	<string>Bantera needs photo library access so you can choose profile images and videos.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Bantera uses on-device speech recognition to transcribe your uploaded video audio.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
