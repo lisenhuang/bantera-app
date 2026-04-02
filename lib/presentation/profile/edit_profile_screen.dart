@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/user_profile_notifier.dart';
+import '../../infrastructure/profile_image_optimizer.dart';
 import '../shared/profile_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -152,14 +153,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _profile.clearError();
     final picked = await _imagePicker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
+      maxWidth: 256,
+      maxHeight: 256,
+      requestFullMetadata: false,
     );
     if (picked == null) {
       return;
     }
 
-    final updated = await _profile.uploadAvatar(File(picked.path));
+    final file = await ProfileImageOptimizer.optimize(File(picked.path));
+    final updated = await _profile.uploadAvatar(file);
     if (!mounted || !updated) {
       return;
     }
