@@ -3,6 +3,7 @@ import 'core/auth_session_notifier.dart';
 import 'core/api_config_notifier.dart';
 import 'core/theme.dart';
 import 'core/settings_notifier.dart';
+import 'core/user_profile_notifier.dart';
 import 'presentation/auth/api_base_url_screen.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
@@ -13,6 +14,7 @@ Future<void> main() async {
     ApiConfigNotifier.instance.initialize(),
     SettingsNotifier.instance.initialize(),
   ]);
+  UserProfileNotifier.instance;
   runApp(const MyApp());
 }
 

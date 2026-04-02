@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../core/api_config_notifier.dart';
+import '../domain/models/models.dart';
 
 class AuthApiClient {
   AuthApiClient._();
@@ -16,26 +17,20 @@ class AuthApiClient {
     required String email,
     required String password,
   }) {
-    return _postAuth(
-      '/api/auth/login',
-      <String, dynamic>{
-        'email': email,
-        'password': password,
-      },
-    );
+    return _postAuth('/api/auth/login', <String, dynamic>{
+      'email': email,
+      'password': password,
+    });
   }
 
   Future<AuthTokenResponse> registerWithEmail({
     required String email,
     required String password,
   }) {
-    return _postAuth(
-      '/api/auth/register',
-      <String, dynamic>{
-        'email': email,
-        'password': password,
-      },
-    );
+    return _postAuth('/api/auth/register', <String, dynamic>{
+      'email': email,
+      'password': password,
+    });
   }
 
   Future<AuthTokenResponse> continueWithApple({
@@ -45,16 +40,89 @@ class AuthApiClient {
     String? givenName,
     String? familyName,
   }) {
-    return _postAuth(
-      '/api/auth/apple',
-      <String, dynamic>{
-        'identityToken': identityToken,
-        'userIdentifier': userIdentifier,
-        'email': email,
-        'givenName': givenName,
-        'familyName': familyName,
-      },
+    return _postAuth('/api/auth/apple', <String, dynamic>{
+      'identityToken': identityToken,
+      'userIdentifier': userIdentifier,
+      'email': email,
+      'givenName': givenName,
+      'familyName': familyName,
+    });
+  }
+
+  Future<UserProfile> fetchMyProfile({required String accessToken}) async {
+    final json = await _sendJsonRequest(
+      method: 'GET',
+      path: '/api/me/profile',
+      accessToken: accessToken,
     );
+    return _profileFromJson(json);
+  }
+
+  Future<UserProfile> updateMyProfile({
+    required String accessToken,
+    required String name,
+  }) async {
+    final json = await _sendJsonRequest(
+      method: 'PUT',
+      path: '/api/me/profile',
+      accessToken: accessToken,
+      payload: <String, dynamic>{'name': name},
+    );
+    return _profileFromJson(json);
+  }
+
+  Future<UserProfile> uploadMyProfileImage({
+    required String accessToken,
+    required File imageFile,
+  }) async {
+    try {
+      final filename = imageFile.uri.pathSegments.isNotEmpty
+          ? imageFile.uri.pathSegments.last
+          : 'profile.jpg';
+      final boundary =
+          'bantera-${DateTime.now().microsecondsSinceEpoch.toRadixString(16)}';
+
+      final request = await _httpClient.postUrl(
+        _resolve('/api/me/profile-image'),
+      );
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(
+        HttpHeaders.authorizationHeader,
+        'Bearer $accessToken',
+      );
+      request.headers.set(
+        HttpHeaders.contentTypeHeader,
+        'multipart/form-data; boundary=$boundary',
+      );
+
+      request.write('--$boundary\r\n');
+      request.write(
+        'Content-Disposition: form-data; name="file"; filename="$filename"\r\n',
+      );
+      request.write('Content-Type: ${_contentTypeForPath(filename)}\r\n\r\n');
+      await request.addStream(imageFile.openRead());
+      request.write('\r\n--$boundary--\r\n');
+
+      final response = await request.close();
+      final json = await _parseJsonResponse(response);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return _profileFromJson(json);
+      }
+
+      _throwApiException(json, response.statusCode);
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
   }
 
   Future<AuthTokenResponse> _postAuth(
@@ -62,58 +130,120 @@ class AuthApiClient {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final request = await _httpClient.postUrl(_resolve(path));
-      request.headers.contentType = ContentType.json;
-      request.add(utf8.encode(jsonEncode(payload)));
-
-      final response = await request.close();
-      final responseText = await response.transform(utf8.decoder).join();
-      final decoded = responseText.isEmpty ? null : jsonDecode(responseText);
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        if (decoded is Map) {
-          return AuthTokenResponse.fromJson(Map<String, dynamic>.from(decoded));
-        }
-
-        throw const AuthApiException(
-          code: 'invalid_response',
-          message: 'The Bantera API returned an unexpected response.',
-        );
-      }
-
-      if (decoded is Map) {
-        final error = Map<String, dynamic>.from(decoded);
-        final code = error['code']?.toString();
-        final message = error['message']?.toString();
-        if (code != null && message != null) {
-          throw AuthApiException(code: code, message: message);
-        }
-      }
-
-      throw AuthApiException(
-        code: 'request_failed',
-        message: 'The Bantera API request failed (${response.statusCode}).',
+      final json = await _sendJsonRequest(
+        method: 'POST',
+        path: path,
+        payload: payload,
       );
+      return AuthTokenResponse.fromJson(json);
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',
-        message: 'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
       );
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
-        message: 'The app could not establish a secure connection to the Bantera API.',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
       );
     }
   }
 
+  Future<Map<String, dynamic>> _sendJsonRequest({
+    required String method,
+    required String path,
+    Map<String, dynamic>? payload,
+    String? accessToken,
+  }) async {
+    final request = await _httpClient.openUrl(method, _resolve(path));
+    request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+    if (accessToken != null && accessToken.isNotEmpty) {
+      request.headers.set(
+        HttpHeaders.authorizationHeader,
+        'Bearer $accessToken',
+      );
+    }
+    if (payload != null) {
+      request.headers.contentType = ContentType.json;
+      request.add(utf8.encode(jsonEncode(payload)));
+    }
+
+    final response = await request.close();
+    final json = await _parseJsonResponse(response);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json;
+    }
+
+    _throwApiException(json, response.statusCode);
+  }
+
+  Future<Map<String, dynamic>> _parseJsonResponse(
+    HttpClientResponse response,
+  ) async {
+    final responseText = await response.transform(utf8.decoder).join();
+    if (responseText.isEmpty) {
+      throw const AuthApiException(
+        code: 'invalid_response',
+        message: 'The Bantera API returned an empty response.',
+      );
+    }
+
+    final decoded = jsonDecode(responseText);
+    if (decoded is! Map) {
+      throw const AuthApiException(
+        code: 'invalid_response',
+        message: 'The Bantera API returned an unexpected response.',
+      );
+    }
+
+    return Map<String, dynamic>.from(decoded);
+  }
+
+  Never _throwApiException(Map<String, dynamic> json, int statusCode) {
+    final code = json['code']?.toString();
+    final message = json['message']?.toString();
+    if (code != null && message != null) {
+      throw AuthApiException(code: code, message: message);
+    }
+
+    throw AuthApiException(
+      code: 'request_failed',
+      message: 'The Bantera API request failed ($statusCode).',
+    );
+  }
+
+  UserProfile _profileFromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      avatarUrl: json['avatarUrl'] as String?,
+    );
+  }
+
   Uri _resolve(String path) {
     final baseUrl = ApiConfigNotifier.instance.baseUrl;
-    final baseUri = Uri.parse(
-      baseUrl.endsWith('/') ? baseUrl : '$baseUrl/',
-    );
+    final baseUri = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/');
     final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     return baseUri.resolve(normalizedPath);
+  }
+
+  static String _contentTypeForPath(String filename) {
+    final normalized = filename.toLowerCase();
+    if (normalized.endsWith('.png')) {
+      return 'image/png';
+    }
+    if (normalized.endsWith('.webp')) {
+      return 'image/webp';
+    }
+    if (normalized.endsWith('.heic')) {
+      return 'image/heic';
+    }
+    if (normalized.endsWith('.heif')) {
+      return 'image/heif';
+    }
+    return 'image/jpeg';
   }
 }
 
@@ -141,10 +271,7 @@ class AuthTokenResponse {
 }
 
 class AuthApiException implements Exception {
-  const AuthApiException({
-    required this.code,
-    required this.message,
-  });
+  const AuthApiException({required this.code, required this.message});
 
   final String code;
   final String message;

@@ -1,4 +1,10 @@
-import 'package:flutter/foundation.dart';
+class UserProfile {
+  final String id;
+  final String name;
+  final String? avatarUrl;
+
+  UserProfile({required this.id, required this.name, this.avatarUrl});
+}
 
 class User {
   final String id;

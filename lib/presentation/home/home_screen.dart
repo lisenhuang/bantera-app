@@ -1,116 +1,124 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme.dart';
+import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/mock_data.dart';
 import '../practice/media_detail_screen.dart';
+import '../shared/profile_avatar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = MockData.currentUser;
     final recommended = MockData.recommendedMedia;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Good evening,',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: BanteraTheme.textSecondaryLight,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user.displayName,
-                        style: Theme.of(context).textTheme.displayLarge,
-                      ),
-                    ],
-                  ),
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundImage: NetworkImage(user.avatarUrl),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
+    return ListenableBuilder(
+      listenable: UserProfileNotifier.instance,
+      builder: (context, _) {
+        final profile = UserProfileNotifier.instance;
 
-              // Daily Target / Streak Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
+        return Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 16.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Daily Goal',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            'Good evening,',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: BanteraTheme.textSecondaryLight,
+                                ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Text(
-                            '15 / 20 mins listened',
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            profile.displayName,
+                            style: Theme.of(context).textTheme.displayLarge,
                           ),
                         ],
                       ),
-                      const Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: CircularProgressIndicator(
-                              value: 15 / 20,
-                              strokeWidth: 6,
-                              backgroundColor: Color(0xFFE4E4E7),
-                              color: BanteraTheme.primaryColor,
-                            ),
-                          ),
-                          Icon(Icons.local_fire_department, color: BanteraTheme.secondaryColor),
-                        ],
-                      ),
+                      ProfileAvatar(radius: 28, imageUrl: profile.avatarUrl),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 32),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Daily Goal',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '15 / 20 mins listened',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                          const Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: CircularProgressIndicator(
+                                  value: 15 / 20,
+                                  strokeWidth: 6,
+                                  backgroundColor: Color(0xFFE4E4E7),
+                                  color: BanteraTheme.primaryColor,
+                                ),
+                              ),
+                              Icon(
+                                Icons.local_fire_department,
+                                color: BanteraTheme.secondaryColor,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Recommended for you',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: recommended.length,
+                      itemBuilder: (context, index) {
+                        final item = recommended[index];
+                        return _buildMediaCard(context, item);
+                      },
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-
-              // Recommended Carousel
-              Text(
-                'Recommended for you',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 240,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: recommended.length,
-                  itemBuilder: (context, index) {
-                    final item = recommended[index];
-                    return _buildMediaCard(context, item);
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -145,14 +153,21 @@ class HomeScreen extends StatelessWidget {
                     bottom: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '0:${(item.durationMs / 1000).round()}',
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -162,7 +177,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               item.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 16),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

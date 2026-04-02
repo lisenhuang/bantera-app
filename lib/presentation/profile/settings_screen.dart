@@ -3,6 +3,7 @@ import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../auth/api_base_url_screen.dart';
+import 'edit_profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -10,9 +11,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListenableBuilder(
         listenable: Listenable.merge([
           ApiConfigNotifier.instance,
@@ -60,7 +59,9 @@ class SettingsScreen extends StatelessWidget {
                 margin: EdgeInsets.zero,
                 child: SwitchListTile(
                   title: const Text('Allow Notifications'),
-                  subtitle: const Text('Receive alerts for messages and practice reminders.'),
+                  subtitle: const Text(
+                    'Receive alerts for messages and practice reminders.',
+                  ),
                   value: settings.notificationsEnabled,
                   onChanged: (val) => settings.toggleNotifications(val),
                 ),
@@ -108,7 +109,16 @@ class SettingsScreen extends StatelessWidget {
                       leading: const Icon(Icons.person),
                       title: const Text('Edit Profile'),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () {},
+                      onTap: auth.session == null
+                          ? null
+                          : () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const EditProfileScreen(),
+                                ),
+                              );
+                            },
                     ),
                     const Divider(height: 1),
                     ListTile(
@@ -120,13 +130,17 @@ class SettingsScreen extends StatelessWidget {
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+                      title: const Text(
+                        'Sign Out',
+                        style: TextStyle(color: Colors.red),
+                      ),
                       onTap: auth.session == null
                           ? null
                           : () {
                               auth.signOut();
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
+                              Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst);
                             },
                     ),
                   ],
@@ -145,8 +159,8 @@ class SettingsScreen extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
