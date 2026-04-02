@@ -743,15 +743,15 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                     final selected =
                         locale.identifier == widget.selected?.identifier;
                     return ListTile(
+                      leading: selected
+                          ? const Icon(Icons.check, size: 18)
+                          : const SizedBox(width: 18),
                       title: Text(
                         _VideoUploadScreenState._languageLabel(locale),
                       ),
                       subtitle: Text(locale.identifier),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (locale.isInstalled)
-                            Container(
+                      trailing: locale.isInstalled
+                          ? Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: 4,
@@ -765,13 +765,8 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(color: Colors.green.shade700),
                               ),
-                            ),
-                          if (selected) ...[
-                            const SizedBox(width: 10),
-                            const Icon(Icons.check, size: 18),
-                          ],
-                        ],
-                      ),
+                            )
+                          : null,
                       onTap: () => Navigator.of(context).pop(locale),
                     );
                   },
