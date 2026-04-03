@@ -210,6 +210,68 @@ class AuthApiClient {
     }
   }
 
+  Future<List<UploadedVideo>> fetchMyVideos({
+    required String accessToken,
+  }) async {
+    try {
+      final request = await _httpClient.getUrl(_resolve('/api/me/videos'));
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(
+        HttpHeaders.authorizationHeader,
+        'Bearer $accessToken',
+      );
+
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      if (responseText.isEmpty) {
+        throw const AuthApiException(
+          code: 'invalid_response',
+          message: 'The Bantera API returned an empty response.',
+        );
+      }
+
+      final decoded = jsonDecode(responseText);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is! List) {
+          throw const AuthApiException(
+            code: 'invalid_response',
+            message: 'The Bantera API returned an unexpected response.',
+          );
+        }
+
+        return decoded
+            .whereType<Map>()
+            .map(
+              (item) => _uploadedVideoFromJson(
+                item.map((key, value) => MapEntry(key.toString(), value)),
+              ),
+            )
+            .toList();
+      }
+
+      if (decoded is Map<String, dynamic>) {
+        _throwApiException(decoded, response.statusCode);
+      }
+
+      throw AuthApiException(
+        code: 'request_failed',
+        message: 'The Bantera API request failed (${response.statusCode}).',
+      );
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
   Future<AuthTokenResponse> _postAuth(
     String path,
     Map<String, dynamic> payload,

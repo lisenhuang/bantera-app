@@ -122,6 +122,10 @@ class MediaItem {
   final String description;
   final User creator;
   final String coverUrl;
+  final String? videoUrl;
+  final String? localVideoPath;
+  final Map<String, String> mediaHeaders;
+  final bool deleteLocalMediaOnDispose;
   final String spokenLanguage;
   final String accent;
   final int durationMs;
@@ -135,6 +139,10 @@ class MediaItem {
     required this.description,
     required this.creator,
     required this.coverUrl,
+    this.videoUrl,
+    this.localVideoPath,
+    this.mediaHeaders = const {},
+    this.deleteLocalMediaOnDispose = false,
     required this.spokenLanguage,
     required this.accent,
     required this.durationMs,
