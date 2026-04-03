@@ -130,6 +130,8 @@ class AuthApiClient {
     required File videoFile,
     required String transcriptText,
     required String transcriptLanguage,
+    required String transcriptLanguageCode,
+    required List<VideoTranscriptCue> transcriptCues,
     required bool isPublic,
     required int durationMs,
     required int? videoWidth,
@@ -162,6 +164,11 @@ class AuthApiClient {
 
       writeField('transcriptText', transcriptText);
       writeField('transcriptLanguage', transcriptLanguage);
+      writeField('transcriptLanguageCode', transcriptLanguageCode);
+      writeField(
+        'transcriptCuesJson',
+        jsonEncode(transcriptCues.map((cue) => cue.toJson()).toList()),
+      );
       writeField('isPublic', isPublic.toString());
       writeField('durationMs', durationMs.toString());
       if (videoWidth != null) {
@@ -307,6 +314,21 @@ class AuthApiClient {
       originalFileName: json['originalFileName'] as String,
       transcriptText: json['transcriptText'] as String,
       transcriptLanguage: json['transcriptLanguage'] as String,
+      transcriptLanguageCode: json['transcriptLanguageCode'] as String? ?? '',
+      transcriptCues: ((json['transcriptCues'] as List?) ?? const [])
+          .map((item) {
+            if (item is Map<String, dynamic>) {
+              return VideoTranscriptCue.fromJson(item);
+            }
+            if (item is Map) {
+              return VideoTranscriptCue.fromJson(
+                item.map((key, value) => MapEntry(key.toString(), value)),
+              );
+            }
+            return null;
+          })
+          .whereType<VideoTranscriptCue>()
+          .toList(),
       isPublic: json['isPublic'] as bool,
       durationMs: (json['durationMs'] as num).toInt(),
       fileSizeBytes: (json['fileSizeBytes'] as num).toInt(),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../core/settings_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
 
@@ -35,11 +36,6 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
   @override
   void initState() {
     super.initState();
-    _transcriptController.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
     _loadSupportedLocales();
   }
 
@@ -274,14 +270,22 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
                     label: 'Language',
                     value: prepared.transcriptLanguage,
                   ),
+                  _InfoRow(
+                    label: 'Cue count',
+                    value: prepared.transcriptCues.length.toString(),
+                  ),
                   const SizedBox(height: 16),
-                  Text('Transcript', style: theme.textTheme.titleSmall),
+                  Text(
+                    'Timed Transcript Preview',
+                    style: theme.textTheme.titleSmall,
+                  ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _transcriptController,
                     minLines: 6,
                     maxLines: 12,
-                    enabled: !_isUploading,
+                    readOnly: true,
+                    enableInteractiveSelection: true,
                     decoration: const InputDecoration(
                       hintText: 'Transcript text will appear here',
                       alignLabelWithHint: true,
@@ -331,7 +335,8 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
   bool get _canUpload =>
       !_isBusy &&
       _preparedUpload != null &&
-      _transcriptController.text.trim().isNotEmpty;
+      _preparedUpload!.transcriptCues.isNotEmpty &&
+      _preparedUpload!.transcriptText.trim().isNotEmpty;
 
   Widget _buildSectionCard(BuildContext context, {required Widget child}) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -355,7 +360,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
     try {
       final locales = await VideoProcessingService.instance
           .fetchSupportedLocales();
-      final selected = _bestMatchingLocale(locales);
+      final selected = _preferredLocale(locales);
       if (!mounted) {
         return;
       }
@@ -442,8 +447,10 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
   Future<void> _uploadVideo() async {
     final prepared = _preparedUpload;
     final session = AuthSessionNotifier.instance.session;
-    final transcriptText = _transcriptController.text.trim();
-    if (prepared == null || session == null || transcriptText.isEmpty) {
+    if (prepared == null ||
+        session == null ||
+        prepared.transcriptText.trim().isEmpty ||
+        prepared.transcriptCues.isEmpty) {
       setState(() {
         _errorMessage = 'Prepare a transcript before uploading.';
       });
@@ -459,8 +466,10 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
       final uploaded = await AuthApiClient.instance.uploadVideo(
         accessToken: session.accessToken,
         videoFile: prepared.file,
-        transcriptText: transcriptText,
+        transcriptText: prepared.transcriptText,
         transcriptLanguage: prepared.transcriptLanguage,
+        transcriptLanguageCode: prepared.transcriptLanguageCode,
+        transcriptCues: prepared.transcriptCues,
         isPublic: _isPublic,
         durationMs: prepared.durationMs,
         videoWidth: prepared.videoWidth,
@@ -556,6 +565,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
     }
 
     await _disposePreparedUpload();
+    SettingsNotifier.instance.setLastTranscriptionLocale(selected.identifier);
     setState(() {
       _selectedLocale = selected;
       _preparedUpload = null;
@@ -577,6 +587,30 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
         _errorMessage = null;
       });
     }
+  }
+
+  TranscriptionLocaleOption? _preferredLocale(
+    List<TranscriptionLocaleOption> locales,
+  ) {
+    final savedIdentifier = SettingsNotifier.instance.lastTranscriptionLocale
+        ?.toLowerCase();
+    if (savedIdentifier != null && savedIdentifier.isNotEmpty) {
+      for (final locale in locales) {
+        if (locale.identifier.toLowerCase() == savedIdentifier) {
+          return locale;
+        }
+      }
+
+      final savedLanguage = savedIdentifier.split('-').first;
+      for (final locale in locales) {
+        final localeLanguage = locale.identifier.toLowerCase().split('-').first;
+        if (localeLanguage == savedLanguage) {
+          return locale;
+        }
+      }
+    }
+
+    return _bestMatchingLocale(locales);
   }
 
   TranscriptionLocaleOption? _bestMatchingLocale(

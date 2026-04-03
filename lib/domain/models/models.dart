@@ -6,12 +6,46 @@ class UserProfile {
   UserProfile({required this.id, required this.name, this.avatarUrl});
 }
 
+class VideoTranscriptCue {
+  final int index;
+  final int startMs;
+  final int endMs;
+  final String text;
+
+  const VideoTranscriptCue({
+    required this.index,
+    required this.startMs,
+    required this.endMs,
+    required this.text,
+  });
+
+  factory VideoTranscriptCue.fromJson(Map<String, dynamic> json) {
+    return VideoTranscriptCue(
+      index: (json['index'] as num?)?.toInt() ?? 0,
+      startMs: (json['startMs'] as num?)?.toInt() ?? 0,
+      endMs: (json['endMs'] as num?)?.toInt() ?? 0,
+      text: json['text']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'index': index,
+      'startMs': startMs,
+      'endMs': endMs,
+      'text': text,
+    };
+  }
+}
+
 class UploadedVideo {
   final String id;
   final String userId;
   final String originalFileName;
   final String transcriptText;
   final String transcriptLanguage;
+  final String transcriptLanguageCode;
+  final List<VideoTranscriptCue> transcriptCues;
   final bool isPublic;
   final int durationMs;
   final int fileSizeBytes;
@@ -27,6 +61,8 @@ class UploadedVideo {
     required this.originalFileName,
     required this.transcriptText,
     required this.transcriptLanguage,
+    required this.transcriptLanguageCode,
+    required this.transcriptCues,
     required this.isPublic,
     required this.durationMs,
     required this.fileSizeBytes,

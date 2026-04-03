@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
+import '../domain/models/models.dart';
+
 class TranscriptionLocaleOption {
   const TranscriptionLocaleOption({
     required this.identifier,
@@ -28,6 +30,8 @@ class PreparedVideoUpload {
     required this.fileName,
     required this.transcriptText,
     required this.transcriptLanguage,
+    required this.transcriptLanguageCode,
+    required this.transcriptCues,
     required this.durationMs,
     required this.fileSizeBytes,
     required this.videoWidth,
@@ -40,6 +44,8 @@ class PreparedVideoUpload {
   final String fileName;
   final String transcriptText;
   final String transcriptLanguage;
+  final String transcriptLanguageCode;
+  final List<VideoTranscriptCue> transcriptCues;
   final int durationMs;
   final int fileSizeBytes;
   final int? videoWidth;
@@ -135,6 +141,10 @@ class VideoProcessingService {
         transcriptText: map['transcriptText']?.toString() ?? '',
         transcriptLanguage:
             map['transcriptLanguage']?.toString() ?? localeIdentifier,
+        transcriptLanguageCode:
+            map['transcriptLanguageCode']?.toString() ??
+            localeIdentifier.split(RegExp(r'[-_]')).first.toLowerCase(),
+        transcriptCues: _parseTranscriptCues(map['transcriptCues']),
         durationMs: _toInt(map['durationMs']),
         fileSizeBytes: _toInt(map['fileSizeBytes']),
         videoWidth: _toNullableInt(map['videoWidth']),
@@ -174,5 +184,21 @@ class VideoProcessingService {
       return null;
     }
     return _toInt(value);
+  }
+
+  static List<VideoTranscriptCue> _parseTranscriptCues(Object? value) {
+    if (value is! List) {
+      return const [];
+    }
+
+    return value
+        .whereType<Map<Object?, Object?>>()
+        .map(
+          (cue) => VideoTranscriptCue.fromJson(
+            cue.map((key, value) => MapEntry(key.toString(), value)),
+          ),
+        )
+        .where((cue) => cue.text.isNotEmpty)
+        .toList();
   }
 }

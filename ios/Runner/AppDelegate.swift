@@ -171,15 +171,17 @@ private final class BanteraVideoPreparationService {
   ) async throws -> [String: Any] {
     let inputAsset = AVAsset(url: inputURL)
     let locale = try await resolveLocale(identifier: localeIdentifier)
-    let transcriptText = try await transcribe(asset: inputAsset, locale: locale)
+    let transcript = try await transcribe(asset: inputAsset, locale: locale)
     let preparedOutput = try await exportUploadVideo(from: inputURL, asset: inputAsset)
     let metadata = try videoMetadata(for: AVAsset(url: preparedOutput.url), url: preparedOutput.url)
 
     return [
       "outputPath": preparedOutput.url.path,
       "fileName": preparedOutput.url.lastPathComponent,
-      "transcriptText": transcriptText,
-      "transcriptLanguage": locale.identifier(.bcp47),
+      "transcriptText": transcript.text,
+      "transcriptLanguage": transcript.localeIdentifier,
+      "transcriptLanguageCode": transcript.languageCode,
+      "transcriptCues": transcript.cues.map(\.dictionary),
       "durationMs": metadata.durationMs,
       "fileSizeBytes": metadata.fileSizeBytes,
       "videoWidth": metadata.width as Any,
@@ -218,6 +220,29 @@ private final class BanteraVideoPreparationService {
     let contentType: String
   }
 
+  private struct TranscriptCuePayload {
+    var index: Int
+    var startMs: Int
+    var endMs: Int
+    let text: String
+
+    var dictionary: [String: Any] {
+      [
+        "index": index,
+        "startMs": startMs,
+        "endMs": endMs,
+        "text": text,
+      ]
+    }
+  }
+
+  private struct PreparedTranscript {
+    let text: String
+    let localeIdentifier: String
+    let languageCode: String
+    let cues: [TranscriptCuePayload]
+  }
+
   private func resolveLocale(identifier: String) async throws -> Locale {
     let supported = await SpeechTranscriber.supportedLocales
     if let exact = supported.first(where: {
@@ -243,7 +268,7 @@ private final class BanteraVideoPreparationService {
     throw BanteraVideoProcessingError.unsupportedLocale(identifier)
   }
 
-  private func transcribe(asset: AVAsset, locale: Locale) async throws -> String {
+  private func transcribe(asset: AVAsset, locale: Locale) async throws -> PreparedTranscript {
     guard SpeechTranscriber.isAvailable else {
       throw BanteraVideoProcessingError.speechUnavailable
     }
@@ -263,8 +288,17 @@ private final class BanteraVideoPreparationService {
       }
     }
 
-    let rawAudioURL = try await extractAudioAsWav(from: asset)
+    let rawAudioURL = try await extractAudioAsLinearPcmFile(from: asset)
     defer { try? FileManager.default.removeItem(at: rawAudioURL) }
+
+    let rawAudioFile: AVAudioFile
+    do {
+      rawAudioFile = try AVAudioFile(forReading: rawAudioURL)
+    } catch {
+      throw BanteraVideoProcessingError.fileAccessFailed(
+        "The extracted audio could not be opened for transcription."
+      )
+    }
 
     let requiredFormat = await SpeechAnalyzer.bestAvailableAudioFormat(
       compatibleWith: [transcriber],
@@ -272,8 +306,13 @@ private final class BanteraVideoPreparationService {
     )
 
     let audioURL: URL
-    if let requiredFormat {
-      audioURL = try await convertAudioFile(from: rawAudioURL, to: requiredFormat)
+    if let requiredFormat,
+       !isEquivalentFormat(rawAudioFile.processingFormat, requiredFormat) {
+      do {
+        audioURL = try await convertAudioFile(from: rawAudioURL, to: requiredFormat)
+      } catch {
+        audioURL = rawAudioURL
+      }
     } else {
       audioURL = rawAudioURL
     }
@@ -282,47 +321,88 @@ private final class BanteraVideoPreparationService {
       defer { try? FileManager.default.removeItem(at: audioURL) }
     }
 
-    let audioFile: AVAudioFile
-    do {
-      audioFile = try AVAudioFile(forReading: audioURL)
-    } catch {
-      throw BanteraVideoProcessingError.fileAccessFailed(
-        "The extracted audio could not be opened for transcription."
-      )
-    }
+    let audioFile = try openTranscriptionAudioFile(
+      primaryURL: audioURL,
+      fallbackURL: rawAudioURL
+    )
 
     let analyzer = SpeechAnalyzer(modules: [transcriber])
     try await analyzer.start(inputAudioFile: audioFile, finishAfterFile: true)
 
-    var segments: [String] = []
-    for try await result in transcriber.results {
-      let cleaned = Self.cleanTranscriptSegment(String(result.text.characters))
-      guard !cleaned.isEmpty else {
-        continue
+    var cues: [TranscriptCuePayload] = []
+    var processingError: Error?
+
+    do {
+      for try await result in transcriber.results {
+        let cleaned = Self.cleanTranscriptSegment(String(result.text.characters))
+        guard !cleaned.isEmpty else {
+          continue
+        }
+
+        let timeRange = result.range
+        guard timeRange.start.seconds.isFinite, timeRange.end.seconds.isFinite else {
+          continue
+        }
+
+        let startMs = max(0, Int((timeRange.start.seconds * 1000).rounded()))
+        var endMs = max(startMs + 1, Int((timeRange.end.seconds * 1000).rounded()))
+        if endMs <= startMs {
+          endMs = startMs + 1
+        }
+
+        if let lastIndex = cues.indices.last,
+           cues[lastIndex].text == cleaned {
+          cues[lastIndex].endMs = max(cues[lastIndex].endMs, endMs)
+          continue
+        }
+
+        cues.append(
+          TranscriptCuePayload(
+            index: cues.count,
+            startMs: startMs,
+            endMs: endMs,
+            text: cleaned
+          )
+        )
       }
-      if segments.last != cleaned {
-        segments.append(cleaned)
-      }
+    } catch {
+      processingError = error
     }
 
-    let transcript = segments.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !transcript.isEmpty else {
+    let normalizedCues = Self.normalizeTranscriptCues(cues)
+    let transcript = normalizedCues
+      .map(\.text)
+      .joined(separator: "\n")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    guard !transcript.isEmpty, !normalizedCues.isEmpty else {
+      if let processingError {
+        throw BanteraVideoProcessingError.transcriptionFailed(
+          processingError.localizedDescription
+        )
+      }
+
       throw BanteraVideoProcessingError.transcriptionFailed(
         "No transcript could be generated. Check that the video audio matches the chosen language."
       )
     }
 
-    return transcript
+    return PreparedTranscript(
+      text: transcript,
+      localeIdentifier: locale.identifier(.bcp47),
+      languageCode: Self.languageCode(for: locale),
+      cues: normalizedCues
+    )
   }
 
-  private func extractAudioAsWav(from asset: AVAsset) async throws -> URL {
+  private func extractAudioAsLinearPcmFile(from asset: AVAsset) async throws -> URL {
     guard let audioTrack = asset.tracks(withMediaType: .audio).first else {
       throw BanteraVideoProcessingError.noAudioTrack
     }
 
     let outputURL = FileManager.default.temporaryDirectory
       .appendingPathComponent("bantera_audio_\(UUID().uuidString)")
-      .appendingPathExtension("wav")
+      .appendingPathExtension("caf")
 
     let reader: AVAssetReader
     do {
@@ -366,59 +446,58 @@ private final class BanteraVideoPreparationService {
       interleaved: true
     )!
 
-    let audioFile: AVAudioFile
+    var totalFrames: Int64 = 0
     do {
-      audioFile = try AVAudioFile(
+      let audioFile = try AVAudioFile(
         forWriting: outputURL,
         settings: audioFormat.settings,
         commonFormat: .pcmFormatInt16,
         interleaved: true
       )
+
+      while let sampleBuffer = trackOutput.copyNextSampleBuffer() {
+        guard CMSampleBufferDataIsReady(sampleBuffer) else { continue }
+
+        let numSamples = CMSampleBufferGetNumSamples(sampleBuffer)
+        guard numSamples > 0, let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else {
+          continue
+        }
+
+        var length = 0
+        var dataPointer: UnsafeMutablePointer<Int8>?
+        let status = CMBlockBufferGetDataPointer(
+          blockBuffer,
+          atOffset: 0,
+          lengthAtOffsetOut: nil,
+          totalLengthOut: &length,
+          dataPointerOut: &dataPointer
+        )
+
+        guard status == kCMBlockBufferNoErr, let pointer = dataPointer else {
+          continue
+        }
+
+        let frameCount = AVAudioFrameCount(numSamples)
+        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCount) else {
+          continue
+        }
+
+        pcmBuffer.frameLength = frameCount
+        if let int16Data = pcmBuffer.int16ChannelData {
+          memcpy(int16Data[0], pointer, length)
+        }
+
+        do {
+          try audioFile.write(from: pcmBuffer)
+          totalFrames += Int64(frameCount)
+        } catch {
+          break
+        }
+      }
     } catch {
       throw BanteraVideoProcessingError.fileAccessFailed(
         "Bantera could not create a temporary transcription audio file."
       )
-    }
-
-    var totalFrames: Int64 = 0
-    while let sampleBuffer = trackOutput.copyNextSampleBuffer() {
-      guard CMSampleBufferDataIsReady(sampleBuffer) else { continue }
-
-      let numSamples = CMSampleBufferGetNumSamples(sampleBuffer)
-      guard numSamples > 0, let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else {
-        continue
-      }
-
-      var length = 0
-      var dataPointer: UnsafeMutablePointer<Int8>?
-      let status = CMBlockBufferGetDataPointer(
-        blockBuffer,
-        atOffset: 0,
-        lengthAtOffsetOut: nil,
-        totalLengthOut: &length,
-        dataPointerOut: &dataPointer
-      )
-
-      guard status == kCMBlockBufferNoErr, let pointer = dataPointer else {
-        continue
-      }
-
-      let frameCount = AVAudioFrameCount(numSamples)
-      guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCount) else {
-        continue
-      }
-
-      pcmBuffer.frameLength = frameCount
-      if let int16Data = pcmBuffer.int16ChannelData {
-        memcpy(int16Data[0], pointer, length)
-      }
-
-      do {
-        try audioFile.write(from: pcmBuffer)
-        totalFrames += Int64(frameCount)
-      } catch {
-        break
-      }
     }
 
     if reader.status == .failed || totalFrames == 0 {
@@ -514,6 +593,39 @@ private final class BanteraVideoPreparationService {
     }
 
     return outputURL
+  }
+
+  private func openTranscriptionAudioFile(
+    primaryURL: URL,
+    fallbackURL: URL
+  ) throws -> AVAudioFile {
+    do {
+      return try AVAudioFile(forReading: primaryURL)
+    } catch {
+      guard primaryURL != fallbackURL else {
+        throw BanteraVideoProcessingError.fileAccessFailed(
+          "The extracted audio could not be opened for transcription."
+        )
+      }
+
+      do {
+        return try AVAudioFile(forReading: fallbackURL)
+      } catch {
+        throw BanteraVideoProcessingError.fileAccessFailed(
+          "The extracted audio could not be opened for transcription."
+        )
+      }
+    }
+  }
+
+  private func isEquivalentFormat(
+    _ lhs: AVAudioFormat,
+    _ rhs: AVAudioFormat
+  ) -> Bool {
+    lhs.sampleRate == rhs.sampleRate &&
+      lhs.channelCount == rhs.channelCount &&
+      lhs.commonFormat == rhs.commonFormat &&
+      lhs.isInterleaved == rhs.isInterleaved
   }
 
   private func exportUploadVideo(from inputURL: URL, asset: AVAsset) async throws -> PreparedOutput {
@@ -628,6 +740,59 @@ private final class BanteraVideoPreparationService {
     }
 
     return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private static func normalizeTranscriptCues(
+    _ cues: [TranscriptCuePayload]
+  ) -> [TranscriptCuePayload] {
+    guard !cues.isEmpty else {
+      return []
+    }
+
+    var normalized: [TranscriptCuePayload] = []
+    for cue in cues {
+      let text = cleanTranscriptSegment(cue.text)
+      guard !text.isEmpty else {
+        continue
+      }
+
+      var startMs = max(0, cue.startMs)
+      var endMs = max(startMs + 1, cue.endMs)
+
+      if let last = normalized.last {
+        startMs = max(startMs, last.endMs)
+        endMs = max(endMs, startMs + 1)
+      }
+
+      if let lastIndex = normalized.indices.last,
+         normalized[lastIndex].text == text {
+        normalized[lastIndex].endMs = max(normalized[lastIndex].endMs, endMs)
+        continue
+      }
+
+      normalized.append(
+        TranscriptCuePayload(
+          index: normalized.count,
+          startMs: startMs,
+          endMs: endMs,
+          text: text
+        )
+      )
+    }
+
+    return normalized
+  }
+
+  private static func languageCode(for locale: Locale) -> String {
+    if let languageCode = locale.language.languageCode?.identifier {
+      return languageCode.lowercased()
+    }
+
+    return locale.identifier(.bcp47)
+      .replacingOccurrences(of: "_", with: "-")
+      .split(separator: "-")
+      .first?
+      .lowercased() ?? "und"
   }
 
   private static func localizedName(for locale: Locale) -> String {
