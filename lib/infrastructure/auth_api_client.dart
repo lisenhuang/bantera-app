@@ -60,13 +60,28 @@ class AuthApiClient {
 
   Future<UserProfile> updateMyProfile({
     required String accessToken,
-    required String name,
+    String? name,
+    String? translationLanguage,
   }) async {
+    final payload = <String, dynamic>{};
+    if (name != null) {
+      payload['name'] = name;
+    }
+    if (translationLanguage != null) {
+      payload['translationLanguage'] = translationLanguage;
+    }
+    if (payload.isEmpty) {
+      throw const AuthApiException(
+        code: 'invalid_request',
+        message: 'Choose at least one profile field to update.',
+      );
+    }
+
     final json = await _sendJsonRequest(
       method: 'PUT',
       path: '/api/me/profile',
       accessToken: accessToken,
-      payload: <String, dynamic>{'name': name},
+      payload: payload,
     );
     return _profileFromJson(json);
   }
@@ -366,6 +381,7 @@ class AuthApiClient {
       id: json['id'] as String,
       name: json['name'] as String,
       avatarUrl: json['avatarUrl'] as String?,
+      translationLanguage: json['translationLanguage'] as String?,
     );
   }
 

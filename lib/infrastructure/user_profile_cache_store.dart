@@ -43,6 +43,7 @@ class UserProfileCacheStore {
           id: decoded['id']?.toString() ?? '',
           name: decoded['name']?.toString() ?? '',
           avatarUrl: decoded['avatarUrl']?.toString(),
+          translationLanguage: decoded['translationLanguage']?.toString(),
         ),
         avatarPath: resolvedAvatarPath,
       );
@@ -63,6 +64,7 @@ class UserProfileCacheStore {
         'id': profile.id,
         'name': profile.name,
         'avatarUrl': profile.avatarUrl,
+        'translationLanguage': profile.translationLanguage,
         'avatarPath': avatarPath,
       }),
     );

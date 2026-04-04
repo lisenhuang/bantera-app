@@ -1,11 +1,13 @@
 import AVFoundation
 import Flutter
 import Speech
+@preconcurrency import Translation
 import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var videoProcessingBridge: BanteraVideoProcessingBridge?
+  private var translationBridge: BanteraTranslationBridge?
 
   override func application(
     _ application: UIApplication,
@@ -17,6 +19,9 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     videoProcessingBridge = BanteraVideoProcessingBridge(
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    translationBridge = BanteraTranslationBridge(
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
   }
@@ -103,6 +108,425 @@ private final class BanteraVideoProcessingBridge {
         }
       }
     }
+  }
+}
+
+private final class BanteraTranslationBridge {
+  private let channel: FlutterMethodChannel
+
+  init(binaryMessenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(
+      name: "bantera/translation",
+      binaryMessenger: binaryMessenger
+    )
+    channel.setMethodCallHandler(handle)
+  }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "getSupportedTranslationLocales":
+      handleGetSupportedTranslationLocales(call: call, result: result)
+    case "translateTranscriptCues":
+      handleTranslateTranscriptCues(call: call, result: result)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
+
+  private func handleGetSupportedTranslationLocales(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let sourceLocaleIdentifier = args["sourceLocaleIdentifier"] as? String,
+      !sourceLocaleIdentifier.isEmpty
+    else {
+      result(BanteraTranslationError.invalidArguments.flutterError)
+      return
+    }
+
+    Task {
+      do {
+        let payload = try await BanteraTranslationService.supportedTargetLocalePayload(
+          sourceLocaleIdentifier: sourceLocaleIdentifier
+        )
+        DispatchQueue.main.async {
+          result(payload)
+        }
+      } catch let error as BanteraTranslationError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "translation_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+
+  private func handleTranslateTranscriptCues(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let sourceLocaleIdentifier = args["sourceLocaleIdentifier"] as? String,
+      let targetLocaleIdentifier = args["targetLocaleIdentifier"] as? String,
+      let rawCues = args["cues"] as? [[String: Any]],
+      !sourceLocaleIdentifier.isEmpty,
+      !targetLocaleIdentifier.isEmpty
+    else {
+      result(BanteraTranslationError.invalidArguments.flutterError)
+      return
+    }
+
+    let cues = rawCues.compactMap { BanteraTranslationService.TranslationCueInput(dictionary: $0) }
+
+    Task {
+      do {
+        let payload = try await BanteraTranslationService().translate(
+          cues: cues,
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocaleIdentifier
+        )
+        DispatchQueue.main.async {
+          result(payload.map(\.dictionary))
+        }
+      } catch let error as BanteraTranslationError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "translation_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+}
+
+private enum BanteraTranslationError: LocalizedError {
+  case unsupportedIosVersion
+  case invalidArguments
+  case unsupportedLanguagePair(source: String, target: String)
+  case translationUnavailable
+  case translationFailed(String)
+
+  var errorDescription: String? {
+    switch self {
+    case .unsupportedIosVersion:
+      return "Cue translation requires iOS 26 or later."
+    case .invalidArguments:
+      return "The translation request was missing required cue or language data."
+    case let .unsupportedLanguagePair(source, target):
+      return "iPhone translation is not available from \(source) to \(target) for this practice session."
+    case .translationUnavailable:
+      return "Translation is not available on this iPhone right now."
+    case let .translationFailed(message):
+      return message
+    }
+  }
+
+  var code: String {
+    switch self {
+    case .unsupportedIosVersion:
+      return "unsupported_ios_version"
+    case .invalidArguments:
+      return "invalid_arguments"
+    case .unsupportedLanguagePair:
+      return "unsupported_language_pair"
+    case .translationUnavailable:
+      return "translation_unavailable"
+    case .translationFailed:
+      return "translation_failed"
+    }
+  }
+
+  var flutterError: FlutterError {
+    FlutterError(code: code, message: errorDescription, details: nil)
+  }
+}
+
+@available(iOS 26.0, *)
+private final class BanteraTranslationService {
+  struct TranslationCueInput {
+    let id: String
+    let text: String
+
+    init?(dictionary: [String: Any]) {
+      let id = dictionary["id"] as? String ?? ""
+      let text = dictionary["text"] as? String ?? ""
+      if id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        return nil
+      }
+
+      self.id = id
+      self.text = text
+    }
+  }
+
+  struct TranslationCueOutput {
+    let id: String
+    let translatedText: String
+
+    var dictionary: [String: Any] {
+      [
+        "id": id,
+        "translatedText": translatedText,
+      ]
+    }
+  }
+
+  private struct CueChunk {
+    let cueIDs: [String]
+    let sourceText: String
+  }
+
+  private let maxCuesPerChunk = 8
+  private let maxCharactersPerChunk = 1200
+
+  static func supportedTargetLocalePayload(
+    sourceLocaleIdentifier: String
+  ) async throws -> [[String: Any]] {
+    let normalizedSource = Self.normalizeIdentifier(sourceLocaleIdentifier)
+    let availability = LanguageAvailability()
+    let supportedLanguages = await availability.supportedLanguages
+    let sourceLanguage = Locale.Language(identifier: normalizedSource)
+    let displayLocale = Locale.current
+
+    var payload: [[String: Any]] = []
+
+    for target in supportedLanguages {
+      if target.minimalIdentifier == sourceLanguage.minimalIdentifier {
+        continue
+      }
+
+      let status = await availability.status(from: sourceLanguage, to: target)
+      guard status == .installed || status == .supported else {
+        continue
+      }
+
+      let identifier = target.minimalIdentifier
+      payload.append([
+        "identifier": identifier,
+        "displayName": displayLocale.localizedString(forIdentifier: identifier) ?? identifier,
+        "isInstalled": status == .installed,
+      ])
+    }
+
+    return payload.sorted {
+      let left = ($0["displayName"] as? String) ?? ""
+      let right = ($1["displayName"] as? String) ?? ""
+      return left.localizedCaseInsensitiveCompare(right) == .orderedAscending
+    }
+  }
+
+  func translate(
+    cues: [TranslationCueInput],
+    sourceLocaleIdentifier: String,
+    targetLocaleIdentifier: String
+  ) async throws -> [TranslationCueOutput] {
+    if cues.isEmpty {
+      return []
+    }
+
+    let normalizedSource = Self.normalizeIdentifier(sourceLocaleIdentifier)
+    let normalizedTarget = Self.normalizeIdentifier(targetLocaleIdentifier)
+    let sourceLanguage = Locale.Language(identifier: normalizedSource)
+    let targetLanguage = Locale.Language(identifier: normalizedTarget)
+
+    if sourceLanguage.minimalIdentifier == targetLanguage.minimalIdentifier {
+      return cues.map {
+        TranslationCueOutput(id: $0.id, translatedText: Self.cleanText($0.text))
+      }
+    }
+
+    let availability = LanguageAvailability()
+    let status = await availability.status(from: sourceLanguage, to: targetLanguage)
+    guard status == .installed || status == .supported else {
+      throw BanteraTranslationError.unsupportedLanguagePair(
+        source: normalizedSource,
+        target: normalizedTarget
+      )
+    }
+
+    let session = TranslationSession(installedSource: sourceLanguage, target: targetLanguage)
+    if status == .supported {
+      do {
+        try await session.prepareTranslation()
+      } catch {
+        throw BanteraTranslationError.translationFailed(
+          "iPhone could not download the translation model for \(normalizedTarget)."
+        )
+      }
+    }
+
+    return try await translate(cues: cues, session: session)
+  }
+
+  private func translate(
+    cues: [TranslationCueInput],
+    session: TranslationSession
+  ) async throws -> [TranslationCueOutput] {
+    var translatedByCueID: [String: String] = [:]
+    let chunks = makeChunks(from: cues)
+
+    for chunk in chunks {
+      do {
+        let response = try await session.translate(chunk.sourceText)
+        let extracted = extractChunkTranslations(
+          translatedText: response.targetText,
+          cueIDs: chunk.cueIDs
+        )
+        for cueID in chunk.cueIDs {
+          if let translated = extracted[cueID] {
+            translatedByCueID[cueID] = Self.cleanText(translated)
+          }
+        }
+      } catch {
+        continue
+      }
+    }
+
+    for cue in cues {
+      if translatedByCueID[cue.id] != nil {
+        continue
+      }
+
+      do {
+        let response = try await session.translate(cue.text)
+        translatedByCueID[cue.id] = Self.cleanText(response.targetText)
+      } catch {
+        throw BanteraTranslationError.translationFailed(
+          "Bantera could not translate this cue on your iPhone."
+        )
+      }
+    }
+
+    return cues.map { cue in
+      TranslationCueOutput(
+        id: cue.id,
+        translatedText: translatedByCueID[cue.id] ?? ""
+      )
+    }
+  }
+
+  private func makeChunks(from cues: [TranslationCueInput]) -> [CueChunk] {
+    var chunks: [CueChunk] = []
+    var currentCues: [TranslationCueInput] = []
+    var currentCharacters = 0
+
+    for cue in cues {
+      let estimated = cue.text.count + 2 * markerStart(for: cue.id).count + 8
+      let wouldExceed = !currentCues.isEmpty && (
+        currentCues.count >= maxCuesPerChunk || (currentCharacters + estimated) > maxCharactersPerChunk
+      )
+
+      if wouldExceed {
+        chunks.append(buildChunk(from: currentCues))
+        currentCues = []
+        currentCharacters = 0
+      }
+
+      currentCues.append(cue)
+      currentCharacters += estimated
+    }
+
+    if !currentCues.isEmpty {
+      chunks.append(buildChunk(from: currentCues))
+    }
+
+    return chunks
+  }
+
+  private func buildChunk(from cues: [TranslationCueInput]) -> CueChunk {
+    let cueIDs = cues.map(\.id)
+    let sourceText = cues.map { cue in
+      let start = markerStart(for: cue.id)
+      let end = markerEnd(for: cue.id)
+      return "\(start)\n\(cue.text)\n\(end)"
+    }
+    .joined(separator: "\n")
+
+    return CueChunk(cueIDs: cueIDs, sourceText: sourceText)
+  }
+
+  private func markerStart(for cueID: String) -> String {
+    "[[[BANTERA:\(cueID)]]]"
+  }
+
+  private func markerEnd(for cueID: String) -> String {
+    "[[[/BANTERA:\(cueID)]]]"
+  }
+
+  private func extractChunkTranslations(
+    translatedText: String,
+    cueIDs: [String]
+  ) -> [String: String] {
+    var output: [String: String] = [:]
+
+    for cueID in cueIDs {
+      let startMarker = markerStart(for: cueID)
+      let endMarker = markerEnd(for: cueID)
+      guard let startRange = translatedText.range(of: startMarker) else {
+        continue
+      }
+      guard
+        let endRange = translatedText.range(
+          of: endMarker,
+          range: startRange.upperBound..<translatedText.endIndex
+        )
+      else {
+        continue
+      }
+
+      let between = translatedText[startRange.upperBound..<endRange.lowerBound]
+      output[cueID] = String(between).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    return output
+  }
+
+  private static func cleanText(_ text: String) -> String {
+    text
+      .replacingOccurrences(of: "\r\n", with: "\n")
+      .replacingOccurrences(of: "\r", with: "\n")
+      .split(separator: "\n")
+      .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+      .filter { !$0.isEmpty }
+      .joined(separator: "\n")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private static func normalizeIdentifier(_ identifier: String) -> String {
+    identifier
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .replacingOccurrences(of: "_", with: "-")
   }
 }
 

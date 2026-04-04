@@ -23,18 +23,20 @@ class UserProfileNotifier extends ChangeNotifier {
   String? _avatarImagePath;
   String? _activeCacheKey;
   bool _isLoading = false;
-  bool _isSavingName = false;
+  bool _isSavingProfile = false;
   bool _isUploadingImage = false;
   String? _errorMessage;
 
   UserProfile? get profile => _profile;
   bool get isLoading => _isLoading;
-  bool get isSavingName => _isSavingName;
+  bool get isSavingName => _isSavingProfile;
+  bool get isSavingProfile => _isSavingProfile;
   bool get isUploadingImage => _isUploadingImage;
-  bool get isBusy => _isLoading || _isSavingName || _isUploadingImage;
+  bool get isBusy => _isLoading || _isSavingProfile || _isUploadingImage;
   String? get errorMessage => _errorMessage;
   String? get avatarImagePath => _avatarImagePath;
   String? get avatarUrl => _profile?.avatarUrl;
+  String? get translationLanguage => _profile?.translationLanguage;
 
   String get displayName {
     final profileName = _profile?.name.trim();
@@ -111,7 +113,7 @@ class UserProfileNotifier extends ChangeNotifier {
       return false;
     }
 
-    _isSavingName = true;
+    _isSavingProfile = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -126,7 +128,40 @@ class UserProfileNotifier extends ChangeNotifier {
       _errorMessage = error.message;
       return false;
     } finally {
-      _isSavingName = false;
+      _isSavingProfile = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateTranslationLanguage(String translationLanguage) async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) {
+      _setError('Sign in again to save your translation language.');
+      return false;
+    }
+
+    final normalizedLanguage = translationLanguage.trim();
+    if (normalizedLanguage.isEmpty || normalizedLanguage.length > 35) {
+      _setError('Choose a valid translation language.');
+      return false;
+    }
+
+    _isSavingProfile = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedProfile = await _apiClient.updateMyProfile(
+        accessToken: session.accessToken,
+        translationLanguage: normalizedLanguage,
+      );
+      await _applyRemoteProfile(session.cacheKey, updatedProfile);
+      return true;
+    } on AuthApiException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } finally {
+      _isSavingProfile = false;
       notifyListeners();
     }
   }
@@ -195,7 +230,7 @@ class UserProfileNotifier extends ChangeNotifier {
     _avatarImagePath = null;
     _errorMessage = null;
     _isLoading = false;
-    _isSavingName = false;
+    _isSavingProfile = false;
     _isUploadingImage = false;
     if (notify) {
       notifyListeners();

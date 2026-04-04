@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/translation_service.dart';
 import 'record_compare_sheet.dart';
 
 enum SubtitleState { hidden, original, translated }
@@ -27,6 +29,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   String? _mediaError;
   VideoPlayerController? _videoController;
   VoidCallback? _videoListener;
+  Map<String, String> _translatedCueTexts = const {};
+  String? _translatedLanguageIdentifier;
+  bool _isTranslating = false;
+  String? _translationErrorMessage;
 
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
@@ -73,15 +79,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     unawaited(_togglePlayback());
   }
 
-  void _cycleSubtitleState() {
-    setState(() {
-      if (_subtitleState == SubtitleState.hidden) {
+  Future<void> _handleSubtitleToggle() async {
+    if (_isTranslating) {
+      return;
+    }
+
+    if (_subtitleState == SubtitleState.hidden) {
+      setState(() {
         _subtitleState = SubtitleState.original;
-      } else if (_subtitleState == SubtitleState.original) {
-        _subtitleState = SubtitleState.translated;
-      } else {
-        _subtitleState = SubtitleState.hidden;
-      }
+        _translationErrorMessage = null;
+      });
+      return;
+    }
+
+    if (_subtitleState == SubtitleState.original) {
+      await _showTranslatedSubtitle();
+      return;
+    }
+
+    setState(() {
+      _subtitleState = SubtitleState.hidden;
+      _translationErrorMessage = null;
     });
   }
 
@@ -114,7 +132,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.settings),
-            onPressed: () {},
+            onPressed: _isTranslating
+                ? null
+                : () {
+                    unawaited(_changeTranslationLanguage());
+                  },
           ),
         ],
       ),
@@ -200,22 +222,57 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
-                    onPressed: _cycleSubtitleState,
-                    icon: Icon(
-                      _subtitleState == SubtitleState.hidden
-                          ? CupertinoIcons.eye
-                          : CupertinoIcons.textformat,
-                    ),
+                    onPressed: () {
+                      unawaited(_handleSubtitleToggle());
+                    },
+                    icon: _isTranslating
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _subtitleState == SubtitleState.hidden
+                                ? CupertinoIcons.eye
+                                : _subtitleState == SubtitleState.original
+                                ? CupertinoIcons.globe
+                                : CupertinoIcons.eye_slash,
+                          ),
                     label: Text(
-                      _subtitleState == SubtitleState.hidden
+                      _isTranslating
+                          ? 'Translating...'
+                          : _subtitleState == SubtitleState.hidden
                           ? 'Show Transcript'
-                          : 'Translate',
+                          : _subtitleState == SubtitleState.original
+                          ? 'Translate'
+                          : 'Hide Text',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
+            if (_translationErrorMessage != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Text(
+                    _translationErrorMessage!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.red.shade700,
+                    ),
+                  ),
+                ),
+              ),
             Container(
               padding: const EdgeInsets.only(
                 top: 16,
@@ -427,9 +484,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       );
     }
 
-    final translatedText = cue.translatedText.trim().isEmpty
-        ? 'Translation will be available during listening practice later.'
-        : cue.translatedText;
+    final translatedText =
+        _translatedCueTexts[cue.id]?.trim() ?? cue.translatedText.trim();
 
     final translatedContent = Column(
       mainAxisSize: MainAxisSize.min,
@@ -445,7 +501,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            translatedText,
+            translatedText.isEmpty
+                ? 'Translation unavailable for this cue right now.'
+                : translatedText,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: hasPlayableMedia ? Colors.white : colorScheme.primary,
@@ -515,6 +573,352 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _showTranslatedSubtitle() async {
+    final sourceLocaleIdentifier = _sourceLocaleIdentifier;
+    final targetLocale = await _ensureTranslationLanguage(
+      sourceLocaleIdentifier: sourceLocaleIdentifier,
+    );
+    if (!mounted || targetLocale == null) {
+      return;
+    }
+
+    if (_translatedLanguageIdentifier != null &&
+        _translatedLanguageIdentifier!.toLowerCase() ==
+            targetLocale.toLowerCase() &&
+        _translatedCueTexts.isNotEmpty) {
+      setState(() {
+        _subtitleState = SubtitleState.translated;
+        _translationErrorMessage = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isTranslating = true;
+      _translationErrorMessage = null;
+    });
+
+    try {
+      final translated = await TranslationService.instance.translateCues(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocale,
+        cues: widget.mediaItem.cues,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _translatedCueTexts = translated;
+        _translatedLanguageIdentifier = targetLocale;
+        _subtitleState = SubtitleState.translated;
+      });
+    } on TranslationException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _translationErrorMessage = error.message;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTranslating = false;
+        });
+      }
+    }
+  }
+
+  Future<String?> _ensureTranslationLanguage({
+    required String sourceLocaleIdentifier,
+  }) async {
+    List<TranslationLocaleOption> locales;
+    try {
+      locales = await TranslationService.instance.fetchSupportedLocales(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+      );
+    } on TranslationException catch (error) {
+      if (mounted) {
+        setState(() {
+          _translationErrorMessage = error.message;
+        });
+      }
+      return null;
+    }
+
+    if (locales.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _translationErrorMessage =
+              'Bantera could not find any translation languages for this transcript.';
+        });
+      }
+      return null;
+    }
+
+    final savedIdentifier = UserProfileNotifier.instance.translationLanguage;
+    final savedLocale = _findTranslationLocale(locales, savedIdentifier);
+    if (savedLocale != null) {
+      return savedLocale.identifier;
+    }
+
+    final selectedLocale = await _showTranslationLanguageSheet(
+      locales: locales,
+      selected: _bestMatchingTranslationLocale(locales) ?? locales.first,
+      title: 'Choose Translation Language',
+      description:
+          'Bantera will translate listening practice into this language and save it to your profile for future sessions.',
+    );
+    if (!mounted || selectedLocale == null) {
+      return null;
+    }
+
+    final confirmed = await _confirmTranslationLanguageSelection(
+      selectedLocale,
+    );
+    if (!mounted || !confirmed) {
+      return null;
+    }
+
+    final saved = await UserProfileNotifier.instance.updateTranslationLanguage(
+      selectedLocale.identifier,
+    );
+    if (!mounted) {
+      return null;
+    }
+    if (!saved) {
+      setState(() {
+        _translationErrorMessage =
+            UserProfileNotifier.instance.errorMessage ??
+            'Bantera could not save your translation language.';
+      });
+      return null;
+    }
+
+    return selectedLocale.identifier;
+  }
+
+  Future<void> _changeTranslationLanguage() async {
+    final sourceLocaleIdentifier = _sourceLocaleIdentifier;
+
+    List<TranslationLocaleOption> locales;
+    try {
+      locales = await TranslationService.instance.fetchSupportedLocales(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+      );
+    } on TranslationException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _translationErrorMessage = error.message;
+      });
+      return;
+    }
+
+    if (!mounted || locales.isEmpty) {
+      return;
+    }
+
+    final current = _findTranslationLocale(
+      locales,
+      UserProfileNotifier.instance.translationLanguage,
+    );
+
+    final selectedLocale = await _showTranslationLanguageSheet(
+      locales: locales,
+      selected: current ?? _bestMatchingTranslationLocale(locales),
+      title: 'Change Translation Language',
+      description:
+          'Choose the language Bantera should translate into. The new choice will be saved to your profile.',
+    );
+    if (!mounted || selectedLocale == null) {
+      return;
+    }
+
+    final currentIdentifier = current?.identifier.toLowerCase();
+    if (currentIdentifier == selectedLocale.identifier.toLowerCase()) {
+      return;
+    }
+
+    final confirmed = await _confirmTranslationLanguageSelection(
+      selectedLocale,
+    );
+    if (!mounted || !confirmed) {
+      return;
+    }
+
+    final saved = await UserProfileNotifier.instance.updateTranslationLanguage(
+      selectedLocale.identifier,
+    );
+    if (!mounted) {
+      return;
+    }
+    if (!saved) {
+      setState(() {
+        _translationErrorMessage =
+            UserProfileNotifier.instance.errorMessage ??
+            'Bantera could not save your translation language.';
+      });
+      return;
+    }
+
+    setState(() {
+      _translatedCueTexts = const {};
+      _translatedLanguageIdentifier = null;
+      _translationErrorMessage = null;
+      if (_subtitleState == SubtitleState.translated) {
+        _subtitleState = SubtitleState.original;
+      }
+    });
+  }
+
+  Future<TranslationLocaleOption?> _showTranslationLanguageSheet({
+    required List<TranslationLocaleOption> locales,
+    required TranslationLocaleOption? selected,
+    required String title,
+    required String description,
+  }) {
+    return showModalBottomSheet<TranslationLocaleOption>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) {
+        return _TranslationLanguageSheet(
+          locales: locales,
+          selected: selected,
+          title: title,
+          description: description,
+        );
+      },
+    );
+  }
+
+  Future<bool> _confirmTranslationLanguageSelection(
+    TranslationLocaleOption locale,
+  ) async {
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            final theme = Theme.of(context);
+            return AlertDialog(
+              title: const Text('Confirm Translation Language'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        _flagPrefixForIdentifier(locale.identifier),
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          locale.displayName,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(locale.identifier, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Bantera will save this language to your profile and use it as the default translation language in future listening practice.',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Confirm'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    return confirmed;
+  }
+
+  TranslationLocaleOption? _findTranslationLocale(
+    List<TranslationLocaleOption> locales,
+    String? identifier,
+  ) {
+    final normalized = identifier?.trim().toLowerCase();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+
+    for (final locale in locales) {
+      if (locale.identifier.toLowerCase() == normalized) {
+        return locale;
+      }
+    }
+
+    final normalizedLanguage = normalized.split('-').first;
+    for (final locale in locales) {
+      final localeLanguage = locale.identifier.toLowerCase().split('-').first;
+      if (localeLanguage == normalizedLanguage) {
+        return locale;
+      }
+    }
+
+    return null;
+  }
+
+  TranslationLocaleOption? _bestMatchingTranslationLocale(
+    List<TranslationLocaleOption> locales,
+  ) {
+    if (locales.isEmpty) {
+      return null;
+    }
+
+    final systemTag = WidgetsBinding.instance.platformDispatcher.locale
+        .toLanguageTag()
+        .toLowerCase();
+    final exact = locales.where(
+      (locale) => locale.identifier.toLowerCase() == systemTag,
+    );
+    if (exact.isNotEmpty) {
+      return exact.first;
+    }
+
+    final systemLanguage = systemTag.split('-').first;
+    for (final locale in locales) {
+      final localeLanguage = locale.identifier.toLowerCase().split('-').first;
+      if (localeLanguage == systemLanguage) {
+        return locale;
+      }
+    }
+
+    return locales.firstWhere(
+      (locale) => locale.identifier.toLowerCase().startsWith('en'),
+      orElse: () => locales.first,
+    );
+  }
+
+  String get _sourceLocaleIdentifier {
+    final accent = widget.mediaItem.accent.trim();
+    if (accent.isNotEmpty) {
+      return accent;
+    }
+
+    final spokenLanguage = widget.mediaItem.spokenLanguage.trim();
+    return spokenLanguage.isEmpty ? 'en' : spokenLanguage;
   }
 
   Widget _buildActionBtn(
@@ -678,4 +1082,230 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
+}
+
+class _TranslationLanguageSheet extends StatefulWidget {
+  const _TranslationLanguageSheet({
+    required this.locales,
+    required this.selected,
+    required this.title,
+    required this.description,
+  });
+
+  final List<TranslationLocaleOption> locales;
+  final TranslationLocaleOption? selected;
+  final String title;
+  final String description;
+
+  @override
+  State<_TranslationLanguageSheet> createState() =>
+      _TranslationLanguageSheetState();
+}
+
+class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final results = widget.locales.where((locale) {
+      final haystack = '${locale.displayName} ${locale.identifier}'
+          .toLowerCase();
+      return haystack.contains(_query.toLowerCase());
+    }).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 8,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: SizedBox(
+          height: 560,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text(
+                widget.description,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    _query = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search languages',
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: results.length,
+                  separatorBuilder: (_, index) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final locale = results[index];
+                    final selected =
+                        locale.identifier == widget.selected?.identifier;
+                    return ListTile(
+                      leading: selected
+                          ? const Icon(Icons.check, size: 18)
+                          : const SizedBox(width: 18),
+                      title: Text(_translationLanguageLabel(locale)),
+                      subtitle: Text(locale.identifier),
+                      trailing: locale.isInstalled
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'Installed',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.green.shade700),
+                              ),
+                            )
+                          : null,
+                      onTap: () => Navigator.of(context).pop(locale),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _translationLanguageLabel(TranslationLocaleOption locale) {
+  return '${_flagPrefixForIdentifier(locale.identifier)} ${locale.displayName} (${locale.identifier})';
+}
+
+String _flagPrefixForIdentifier(String identifier) {
+  final region = _regionCodeFromIdentifier(identifier);
+  if (region == null) {
+    return '🌐';
+  }
+  if (_isNumericRegion(region)) {
+    return '🌎';
+  }
+  if (region.length != 2 || !_isAlphaRegion(region)) {
+    return '🏳️';
+  }
+
+  final upper = region.toUpperCase();
+  return String.fromCharCodes(
+    upper.codeUnits.map((unit) => 0x1F1E6 + unit - 0x41),
+  );
+}
+
+String? _regionCodeFromIdentifier(String identifier) {
+  final components = identifier
+      .replaceAll('_', '-')
+      .split('-')
+      .where((component) => component.isNotEmpty)
+      .toList();
+
+  if (components.isEmpty) {
+    return null;
+  }
+
+  var candidateIndex = 1;
+  if (components.length > 2 && _isScriptSubtag(components[1])) {
+    candidateIndex = 2;
+  }
+
+  if (candidateIndex < components.length &&
+      _isRegionSubtag(components[candidateIndex])) {
+    return components[candidateIndex].toUpperCase();
+  }
+
+  for (final component in components.skip(1)) {
+    if (_isRegionSubtag(component)) {
+      return component.toUpperCase();
+    }
+  }
+
+  return _defaultRegionForLanguageCode(components.first.toLowerCase());
+}
+
+bool _isRegionSubtag(String value) {
+  return (value.length == 2 && _isAlphaRegion(value)) ||
+      (value.length == 3 && _isNumericRegion(value));
+}
+
+bool _isScriptSubtag(String value) {
+  return value.length == 4 && _isAlphaRegion(value);
+}
+
+bool _isAlphaRegion(String value) {
+  final codeUnits = value.codeUnits;
+  return codeUnits.every(
+    (unit) => (unit >= 0x41 && unit <= 0x5A) || (unit >= 0x61 && unit <= 0x7A),
+  );
+}
+
+bool _isNumericRegion(String value) {
+  final codeUnits = value.codeUnits;
+  return codeUnits.every((unit) => unit >= 0x30 && unit <= 0x39);
+}
+
+String? _defaultRegionForLanguageCode(String languageCode) {
+  const defaults = <String, String>{
+    'ar': 'SA',
+    'ca': 'ES',
+    'cs': 'CZ',
+    'da': 'DK',
+    'de': 'DE',
+    'el': 'GR',
+    'en': 'US',
+    'es': 'ES',
+    'fi': 'FI',
+    'fr': 'FR',
+    'he': 'IL',
+    'hi': 'IN',
+    'hr': 'HR',
+    'hu': 'HU',
+    'id': 'ID',
+    'it': 'IT',
+    'ja': 'JP',
+    'ko': 'KR',
+    'ms': 'MY',
+    'nl': 'NL',
+    'no': 'NO',
+    'pl': 'PL',
+    'pt': 'BR',
+    'ro': 'RO',
+    'ru': 'RU',
+    'sk': 'SK',
+    'sv': 'SE',
+    'th': 'TH',
+    'tr': 'TR',
+    'uk': 'UA',
+    'vi': 'VN',
+    'yue': 'HK',
+    'zh': 'CN',
+  };
+
+  return defaults[languageCode];
 }

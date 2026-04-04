@@ -2,8 +2,14 @@ class UserProfile {
   final String id;
   final String name;
   final String? avatarUrl;
+  final String? translationLanguage;
 
-  UserProfile({required this.id, required this.name, this.avatarUrl});
+  UserProfile({
+    required this.id,
+    required this.name,
+    this.avatarUrl,
+    this.translationLanguage,
+  });
 }
 
 class VideoTranscriptCue {
