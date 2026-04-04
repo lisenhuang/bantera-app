@@ -613,19 +613,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           hasPlayableMedia: hasPlayableMedia,
           showsTranslation: true,
         );
-        final availableContentHeight = math.max(104, panelHeight - 32);
-        final originalRatio = _subtitleHeightRatio(
-          cue.originalText,
-          translatedText,
+        final gap = hasPlayableMedia ? 12.0 : 16.0;
+        final contentHeight = math.max(120.0, panelHeight - 32);
+        final availableHeight = math.max(88.0, contentHeight - gap);
+        final innerWidth = math.max(120.0, constraints.maxWidth - 32);
+        final layout = _calculateTranslatedSubtitleLayout(
+          context: context,
+          innerWidth: innerWidth,
+          availableHeight: availableHeight,
+          originalText: cue.originalText,
+          translatedText: translatedText,
+          originalStyle: originalStyle,
+          translatedStyle: translatedStyle,
         );
-        final originalHeight = math.max(
-          44.0,
-          availableContentHeight * originalRatio,
-        );
-        final translatedHeight = math.max(
-          44.0,
-          availableContentHeight - originalHeight - 16,
-        );
+        final originalHeight = layout.originalHeight;
+        final translatedHeight = layout.translatedHeight;
 
         return _buildSubtitlePanel(
           colorScheme: colorScheme,
@@ -645,7 +647,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   maxHeight: originalHeight,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: gap),
               SizedBox(
                 height: translatedHeight,
                 child: _AdaptiveSubtitleText(
@@ -676,17 +678,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     required double panelHeight,
     required Widget child,
   }) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      constraints: BoxConstraints(maxHeight: panelHeight),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: hasPlayableMedia
-            ? Colors.black.withValues(alpha: 0.58)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
-        borderRadius: BorderRadius.circular(18),
+      height: panelHeight,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: hasPlayableMedia
+              ? Colors.black.withValues(alpha: 0.58)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 
@@ -701,15 +705,66 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           : math.min(maxHeight, 220);
     }
 
-    final ratio = showsTranslation ? 0.52 : 0.34;
-    return (maxHeight * ratio).clamp(128.0, showsTranslation ? 320.0 : 220.0);
+    final ratio = showsTranslation ? 0.82 : 0.42;
+    return (maxHeight * ratio).clamp(156.0, showsTranslation ? 500.0 : 280.0);
   }
 
-  double _subtitleHeightRatio(String originalText, String translatedText) {
-    final originalWeight = math.max(1, originalText.trim().length);
-    final translatedWeight = math.max(1, translatedText.trim().length);
-    final rawRatio = originalWeight / (originalWeight + translatedWeight);
-    return rawRatio.clamp(0.38, 0.62);
+  ({double originalHeight, double translatedHeight})
+  _calculateTranslatedSubtitleLayout({
+    required BuildContext context,
+    required double innerWidth,
+    required double availableHeight,
+    required String originalText,
+    required String translatedText,
+    required TextStyle? originalStyle,
+    required TextStyle? translatedStyle,
+  }) {
+    final originalNeed = _estimateTextHeight(
+      context: context,
+      text: originalText,
+      style: originalStyle,
+      maxWidth: innerWidth,
+    );
+    final translatedNeed = _estimateTextHeight(
+      context: context,
+      text: translatedText,
+      style: translatedStyle,
+      maxWidth: innerWidth,
+    );
+
+    final totalNeed = math.max(1.0, originalNeed + translatedNeed);
+    final minSectionHeight = math.min(availableHeight * 0.45, 52.0);
+
+    var originalHeight = (availableHeight * (originalNeed / totalNeed)).clamp(
+      minSectionHeight,
+      availableHeight - minSectionHeight,
+    );
+    var translatedHeight = availableHeight - originalHeight;
+
+    if (translatedHeight < minSectionHeight) {
+      translatedHeight = minSectionHeight;
+      originalHeight = availableHeight - translatedHeight;
+    }
+
+    return (originalHeight: originalHeight, translatedHeight: translatedHeight);
+  }
+
+  double _estimateTextHeight({
+    required BuildContext context,
+    required String text,
+    required TextStyle? style,
+    required double maxWidth,
+  }) {
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textAlign: TextAlign.center,
+      textDirection: direction,
+      textScaler: scaler,
+    )..layout(maxWidth: maxWidth);
+
+    return painter.height;
   }
 
   Future<void> _showTranslatedSubtitle() async {
@@ -1556,6 +1611,8 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     required this.maxHeight,
   });
 
+  static const double _scrollBottomPadding = 14;
+
   final String text;
   final TextAlign textAlign;
   final TextStyle? style;
@@ -1572,23 +1629,34 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     final baseStyle = style ?? Theme.of(context).textTheme.bodyLarge;
     return LayoutBuilder(
       builder: (context, constraints) {
+        final resolvedHeight = _resolvedHeight(constraints.maxHeight);
         final fontSize = _bestFontSize(
           context,
           baseStyle,
           constraints.maxWidth,
+          resolvedHeight,
         );
-        final resolvedHeight = maxHeight.isFinite && maxHeight > 0
-            ? maxHeight
-            : constraints.maxHeight;
 
         return SizedBox(
           height: resolvedHeight,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: Text(
-              text,
-              textAlign: textAlign,
-              style: baseStyle?.copyWith(fontSize: fontSize),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: resolvedHeight),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 2,
+                  bottom: _scrollBottomPadding,
+                ),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(
+                    text,
+                    textAlign: textAlign,
+                    style: baseStyle?.copyWith(fontSize: fontSize),
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -1600,9 +1668,13 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     BuildContext context,
     TextStyle? baseStyle,
     double maxWidth,
+    double availableHeight,
   ) {
     final resolvedWidth = maxWidth.isFinite && maxWidth > 0 ? maxWidth : 320.0;
-    final resolvedHeight = maxHeight.isFinite && maxHeight > 0 ? maxHeight : 80;
+    final resolvedHeight = math.max(
+      32,
+      availableHeight - _scrollBottomPadding - 6,
+    );
     final direction = Directionality.of(context);
     final scaler = MediaQuery.textScalerOf(context);
 
@@ -1631,5 +1703,12 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     }
 
     return best;
+  }
+
+  double _resolvedHeight(double fallbackHeight) {
+    final resolved = maxHeight.isFinite && maxHeight > 0
+        ? maxHeight
+        : fallbackHeight;
+    return resolved.isFinite && resolved > 0 ? resolved : 80;
   }
 }
