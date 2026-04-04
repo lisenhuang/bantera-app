@@ -54,6 +54,18 @@ class PreparedVideoUpload {
   final bool shouldDeleteAfterUse;
 }
 
+class RecordedAttemptTranscription {
+  const RecordedAttemptTranscription({
+    required this.transcriptText,
+    required this.transcriptLanguage,
+    required this.transcriptLanguageCode,
+  });
+
+  final String transcriptText;
+  final String transcriptLanguage;
+  final String transcriptLanguageCode;
+}
+
 class VideoProcessingException implements Exception {
   const VideoProcessingException({required this.code, required this.message});
 
@@ -160,6 +172,50 @@ class VideoProcessingService {
         message:
             error.message ??
             'The app could not prepare the selected video for upload.',
+      );
+    } on MissingPluginException {
+      throw const VideoProcessingException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS video bridge is not available in this build.',
+      );
+    }
+  }
+
+  Future<RecordedAttemptTranscription> transcribeRecordedAudio({
+    required File inputFile,
+    required String localeIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const VideoProcessingException(
+        code: 'unsupported_platform',
+        message: 'Audio comparison is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      final response = await _channel.invokeMapMethod<Object?, Object?>(
+        'transcribeRecordedAudio',
+        <String, Object?>{
+          'inputPath': inputFile.path,
+          'localeIdentifier': localeIdentifier,
+        },
+      );
+
+      final map = response ?? const <Object?, Object?>{};
+      return RecordedAttemptTranscription(
+        transcriptText: map['transcriptText']?.toString().trim() ?? '',
+        transcriptLanguage:
+            map['transcriptLanguage']?.toString() ?? localeIdentifier,
+        transcriptLanguageCode:
+            map['transcriptLanguageCode']?.toString() ??
+            localeIdentifier.split(RegExp(r'[-_]')).first.toLowerCase(),
+      );
+    } on PlatformException catch (error) {
+      throw VideoProcessingException(
+        code: error.code,
+        message:
+            error.message ??
+            'The app could not transcribe this recorded attempt.',
       );
     } on MissingPluginException {
       throw const VideoProcessingException(

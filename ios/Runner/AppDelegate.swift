@@ -44,6 +44,8 @@ private final class BanteraVideoProcessingBridge {
       handleGetSupportedTranscriptionLocales(result: result)
     case "prepareVideoForUpload":
       handlePrepareVideoForUpload(call: call, result: result)
+    case "transcribeRecordedAudio":
+      handleTranscribeRecordedAudio(call: call, result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -86,6 +88,53 @@ private final class BanteraVideoProcessingBridge {
     Task {
       do {
         let response = try await BanteraVideoPreparationService().prepareVideoForUpload(
+          inputURL: URL(fileURLWithPath: inputPath),
+          localeIdentifier: localeIdentifier
+        )
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch let error as BanteraVideoProcessingError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "video_processing_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+
+  private func handleTranscribeRecordedAudio(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let inputPath = args["inputPath"] as? String,
+      let localeIdentifier = args["localeIdentifier"] as? String,
+      !inputPath.isEmpty,
+      !localeIdentifier.isEmpty
+    else {
+      result(BanteraVideoProcessingError.invalidArguments.flutterError)
+      return
+    }
+
+    Task {
+      do {
+        let response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
           inputURL: URL(fileURLWithPath: inputPath),
           localeIdentifier: localeIdentifier
         )
@@ -589,6 +638,20 @@ private enum BanteraVideoProcessingError: LocalizedError {
 
 @available(iOS 26.0, *)
 private final class BanteraVideoPreparationService {
+  func transcribeRecordedAudio(
+    inputURL: URL,
+    localeIdentifier: String
+  ) async throws -> [String: Any] {
+    let locale = try await resolveLocale(identifier: localeIdentifier)
+    let transcript = try await transcribeAudioFile(at: inputURL, locale: locale)
+
+    return [
+      "transcriptText": transcript.text,
+      "transcriptLanguage": transcript.localeIdentifier,
+      "transcriptLanguageCode": transcript.languageCode,
+    ]
+  }
+
   func prepareVideoForUpload(
     inputURL: URL,
     localeIdentifier: String
@@ -693,6 +756,16 @@ private final class BanteraVideoPreparationService {
   }
 
   private func transcribe(asset: AVAsset, locale: Locale) async throws -> PreparedTranscript {
+    let rawAudioURL = try await extractAudioAsLinearPcmFile(from: asset)
+    defer { try? FileManager.default.removeItem(at: rawAudioURL) }
+
+    return try await transcribeAudioFile(at: rawAudioURL, locale: locale)
+  }
+
+  private func transcribeAudioFile(
+    at inputURL: URL,
+    locale: Locale
+  ) async throws -> PreparedTranscript {
     guard SpeechTranscriber.isAvailable else {
       throw BanteraVideoProcessingError.speechUnavailable
     }
@@ -712,15 +785,31 @@ private final class BanteraVideoPreparationService {
       }
     }
 
-    let rawAudioURL = try await extractAudioAsLinearPcmFile(from: asset)
-    defer { try? FileManager.default.removeItem(at: rawAudioURL) }
-
-    let rawAudioFile: AVAudioFile
+    let readableInputURL: URL
+    var shouldDeleteReadableInput = false
     do {
-      rawAudioFile = try AVAudioFile(forReading: rawAudioURL)
+      _ = try AVAudioFile(forReading: inputURL)
+      readableInputURL = inputURL
+    } catch {
+      do {
+        readableInputURL = try await extractAudioAsLinearPcmFile(from: AVAsset(url: inputURL))
+        shouldDeleteReadableInput = true
+      } catch {
+        throw BanteraVideoProcessingError.fileAccessFailed(
+          "The recorded audio could not be opened for transcription."
+        )
+      }
+    }
+    if shouldDeleteReadableInput {
+      defer { try? FileManager.default.removeItem(at: readableInputURL) }
+    }
+
+    let inputAudioFile: AVAudioFile
+    do {
+      inputAudioFile = try AVAudioFile(forReading: readableInputURL)
     } catch {
       throw BanteraVideoProcessingError.fileAccessFailed(
-        "The extracted audio could not be opened for transcription."
+        "The recorded audio could not be opened for transcription."
       )
     }
 
@@ -731,23 +820,23 @@ private final class BanteraVideoPreparationService {
 
     let audioURL: URL
     if let requiredFormat,
-       !isEquivalentFormat(rawAudioFile.processingFormat, requiredFormat) {
+       !isEquivalentFormat(inputAudioFile.processingFormat, requiredFormat) {
       do {
-        audioURL = try await convertAudioFile(from: rawAudioURL, to: requiredFormat)
+        audioURL = try await convertAudioFile(from: readableInputURL, to: requiredFormat)
       } catch {
-        audioURL = rawAudioURL
+        audioURL = readableInputURL
       }
     } else {
-      audioURL = rawAudioURL
+      audioURL = readableInputURL
     }
 
-    if audioURL != rawAudioURL {
+    if audioURL != readableInputURL {
       defer { try? FileManager.default.removeItem(at: audioURL) }
     }
 
     let audioFile = try openTranscriptionAudioFile(
       primaryURL: audioURL,
-      fallbackURL: rawAudioURL
+      fallbackURL: readableInputURL
     )
 
     let analyzer = SpeechAnalyzer(modules: [transcriber])
@@ -820,7 +909,16 @@ private final class BanteraVideoPreparationService {
   }
 
   private func extractAudioAsLinearPcmFile(from asset: AVAsset) async throws -> URL {
-    guard let audioTrack = asset.tracks(withMediaType: .audio).first else {
+    let audioTracks: [AVAssetTrack]
+    do {
+      audioTracks = try await asset.loadTracks(withMediaType: .audio)
+    } catch {
+      throw BanteraVideoProcessingError.exportFailed(
+        "Bantera could not read the selected video audio."
+      )
+    }
+
+    guard let audioTrack = audioTracks.first else {
       throw BanteraVideoProcessingError.noAudioTrack
     }
 

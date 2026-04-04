@@ -22,6 +22,8 @@ class LocalPracticeRepository extends ChangeNotifier {
   static final LocalPracticeRepository instance = LocalPracticeRepository._();
 
   final LocalPracticeDatabase _database = LocalPracticeDatabase.instance;
+  static const String _managedVideoMarker =
+      '/Library/Application Support/local_practice_videos/';
 
   List<LocalPracticeVideoSummary> _videos = const [];
   bool _isLoading = false;
@@ -102,7 +104,7 @@ class LocalPracticeRepository extends ChangeNotifier {
               transcriptPreview: preview,
               description:
                   'A private on-device listening session saved on this iPhone for cue-by-cue practice.',
-              localVideoPath: persistedFile.path,
+              localVideoPath: await _storedVideoReferenceFor(persistedFile),
               spokenLanguage: spokenLanguage,
               accent: prepared.transcriptLanguage,
               durationMs: prepared.durationMs,
@@ -168,12 +170,14 @@ class LocalPracticeRepository extends ChangeNotifier {
       return null;
     }
 
+    final normalizedEntry = await _normalizeEntryPath(entry);
+
     final cues = await (_database.select(_database.localPracticeCueEntries)
           ..where((table) => table.itemId.equals(id))
           ..orderBy([(table) => drift.OrderingTerm.asc(table.cueIndex)]))
         .get();
 
-    return _mapVideo(entry, cues);
+    return _mapVideo(normalizedEntry, cues);
   }
 
   Future<LocalPracticeVideo> openVideo(String id) async {
@@ -244,7 +248,7 @@ class LocalPracticeRepository extends ChangeNotifier {
           ))
         .go();
 
-    final file = File(entry.localVideoPath);
+    final file = File(await _resolveVideoPath(entry.localVideoPath));
     if (await file.exists()) {
       await file.delete();
     }
@@ -349,10 +353,15 @@ class LocalPracticeRepository extends ChangeNotifier {
           ..orderBy([(table) => drift.OrderingTerm.desc(table.updatedAtMillis)]))
         .get();
 
-    return entries.map(_mapSummary).toList(growable: false);
+    final normalized = <LocalPracticeVideoSummary>[];
+    for (final entry in entries) {
+      normalized.add(await _mapSummary(await _normalizeEntryPath(entry)));
+    }
+    return normalized;
   }
 
-  LocalPracticeVideoSummary _mapSummary(LocalPracticeEntry entry) {
+  Future<LocalPracticeVideoSummary> _mapSummary(LocalPracticeEntry entry) async {
+    final resolvedVideoPath = await _resolveVideoPath(entry.localVideoPath);
     return LocalPracticeVideoSummary(
       id: entry.id,
       title: entry.title,
@@ -362,7 +371,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       durationMs: entry.durationMs,
       cueCount: entry.cueCount,
       fileSizeBytes: entry.fileSizeBytes,
-      localVideoPath: entry.localVideoPath,
+      localVideoPath: resolvedVideoPath,
       translatedLanguage: entry.translatedLanguage,
       createdAt: DateTime.fromMillisecondsSinceEpoch(entry.createdAtMillis),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(entry.updatedAtMillis),
@@ -372,10 +381,11 @@ class LocalPracticeRepository extends ChangeNotifier {
     );
   }
 
-  LocalPracticeVideo _mapVideo(
+  Future<LocalPracticeVideo> _mapVideo(
     LocalPracticeEntry entry,
     List<LocalPracticeCueEntry> cues,
-  ) {
+  ) async {
+    final resolvedVideoPath = await _resolveVideoPath(entry.localVideoPath);
     return LocalPracticeVideo(
       id: entry.id,
       title: entry.title,
@@ -385,7 +395,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       durationMs: entry.durationMs,
       cueCount: entry.cueCount,
       fileSizeBytes: entry.fileSizeBytes,
-      localVideoPath: entry.localVideoPath,
+      localVideoPath: resolvedVideoPath,
       translatedLanguage: entry.translatedLanguage,
       createdAt: DateTime.fromMillisecondsSinceEpoch(entry.createdAtMillis),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(entry.updatedAtMillis),
@@ -427,6 +437,103 @@ class LocalPracticeRepository extends ChangeNotifier {
     }
 
     return copied;
+  }
+
+  Future<String> _storedVideoReferenceFor(File file) async {
+    final resolvedPath = file.absolute.path;
+    final supportDirectory = await getApplicationSupportDirectory();
+    final supportPath = p.normalize(supportDirectory.path);
+    final normalizedPath = p.normalize(resolvedPath);
+
+    if (p.isWithin(supportPath, normalizedPath)) {
+      return p.relative(normalizedPath, from: supportPath);
+    }
+
+    return normalizedPath;
+  }
+
+  Future<String> _resolveVideoPath(String storedReference) async {
+    final normalizedReference = p.normalize(storedReference.trim());
+    if (normalizedReference.isEmpty) {
+      return normalizedReference;
+    }
+
+    if (!p.isAbsolute(normalizedReference)) {
+      final supportDirectory = await getApplicationSupportDirectory();
+      return p.normalize(p.join(supportDirectory.path, normalizedReference));
+    }
+
+    final existingAbsolute = File(normalizedReference);
+    if (await existingAbsolute.exists()) {
+      return existingAbsolute.path;
+    }
+
+    final remapped = await _remapManagedAbsolutePath(normalizedReference);
+    if (remapped != null) {
+      return remapped;
+    }
+
+    return normalizedReference;
+  }
+
+  Future<String?> _remapManagedAbsolutePath(String absolutePath) async {
+    final normalizedAbsolute = p.normalize(absolutePath);
+    final markerIndex = normalizedAbsolute.indexOf(_managedVideoMarker);
+    if (markerIndex < 0) {
+      return null;
+    }
+
+    final relativeSuffix = normalizedAbsolute.substring(
+      markerIndex + _managedVideoMarker.length,
+    );
+    final directory = await _localVideoDirectory;
+    final candidate = File(
+      p.normalize(p.join(directory.path, relativeSuffix)),
+    );
+    if (await candidate.exists()) {
+      return candidate.path;
+    }
+
+    return null;
+  }
+
+  Future<LocalPracticeEntry> _normalizeEntryPath(LocalPracticeEntry entry) async {
+    final resolvedPath = await _resolveVideoPath(entry.localVideoPath);
+    final preferredStoredReference = await _storedReferenceForResolvedPath(
+      resolvedPath,
+    );
+
+    final normalizedStoredPath = p.normalize(entry.localVideoPath.trim());
+    final normalizedPreferred = p.normalize(preferredStoredReference);
+
+    if (normalizedStoredPath == normalizedPreferred) {
+      return entry.copyWith(localVideoPath: normalizedPreferred);
+    }
+
+    await (_database.update(_database.localPracticeEntries)
+          ..where((table) => table.id.equals(entry.id)))
+        .write(
+          LocalPracticeEntriesCompanion(
+            localVideoPath: drift.Value(preferredStoredReference),
+          ),
+        );
+
+    return entry.copyWith(localVideoPath: preferredStoredReference);
+  }
+
+  Future<String> _storedReferenceForResolvedPath(String resolvedPath) async {
+    final normalizedResolved = p.normalize(resolvedPath);
+    if (!p.isAbsolute(normalizedResolved)) {
+      return normalizedResolved;
+    }
+
+    final supportDirectory = await getApplicationSupportDirectory();
+    final supportPath = p.normalize(supportDirectory.path);
+    if (p.isWithin(supportPath, normalizedResolved)) {
+      return p.relative(normalizedResolved, from: supportPath);
+    }
+
+    return normalizedResolved;
   }
 
   Future<Directory> get _localVideoDirectory async {
