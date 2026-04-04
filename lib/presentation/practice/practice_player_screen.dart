@@ -404,6 +404,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       style: Theme.of(context).textTheme.displayLarge?.copyWith(
         fontSize: hasPlayableMedia ? 28 : 32,
         height: 1.3,
+        color: hasPlayableMedia ? Colors.white : null,
       ),
     );
 
