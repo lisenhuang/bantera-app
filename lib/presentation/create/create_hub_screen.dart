@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/local_practice_repository.dart';
+import '../practice/practice_player_screen.dart';
 import 'local_video_practice_screen.dart';
 import 'uploaded_video_detail_screen.dart';
 import 'video_upload_screen.dart';
@@ -17,14 +22,19 @@ class CreateHubScreen extends StatefulWidget {
 
 class _CreateHubScreenState extends State<CreateHubScreen> {
   final AuthApiClient _apiClient = AuthApiClient.instance;
+  final LocalPracticeRepository _localPracticeRepository =
+      LocalPracticeRepository.instance;
 
   List<UploadedVideo> _myVideos = const [];
   bool _isLoadingVideos = true;
   String? _loadError;
+  String? _openingLocalVideoId;
+  String? _deletingLocalVideoId;
 
   @override
   void initState() {
     super.initState();
+    unawaited(_localPracticeRepository.refreshForCurrentUser());
     _loadMyVideos();
   }
 
@@ -137,6 +147,8 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               ],
             ),
 
+            const SizedBox(height: 48),
+            _buildLocalPracticeSection(context, colorScheme),
             const SizedBox(height: 48),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -349,6 +361,217 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     );
   }
 
+  Widget _buildLocalPracticeSection(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
+    final theme = Theme.of(context);
+
+    return ListenableBuilder(
+      listenable: _localPracticeRepository,
+      builder: (context, _) {
+        final localVideos = _localPracticeRepository.videos;
+        final localError = _localPracticeRepository.errorMessage;
+        final isLoadingLocalVideos = _localPracticeRepository.isLoading;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'On This iPhone',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                IconButton(
+                  onPressed: isLoadingLocalVideos
+                      ? null
+                      : () => _localPracticeRepository.refreshForCurrentUser(
+                          showLoadingState: false,
+                        ),
+                  icon: const Icon(CupertinoIcons.refresh),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (isLoadingLocalVideos)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (localError != null)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.18)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      localError,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () => _localPracticeRepository
+                          .refreshForCurrentUser(),
+                      child: const Text('Try Again'),
+                    ),
+                  ],
+                ),
+              )
+            else if (localVideos.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.onSurface.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Text(
+                  'Videos you practice locally will be saved on this iPhone so you can reopen them later without retranscribing.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              )
+            else
+              ...localVideos.map((video) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildLocalPracticeItem(context, video, colorScheme),
+                );
+              }),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLocalPracticeItem(
+    BuildContext context,
+    LocalPracticeVideoSummary video,
+    ColorScheme colorScheme,
+  ) {
+    final theme = Theme.of(context);
+    final isOpening = _openingLocalVideoId == video.id;
+    final isDeleting = _deletingLocalVideoId == video.id;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: isOpening || isDeleting
+          ? null
+          : () {
+              unawaited(_openLocalPracticeVideo(video.id));
+            },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                CupertinoIcons.device_phone_portrait,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    video.title,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${video.accent} · ${_formatDuration(video.durationMs)} · ${video.cueCount} cues',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    video.transcriptPreview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'On Device',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (isOpening || isDeleting)
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                else
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        unawaited(_confirmDeleteLocalVideo(video));
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text('Delete'),
+                      ),
+                    ],
+                    icon: Icon(
+                      CupertinoIcons.ellipsis_circle,
+                      color: colorScheme.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildUploadedVideoItem(
     BuildContext context,
     UploadedVideo video,
@@ -461,5 +684,96 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _openLocalPracticeVideo(String id) async {
+    setState(() {
+      _openingLocalVideoId = id;
+    });
+
+    try {
+      final video = await _localPracticeRepository.openVideo(id);
+      if (!mounted) {
+        return;
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PracticePlayerScreen(
+            mediaItem: video.toMediaItem(creator: _currentCreator()),
+          ),
+        ),
+      );
+    } on LocalPracticeRepositoryException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _openingLocalVideoId = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteLocalVideo(LocalPracticeVideoSummary video) async {
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Delete Saved Video?'),
+              content: Text(
+                'Bantera will remove "${video.title}" from this iPhone and delete its saved transcript cues.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _deletingLocalVideoId = video.id;
+    });
+
+    try {
+      await _localPracticeRepository.deleteVideo(video.id);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _deletingLocalVideoId = null;
+        });
+      }
+    }
+  }
+
+  User _currentCreator() {
+    final profile = UserProfileNotifier.instance;
+
+    return User(
+      id: AuthSessionNotifier.instance.session?.cacheKey ?? 'local-user',
+      displayName: profile.displayName,
+      avatarUrl: profile.avatarUrl ?? '',
+      firstLanguage: '',
+      learningLanguage: '',
+      level: '',
+    );
   }
 }

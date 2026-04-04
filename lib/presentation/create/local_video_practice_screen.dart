@@ -8,6 +8,7 @@ import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../practice/practice_player_screen.dart';
@@ -314,6 +315,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     });
 
     try {
+      final localPracticeId = LocalPracticeRepository.instance.createDraftId();
       final prepared = await VideoProcessingService.instance
           .prepareVideoForUpload(
             inputFile: File(selectedVideo.path),
@@ -323,15 +325,34 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
         return;
       }
 
-      final translatedCueTexts = await _prepareTranslationIfNeeded(prepared);
+      final translatedCueTexts = await _prepareTranslationIfNeeded(
+        prepared,
+        localPracticeId: localPracticeId,
+      );
       if (!mounted) {
         return;
       }
 
-      final mediaItem = _toMediaItem(
-        prepared: prepared,
-        selectedVideo: selectedVideo,
-        translatedCueTexts: translatedCueTexts,
+      setState(() {
+        _prepareStatus = 'Saving this video to your on-device practice library...';
+      });
+
+      final savedVideo = await LocalPracticeRepository.instance
+          .savePreparedSession(
+            id: localPracticeId,
+            title: _displayTitle(selectedVideo.name),
+            prepared: prepared,
+            translatedCueTexts: translatedCueTexts,
+            translatedLanguage: translatedCueTexts.isEmpty
+                ? null
+                : UserProfileNotifier.instance.translationLanguage,
+          );
+      if (!mounted) {
+        return;
+      }
+
+      final mediaItem = savedVideo.toMediaItem(
+        creator: _currentCreator(),
       );
 
       await Navigator.of(context).push(
@@ -340,6 +361,13 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
         ),
       );
     } on VideoProcessingException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = error.message;
+      });
+    } on LocalPracticeRepositoryException catch (error) {
       if (!mounted) {
         return;
       }
@@ -356,55 +384,24 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     }
   }
 
-  MediaItem _toMediaItem({
-    required PreparedVideoUpload prepared,
-    required XFile selectedVideo,
-    required Map<String, String> translatedCueTexts,
-  }) {
+  User _currentCreator() {
     final profile = UserProfileNotifier.instance;
     final session = AuthSessionNotifier.instance.session;
-    final translationLanguage = profile.translationLanguage?.trim();
 
-    return MediaItem(
-      id: 'local-${DateTime.now().microsecondsSinceEpoch}',
-      title: _displayTitle(selectedVideo.name),
-      description:
-          'A private on-device listening session created from your iPhone photo library.',
-      creator: User(
-        id: session?.cacheKey ?? 'local-user',
-        displayName: profile.displayName,
-        avatarUrl: profile.avatarUrl ?? '',
-        firstLanguage: '',
-        learningLanguage: '',
-        level: '',
-      ),
-      coverUrl: '',
-      localVideoPath: prepared.file.path,
-      deleteLocalMediaOnDispose: prepared.shouldDeleteAfterUse,
-      spokenLanguage: prepared.transcriptLanguageCode.isEmpty
-          ? prepared.transcriptLanguage
-          : prepared.transcriptLanguageCode.toUpperCase(),
-      accent: prepared.transcriptLanguage,
-      durationMs: prepared.durationMs,
-      cues: prepared.transcriptCues.map((cue) {
-        return Cue(
-          id: 'local-${cue.index}',
-          startTimeMs: cue.startMs,
-          endTimeMs: cue.endMs,
-          originalText: cue.text,
-          translatedText: translatedCueTexts['local-${cue.index}'] ?? '',
-        );
-      }).toList(),
-      transcriptionSource: 'On Device',
-      translatedLanguage: translatedCueTexts.isEmpty
-          ? null
-          : translationLanguage,
+    return User(
+      id: session?.cacheKey ?? 'local-user',
+      displayName: profile.displayName,
+      avatarUrl: profile.avatarUrl ?? '',
+      firstLanguage: '',
+      learningLanguage: '',
+      level: '',
     );
   }
 
   Future<Map<String, String>> _prepareTranslationIfNeeded(
-    PreparedVideoUpload prepared,
-  ) async {
+    PreparedVideoUpload prepared, {
+    required String localPracticeId,
+  }) async {
     final translationLanguage = UserProfileNotifier.instance.translationLanguage
         ?.trim();
     if (translationLanguage == null || translationLanguage.isEmpty) {
@@ -414,7 +411,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     final cues = prepared.transcriptCues
         .map(
           (cue) => Cue(
-            id: 'local-${cue.index}',
+            id: '$localPracticeId-cue-${cue.index}',
             startTimeMs: cue.startMs,
             endTimeMs: cue.endMs,
             originalText: cue.text,

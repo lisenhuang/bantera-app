@@ -8,6 +8,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/translation_service.dart';
 import 'record_compare_sheet.dart';
 
@@ -40,6 +41,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
       (widget.mediaItem.videoUrl?.trim().isNotEmpty ?? false);
+  bool get _isSavedLocalPractice =>
+      (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) &&
+      !(widget.mediaItem.videoUrl?.trim().isNotEmpty ?? false) &&
+      !widget.mediaItem.deleteLocalMediaOnDispose;
+  String? get _savedLocalPracticeId =>
+      _isSavedLocalPractice ? widget.mediaItem.id : null;
 
   @override
   void initState() {
@@ -820,6 +827,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _subtitleState = SubtitleState.translated;
       });
       unawaited(
+        _persistLocalTranslations(
+          targetLocaleIdentifier: targetLocale,
+          translations: translated,
+        ),
+      );
+      unawaited(
         _translateRemainingCuesInBackground(
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocale,
@@ -885,6 +898,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       setState(() {
         _translatedCueTexts = {..._translatedCueTexts, ...translated};
       });
+      unawaited(
+        _persistLocalTranslations(
+          targetLocaleIdentifier: targetLocaleIdentifier,
+          translations: translated,
+        ),
+      );
     } on TranslationException {
       // Keep the current cue responsive even if the background batch fails.
     } finally {
@@ -1028,6 +1047,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    unawaited(
+      _resetStoredLocalTranslations(
+        targetLocaleIdentifier: selectedLocale.identifier,
+      ),
+    );
     setState(() {
       _translatedCueTexts = const {};
       _translatedLanguageIdentifier = null;
@@ -1064,6 +1088,44 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return mounted &&
         generation == _translationGeneration &&
         activeTarget == targetLocaleIdentifier.trim().toLowerCase();
+  }
+
+  Future<void> _persistLocalTranslations({
+    required String targetLocaleIdentifier,
+    required Map<String, String> translations,
+  }) async {
+    final localPracticeId = _savedLocalPracticeId;
+    if (localPracticeId == null || translations.isEmpty) {
+      return;
+    }
+
+    try {
+      await LocalPracticeRepository.instance.storeTranslations(
+        id: localPracticeId,
+        translatedLanguage: targetLocaleIdentifier,
+        translations: translations,
+      );
+    } catch (_) {
+      // Local persistence should not block practice playback.
+    }
+  }
+
+  Future<void> _resetStoredLocalTranslations({
+    required String targetLocaleIdentifier,
+  }) async {
+    final localPracticeId = _savedLocalPracticeId;
+    if (localPracticeId == null) {
+      return;
+    }
+
+    try {
+      await LocalPracticeRepository.instance.resetTranslations(
+        id: localPracticeId,
+        translatedLanguage: targetLocaleIdentifier,
+      );
+    } catch (_) {
+      // Keep the in-memory translation flow responsive if disk writes fail.
+    }
   }
 
   Future<TranslationLocaleOption?> _showTranslationLanguageSheet({

@@ -80,6 +80,80 @@ class UploadedVideo {
   });
 }
 
+class LocalPracticeVideoSummary {
+  final String id;
+  final String title;
+  final String transcriptPreview;
+  final String spokenLanguage;
+  final String accent;
+  final int durationMs;
+  final int cueCount;
+  final int fileSizeBytes;
+  final String localVideoPath;
+  final String? translatedLanguage;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? lastOpenedAt;
+
+  const LocalPracticeVideoSummary({
+    required this.id,
+    required this.title,
+    required this.transcriptPreview,
+    required this.spokenLanguage,
+    required this.accent,
+    required this.durationMs,
+    required this.cueCount,
+    required this.fileSizeBytes,
+    required this.localVideoPath,
+    required this.translatedLanguage,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.lastOpenedAt,
+  });
+}
+
+class LocalPracticeVideo extends LocalPracticeVideoSummary {
+  final String description;
+  final String transcriptionSource;
+  final List<Cue> cues;
+
+  const LocalPracticeVideo({
+    required super.id,
+    required super.title,
+    required super.transcriptPreview,
+    required super.spokenLanguage,
+    required super.accent,
+    required super.durationMs,
+    required super.cueCount,
+    required super.fileSizeBytes,
+    required super.localVideoPath,
+    required super.translatedLanguage,
+    required super.createdAt,
+    required super.updatedAt,
+    required super.lastOpenedAt,
+    required this.description,
+    required this.transcriptionSource,
+    required this.cues,
+  });
+
+  MediaItem toMediaItem({required User creator}) {
+    return MediaItem(
+      id: id,
+      title: title,
+      description: description,
+      creator: creator,
+      coverUrl: '',
+      localVideoPath: localVideoPath,
+      spokenLanguage: spokenLanguage,
+      accent: accent,
+      durationMs: durationMs,
+      cues: cues,
+      transcriptionSource: transcriptionSource,
+      translatedLanguage: translatedLanguage,
+    );
+  }
+}
+
 class User {
   final String id;
   final String displayName;
