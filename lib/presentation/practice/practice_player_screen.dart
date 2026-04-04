@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   Map<String, String> _translatedCueTexts = const {};
   String? _translatedLanguageIdentifier;
   bool _isTranslating = false;
+  bool _isBackgroundTranslating = false;
   String? _translationErrorMessage;
+  int _translationGeneration = 0;
 
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
@@ -41,6 +44,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _seedPreloadedTranslations();
     _initializeMedia();
   }
 
@@ -111,6 +115,28 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       builder: (context) =>
           RecordCompareSheet(cue: widget.mediaItem.cues[_currentCueIndex]),
     );
+  }
+
+  void _seedPreloadedTranslations() {
+    final targetLanguage = widget.mediaItem.translatedLanguage?.trim();
+    if (targetLanguage == null || targetLanguage.isEmpty) {
+      return;
+    }
+
+    final translated = <String, String>{};
+    for (final cue in widget.mediaItem.cues) {
+      final text = cue.translatedText.trim();
+      if (text.isNotEmpty) {
+        translated[cue.id] = text;
+      }
+    }
+
+    if (translated.isEmpty) {
+      return;
+    }
+
+    _translatedCueTexts = translated;
+    _translatedLanguageIdentifier = targetLanguage;
   }
 
   @override
@@ -455,79 +481,23 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       );
     }
 
-    final originalText = Text(
-      cue.originalText,
-      textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-        fontSize: hasPlayableMedia ? 28 : 32,
-        height: 1.3,
-        color: hasPlayableMedia ? Colors.white : null,
-      ),
-    );
-
     if (_subtitleState == SubtitleState.original) {
-      if (!hasPlayableMedia) {
-        return originalText;
-      }
-
-      return Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.58),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: originalText,
-        ),
+      return _buildOriginalSubtitlePanel(
+        cue: cue,
+        colorScheme: colorScheme,
+        hasPlayableMedia: hasPlayableMedia,
       );
     }
 
     final translatedText =
         _translatedCueTexts[cue.id]?.trim() ?? cue.translatedText.trim();
-
-    final translatedContent = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        originalText,
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: hasPlayableMedia
-                ? Colors.white.withValues(alpha: 0.12)
-                : colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            translatedText.isEmpty
-                ? 'Translation unavailable for this cue right now.'
-                : translatedText,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: hasPlayableMedia ? Colors.white : colorScheme.primary,
-            ),
-          ),
-        ),
-      ],
-    );
-
-    if (!hasPlayableMedia) {
-      return translatedContent;
-    }
-
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.58),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: translatedContent,
-      ),
+    return _buildTranslatedSubtitlePanel(
+      cue: cue,
+      translatedText: translatedText.isEmpty
+          ? 'Translation unavailable for this cue right now.'
+          : translatedText,
+      colorScheme: colorScheme,
+      hasPlayableMedia: hasPlayableMedia,
     );
   }
 
@@ -575,6 +545,173 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
+  Widget _buildOriginalSubtitlePanel({
+    required Cue cue,
+    required ColorScheme colorScheme,
+    required bool hasPlayableMedia,
+  }) {
+    final baseStyle = Theme.of(context).textTheme.displayLarge?.copyWith(
+      fontSize: hasPlayableMedia ? 28 : 32,
+      height: 1.3,
+      color: hasPlayableMedia ? Colors.white : colorScheme.onSurface,
+      fontWeight: FontWeight.w700,
+    );
+
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        final panelHeight = _subtitlePanelHeight(
+          constraints.maxHeight,
+          hasPlayableMedia: hasPlayableMedia,
+          showsTranslation: false,
+        );
+        return _buildSubtitlePanel(
+          colorScheme: colorScheme,
+          hasPlayableMedia: hasPlayableMedia,
+          panelHeight: panelHeight,
+          child: _AdaptiveSubtitleText(
+            text: cue.originalText,
+            textAlign: TextAlign.center,
+            style: baseStyle,
+            minFontSize: hasPlayableMedia ? 16 : 18,
+            maxFontSize: hasPlayableMedia ? 30 : 34,
+            maxHeight: math.max(56, panelHeight - 32),
+          ),
+        );
+      },
+    );
+
+    if (!hasPlayableMedia) {
+      return content;
+    }
+
+    return Align(alignment: Alignment.bottomCenter, child: content);
+  }
+
+  Widget _buildTranslatedSubtitlePanel({
+    required Cue cue,
+    required String translatedText,
+    required ColorScheme colorScheme,
+    required bool hasPlayableMedia,
+  }) {
+    final originalStyle = Theme.of(context).textTheme.displayLarge?.copyWith(
+      fontSize: hasPlayableMedia ? 28 : 32,
+      height: 1.28,
+      color: hasPlayableMedia ? Colors.white : colorScheme.onSurface,
+      fontWeight: FontWeight.w700,
+    );
+    final translatedStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+      fontSize: hasPlayableMedia ? 24 : 28,
+      height: 1.28,
+      color: hasPlayableMedia ? Colors.white : colorScheme.primary,
+      fontWeight: FontWeight.w700,
+    );
+
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        final panelHeight = _subtitlePanelHeight(
+          constraints.maxHeight,
+          hasPlayableMedia: hasPlayableMedia,
+          showsTranslation: true,
+        );
+        final availableContentHeight = math.max(104, panelHeight - 32);
+        final originalRatio = _subtitleHeightRatio(
+          cue.originalText,
+          translatedText,
+        );
+        final originalHeight = math.max(
+          44.0,
+          availableContentHeight * originalRatio,
+        );
+        final translatedHeight = math.max(
+          44.0,
+          availableContentHeight - originalHeight - 16,
+        );
+
+        return _buildSubtitlePanel(
+          colorScheme: colorScheme,
+          hasPlayableMedia: hasPlayableMedia,
+          panelHeight: panelHeight,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: originalHeight,
+                child: _AdaptiveSubtitleText(
+                  text: cue.originalText,
+                  textAlign: TextAlign.center,
+                  style: originalStyle,
+                  minFontSize: hasPlayableMedia ? 14 : 18,
+                  maxFontSize: hasPlayableMedia ? 28 : 34,
+                  maxHeight: originalHeight,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: translatedHeight,
+                child: _AdaptiveSubtitleText(
+                  text: translatedText,
+                  textAlign: TextAlign.center,
+                  style: translatedStyle,
+                  minFontSize: hasPlayableMedia ? 13 : 16,
+                  maxFontSize: hasPlayableMedia ? 24 : 28,
+                  maxHeight: translatedHeight,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!hasPlayableMedia) {
+      return content;
+    }
+
+    return Align(alignment: Alignment.bottomCenter, child: content);
+  }
+
+  Widget _buildSubtitlePanel({
+    required ColorScheme colorScheme,
+    required bool hasPlayableMedia,
+    required double panelHeight,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      constraints: BoxConstraints(maxHeight: panelHeight),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: hasPlayableMedia
+            ? Colors.black.withValues(alpha: 0.58)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: child,
+    );
+  }
+
+  double _subtitlePanelHeight(
+    double maxHeight, {
+    required bool hasPlayableMedia,
+    required bool showsTranslation,
+  }) {
+    if (!hasPlayableMedia) {
+      return showsTranslation
+          ? math.min(maxHeight, 300)
+          : math.min(maxHeight, 220);
+    }
+
+    final ratio = showsTranslation ? 0.52 : 0.34;
+    return (maxHeight * ratio).clamp(128.0, showsTranslation ? 320.0 : 220.0);
+  }
+
+  double _subtitleHeightRatio(String originalText, String translatedText) {
+    final originalWeight = math.max(1, originalText.trim().length);
+    final translatedWeight = math.max(1, translatedText.trim().length);
+    final rawRatio = originalWeight / (originalWeight + translatedWeight);
+    return rawRatio.clamp(0.38, 0.62);
+  }
+
   Future<void> _showTranslatedSubtitle() async {
     final sourceLocaleIdentifier = _sourceLocaleIdentifier;
     final targetLocale = await _ensureTranslationLanguage(
@@ -584,14 +721,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    if (_translatedLanguageIdentifier != null &&
-        _translatedLanguageIdentifier!.toLowerCase() ==
-            targetLocale.toLowerCase() &&
-        _translatedCueTexts.isNotEmpty) {
+    final cue = widget.mediaItem.cues[_currentCueIndex];
+    final generation = _activateTranslationTarget(targetLocale);
+    final cachedTranslation = _translatedCueTexts[cue.id]?.trim();
+
+    if (cachedTranslation != null && cachedTranslation.isNotEmpty) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _subtitleState = SubtitleState.translated;
         _translationErrorMessage = null;
       });
+      unawaited(
+        _translateRemainingCuesInBackground(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocale,
+          generation: generation,
+          excludedCueId: cue.id,
+        ),
+      );
       return;
     }
 
@@ -604,17 +753,25 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final translated = await TranslationService.instance.translateCues(
         sourceLocaleIdentifier: sourceLocaleIdentifier,
         targetLocaleIdentifier: targetLocale,
-        cues: widget.mediaItem.cues,
+        cues: [cue],
       );
-      if (!mounted) {
+      if (!_isCurrentTranslationGeneration(generation, targetLocale) ||
+          !mounted) {
         return;
       }
 
       setState(() {
-        _translatedCueTexts = translated;
-        _translatedLanguageIdentifier = targetLocale;
+        _translatedCueTexts = {..._translatedCueTexts, ...translated};
         _subtitleState = SubtitleState.translated;
       });
+      unawaited(
+        _translateRemainingCuesInBackground(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocale,
+          generation: generation,
+          excludedCueId: cue.id,
+        ),
+      );
     } on TranslationException catch (error) {
       if (!mounted) {
         return;
@@ -627,6 +784,57 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         setState(() {
           _isTranslating = false;
         });
+      }
+    }
+  }
+
+  Future<void> _translateRemainingCuesInBackground({
+    required String sourceLocaleIdentifier,
+    required String targetLocaleIdentifier,
+    required int generation,
+    required String excludedCueId,
+  }) async {
+    if (_isBackgroundTranslating ||
+        !_isCurrentTranslationGeneration(generation, targetLocaleIdentifier)) {
+      return;
+    }
+
+    final remainingCues = widget.mediaItem.cues.where((cue) {
+      if (cue.id == excludedCueId) {
+        return false;
+      }
+      final cached = _translatedCueTexts[cue.id]?.trim();
+      return cached == null || cached.isEmpty;
+    }).toList();
+
+    if (remainingCues.isEmpty) {
+      return;
+    }
+
+    _isBackgroundTranslating = true;
+
+    try {
+      final translated = await TranslationService.instance.translateCues(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocaleIdentifier,
+        cues: remainingCues,
+      );
+      if (!_isCurrentTranslationGeneration(
+            generation,
+            targetLocaleIdentifier,
+          ) ||
+          !mounted) {
+        return;
+      }
+
+      setState(() {
+        _translatedCueTexts = {..._translatedCueTexts, ...translated};
+      });
+    } on TranslationException {
+      // Keep the current cue responsive even if the background batch fails.
+    } finally {
+      if (_isCurrentTranslationGeneration(generation, targetLocaleIdentifier)) {
+        _isBackgroundTranslating = false;
       }
     }
   }
@@ -769,10 +977,38 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _translatedCueTexts = const {};
       _translatedLanguageIdentifier = null;
       _translationErrorMessage = null;
+      _isBackgroundTranslating = false;
+      _translationGeneration += 1;
       if (_subtitleState == SubtitleState.translated) {
         _subtitleState = SubtitleState.original;
       }
     });
+  }
+
+  int _activateTranslationTarget(String targetLocaleIdentifier) {
+    final normalizedTarget = targetLocaleIdentifier.trim().toLowerCase();
+    final currentTarget = _translatedLanguageIdentifier?.trim().toLowerCase();
+    if (currentTarget == normalizedTarget) {
+      return _translationGeneration;
+    }
+
+    setState(() {
+      _translatedCueTexts = const {};
+      _translatedLanguageIdentifier = targetLocaleIdentifier;
+      _isBackgroundTranslating = false;
+      _translationGeneration += 1;
+    });
+    return _translationGeneration;
+  }
+
+  bool _isCurrentTranslationGeneration(
+    int generation,
+    String targetLocaleIdentifier,
+  ) {
+    final activeTarget = _translatedLanguageIdentifier?.trim().toLowerCase();
+    return mounted &&
+        generation == _translationGeneration &&
+        activeTarget == targetLocaleIdentifier.trim().toLowerCase();
   }
 
   Future<TranslationLocaleOption?> _showTranslationLanguageSheet({
@@ -1308,4 +1544,92 @@ String? _defaultRegionForLanguageCode(String languageCode) {
   };
 
   return defaults[languageCode];
+}
+
+class _AdaptiveSubtitleText extends StatelessWidget {
+  const _AdaptiveSubtitleText({
+    required this.text,
+    required this.textAlign,
+    required this.style,
+    required this.minFontSize,
+    required this.maxFontSize,
+    required this.maxHeight,
+  });
+
+  final String text;
+  final TextAlign textAlign;
+  final TextStyle? style;
+  final double minFontSize;
+  final double maxFontSize;
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final baseStyle = style ?? Theme.of(context).textTheme.bodyLarge;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fontSize = _bestFontSize(
+          context,
+          baseStyle,
+          constraints.maxWidth,
+        );
+        final resolvedHeight = maxHeight.isFinite && maxHeight > 0
+            ? maxHeight
+            : constraints.maxHeight;
+
+        return SizedBox(
+          height: resolvedHeight,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Text(
+              text,
+              textAlign: textAlign,
+              style: baseStyle?.copyWith(fontSize: fontSize),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  double _bestFontSize(
+    BuildContext context,
+    TextStyle? baseStyle,
+    double maxWidth,
+  ) {
+    final resolvedWidth = maxWidth.isFinite && maxWidth > 0 ? maxWidth : 320.0;
+    final resolvedHeight = maxHeight.isFinite && maxHeight > 0 ? maxHeight : 80;
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+
+    var low = minFontSize;
+    var high = math.max(minFontSize, maxFontSize);
+    var best = minFontSize;
+
+    for (var i = 0; i < 8; i++) {
+      final mid = (low + high) / 2;
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: baseStyle?.copyWith(fontSize: mid),
+        ),
+        textAlign: textAlign,
+        textDirection: direction,
+        textScaler: scaler,
+      )..layout(maxWidth: resolvedWidth);
+
+      if (painter.height <= resolvedHeight) {
+        best = mid;
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    return best;
+  }
 }

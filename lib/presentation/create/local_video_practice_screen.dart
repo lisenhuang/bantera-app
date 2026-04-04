@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../practice/practice_player_screen.dart';
 
@@ -23,6 +25,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
 
   XFile? _selectedVideo;
   int? _selectedVideoBytes;
+  int? _selectedVideoDurationMs;
   List<TranscriptionLocaleOption> _supportedLocales = const [];
   TranscriptionLocaleOption? _selectedLocale;
 
@@ -76,6 +79,29 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
                       label: 'Size',
                       value: _formatBytes(_selectedVideoBytes!),
                     ),
+                  if (_selectedVideoDurationMs != null)
+                    _InfoRow(
+                      label: 'Duration',
+                      value: _formatDuration(_selectedVideoDurationMs!),
+                    ),
+                  if (_isLongVideo) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.16),
+                        ),
+                      ),
+                      child: Text(
+                        'This video is longer than 3 minutes, so Bantera may need longer to prepare the transcript and translation.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -211,6 +237,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
       !_isLoadingLocales &&
       _selectedVideo != null &&
       _selectedLocale != null;
+  bool get _isLongVideo => (_selectedVideoDurationMs ?? 0) > 180000;
 
   Widget _buildSectionCard(BuildContext context, {required Widget child}) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -263,9 +290,11 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     }
 
     final bytes = await File(picked.path).length();
+    final durationMs = await _loadVideoDurationMs(picked.path);
     setState(() {
       _selectedVideo = picked;
       _selectedVideoBytes = bytes;
+      _selectedVideoDurationMs = durationMs;
     });
   }
 
@@ -279,7 +308,9 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     _clearError();
     setState(() {
       _isPreparing = true;
-      _prepareStatus = 'Transcribing on device and preparing practice cues...';
+      _prepareStatus = _isLongVideo
+          ? 'This is a longer video, so Bantera may need extra time to transcribe and prepare it.'
+          : 'Transcribing on device and preparing practice cues...';
     });
 
     try {
@@ -292,9 +323,15 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
         return;
       }
 
+      final translatedCueTexts = await _prepareTranslationIfNeeded(prepared);
+      if (!mounted) {
+        return;
+      }
+
       final mediaItem = _toMediaItem(
         prepared: prepared,
         selectedVideo: selectedVideo,
+        translatedCueTexts: translatedCueTexts,
       );
 
       await Navigator.of(context).push(
@@ -322,9 +359,11 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
   MediaItem _toMediaItem({
     required PreparedVideoUpload prepared,
     required XFile selectedVideo,
+    required Map<String, String> translatedCueTexts,
   }) {
     final profile = UserProfileNotifier.instance;
     final session = AuthSessionNotifier.instance.session;
+    final translationLanguage = profile.translationLanguage?.trim();
 
     return MediaItem(
       id: 'local-${DateTime.now().microsecondsSinceEpoch}',
@@ -353,11 +392,70 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
           startTimeMs: cue.startMs,
           endTimeMs: cue.endMs,
           originalText: cue.text,
-          translatedText: '',
+          translatedText: translatedCueTexts['local-${cue.index}'] ?? '',
         );
       }).toList(),
       transcriptionSource: 'On Device',
+      translatedLanguage: translatedCueTexts.isEmpty
+          ? null
+          : translationLanguage,
     );
+  }
+
+  Future<Map<String, String>> _prepareTranslationIfNeeded(
+    PreparedVideoUpload prepared,
+  ) async {
+    final translationLanguage = UserProfileNotifier.instance.translationLanguage
+        ?.trim();
+    if (translationLanguage == null || translationLanguage.isEmpty) {
+      return const {};
+    }
+
+    final cues = prepared.transcriptCues
+        .map(
+          (cue) => Cue(
+            id: 'local-${cue.index}',
+            startTimeMs: cue.startMs,
+            endTimeMs: cue.endMs,
+            originalText: cue.text,
+            translatedText: '',
+          ),
+        )
+        .toList();
+
+    if (cues.isEmpty) {
+      return const {};
+    }
+
+    if (mounted) {
+      setState(() {
+        _prepareStatus = _isLongVideo
+            ? 'Transcription finished. Bantera is also preparing translation for your saved language, so this longer video may take a bit more time.'
+            : 'Transcription finished. Preparing translation for your saved language...';
+      });
+    }
+
+    try {
+      return await TranslationService.instance.translateCues(
+        sourceLocaleIdentifier: prepared.transcriptLanguage,
+        targetLocaleIdentifier: translationLanguage,
+        cues: cues,
+      );
+    } on TranslationException {
+      return const {};
+    }
+  }
+
+  Future<int?> _loadVideoDurationMs(String path) async {
+    final controller = VideoPlayerController.file(File(path));
+    try {
+      await controller.initialize();
+      return controller.value.duration.inMilliseconds;
+    } catch (_) {
+      return null;
+    } finally {
+      await controller.dispose();
+    }
   }
 
   Future<void> _showLanguagePicker() async {
@@ -464,6 +562,13 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
       return '${(bytes / 1024).toStringAsFixed(1)} KB';
     }
     return '$bytes B';
+  }
+
+  static String _formatDuration(int milliseconds) {
+    final totalSeconds = milliseconds ~/ 1000;
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   static String _languageLabel(TranscriptionLocaleOption locale) {

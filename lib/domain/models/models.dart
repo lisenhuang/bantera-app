@@ -138,6 +138,7 @@ class MediaItem {
   final List<Cue> cues;
   final int plays;
   final String transcriptionSource;
+  final String? translatedLanguage;
 
   MediaItem({
     required this.id,
@@ -155,6 +156,7 @@ class MediaItem {
     required this.cues,
     this.plays = 0,
     required this.transcriptionSource,
+    this.translatedLanguage,
   });
 }
 
