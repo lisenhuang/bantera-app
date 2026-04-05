@@ -1448,6 +1448,766 @@ class LocalPracticeCueEntriesCompanion
   }
 }
 
+class $LocalCueAttemptEntriesTable extends LocalCueAttemptEntries
+    with TableInfo<$LocalCueAttemptEntriesTable, LocalCueAttemptEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCueAttemptEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerCacheKeyMeta = const VerificationMeta(
+    'ownerCacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> ownerCacheKey = GeneratedColumn<String>(
+    'owner_cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mediaItemIdMeta = const VerificationMeta(
+    'mediaItemId',
+  );
+  @override
+  late final GeneratedColumn<String> mediaItemId = GeneratedColumn<String>(
+    'media_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueIdMeta = const VerificationMeta('cueId');
+  @override
+  late final GeneratedColumn<String> cueId = GeneratedColumn<String>(
+    'cue_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _transcriptTextMeta = const VerificationMeta(
+    'transcriptText',
+  );
+  @override
+  late final GeneratedColumn<String> transcriptText = GeneratedColumn<String>(
+    'transcript_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceLocaleIdentifierMeta =
+      const VerificationMeta('sourceLocaleIdentifier');
+  @override
+  late final GeneratedColumn<String> sourceLocaleIdentifier =
+      GeneratedColumn<String>(
+        'source_locale_identifier',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _audioPathMeta = const VerificationMeta(
+    'audioPath',
+  );
+  @override
+  late final GeneratedColumn<String> audioPath = GeneratedColumn<String>(
+    'audio_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _matchedCountMeta = const VerificationMeta(
+    'matchedCount',
+  );
+  @override
+  late final GeneratedColumn<int> matchedCount = GeneratedColumn<int>(
+    'matched_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unexpectedCountMeta = const VerificationMeta(
+    'unexpectedCount',
+  );
+  @override
+  late final GeneratedColumn<int> unexpectedCount = GeneratedColumn<int>(
+    'unexpected_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _missingCountMeta = const VerificationMeta(
+    'missingCount',
+  );
+  @override
+  late final GeneratedColumn<int> missingCount = GeneratedColumn<int>(
+    'missing_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordingDurationMsMeta =
+      const VerificationMeta('recordingDurationMs');
+  @override
+  late final GeneratedColumn<int> recordingDurationMs = GeneratedColumn<int>(
+    'recording_duration_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMillisMeta = const VerificationMeta(
+    'createdAtMillis',
+  );
+  @override
+  late final GeneratedColumn<int> createdAtMillis = GeneratedColumn<int>(
+    'created_at_millis',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ownerCacheKey,
+    mediaItemId,
+    cueId,
+    transcriptText,
+    sourceLocaleIdentifier,
+    audioPath,
+    matchedCount,
+    unexpectedCount,
+    missingCount,
+    recordingDurationMs,
+    createdAtMillis,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_cue_attempt_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCueAttemptEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_cache_key')) {
+      context.handle(
+        _ownerCacheKeyMeta,
+        ownerCacheKey.isAcceptableOrUnknown(
+          data['owner_cache_key']!,
+          _ownerCacheKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerCacheKeyMeta);
+    }
+    if (data.containsKey('media_item_id')) {
+      context.handle(
+        _mediaItemIdMeta,
+        mediaItemId.isAcceptableOrUnknown(
+          data['media_item_id']!,
+          _mediaItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mediaItemIdMeta);
+    }
+    if (data.containsKey('cue_id')) {
+      context.handle(
+        _cueIdMeta,
+        cueId.isAcceptableOrUnknown(data['cue_id']!, _cueIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueIdMeta);
+    }
+    if (data.containsKey('transcript_text')) {
+      context.handle(
+        _transcriptTextMeta,
+        transcriptText.isAcceptableOrUnknown(
+          data['transcript_text']!,
+          _transcriptTextMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transcriptTextMeta);
+    }
+    if (data.containsKey('source_locale_identifier')) {
+      context.handle(
+        _sourceLocaleIdentifierMeta,
+        sourceLocaleIdentifier.isAcceptableOrUnknown(
+          data['source_locale_identifier']!,
+          _sourceLocaleIdentifierMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceLocaleIdentifierMeta);
+    }
+    if (data.containsKey('audio_path')) {
+      context.handle(
+        _audioPathMeta,
+        audioPath.isAcceptableOrUnknown(data['audio_path']!, _audioPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_audioPathMeta);
+    }
+    if (data.containsKey('matched_count')) {
+      context.handle(
+        _matchedCountMeta,
+        matchedCount.isAcceptableOrUnknown(
+          data['matched_count']!,
+          _matchedCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_matchedCountMeta);
+    }
+    if (data.containsKey('unexpected_count')) {
+      context.handle(
+        _unexpectedCountMeta,
+        unexpectedCount.isAcceptableOrUnknown(
+          data['unexpected_count']!,
+          _unexpectedCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unexpectedCountMeta);
+    }
+    if (data.containsKey('missing_count')) {
+      context.handle(
+        _missingCountMeta,
+        missingCount.isAcceptableOrUnknown(
+          data['missing_count']!,
+          _missingCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_missingCountMeta);
+    }
+    if (data.containsKey('recording_duration_ms')) {
+      context.handle(
+        _recordingDurationMsMeta,
+        recordingDurationMs.isAcceptableOrUnknown(
+          data['recording_duration_ms']!,
+          _recordingDurationMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recordingDurationMsMeta);
+    }
+    if (data.containsKey('created_at_millis')) {
+      context.handle(
+        _createdAtMillisMeta,
+        createdAtMillis.isAcceptableOrUnknown(
+          data['created_at_millis']!,
+          _createdAtMillisMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMillisMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalCueAttemptEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCueAttemptEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      ownerCacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_cache_key'],
+      )!,
+      mediaItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}media_item_id'],
+      )!,
+      cueId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_id'],
+      )!,
+      transcriptText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transcript_text'],
+      )!,
+      sourceLocaleIdentifier: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_locale_identifier'],
+      )!,
+      audioPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}audio_path'],
+      )!,
+      matchedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}matched_count'],
+      )!,
+      unexpectedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unexpected_count'],
+      )!,
+      missingCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}missing_count'],
+      )!,
+      recordingDurationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recording_duration_ms'],
+      )!,
+      createdAtMillis: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at_millis'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCueAttemptEntriesTable createAlias(String alias) {
+    return $LocalCueAttemptEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCueAttemptEntry extends DataClass
+    implements Insertable<LocalCueAttemptEntry> {
+  final String id;
+  final String ownerCacheKey;
+  final String mediaItemId;
+  final String cueId;
+  final String transcriptText;
+  final String sourceLocaleIdentifier;
+  final String audioPath;
+  final int matchedCount;
+  final int unexpectedCount;
+  final int missingCount;
+  final int recordingDurationMs;
+  final int createdAtMillis;
+  const LocalCueAttemptEntry({
+    required this.id,
+    required this.ownerCacheKey,
+    required this.mediaItemId,
+    required this.cueId,
+    required this.transcriptText,
+    required this.sourceLocaleIdentifier,
+    required this.audioPath,
+    required this.matchedCount,
+    required this.unexpectedCount,
+    required this.missingCount,
+    required this.recordingDurationMs,
+    required this.createdAtMillis,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_cache_key'] = Variable<String>(ownerCacheKey);
+    map['media_item_id'] = Variable<String>(mediaItemId);
+    map['cue_id'] = Variable<String>(cueId);
+    map['transcript_text'] = Variable<String>(transcriptText);
+    map['source_locale_identifier'] = Variable<String>(sourceLocaleIdentifier);
+    map['audio_path'] = Variable<String>(audioPath);
+    map['matched_count'] = Variable<int>(matchedCount);
+    map['unexpected_count'] = Variable<int>(unexpectedCount);
+    map['missing_count'] = Variable<int>(missingCount);
+    map['recording_duration_ms'] = Variable<int>(recordingDurationMs);
+    map['created_at_millis'] = Variable<int>(createdAtMillis);
+    return map;
+  }
+
+  LocalCueAttemptEntriesCompanion toCompanion(bool nullToAbsent) {
+    return LocalCueAttemptEntriesCompanion(
+      id: Value(id),
+      ownerCacheKey: Value(ownerCacheKey),
+      mediaItemId: Value(mediaItemId),
+      cueId: Value(cueId),
+      transcriptText: Value(transcriptText),
+      sourceLocaleIdentifier: Value(sourceLocaleIdentifier),
+      audioPath: Value(audioPath),
+      matchedCount: Value(matchedCount),
+      unexpectedCount: Value(unexpectedCount),
+      missingCount: Value(missingCount),
+      recordingDurationMs: Value(recordingDurationMs),
+      createdAtMillis: Value(createdAtMillis),
+    );
+  }
+
+  factory LocalCueAttemptEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCueAttemptEntry(
+      id: serializer.fromJson<String>(json['id']),
+      ownerCacheKey: serializer.fromJson<String>(json['ownerCacheKey']),
+      mediaItemId: serializer.fromJson<String>(json['mediaItemId']),
+      cueId: serializer.fromJson<String>(json['cueId']),
+      transcriptText: serializer.fromJson<String>(json['transcriptText']),
+      sourceLocaleIdentifier: serializer.fromJson<String>(
+        json['sourceLocaleIdentifier'],
+      ),
+      audioPath: serializer.fromJson<String>(json['audioPath']),
+      matchedCount: serializer.fromJson<int>(json['matchedCount']),
+      unexpectedCount: serializer.fromJson<int>(json['unexpectedCount']),
+      missingCount: serializer.fromJson<int>(json['missingCount']),
+      recordingDurationMs: serializer.fromJson<int>(
+        json['recordingDurationMs'],
+      ),
+      createdAtMillis: serializer.fromJson<int>(json['createdAtMillis']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerCacheKey': serializer.toJson<String>(ownerCacheKey),
+      'mediaItemId': serializer.toJson<String>(mediaItemId),
+      'cueId': serializer.toJson<String>(cueId),
+      'transcriptText': serializer.toJson<String>(transcriptText),
+      'sourceLocaleIdentifier': serializer.toJson<String>(
+        sourceLocaleIdentifier,
+      ),
+      'audioPath': serializer.toJson<String>(audioPath),
+      'matchedCount': serializer.toJson<int>(matchedCount),
+      'unexpectedCount': serializer.toJson<int>(unexpectedCount),
+      'missingCount': serializer.toJson<int>(missingCount),
+      'recordingDurationMs': serializer.toJson<int>(recordingDurationMs),
+      'createdAtMillis': serializer.toJson<int>(createdAtMillis),
+    };
+  }
+
+  LocalCueAttemptEntry copyWith({
+    String? id,
+    String? ownerCacheKey,
+    String? mediaItemId,
+    String? cueId,
+    String? transcriptText,
+    String? sourceLocaleIdentifier,
+    String? audioPath,
+    int? matchedCount,
+    int? unexpectedCount,
+    int? missingCount,
+    int? recordingDurationMs,
+    int? createdAtMillis,
+  }) => LocalCueAttemptEntry(
+    id: id ?? this.id,
+    ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+    mediaItemId: mediaItemId ?? this.mediaItemId,
+    cueId: cueId ?? this.cueId,
+    transcriptText: transcriptText ?? this.transcriptText,
+    sourceLocaleIdentifier:
+        sourceLocaleIdentifier ?? this.sourceLocaleIdentifier,
+    audioPath: audioPath ?? this.audioPath,
+    matchedCount: matchedCount ?? this.matchedCount,
+    unexpectedCount: unexpectedCount ?? this.unexpectedCount,
+    missingCount: missingCount ?? this.missingCount,
+    recordingDurationMs: recordingDurationMs ?? this.recordingDurationMs,
+    createdAtMillis: createdAtMillis ?? this.createdAtMillis,
+  );
+  LocalCueAttemptEntry copyWithCompanion(LocalCueAttemptEntriesCompanion data) {
+    return LocalCueAttemptEntry(
+      id: data.id.present ? data.id.value : this.id,
+      ownerCacheKey: data.ownerCacheKey.present
+          ? data.ownerCacheKey.value
+          : this.ownerCacheKey,
+      mediaItemId: data.mediaItemId.present
+          ? data.mediaItemId.value
+          : this.mediaItemId,
+      cueId: data.cueId.present ? data.cueId.value : this.cueId,
+      transcriptText: data.transcriptText.present
+          ? data.transcriptText.value
+          : this.transcriptText,
+      sourceLocaleIdentifier: data.sourceLocaleIdentifier.present
+          ? data.sourceLocaleIdentifier.value
+          : this.sourceLocaleIdentifier,
+      audioPath: data.audioPath.present ? data.audioPath.value : this.audioPath,
+      matchedCount: data.matchedCount.present
+          ? data.matchedCount.value
+          : this.matchedCount,
+      unexpectedCount: data.unexpectedCount.present
+          ? data.unexpectedCount.value
+          : this.unexpectedCount,
+      missingCount: data.missingCount.present
+          ? data.missingCount.value
+          : this.missingCount,
+      recordingDurationMs: data.recordingDurationMs.present
+          ? data.recordingDurationMs.value
+          : this.recordingDurationMs,
+      createdAtMillis: data.createdAtMillis.present
+          ? data.createdAtMillis.value
+          : this.createdAtMillis,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCueAttemptEntry(')
+          ..write('id: $id, ')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('mediaItemId: $mediaItemId, ')
+          ..write('cueId: $cueId, ')
+          ..write('transcriptText: $transcriptText, ')
+          ..write('sourceLocaleIdentifier: $sourceLocaleIdentifier, ')
+          ..write('audioPath: $audioPath, ')
+          ..write('matchedCount: $matchedCount, ')
+          ..write('unexpectedCount: $unexpectedCount, ')
+          ..write('missingCount: $missingCount, ')
+          ..write('recordingDurationMs: $recordingDurationMs, ')
+          ..write('createdAtMillis: $createdAtMillis')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    ownerCacheKey,
+    mediaItemId,
+    cueId,
+    transcriptText,
+    sourceLocaleIdentifier,
+    audioPath,
+    matchedCount,
+    unexpectedCount,
+    missingCount,
+    recordingDurationMs,
+    createdAtMillis,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCueAttemptEntry &&
+          other.id == this.id &&
+          other.ownerCacheKey == this.ownerCacheKey &&
+          other.mediaItemId == this.mediaItemId &&
+          other.cueId == this.cueId &&
+          other.transcriptText == this.transcriptText &&
+          other.sourceLocaleIdentifier == this.sourceLocaleIdentifier &&
+          other.audioPath == this.audioPath &&
+          other.matchedCount == this.matchedCount &&
+          other.unexpectedCount == this.unexpectedCount &&
+          other.missingCount == this.missingCount &&
+          other.recordingDurationMs == this.recordingDurationMs &&
+          other.createdAtMillis == this.createdAtMillis);
+}
+
+class LocalCueAttemptEntriesCompanion
+    extends UpdateCompanion<LocalCueAttemptEntry> {
+  final Value<String> id;
+  final Value<String> ownerCacheKey;
+  final Value<String> mediaItemId;
+  final Value<String> cueId;
+  final Value<String> transcriptText;
+  final Value<String> sourceLocaleIdentifier;
+  final Value<String> audioPath;
+  final Value<int> matchedCount;
+  final Value<int> unexpectedCount;
+  final Value<int> missingCount;
+  final Value<int> recordingDurationMs;
+  final Value<int> createdAtMillis;
+  final Value<int> rowid;
+  const LocalCueAttemptEntriesCompanion({
+    this.id = const Value.absent(),
+    this.ownerCacheKey = const Value.absent(),
+    this.mediaItemId = const Value.absent(),
+    this.cueId = const Value.absent(),
+    this.transcriptText = const Value.absent(),
+    this.sourceLocaleIdentifier = const Value.absent(),
+    this.audioPath = const Value.absent(),
+    this.matchedCount = const Value.absent(),
+    this.unexpectedCount = const Value.absent(),
+    this.missingCount = const Value.absent(),
+    this.recordingDurationMs = const Value.absent(),
+    this.createdAtMillis = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCueAttemptEntriesCompanion.insert({
+    required String id,
+    required String ownerCacheKey,
+    required String mediaItemId,
+    required String cueId,
+    required String transcriptText,
+    required String sourceLocaleIdentifier,
+    required String audioPath,
+    required int matchedCount,
+    required int unexpectedCount,
+    required int missingCount,
+    required int recordingDurationMs,
+    required int createdAtMillis,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       ownerCacheKey = Value(ownerCacheKey),
+       mediaItemId = Value(mediaItemId),
+       cueId = Value(cueId),
+       transcriptText = Value(transcriptText),
+       sourceLocaleIdentifier = Value(sourceLocaleIdentifier),
+       audioPath = Value(audioPath),
+       matchedCount = Value(matchedCount),
+       unexpectedCount = Value(unexpectedCount),
+       missingCount = Value(missingCount),
+       recordingDurationMs = Value(recordingDurationMs),
+       createdAtMillis = Value(createdAtMillis);
+  static Insertable<LocalCueAttemptEntry> custom({
+    Expression<String>? id,
+    Expression<String>? ownerCacheKey,
+    Expression<String>? mediaItemId,
+    Expression<String>? cueId,
+    Expression<String>? transcriptText,
+    Expression<String>? sourceLocaleIdentifier,
+    Expression<String>? audioPath,
+    Expression<int>? matchedCount,
+    Expression<int>? unexpectedCount,
+    Expression<int>? missingCount,
+    Expression<int>? recordingDurationMs,
+    Expression<int>? createdAtMillis,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerCacheKey != null) 'owner_cache_key': ownerCacheKey,
+      if (mediaItemId != null) 'media_item_id': mediaItemId,
+      if (cueId != null) 'cue_id': cueId,
+      if (transcriptText != null) 'transcript_text': transcriptText,
+      if (sourceLocaleIdentifier != null)
+        'source_locale_identifier': sourceLocaleIdentifier,
+      if (audioPath != null) 'audio_path': audioPath,
+      if (matchedCount != null) 'matched_count': matchedCount,
+      if (unexpectedCount != null) 'unexpected_count': unexpectedCount,
+      if (missingCount != null) 'missing_count': missingCount,
+      if (recordingDurationMs != null)
+        'recording_duration_ms': recordingDurationMs,
+      if (createdAtMillis != null) 'created_at_millis': createdAtMillis,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCueAttemptEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? ownerCacheKey,
+    Value<String>? mediaItemId,
+    Value<String>? cueId,
+    Value<String>? transcriptText,
+    Value<String>? sourceLocaleIdentifier,
+    Value<String>? audioPath,
+    Value<int>? matchedCount,
+    Value<int>? unexpectedCount,
+    Value<int>? missingCount,
+    Value<int>? recordingDurationMs,
+    Value<int>? createdAtMillis,
+    Value<int>? rowid,
+  }) {
+    return LocalCueAttemptEntriesCompanion(
+      id: id ?? this.id,
+      ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+      mediaItemId: mediaItemId ?? this.mediaItemId,
+      cueId: cueId ?? this.cueId,
+      transcriptText: transcriptText ?? this.transcriptText,
+      sourceLocaleIdentifier:
+          sourceLocaleIdentifier ?? this.sourceLocaleIdentifier,
+      audioPath: audioPath ?? this.audioPath,
+      matchedCount: matchedCount ?? this.matchedCount,
+      unexpectedCount: unexpectedCount ?? this.unexpectedCount,
+      missingCount: missingCount ?? this.missingCount,
+      recordingDurationMs: recordingDurationMs ?? this.recordingDurationMs,
+      createdAtMillis: createdAtMillis ?? this.createdAtMillis,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerCacheKey.present) {
+      map['owner_cache_key'] = Variable<String>(ownerCacheKey.value);
+    }
+    if (mediaItemId.present) {
+      map['media_item_id'] = Variable<String>(mediaItemId.value);
+    }
+    if (cueId.present) {
+      map['cue_id'] = Variable<String>(cueId.value);
+    }
+    if (transcriptText.present) {
+      map['transcript_text'] = Variable<String>(transcriptText.value);
+    }
+    if (sourceLocaleIdentifier.present) {
+      map['source_locale_identifier'] = Variable<String>(
+        sourceLocaleIdentifier.value,
+      );
+    }
+    if (audioPath.present) {
+      map['audio_path'] = Variable<String>(audioPath.value);
+    }
+    if (matchedCount.present) {
+      map['matched_count'] = Variable<int>(matchedCount.value);
+    }
+    if (unexpectedCount.present) {
+      map['unexpected_count'] = Variable<int>(unexpectedCount.value);
+    }
+    if (missingCount.present) {
+      map['missing_count'] = Variable<int>(missingCount.value);
+    }
+    if (recordingDurationMs.present) {
+      map['recording_duration_ms'] = Variable<int>(recordingDurationMs.value);
+    }
+    if (createdAtMillis.present) {
+      map['created_at_millis'] = Variable<int>(createdAtMillis.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCueAttemptEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('mediaItemId: $mediaItemId, ')
+          ..write('cueId: $cueId, ')
+          ..write('transcriptText: $transcriptText, ')
+          ..write('sourceLocaleIdentifier: $sourceLocaleIdentifier, ')
+          ..write('audioPath: $audioPath, ')
+          ..write('matchedCount: $matchedCount, ')
+          ..write('unexpectedCount: $unexpectedCount, ')
+          ..write('missingCount: $missingCount, ')
+          ..write('recordingDurationMs: $recordingDurationMs, ')
+          ..write('createdAtMillis: $createdAtMillis, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
   _$LocalPracticeDatabase(QueryExecutor e) : super(e);
   $LocalPracticeDatabaseManager get managers =>
@@ -1456,6 +2216,8 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
       $LocalPracticeEntriesTable(this);
   late final $LocalPracticeCueEntriesTable localPracticeCueEntries =
       $LocalPracticeCueEntriesTable(this);
+  late final $LocalCueAttemptEntriesTable localCueAttemptEntries =
+      $LocalCueAttemptEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1463,6 +2225,7 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     localPracticeEntries,
     localPracticeCueEntries,
+    localCueAttemptEntries,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2434,6 +3197,376 @@ typedef $$LocalPracticeCueEntriesTableProcessedTableManager =
       LocalPracticeCueEntry,
       PrefetchHooks Function({bool itemId})
     >;
+typedef $$LocalCueAttemptEntriesTableCreateCompanionBuilder =
+    LocalCueAttemptEntriesCompanion Function({
+      required String id,
+      required String ownerCacheKey,
+      required String mediaItemId,
+      required String cueId,
+      required String transcriptText,
+      required String sourceLocaleIdentifier,
+      required String audioPath,
+      required int matchedCount,
+      required int unexpectedCount,
+      required int missingCount,
+      required int recordingDurationMs,
+      required int createdAtMillis,
+      Value<int> rowid,
+    });
+typedef $$LocalCueAttemptEntriesTableUpdateCompanionBuilder =
+    LocalCueAttemptEntriesCompanion Function({
+      Value<String> id,
+      Value<String> ownerCacheKey,
+      Value<String> mediaItemId,
+      Value<String> cueId,
+      Value<String> transcriptText,
+      Value<String> sourceLocaleIdentifier,
+      Value<String> audioPath,
+      Value<int> matchedCount,
+      Value<int> unexpectedCount,
+      Value<int> missingCount,
+      Value<int> recordingDurationMs,
+      Value<int> createdAtMillis,
+      Value<int> rowid,
+    });
+
+class $$LocalCueAttemptEntriesTableFilterComposer
+    extends Composer<_$LocalPracticeDatabase, $LocalCueAttemptEntriesTable> {
+  $$LocalCueAttemptEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transcriptText => $composableBuilder(
+    column: $table.transcriptText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceLocaleIdentifier => $composableBuilder(
+    column: $table.sourceLocaleIdentifier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get audioPath => $composableBuilder(
+    column: $table.audioPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get matchedCount => $composableBuilder(
+    column: $table.matchedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unexpectedCount => $composableBuilder(
+    column: $table.unexpectedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get missingCount => $composableBuilder(
+    column: $table.missingCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recordingDurationMs => $composableBuilder(
+    column: $table.recordingDurationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAtMillis => $composableBuilder(
+    column: $table.createdAtMillis,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCueAttemptEntriesTableOrderingComposer
+    extends Composer<_$LocalPracticeDatabase, $LocalCueAttemptEntriesTable> {
+  $$LocalCueAttemptEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transcriptText => $composableBuilder(
+    column: $table.transcriptText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceLocaleIdentifier => $composableBuilder(
+    column: $table.sourceLocaleIdentifier,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get audioPath => $composableBuilder(
+    column: $table.audioPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get matchedCount => $composableBuilder(
+    column: $table.matchedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unexpectedCount => $composableBuilder(
+    column: $table.unexpectedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get missingCount => $composableBuilder(
+    column: $table.missingCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recordingDurationMs => $composableBuilder(
+    column: $table.recordingDurationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAtMillis => $composableBuilder(
+    column: $table.createdAtMillis,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCueAttemptEntriesTableAnnotationComposer
+    extends Composer<_$LocalPracticeDatabase, $LocalCueAttemptEntriesTable> {
+  $$LocalCueAttemptEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cueId =>
+      $composableBuilder(column: $table.cueId, builder: (column) => column);
+
+  GeneratedColumn<String> get transcriptText => $composableBuilder(
+    column: $table.transcriptText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceLocaleIdentifier => $composableBuilder(
+    column: $table.sourceLocaleIdentifier,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get audioPath =>
+      $composableBuilder(column: $table.audioPath, builder: (column) => column);
+
+  GeneratedColumn<int> get matchedCount => $composableBuilder(
+    column: $table.matchedCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unexpectedCount => $composableBuilder(
+    column: $table.unexpectedCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get missingCount => $composableBuilder(
+    column: $table.missingCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recordingDurationMs => $composableBuilder(
+    column: $table.recordingDurationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAtMillis => $composableBuilder(
+    column: $table.createdAtMillis,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalCueAttemptEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$LocalPracticeDatabase,
+          $LocalCueAttemptEntriesTable,
+          LocalCueAttemptEntry,
+          $$LocalCueAttemptEntriesTableFilterComposer,
+          $$LocalCueAttemptEntriesTableOrderingComposer,
+          $$LocalCueAttemptEntriesTableAnnotationComposer,
+          $$LocalCueAttemptEntriesTableCreateCompanionBuilder,
+          $$LocalCueAttemptEntriesTableUpdateCompanionBuilder,
+          (
+            LocalCueAttemptEntry,
+            BaseReferences<
+              _$LocalPracticeDatabase,
+              $LocalCueAttemptEntriesTable,
+              LocalCueAttemptEntry
+            >,
+          ),
+          LocalCueAttemptEntry,
+          PrefetchHooks Function()
+        > {
+  $$LocalCueAttemptEntriesTableTableManager(
+    _$LocalPracticeDatabase db,
+    $LocalCueAttemptEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCueAttemptEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalCueAttemptEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalCueAttemptEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> ownerCacheKey = const Value.absent(),
+                Value<String> mediaItemId = const Value.absent(),
+                Value<String> cueId = const Value.absent(),
+                Value<String> transcriptText = const Value.absent(),
+                Value<String> sourceLocaleIdentifier = const Value.absent(),
+                Value<String> audioPath = const Value.absent(),
+                Value<int> matchedCount = const Value.absent(),
+                Value<int> unexpectedCount = const Value.absent(),
+                Value<int> missingCount = const Value.absent(),
+                Value<int> recordingDurationMs = const Value.absent(),
+                Value<int> createdAtMillis = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCueAttemptEntriesCompanion(
+                id: id,
+                ownerCacheKey: ownerCacheKey,
+                mediaItemId: mediaItemId,
+                cueId: cueId,
+                transcriptText: transcriptText,
+                sourceLocaleIdentifier: sourceLocaleIdentifier,
+                audioPath: audioPath,
+                matchedCount: matchedCount,
+                unexpectedCount: unexpectedCount,
+                missingCount: missingCount,
+                recordingDurationMs: recordingDurationMs,
+                createdAtMillis: createdAtMillis,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String ownerCacheKey,
+                required String mediaItemId,
+                required String cueId,
+                required String transcriptText,
+                required String sourceLocaleIdentifier,
+                required String audioPath,
+                required int matchedCount,
+                required int unexpectedCount,
+                required int missingCount,
+                required int recordingDurationMs,
+                required int createdAtMillis,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCueAttemptEntriesCompanion.insert(
+                id: id,
+                ownerCacheKey: ownerCacheKey,
+                mediaItemId: mediaItemId,
+                cueId: cueId,
+                transcriptText: transcriptText,
+                sourceLocaleIdentifier: sourceLocaleIdentifier,
+                audioPath: audioPath,
+                matchedCount: matchedCount,
+                unexpectedCount: unexpectedCount,
+                missingCount: missingCount,
+                recordingDurationMs: recordingDurationMs,
+                createdAtMillis: createdAtMillis,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCueAttemptEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalPracticeDatabase,
+      $LocalCueAttemptEntriesTable,
+      LocalCueAttemptEntry,
+      $$LocalCueAttemptEntriesTableFilterComposer,
+      $$LocalCueAttemptEntriesTableOrderingComposer,
+      $$LocalCueAttemptEntriesTableAnnotationComposer,
+      $$LocalCueAttemptEntriesTableCreateCompanionBuilder,
+      $$LocalCueAttemptEntriesTableUpdateCompanionBuilder,
+      (
+        LocalCueAttemptEntry,
+        BaseReferences<
+          _$LocalPracticeDatabase,
+          $LocalCueAttemptEntriesTable,
+          LocalCueAttemptEntry
+        >,
+      ),
+      LocalCueAttemptEntry,
+      PrefetchHooks Function()
+    >;
 
 class $LocalPracticeDatabaseManager {
   final _$LocalPracticeDatabase _db;
@@ -2444,5 +3577,10 @@ class $LocalPracticeDatabaseManager {
       $$LocalPracticeCueEntriesTableTableManager(
         _db,
         _db.localPracticeCueEntries,
+      );
+  $$LocalCueAttemptEntriesTableTableManager get localCueAttemptEntries =>
+      $$LocalCueAttemptEntriesTableTableManager(
+        _db,
+        _db.localCueAttemptEntries,
       );
 }

@@ -120,6 +120,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => RecordCompareSheet(
+        mediaItemId: widget.mediaItem.id,
         cue: widget.mediaItem.cues[_currentCueIndex],
         sourceLocaleIdentifier: _sourceLocaleIdentifier,
       ),

@@ -24,6 +24,8 @@ class LocalPracticeRepository extends ChangeNotifier {
   final LocalPracticeDatabase _database = LocalPracticeDatabase.instance;
   static const String _managedVideoMarker =
       '/Library/Application Support/local_practice_videos/';
+  static const String _managedAttemptMarker =
+      '/Library/Application Support/compare_attempts/';
 
   List<LocalPracticeVideoSummary> _videos = const [];
   bool _isLoading = false;
@@ -248,6 +250,11 @@ class LocalPracticeRepository extends ChangeNotifier {
           ))
         .go();
 
+    await _deleteCueAttemptsForMediaItem(
+      ownerCacheKey: ownerCacheKey,
+      mediaItemId: id,
+    );
+
     final file = File(await _resolveVideoPath(entry.localVideoPath));
     if (await file.exists()) {
       await file.delete();
@@ -345,6 +352,78 @@ class LocalPracticeRepository extends ChangeNotifier {
     }
   }
 
+  Future<LocalCuePracticeAttempt> saveCueAttempt({
+    required String mediaItemId,
+    required String cueId,
+    required String transcriptText,
+    required String sourceLocaleIdentifier,
+    required String audioPath,
+    required int matchedCount,
+    required int unexpectedCount,
+    required int missingCount,
+    required int recordingDurationMs,
+  }) async {
+    final ownerCacheKey = _currentOwnerCacheKey ?? 'local-device-user';
+    final attemptId = 'attempt-${DateTime.now().microsecondsSinceEpoch}';
+    final persistedAudio = await _persistAttemptAudio(
+      id: attemptId,
+      sourcePath: audioPath,
+    );
+    final createdAtMillis = DateTime.now().millisecondsSinceEpoch;
+
+    await _database
+        .into(_database.localCueAttemptEntries)
+        .insertOnConflictUpdate(
+          LocalCueAttemptEntriesCompanion.insert(
+            id: attemptId,
+            ownerCacheKey: ownerCacheKey,
+            mediaItemId: mediaItemId,
+            cueId: cueId,
+            transcriptText: transcriptText.trim(),
+            sourceLocaleIdentifier: sourceLocaleIdentifier.trim(),
+            audioPath: await _storedAttemptReferenceFor(persistedAudio),
+            matchedCount: matchedCount,
+            unexpectedCount: unexpectedCount,
+            missingCount: missingCount,
+            recordingDurationMs: recordingDurationMs,
+            createdAtMillis: createdAtMillis,
+          ),
+        );
+
+    final savedAttempts = await _loadCueAttempts(
+      ownerCacheKey,
+      mediaItemId: mediaItemId,
+      cueId: cueId,
+    );
+    final saved = savedAttempts.cast<LocalCuePracticeAttempt?>().firstWhere(
+      (attempt) => attempt?.id == attemptId,
+      orElse: () => null,
+    );
+    if (saved == null) {
+      throw const LocalPracticeRepositoryException(
+        'Bantera could not save this attempt on your iPhone.',
+      );
+    }
+
+    return saved;
+  }
+
+  Future<List<LocalCuePracticeAttempt>> fetchCueAttempts({
+    required String mediaItemId,
+    required String cueId,
+  }) async {
+    final ownerCacheKey = _currentOwnerCacheKey;
+    if (ownerCacheKey == null) {
+      return const [];
+    }
+
+    return _loadCueAttempts(
+      ownerCacheKey,
+      mediaItemId: mediaItemId,
+      cueId: cueId,
+    );
+  }
+
   Future<List<LocalPracticeVideoSummary>> _loadSummaries(
     String ownerCacheKey,
   ) async {
@@ -358,6 +437,44 @@ class LocalPracticeRepository extends ChangeNotifier {
       normalized.add(await _mapSummary(await _normalizeEntryPath(entry)));
     }
     return normalized;
+  }
+
+  Future<List<LocalCuePracticeAttempt>> _loadCueAttempts(
+    String ownerCacheKey, {
+    required String mediaItemId,
+    required String cueId,
+  }) async {
+    final entries = await (_database.select(_database.localCueAttemptEntries)
+          ..where(
+            (table) =>
+                table.ownerCacheKey.equals(ownerCacheKey) &
+                table.mediaItemId.equals(mediaItemId) &
+                table.cueId.equals(cueId),
+          )
+          ..orderBy([
+            (table) => drift.OrderingTerm.desc(table.createdAtMillis),
+          ]))
+        .get();
+
+    final attempts = <LocalCuePracticeAttempt>[];
+    final missingIds = <String>[];
+    for (final entry in entries) {
+      final normalizedEntry = await _normalizeCueAttemptPath(entry);
+      final resolvedAudioPath = await _resolveAttemptPath(normalizedEntry.audioPath);
+      if (!await File(resolvedAudioPath).exists()) {
+        missingIds.add(entry.id);
+        continue;
+      }
+      attempts.add(_mapCueAttempt(normalizedEntry, resolvedAudioPath));
+    }
+
+    if (missingIds.isNotEmpty) {
+      await (_database.delete(_database.localCueAttemptEntries)
+            ..where((table) => table.id.isIn(missingIds)))
+          .go();
+    }
+
+    return attempts;
   }
 
   Future<LocalPracticeVideoSummary> _mapSummary(LocalPracticeEntry entry) async {
@@ -416,6 +533,25 @@ class LocalPracticeRepository extends ChangeNotifier {
     );
   }
 
+  LocalCuePracticeAttempt _mapCueAttempt(
+    LocalCueAttemptEntry entry,
+    String resolvedAudioPath,
+  ) {
+    return LocalCuePracticeAttempt(
+      id: entry.id,
+      mediaItemId: entry.mediaItemId,
+      cueId: entry.cueId,
+      transcriptText: entry.transcriptText,
+      sourceLocaleIdentifier: entry.sourceLocaleIdentifier,
+      audioPath: resolvedAudioPath,
+      matchedCount: entry.matchedCount,
+      unexpectedCount: entry.unexpectedCount,
+      missingCount: entry.missingCount,
+      recordingDurationMs: entry.recordingDurationMs,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(entry.createdAtMillis),
+    );
+  }
+
   Future<File> _persistPreparedVideo({
     required String id,
     required PreparedVideoUpload prepared,
@@ -439,7 +575,53 @@ class LocalPracticeRepository extends ChangeNotifier {
     return copied;
   }
 
+  Future<File> _persistAttemptAudio({
+    required String id,
+    required String sourcePath,
+  }) async {
+    final sourceFile = File(sourcePath);
+    if (!await sourceFile.exists()) {
+      throw const LocalPracticeRepositoryException(
+        'Bantera could not access the recorded attempt audio.',
+      );
+    }
+
+    final directory = await _attemptAudioDirectory;
+    await directory.create(recursive: true);
+
+    final extension = p.extension(sourceFile.path).trim();
+    final destination = File(
+      p.join(directory.path, '$id${extension.isEmpty ? '.wav' : extension}'),
+    );
+
+    if (p.normalize(sourceFile.path) == p.normalize(destination.path)) {
+      return sourceFile;
+    }
+
+    final copied = await sourceFile.copy(destination.path);
+    try {
+      await sourceFile.delete();
+    } catch (_) {
+      // Leave temporary recorder files alone if iOS is still holding them.
+    }
+
+    return copied;
+  }
+
   Future<String> _storedVideoReferenceFor(File file) async {
+    final resolvedPath = file.absolute.path;
+    final supportDirectory = await getApplicationSupportDirectory();
+    final supportPath = p.normalize(supportDirectory.path);
+    final normalizedPath = p.normalize(resolvedPath);
+
+    if (p.isWithin(supportPath, normalizedPath)) {
+      return p.relative(normalizedPath, from: supportPath);
+    }
+
+    return normalizedPath;
+  }
+
+  Future<String> _storedAttemptReferenceFor(File file) async {
     final resolvedPath = file.absolute.path;
     final supportDirectory = await getApplicationSupportDirectory();
     final supportPath = p.normalize(supportDirectory.path);
@@ -476,6 +658,30 @@ class LocalPracticeRepository extends ChangeNotifier {
     return normalizedReference;
   }
 
+  Future<String> _resolveAttemptPath(String storedReference) async {
+    final normalizedReference = p.normalize(storedReference.trim());
+    if (normalizedReference.isEmpty) {
+      return normalizedReference;
+    }
+
+    if (!p.isAbsolute(normalizedReference)) {
+      final supportDirectory = await getApplicationSupportDirectory();
+      return p.normalize(p.join(supportDirectory.path, normalizedReference));
+    }
+
+    final existingAbsolute = File(normalizedReference);
+    if (await existingAbsolute.exists()) {
+      return existingAbsolute.path;
+    }
+
+    final remapped = await _remapManagedAttemptAbsolutePath(normalizedReference);
+    if (remapped != null) {
+      return remapped;
+    }
+
+    return normalizedReference;
+  }
+
   Future<String?> _remapManagedAbsolutePath(String absolutePath) async {
     final normalizedAbsolute = p.normalize(absolutePath);
     final markerIndex = normalizedAbsolute.indexOf(_managedVideoMarker);
@@ -487,6 +693,27 @@ class LocalPracticeRepository extends ChangeNotifier {
       markerIndex + _managedVideoMarker.length,
     );
     final directory = await _localVideoDirectory;
+    final candidate = File(
+      p.normalize(p.join(directory.path, relativeSuffix)),
+    );
+    if (await candidate.exists()) {
+      return candidate.path;
+    }
+
+    return null;
+  }
+
+  Future<String?> _remapManagedAttemptAbsolutePath(String absolutePath) async {
+    final normalizedAbsolute = p.normalize(absolutePath);
+    final markerIndex = normalizedAbsolute.indexOf(_managedAttemptMarker);
+    if (markerIndex < 0) {
+      return null;
+    }
+
+    final relativeSuffix = normalizedAbsolute.substring(
+      markerIndex + _managedAttemptMarker.length,
+    );
+    final directory = await _attemptAudioDirectory;
     final candidate = File(
       p.normalize(p.join(directory.path, relativeSuffix)),
     );
@@ -521,6 +748,32 @@ class LocalPracticeRepository extends ChangeNotifier {
     return entry.copyWith(localVideoPath: preferredStoredReference);
   }
 
+  Future<LocalCueAttemptEntry> _normalizeCueAttemptPath(
+    LocalCueAttemptEntry entry,
+  ) async {
+    final resolvedPath = await _resolveAttemptPath(entry.audioPath);
+    final preferredStoredReference = await _storedReferenceForResolvedPath(
+      resolvedPath,
+    );
+
+    final normalizedStoredPath = p.normalize(entry.audioPath.trim());
+    final normalizedPreferred = p.normalize(preferredStoredReference);
+
+    if (normalizedStoredPath == normalizedPreferred) {
+      return entry.copyWith(audioPath: normalizedPreferred);
+    }
+
+    await (_database.update(_database.localCueAttemptEntries)
+          ..where((table) => table.id.equals(entry.id)))
+        .write(
+          LocalCueAttemptEntriesCompanion(
+            audioPath: drift.Value(preferredStoredReference),
+          ),
+        );
+
+    return entry.copyWith(audioPath: preferredStoredReference);
+  }
+
   Future<String> _storedReferenceForResolvedPath(String resolvedPath) async {
     final normalizedResolved = p.normalize(resolvedPath);
     if (!p.isAbsolute(normalizedResolved)) {
@@ -539,6 +792,11 @@ class LocalPracticeRepository extends ChangeNotifier {
   Future<Directory> get _localVideoDirectory async {
     final supportDirectory = await getApplicationSupportDirectory();
     return Directory(p.join(supportDirectory.path, 'local_practice_videos'));
+  }
+
+  Future<Directory> get _attemptAudioDirectory async {
+    final supportDirectory = await getApplicationSupportDirectory();
+    return Directory(p.join(supportDirectory.path, 'compare_attempts'));
   }
 
   String? get _currentOwnerCacheKey {
@@ -585,5 +843,33 @@ class LocalPracticeRepository extends ChangeNotifier {
       return null;
     }
     return normalized;
+  }
+
+  Future<void> _deleteCueAttemptsForMediaItem({
+    required String ownerCacheKey,
+    required String mediaItemId,
+  }) async {
+    final entries = await (_database.select(_database.localCueAttemptEntries)
+          ..where(
+            (table) =>
+                table.ownerCacheKey.equals(ownerCacheKey) &
+                table.mediaItemId.equals(mediaItemId),
+          ))
+        .get();
+
+    await (_database.delete(_database.localCueAttemptEntries)
+          ..where(
+            (table) =>
+                table.ownerCacheKey.equals(ownerCacheKey) &
+                table.mediaItemId.equals(mediaItemId),
+          ))
+        .go();
+
+    for (final entry in entries) {
+      final file = File(await _resolveAttemptPath(entry.audioPath));
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
   }
 }

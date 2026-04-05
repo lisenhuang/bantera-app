@@ -10,15 +10,18 @@ import 'package:record/record.dart';
 
 import '../../core/theme.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/video_processing_service.dart';
 
 class RecordCompareSheet extends StatefulWidget {
   const RecordCompareSheet({
     super.key,
+    required this.mediaItemId,
     required this.cue,
     required this.sourceLocaleIdentifier,
   });
 
+  final String mediaItemId;
   final Cue cue;
   final String sourceLocaleIdentifier;
 
@@ -29,16 +32,22 @@ class RecordCompareSheet extends StatefulWidget {
 class _RecordCompareSheetState extends State<RecordCompareSheet> {
   late final AudioRecorder _audioRecorder;
   late final AudioPlayer _audioPlayer;
+  final LocalPracticeRepository _localPracticeRepository =
+      LocalPracticeRepository.instance;
 
   String? _recordingPath;
+  String? _temporaryRecordingPath;
   bool _isRecording = false;
   bool _isProcessing = false;
   bool _isPlayingAttempt = false;
+  bool _isLoadingHistory = true;
   Duration _recordingDuration = Duration.zero;
   Timer? _recordingTimer;
   String? _errorMessage;
   bool _showsOpenSettingsAction = false;
   _AttemptComparisonResult? _result;
+  LocalCuePracticeAttempt? _selectedAttempt;
+  List<LocalCuePracticeAttempt> _attemptHistory = const [];
 
   @override
   void initState() {
@@ -54,6 +63,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
         _isPlayingAttempt = state == PlayerState.playing;
       });
     });
+    unawaited(_loadAttemptHistory());
   }
 
   @override
@@ -61,7 +71,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     _recordingTimer?.cancel();
     _audioRecorder.dispose();
     _audioPlayer.dispose();
-    final path = _recordingPath;
+    final path = _temporaryRecordingPath;
     if (path != null && path.isNotEmpty) {
       unawaited(_deleteFileIfExists(path));
     }
@@ -282,6 +292,12 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                   ],
                 ),
               ],
+              if (_isLoadingHistory || _attemptHistory.isNotEmpty) ...[
+                const SizedBox(height: 28),
+                const Divider(),
+                const SizedBox(height: 18),
+                _buildAttemptHistorySection(context),
+              ],
             ],
           ),
         ),
@@ -296,10 +312,60 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     if (_isRecording) {
       return 'Recording... Tap again to stop.';
     }
+    if (_selectedAttempt != null) {
+      return 'Showing a saved attempt for this cue. You can replay it or try again.';
+    }
     if (_result != null) {
       return 'You can replay this attempt or try the cue again.';
     }
     return 'Tap to start recording your version of this cue.';
+  }
+
+  Future<void> _loadAttemptHistory() async {
+    try {
+      final attempts = await _localPracticeRepository.fetchCueAttempts(
+        mediaItemId: widget.mediaItemId,
+        cueId: widget.cue.id,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _attemptHistory = attempts;
+        _isLoadingHistory = false;
+      });
+
+      if (attempts.isNotEmpty) {
+        _selectAttempt(attempts.first);
+      }
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isLoadingHistory = false;
+      });
+    }
+  }
+
+  void _selectAttempt(LocalCuePracticeAttempt attempt) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _selectedAttempt = attempt;
+      _recordingPath = attempt.audioPath;
+      _temporaryRecordingPath = null;
+      _recordingDuration = Duration(milliseconds: attempt.recordingDurationMs);
+      _result = _buildComparisonResult(
+        expectedText: widget.cue.originalText,
+        actualText: attempt.transcriptText,
+      );
+      _errorMessage = null;
+      _showsOpenSettingsAction = false;
+    });
   }
 
   Future<void> _handlePrimaryTap() async {
@@ -316,6 +382,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       _errorMessage = null;
       _showsOpenSettingsAction = false;
       _result = null;
+      _selectedAttempt = null;
       _recordingDuration = Duration.zero;
     });
 
@@ -354,6 +421,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       });
       setState(() {
         _recordingPath = path;
+        _temporaryRecordingPath = path;
         _isRecording = true;
       });
     } catch (_) {
@@ -403,12 +471,42 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
         return;
       }
 
-      setState(() {
-        _recordingPath = resolvedPath;
-        _result = _buildComparisonResult(
-          expectedText: widget.cue.originalText,
-          actualText: recognizedText,
+      final comparison = _buildComparisonResult(
+        expectedText: widget.cue.originalText,
+        actualText: recognizedText,
+      );
+
+      LocalCuePracticeAttempt? savedAttempt;
+      String? saveFailureMessage;
+      try {
+        savedAttempt = await _localPracticeRepository.saveCueAttempt(
+          mediaItemId: widget.mediaItemId,
+          cueId: widget.cue.id,
+          transcriptText: recognizedText,
+          sourceLocaleIdentifier: widget.sourceLocaleIdentifier,
+          audioPath: resolvedPath,
+          matchedCount: comparison.matchedCount,
+          unexpectedCount: comparison.unexpectedCount,
+          missingCount: comparison.missingCount,
+          recordingDurationMs: _recordingDuration.inMilliseconds,
         );
+      } on LocalPracticeRepositoryException catch (error) {
+        saveFailureMessage = error.message;
+      }
+
+      setState(() {
+        _recordingPath = savedAttempt?.audioPath ?? resolvedPath;
+        _temporaryRecordingPath = savedAttempt == null ? resolvedPath : null;
+        _selectedAttempt = savedAttempt;
+        _result = comparison;
+        _errorMessage = saveFailureMessage;
+        _showsOpenSettingsAction = false;
+        if (savedAttempt != null) {
+          _attemptHistory = [
+            savedAttempt,
+            ..._attemptHistory.where((attempt) => attempt.id != savedAttempt!.id),
+          ];
+        }
       });
     } on VideoProcessingException catch (error) {
       if (!mounted) {
@@ -454,7 +552,9 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       _errorMessage = null;
       _showsOpenSettingsAction = false;
       _result = null;
+      _selectedAttempt = null;
       _recordingPath = null;
+      _temporaryRecordingPath = null;
     });
   }
 
@@ -527,6 +627,144 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
           ),
       ],
     );
+  }
+
+  Widget _buildAttemptHistorySection(BuildContext context) {
+    final theme = Theme.of(context);
+    if (_isLoadingHistory && _attemptHistory.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Recent attempts', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          const Center(child: CircularProgressIndicator()),
+        ],
+      );
+    }
+
+    if (_attemptHistory.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Recent attempts', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Text(
+          'Bantera keeps your attempts on this iPhone so you can review progress on the same cue.',
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 16),
+        ..._attemptHistory.map((attempt) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildAttemptHistoryCard(context, attempt),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildAttemptHistoryCard(
+    BuildContext context,
+    LocalCuePracticeAttempt attempt,
+  ) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedAttempt?.id == attempt.id;
+
+    return Material(
+      color: isSelected
+          ? BanteraTheme.primaryColor.withValues(alpha: 0.08)
+          : BanteraTheme.backgroundLight,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          _selectAttempt(attempt);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _formatAttemptTimestamp(attempt.createdAt),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? BanteraTheme.primaryColor
+                            : theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Icon(
+                        CupertinoIcons.check_mark_circled_solid,
+                        color: BanteraTheme.primaryColor,
+                        size: 18,
+                      ),
+                    ),
+                  IconButton(
+                    onPressed: () {
+                      unawaited(_playSavedAttempt(attempt));
+                    },
+                    icon: Icon(
+                      _isPlayingAttempt && isSelected
+                          ? CupertinoIcons.pause_fill
+                          : CupertinoIcons.play_fill,
+                    ),
+                    tooltip: _isPlayingAttempt && isSelected
+                        ? 'Pause attempt'
+                        : 'Play attempt',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _SummaryChip(
+                    label: '${attempt.matchedCount} matched',
+                    color: Colors.green,
+                    textStyle: theme.textTheme.labelMedium,
+                  ),
+                  _SummaryChip(
+                    label: '${attempt.unexpectedCount} different',
+                    color: Colors.orange,
+                    textStyle: theme.textTheme.labelMedium,
+                  ),
+                  if (attempt.missingCount > 0)
+                    _SummaryChip(
+                      label: '${attempt.missingCount} missing',
+                      color: Colors.redAccent,
+                      textStyle: theme.textTheme.labelMedium,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                attempt.transcriptText,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _playSavedAttempt(LocalCuePracticeAttempt attempt) async {
+    _selectAttempt(attempt);
+    await _toggleAttemptPlayback();
   }
 
   Widget _buildAttemptTranscript(
@@ -677,12 +915,35 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
+  static String _formatAttemptTimestamp(DateTime dateTime) {
+    const monthNames = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final local = dateTime.toLocal();
+    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final minute = local.minute.toString().padLeft(2, '0');
+    final suffix = local.hour >= 12 ? 'PM' : 'AM';
+    return '${monthNames[local.month - 1]} ${local.day}, $hour:$minute $suffix';
+  }
+
   Future<void> _deleteCurrentRecordingIfNeeded() async {
-    final path = _recordingPath;
+    final path = _temporaryRecordingPath;
     if (path == null || path.isEmpty) {
       return;
     }
     await _deleteFileIfExists(path);
+    _temporaryRecordingPath = null;
   }
 
   Future<void> _deleteFileIfExists(String path) async {

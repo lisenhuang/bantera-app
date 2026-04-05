@@ -154,6 +154,34 @@ class LocalPracticeVideo extends LocalPracticeVideoSummary {
   }
 }
 
+class LocalCuePracticeAttempt {
+  final String id;
+  final String mediaItemId;
+  final String cueId;
+  final String transcriptText;
+  final String sourceLocaleIdentifier;
+  final String audioPath;
+  final int matchedCount;
+  final int unexpectedCount;
+  final int missingCount;
+  final int recordingDurationMs;
+  final DateTime createdAt;
+
+  const LocalCuePracticeAttempt({
+    required this.id,
+    required this.mediaItemId,
+    required this.cueId,
+    required this.transcriptText,
+    required this.sourceLocaleIdentifier,
+    required this.audioPath,
+    required this.matchedCount,
+    required this.unexpectedCount,
+    required this.missingCount,
+    required this.recordingDurationMs,
+    required this.createdAt,
+  });
+}
+
 class User {
   final String id;
   final String displayName;

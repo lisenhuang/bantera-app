@@ -52,6 +52,27 @@ class LocalPracticeCueEntries extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class LocalCueAttemptEntries extends Table {
+  @override
+  String get tableName => 'local_cue_attempt_entries';
+
+  TextColumn get id => text()();
+  TextColumn get ownerCacheKey => text()();
+  TextColumn get mediaItemId => text()();
+  TextColumn get cueId => text()();
+  TextColumn get transcriptText => text()();
+  TextColumn get sourceLocaleIdentifier => text()();
+  TextColumn get audioPath => text()();
+  IntColumn get matchedCount => integer()();
+  IntColumn get unexpectedCount => integer()();
+  IntColumn get missingCount => integer()();
+  IntColumn get recordingDurationMs => integer()();
+  IntColumn get createdAtMillis => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationSupportDirectory();
@@ -60,7 +81,9 @@ LazyDatabase _openConnection() {
   });
 }
 
-@DriftDatabase(tables: [LocalPracticeEntries, LocalPracticeCueEntries])
+@DriftDatabase(
+  tables: [LocalPracticeEntries, LocalPracticeCueEntries, LocalCueAttemptEntries],
+)
 class LocalPracticeDatabase extends _$LocalPracticeDatabase {
   LocalPracticeDatabase._internal() : super(_openConnection());
 
@@ -68,12 +91,17 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
       LocalPracticeDatabase._internal();
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) async {
       await migrator.createAll();
+    },
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.createTable(localCueAttemptEntries);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
