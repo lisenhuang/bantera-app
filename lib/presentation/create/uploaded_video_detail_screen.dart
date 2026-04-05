@@ -233,7 +233,9 @@ class UploadedVideoDetailScreen extends StatelessWidget {
       spokenLanguage: video.transcriptLanguageCode.isEmpty
           ? video.transcriptLanguage
           : video.transcriptLanguageCode.toUpperCase(),
-      accent: video.transcriptLanguage,
+      accent: video.transcriptLanguageCode.isNotEmpty
+          ? video.transcriptLanguageCode
+          : video.transcriptLanguage,
       durationMs: video.durationMs,
       cues: video.transcriptCues.map((cue) {
         return Cue(
