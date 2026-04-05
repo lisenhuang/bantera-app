@@ -53,6 +53,7 @@ class UploadedVideo {
   final String transcriptLanguageCode;
   final List<VideoTranscriptCue> transcriptCues;
   final bool isPublic;
+  final bool isAiGenerated;
   final int durationMs;
   final int fileSizeBytes;
   final int? videoWidth;
@@ -70,6 +71,7 @@ class UploadedVideo {
     required this.transcriptLanguageCode,
     required this.transcriptCues,
     required this.isPublic,
+    required this.isAiGenerated,
     required this.durationMs,
     required this.fileSizeBytes,
     required this.videoWidth,
@@ -241,6 +243,7 @@ class MediaItem {
   final int plays;
   final String transcriptionSource;
   final String? translatedLanguage;
+  final bool isAudioOnly;
 
   MediaItem({
     required this.id,
@@ -259,6 +262,7 @@ class MediaItem {
     this.plays = 0,
     required this.transcriptionSource,
     this.translatedLanguage,
+    this.isAudioOnly = false,
   });
 }
 

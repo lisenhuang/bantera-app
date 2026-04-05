@@ -287,6 +287,41 @@ class AuthApiClient {
     }
   }
 
+  Future<UploadedVideo> generateAiAudio({
+    required String accessToken,
+    required String language,
+    required String languageCode,
+    required String scenario,
+    required int durationSeconds,
+  }) async {
+    try {
+      final json = await _sendJsonRequest(
+        method: 'POST',
+        path: '/api/me/audio/generate',
+        payload: {
+          'language': language,
+          'languageCode': languageCode,
+          'scenario': scenario,
+          'durationSeconds': durationSeconds,
+        },
+        accessToken: accessToken,
+      );
+      return _uploadedVideoFromJson(json);
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
   Future<AuthTokenResponse> _postAuth(
     String path,
     Map<String, dynamic> payload,
@@ -408,6 +443,7 @@ class AuthApiClient {
           .whereType<VideoTranscriptCue>()
           .toList(),
       isPublic: json['isPublic'] as bool,
+      isAiGenerated: json['isAiGenerated'] as bool? ?? false,
       durationMs: (json['durationMs'] as num).toInt(),
       fileSizeBytes: (json['fileSizeBytes'] as num).toInt(),
       videoWidth: (json['videoWidth'] as num?)?.toInt(),

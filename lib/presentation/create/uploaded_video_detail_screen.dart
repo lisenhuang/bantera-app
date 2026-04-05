@@ -76,6 +76,12 @@ class UploadedVideoDetailScreen extends StatelessWidget {
                                     ? Icons.public
                                     : Icons.lock_outline,
                               ),
+                              if (video.isAiGenerated)
+                                _MetaChip(
+                                  label: 'AI Generated',
+                                  icon: Icons.auto_awesome,
+                                  color: Colors.purple,
+                                ),
                               _MetaChip(
                                 label: video.transcriptLanguage,
                                 icon: Icons.translate_outlined,
@@ -239,6 +245,7 @@ class UploadedVideoDetailScreen extends StatelessWidget {
         );
       }).toList(),
       transcriptionSource: 'Your Upload',
+      isAudioOnly: video.videoWidth == null && video.videoHeight == null,
     );
   }
 
@@ -313,27 +320,36 @@ class UploadedVideoDetailScreen extends StatelessWidget {
 }
 
 class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label, required this.icon});
+  const _MetaChip({required this.label, required this.icon, this.color});
 
   final String label;
   final IconData icon;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final effectiveColor = color ?? colorScheme.primary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        color: colorScheme.surface.withValues(alpha: 0.8),
+        color: color != null
+            ? color!.withValues(alpha: 0.12)
+            : colorScheme.surface.withValues(alpha: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: colorScheme.primary),
+          Icon(icon, size: 16, color: effectiveColor),
           const SizedBox(width: 8),
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: color != null ? effectiveColor : null,
+            ),
+          ),
         ],
       ),
     );

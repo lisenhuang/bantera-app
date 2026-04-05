@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/user_profile_notifier.dart';
@@ -31,6 +33,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   String? _mediaError;
   VideoPlayerController? _videoController;
   VoidCallback? _videoListener;
+  AudioPlayer? _audioPlayer;
+  StreamSubscription<Duration>? _audioPositionSub;
+  bool _audioPlayerReady = false;
   Map<String, String> _translatedCueTexts = const {};
   String? _translatedLanguageIdentifier;
   bool _isTranslating = false;
@@ -63,6 +68,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       controller.removeListener(listener);
     }
     controller?.dispose();
+    _audioPositionSub?.cancel();
+    final ap = _audioPlayer;
+    if (ap != null) unawaited(ap.dispose());
 
     if (widget.mediaItem.deleteLocalMediaOnDispose) {
       final localPath = widget.mediaItem.localVideoPath?.trim();
@@ -398,6 +406,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyLarge,
         ),
+      );
+    }
+
+    if (widget.mediaItem.isAudioOnly) {
+      return _buildSubtitleContent(
+        cue,
+        colorScheme,
+        hasPlayableMedia: _audioPlayerReady,
       );
     }
 
@@ -1323,6 +1339,55 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _mediaError = null;
     });
 
+    if (widget.mediaItem.isAudioOnly) {
+      final remoteUrl = widget.mediaItem.videoUrl?.trim();
+      if (remoteUrl == null || remoteUrl.isEmpty) {
+        if (mounted) setState(() => _isInitializingMedia = false);
+        return;
+      }
+      try {
+        // Download via dart:io HttpClient to bypass iOS ATS (HTTP blocked
+        // for native AVPlayer). Save to temp file, then play locally.
+        final uri = Uri.parse(remoteUrl);
+        final httpRequest = await HttpClient().getUrl(uri);
+        widget.mediaItem.mediaHeaders.forEach(
+          (key, value) => httpRequest.headers.set(key, value),
+        );
+        final httpResponse = await httpRequest.close();
+        if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
+          throw Exception('Server returned ${httpResponse.statusCode}');
+        }
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File(
+          '${tempDir.path}/bantera_audio_${widget.mediaItem.id}.wav',
+        );
+        final sink = tempFile.openWrite();
+        await httpResponse.pipe(sink);
+
+        final player = AudioPlayer();
+        _audioPlayer = player;
+        _audioPositionSub = player.onPositionChanged.listen((pos) {
+          if (!mounted) return;
+          final cue = widget.mediaItem.cues[_currentCueIndex];
+          final cueEnd = Duration(milliseconds: cue.endTimeMs);
+          if (_isPlaying && pos >= cueEnd) {
+            unawaited(player.pause());
+            if (mounted) setState(() => _isPlaying = false);
+          }
+        });
+        await player.setSourceDeviceFile(tempFile.path);
+        await player.seek(
+          Duration(milliseconds: widget.mediaItem.cues[0].startTimeMs),
+        );
+        if (mounted) setState(() => _audioPlayerReady = true);
+      } catch (e) {
+        _mediaError = 'Audio error: $e';
+      } finally {
+        if (mounted) setState(() => _isInitializingMedia = false);
+      }
+      return;
+    }
+
     try {
       final localPath = widget.mediaItem.localVideoPath?.trim();
       final remoteUrl = widget.mediaItem.videoUrl?.trim();
@@ -1373,6 +1438,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _togglePlayback() async {
+    final audioPlayer = _audioPlayer;
+    if (audioPlayer != null && _audioPlayerReady) {
+      if (_isPlaying) {
+        await audioPlayer.pause();
+        if (mounted) setState(() => _isPlaying = false);
+      } else {
+        final cue = widget.mediaItem.cues[_currentCueIndex];
+        await audioPlayer.seek(Duration(milliseconds: cue.startTimeMs));
+        await audioPlayer.resume();
+        if (mounted) setState(() => _isPlaying = true);
+      }
+      return;
+    }
+
     final controller = _videoController;
     if (controller == null || !controller.value.isInitialized) {
       setState(() {
@@ -1406,12 +1485,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    final controller = _videoController;
-    if (controller != null && controller.value.isInitialized) {
-      await controller.pause();
-      await controller.seekTo(
+    final audioPlayer = _audioPlayer;
+    if (audioPlayer != null && _audioPlayerReady) {
+      await audioPlayer.pause();
+      await audioPlayer.seek(
         Duration(milliseconds: widget.mediaItem.cues[nextIndex].startTimeMs),
       );
+    } else {
+      final controller = _videoController;
+      if (controller != null && controller.value.isInitialized) {
+        await controller.pause();
+        await controller.seekTo(
+          Duration(milliseconds: widget.mediaItem.cues[nextIndex].startTimeMs),
+        );
+      }
     }
 
     if (!mounted) {

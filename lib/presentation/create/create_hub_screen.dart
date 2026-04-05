@@ -9,6 +9,7 @@ import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../practice/practice_player_screen.dart';
+import 'generate_ai_audio_screen.dart';
 import 'local_video_practice_screen.dart';
 import 'uploaded_video_detail_screen.dart';
 import 'video_upload_screen.dart';
@@ -126,6 +127,23 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 Expanded(
                   child: _buildPrimaryAction(
                     context,
+                    Icons.auto_awesome,
+                    'Generate with AI',
+                    colorScheme,
+                    isSecondary: true,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const GenerateAiAudioScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildPrimaryAction(
+                    context,
                     CupertinoIcons.doc_text,
                     'Import Transcript',
                     colorScheme,
@@ -133,7 +151,11 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     onTap: () {},
                   ),
                 ),
-                const SizedBox(width: 16),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
                 Expanded(
                   child: _buildPrimaryAction(
                     context,
@@ -144,6 +166,8 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     onTap: () {},
                   ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(child: SizedBox()),
               ],
             ),
 
@@ -657,6 +681,30 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     ),
                   ),
                 ),
+                if (video.isAiGenerated) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome, size: 11, color: Colors.purple.shade700),
+                        const SizedBox(width: 3),
+                        Text(
+                          'AI',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.purple.shade700,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 14),
                 Icon(
                   CupertinoIcons.chevron_right,
