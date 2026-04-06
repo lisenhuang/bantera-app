@@ -915,44 +915,43 @@ private final class BanteraVideoPreparationService {
       var resultIndex = 0
       for try await result in transcriber.results {
         let resultText = String(result.text.characters)
-        print("[Bantera] result[\(resultIndex)] text='\(resultText)' range=\(result.range.start.seconds)s-\(result.range.end.seconds)s")
-
+        print("[Bantera] result[\(resultIndex)] text='\(resultText)' range=\(result.range.start.seconds)s-\(CMTimeRangeGetEnd(result.range).seconds)s")
         for (runIndex, run) in result.text.runs.enumerated() {
           let runText = String(result.text[run.range].characters)
           print("[Bantera]   run[\(runIndex)] text='\(runText)' attributes=\(run.attributes)")
         }
         resultIndex += 1
 
-        let cleaned = Self.cleanTranscriptSegment(resultText)
-        guard !cleaned.isEmpty else {
+        // Try to build per-sentence cues using per-character timing from the
+        // Speech.TimeRangeAttribute attribute on each run. This is essential for
+        // CJK languages where the whole result is one long string.
+        let perCharCues = Self.cuesFromAttributedRuns(result.text)
+        if !perCharCues.isEmpty {
+          for var cue in perCharCues {
+            cue.index = cues.count
+            cues.append(cue)
+          }
           continue
         }
 
+        // Fallback for results with no per-run timing (alphabetic languages
+        // already emit short results so each result becomes one cue).
+        let cleaned = Self.cleanTranscriptSegment(String(result.text.characters))
+        guard !cleaned.isEmpty else { continue }
+
         let timeRange = result.range
-        guard timeRange.start.seconds.isFinite, timeRange.end.seconds.isFinite else {
-          continue
-        }
+        guard timeRange.start.seconds.isFinite, timeRange.end.seconds.isFinite else { continue }
 
         let startMs = max(0, Int((timeRange.start.seconds * 1000).rounded()))
         var endMs = max(startMs + 1, Int((timeRange.end.seconds * 1000).rounded()))
-        if endMs <= startMs {
-          endMs = startMs + 1
-        }
+        if endMs <= startMs { endMs = startMs + 1 }
 
-        if let lastIndex = cues.indices.last,
-           cues[lastIndex].text == cleaned {
+        if let lastIndex = cues.indices.last, cues[lastIndex].text == cleaned {
           cues[lastIndex].endMs = max(cues[lastIndex].endMs, endMs)
           continue
         }
 
-        cues.append(
-          TranscriptCuePayload(
-            index: cues.count,
-            startMs: startMs,
-            endMs: endMs,
-            text: cleaned
-          )
-        )
+        cues.append(TranscriptCuePayload(index: cues.count, startMs: startMs, endMs: endMs, text: cleaned))
       }
     } catch {
       processingError = error
@@ -1317,6 +1316,73 @@ private final class BanteraVideoPreparationService {
       fileSizeBytes: fileSize,
       contentType: contentType
     )
+  }
+
+  // Groups per-character runs into sentence-level cues using the accurate
+  // Speech.TimeRangeAttribute timestamps on each run.
+  // Splits at CJK/standard sentence-ending punctuation so each cue is one
+  // complete thought with real start/end times — no proportional estimation.
+
+  private static func cuesFromAttributedRuns(
+    _ text: AttributedString
+  ) -> [TranscriptCuePayload] {
+    let sentenceEnders: Set<Character> = ["。", "！", "？", ".", "!", "?"]
+
+    var cues: [TranscriptCuePayload] = []
+    var buffer = ""
+    var bufferStartMs: Int? = nil
+    var bufferEndMs = 0
+    var foundAnyTiming = false
+
+    for run in text.runs {
+      guard let timeRange = run[AttributeScopes.SpeechAttributes.TimeRangeAttribute.self] else { continue }
+      foundAnyTiming = true
+
+      let segment = String(text[run.range].characters)
+      let trimmed = segment.trimmingCharacters(in: .whitespaces)
+
+      buffer += segment
+
+      if !trimmed.isEmpty {
+        let startSec = timeRange.start.seconds
+        let endSec   = CMTimeRangeGetEnd(timeRange).seconds
+        if startSec.isFinite && endSec.isFinite {
+          let startMs = max(0, Int((startSec * 1000).rounded()))
+          let endMs   = max(startMs, Int((endSec * 1000).rounded()))
+          if bufferStartMs == nil { bufferStartMs = startMs }
+          bufferEndMs = endMs
+        }
+      }
+
+      let shouldSplit = trimmed.last.map { sentenceEnders.contains($0) } ?? false
+      if shouldSplit {
+        let cueText = cleanTranscriptSegment(buffer)
+        if !cueText.isEmpty, let startMs = bufferStartMs {
+          cues.append(TranscriptCuePayload(
+            index: 0,
+            startMs: startMs,
+            endMs: max(bufferEndMs, startMs + 1),
+            text: cueText
+          ))
+        }
+        buffer = ""
+        bufferStartMs = nil
+        bufferEndMs = 0
+      }
+    }
+
+    // Flush any trailing text not ended by punctuation.
+    let remaining = cleanTranscriptSegment(buffer)
+    if !remaining.isEmpty, let startMs = bufferStartMs {
+      cues.append(TranscriptCuePayload(
+        index: 0,
+        startMs: startMs,
+        endMs: max(bufferEndMs, startMs + 1),
+        text: remaining
+      ))
+    }
+
+    return foundAnyTiming ? cues : []
   }
 
   private static func cleanTranscriptSegment(_ text: String) -> String {
