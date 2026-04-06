@@ -4,24 +4,6 @@ import 'dart:io';
 import '../core/api_config_notifier.dart';
 import '../domain/models/models.dart';
 
-class AiDialogueResult {
-  const AiDialogueResult({
-    required this.title,
-    required this.voice1,
-    required this.voice2,
-    required this.language,
-    required this.languageCode,
-    required this.lines,
-  });
-
-  final String title;
-  final String voice1;
-  final String voice2;
-  final String language;
-  final String languageCode;
-  final List<Map<String, String>> lines;
-}
-
 class AuthApiClient {
   AuthApiClient._();
 
@@ -305,107 +287,65 @@ class AuthApiClient {
     }
   }
 
-  Future<UploadedVideo> generateAiAudio({
+  /// Streams progress from the single generate endpoint.
+  /// Calls [onDialogueDone] when dialogue text is ready, then
+  /// [onAudioDone] with the saved video when audio is ready.
+  Future<void> generateAiAudioStreaming({
     required String accessToken,
     required String language,
     required String languageCode,
     required String scenario,
     required int durationSeconds,
+    required void Function() onDialogueDone,
+    required void Function(UploadedVideo video) onAudioDone,
   }) async {
     try {
-      final json = await _sendJsonRequest(
-        method: 'POST',
-        path: '/api/me/audio/generate',
-        payload: {
-          'language': language,
-          'languageCode': languageCode,
-          'scenario': scenario,
-          'durationSeconds': durationSeconds,
-        },
-        accessToken: accessToken,
-      );
-      return _uploadedVideoFromJson(json);
-    } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
-    } on HandshakeException {
-      throw const AuthApiException(
-        code: 'tls_error',
-        message:
-            'The app could not establish a secure connection to the Bantera API.',
-      );
-    }
-  }
+      final request = await _httpClient.postUrl(_resolve('/api/me/audio/generate'));
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.contentType = ContentType.json;
+      request.add(utf8.encode(jsonEncode({
+        'language': language,
+        'languageCode': languageCode,
+        'scenario': scenario,
+        'durationSeconds': durationSeconds,
+      })));
 
-  Future<AiDialogueResult> generateAiDialogue({
-    required String accessToken,
-    required String language,
-    required String languageCode,
-    required String scenario,
-    required int durationSeconds,
-  }) async {
-    try {
-      final json = await _sendJsonRequest(
-        method: 'POST',
-        path: '/api/me/audio/dialogue',
-        payload: {
-          'language': language,
-          'languageCode': languageCode,
-          'scenario': scenario,
-          'durationSeconds': durationSeconds,
-        },
-        accessToken: accessToken,
-      );
-      final rawLines = (json['lines'] as List?) ?? const [];
-      return AiDialogueResult(
-        title: json['title'] as String? ?? '',
-        voice1: json['voice1'] as String? ?? '',
-        voice2: json['voice2'] as String? ?? '',
-        language: json['language'] as String? ?? language,
-        languageCode: json['languageCode'] as String? ?? languageCode,
-        lines: rawLines.map((l) {
-          final m = l is Map ? l.cast<String, dynamic>() : <String, dynamic>{};
-          return <String, String>{
-            'speaker': m['speaker']?.toString() ?? '',
-            'text': m['text']?.toString() ?? '',
-          };
-        }).toList(),
-      );
-    } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message: 'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
-    } on HandshakeException {
-      throw const AuthApiException(
-        code: 'tls_error',
-        message: 'The app could not establish a secure connection to the Bantera API.',
-      );
-    }
-  }
+      final response = await request.close();
 
-  Future<UploadedVideo> synthesiseAiAudio({
-    required String accessToken,
-    required AiDialogueResult dialogue,
-  }) async {
-    try {
-      final json = await _sendJsonRequest(
-        method: 'POST',
-        path: '/api/me/audio/synthesise',
-        payload: {
-          'language': dialogue.language,
-          'languageCode': dialogue.languageCode,
-          'title': dialogue.title,
-          'voice1': dialogue.voice1,
-          'voice2': dialogue.voice2,
-          'lines': dialogue.lines,
-        },
-        accessToken: accessToken,
-      );
-      return _uploadedVideoFromJson(json);
+      if (response.statusCode != 200) {
+        final body = await response.transform(utf8.decoder).join();
+        Map<String, dynamic> errJson = {};
+        try { errJson = jsonDecode(body) as Map<String, dynamic>; } catch (_) {}
+        _throwApiException(errJson, response.statusCode);
+      }
+
+      final lines = response
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
+
+      await for (final line in lines) {
+        if (!line.startsWith('data: ')) continue;
+        final dataStr = line.substring(6).trim();
+        if (dataStr.isEmpty) continue;
+        Map<String, dynamic> data;
+        try { data = jsonDecode(dataStr) as Map<String, dynamic>; }
+        catch (_) { continue; }
+
+        final step = data['step'];
+        if (step == 'dialogue') {
+          onDialogueDone();
+        } else if (step == 'done') {
+          final videoMap = data['video'] as Map<String, dynamic>;
+          onAudioDone(_uploadedVideoFromJson(videoMap));
+        } else if (step == 'error') {
+          throw AuthApiException(
+            code: 'generation_failed',
+            message: data['message']?.toString() ?? 'Generation failed.',
+          );
+        }
+      }
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',

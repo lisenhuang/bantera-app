@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
+import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
 import 'uploaded_video_detail_screen.dart';
@@ -149,28 +150,34 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       _errorMessage = null;
     });
 
+    UploadedVideo? video;
     try {
-      final dialogue = await AuthApiClient.instance.generateAiDialogue(
+      await AuthApiClient.instance.generateAiAudioStreaming(
         accessToken: session.accessToken,
         language: locale.displayName,
         languageCode: locale.identifier,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
+        onDialogueDone: () {
+          if (mounted) setState(() => _step = _GenerationStep.generatingAudio);
+        },
+        onAudioDone: (v) => video = v,
       );
 
-      if (!mounted) return;
-      setState(() => _step = _GenerationStep.generatingAudio);
+      if (!mounted || video == null) return;
+      setState(() => _step = _GenerationStep.transcribing);
 
-      final video = await AuthApiClient.instance.synthesiseAiAudio(
+      final updatedVideo = await _transcribeVideo(
+        video: video!,
         accessToken: session.accessToken,
-        dialogue: dialogue,
+        localeIdentifier: locale.identifier,
       );
 
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => UploadedVideoDetailScreen(video: video),
+          builder: (_) => UploadedVideoDetailScreen(video: updatedVideo),
         ),
       );
     } on AuthApiException catch (e) {
@@ -179,6 +186,49 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       if (mounted) setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _step = _GenerationStep.idle);
+    }
+  }
+
+  /// Downloads the generated WAV, transcribes it on-device, and PATCHes the
+  /// server. Returns the updated video on success, or the original on failure.
+  Future<UploadedVideo> _transcribeVideo({
+    required UploadedVideo video,
+    required String accessToken,
+    required String localeIdentifier,
+  }) async {
+    final videoUrl = video.videoUrl?.trim();
+    if (videoUrl == null || videoUrl.isEmpty) return video;
+
+    File? tempFile;
+    try {
+      final uri = Uri.parse(videoUrl);
+      final request = await HttpClient().getUrl(uri);
+      request.headers.set('Authorization', 'Bearer $accessToken');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) return video;
+
+      final tempDir = await getTemporaryDirectory();
+      tempFile = File('${tempDir.path}/bantera_gen_transcribe_${video.id}.wav');
+      await response.pipe(tempFile.openWrite());
+
+      final result = await VideoProcessingService.instance.transcribeAudioForUpload(
+        inputFile: tempFile,
+        localeIdentifier: localeIdentifier,
+      );
+      if (result.transcriptCues.isEmpty) return video;
+
+      final updated = await AuthApiClient.instance.updateVideoTranscript(
+        accessToken: accessToken,
+        videoId: video.id,
+        transcriptText: result.transcriptText,
+        transcriptCues: result.transcriptCues,
+      );
+      return updated;
+    } catch (_) {
+      // Transcription is best-effort; fall back to estimated cues.
+      return video;
+    } finally {
+      try { await tempFile?.delete(); } catch (_) {}
     }
   }
 
@@ -197,6 +247,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     final steps = [
       (step: _GenerationStep.writingDialogue, label: 'Writing dialogue'),
       (step: _GenerationStep.generatingAudio, label: 'Generating audio'),
+      (step: _GenerationStep.transcribing,    label: 'Transcribing'),
     ];
 
     return Center(
@@ -259,7 +310,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 
   Widget _buildForm(ThemeData theme, ColorScheme colorScheme) {
-    return ListView(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: ListView(
       padding: const EdgeInsets.all(20),
       children: [
         // Language picker
@@ -398,8 +452,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           textAlign: TextAlign.center,
         ),
       ],
+      ),
     );
   }
 }
 
-enum _GenerationStep { idle, writingDialogue, generatingAudio }
+enum _GenerationStep { idle, writingDialogue, generatingAudio, transcribing }
