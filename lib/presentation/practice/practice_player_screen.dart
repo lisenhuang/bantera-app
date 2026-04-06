@@ -1177,6 +1177,16 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _translatedCueTexts = {..._translatedCueTexts, ...translations};
         _translatedLanguageIdentifier = lang;
       });
+      // Pre-translate any remaining cues in the background so they're ready
+      // when the user taps translate — same strategy as local video practice.
+      unawaited(
+        _translateRemainingCuesInBackground(
+          sourceLocaleIdentifier: _sourceLocaleIdentifier,
+          targetLocaleIdentifier: lang,
+          generation: _translationGeneration,
+          excludedCueId: '',
+        ),
+      );
     } catch (_) {
       // Cache load failures should never break the practice session.
     }
