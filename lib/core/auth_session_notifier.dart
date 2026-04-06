@@ -61,7 +61,9 @@ class AuthSession {
 }
 
 class AuthSessionNotifier extends ChangeNotifier {
-  AuthSessionNotifier._();
+  AuthSessionNotifier._() {
+    AuthApiClient.instance.setTokenRefresher(_silentRefresh);
+  }
 
   static final AuthSessionNotifier instance = AuthSessionNotifier._();
 
@@ -156,6 +158,33 @@ class AuthSessionNotifier extends ChangeNotifier {
     _session = null;
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Called automatically by AuthApiClient when a request returns token_expired.
+  /// Refreshes silently and returns the new access token, or null if the refresh
+  /// token is also expired (in which case the user is signed out).
+  Future<String?> _silentRefresh() async {
+    final session = _session;
+    if (session == null) return null;
+    try {
+      final response = await _apiClient.refreshAuthToken(
+        refreshToken: session.refreshToken,
+      );
+      _session = AuthSession(
+        provider: session.provider,
+        accountLabel: session.accountLabel,
+        accessToken: response.accessToken,
+        tokenType: response.tokenType,
+        expiresIn: response.expiresIn,
+        refreshToken: response.refreshToken,
+      );
+      notifyListeners();
+      return response.accessToken;
+    } catch (_) {
+      // Refresh token is expired or revoked — force sign-out.
+      signOut();
+      return null;
+    }
   }
 
   void clearError() {

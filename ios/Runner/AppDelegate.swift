@@ -912,8 +912,18 @@ private final class BanteraVideoPreparationService {
     var processingError: Error?
 
     do {
+      var resultIndex = 0
       for try await result in transcriber.results {
-        let cleaned = Self.cleanTranscriptSegment(String(result.text.characters))
+        let resultText = String(result.text.characters)
+        print("[Bantera] result[\(resultIndex)] text='\(resultText)' range=\(result.range.start.seconds)s-\(result.range.end.seconds)s")
+
+        for (runIndex, run) in result.text.runs.enumerated() {
+          let runText = String(result.text[run.range].characters)
+          print("[Bantera]   run[\(runIndex)] text='\(runText)' attributes=\(run.attributes)")
+        }
+        resultIndex += 1
+
+        let cleaned = Self.cleanTranscriptSegment(resultText)
         guard !cleaned.isEmpty else {
           continue
         }

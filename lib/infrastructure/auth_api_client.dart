@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,6 +13,43 @@ class AuthApiClient {
   final HttpClient _httpClient = HttpClient();
 
   String get displayBaseUrl => ApiConfigNotifier.instance.baseUrl;
+
+  // Called by AuthSessionNotifier at startup.
+  // Returns the fresh access token, or null if the session could not be renewed
+  // (in which case the notifier signs the user out).
+  Future<String?> Function()? _onRefreshToken;
+
+  // Deduplicates concurrent refresh calls — only one refresh runs at a time.
+  Completer<String?>? _refreshInProgress;
+
+  void setTokenRefresher(Future<String?> Function() refresher) {
+    _onRefreshToken = refresher;
+  }
+
+  Future<String?> _doRefresh() async {
+    if (_refreshInProgress != null) return _refreshInProgress!.future;
+    final refresher = _onRefreshToken;
+    if (refresher == null) return null;
+
+    final completer = Completer<String?>();
+    _refreshInProgress = completer;
+    try {
+      final token = await refresher();
+      completer.complete(token);
+      return token;
+    } catch (_) {
+      completer.complete(null);
+      return null;
+    } finally {
+      _refreshInProgress = null;
+    }
+  }
+
+  Future<AuthTokenResponse> refreshAuthToken({
+    required String refreshToken,
+  }) {
+    return _postAuth('/api/auth/refresh', {'refreshToken': refreshToken});
+  }
 
   Future<AuthTokenResponse> loginWithEmail({
     required String email,
@@ -298,17 +336,19 @@ class AuthApiClient {
     required int durationSeconds,
     required void Function() onDialogueDone,
     required void Function(UploadedVideo video) onAudioDone,
+    bool retried = false,
   }) async {
     try {
-      final request = await _httpClient.postUrl(_resolve('/api/me/audio/generate'));
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
-      request.headers.contentType = ContentType.json;
-      request.add(utf8.encode(jsonEncode({
+      final payload = jsonEncode({
         'language': language,
         'languageCode': languageCode,
         'scenario': scenario,
         'durationSeconds': durationSeconds,
-      })));
+      });
+      final request = await _httpClient.postUrl(_resolve('/api/me/audio/generate'));
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.contentType = ContentType.json;
+      request.add(utf8.encode(payload));
 
       final response = await request.close();
 
@@ -316,6 +356,30 @@ class AuthApiClient {
         final body = await response.transform(utf8.decoder).join();
         Map<String, dynamic> errJson = {};
         try { errJson = jsonDecode(body) as Map<String, dynamic>; } catch (_) {}
+
+        // Auto-refresh on token_expired, retry once.
+        if (!retried &&
+            response.statusCode == 401 &&
+            errJson['code']?.toString() == 'token_expired') {
+          final newToken = await _doRefresh();
+          if (newToken != null) {
+            return generateAiAudioStreaming(
+              accessToken: newToken,
+              language: language,
+              languageCode: languageCode,
+              scenario: scenario,
+              durationSeconds: durationSeconds,
+              onDialogueDone: onDialogueDone,
+              onAudioDone: onAudioDone,
+              retried: true,
+            );
+          }
+          throw const AuthApiException(
+            code: 'session_expired',
+            message: 'Your session has expired. Please sign in again.',
+          );
+        }
+
         _throwApiException(errJson, response.statusCode);
       }
 
@@ -355,6 +419,39 @@ class AuthApiClient {
       throw const AuthApiException(
         code: 'tls_error',
         message: 'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
+  Future<void> deleteVideo({
+    required String accessToken,
+    required String videoId,
+  }) async {
+    try {
+      final request = await _httpClient.openUrl(
+        'DELETE',
+        _resolve('/api/me/videos/$videoId'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      final response = await request.close();
+      if (response.statusCode == 204) {
+        await response.drain<void>();
+        return;
+      }
+      final json = await _parseJsonResponse(response);
+      _throwApiException(json, response.statusCode);
+    } on AuthApiException {
+      rethrow;
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message: 'Cannot reach the Bantera API.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message: 'The app could not establish a secure connection.',
       );
     }
   }
@@ -422,6 +519,7 @@ class AuthApiClient {
     required String path,
     Map<String, dynamic>? payload,
     String? accessToken,
+    bool retried = false,
   }) async {
     final request = await _httpClient.openUrl(method, _resolve(path));
     request.headers.set(HttpHeaders.acceptHeader, 'application/json');
@@ -440,6 +538,26 @@ class AuthApiClient {
     final json = await _parseJsonResponse(response);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return json;
+    }
+
+    // Auto-refresh on token_expired, then retry once.
+    if (!retried &&
+        response.statusCode == 401 &&
+        json['code']?.toString() == 'token_expired') {
+      final newToken = await _doRefresh();
+      if (newToken != null) {
+        return _sendJsonRequest(
+          method: method,
+          path: path,
+          payload: payload,
+          accessToken: newToken,
+          retried: true,
+        );
+      }
+      throw const AuthApiException(
+        code: 'session_expired',
+        message: 'Your session has expired. Please sign in again.',
+      );
     }
 
     _throwApiException(json, response.statusCode);

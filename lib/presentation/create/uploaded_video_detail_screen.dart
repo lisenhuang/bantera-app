@@ -36,6 +36,48 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     }
   }
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete audio?'),
+        content: const Text(
+          'This will permanently delete the audio and its transcript. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final accessToken = AuthSessionNotifier.instance.session?.accessToken;
+    if (accessToken == null) return;
+
+    try {
+      await AuthApiClient.instance.deleteVideo(
+        accessToken: accessToken,
+        videoId: _video.id,
+      );
+      if (mounted) Navigator.of(context).pop();
+    } on AuthApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    }
+  }
+
   Future<void> _runPhoneTranscription() async {
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
     if (accessToken == null || accessToken.isEmpty) return;
@@ -131,6 +173,14 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                   ? 'Your Audio'
                   : 'Your Video',
             ),
+            actions: [
+              if (video.isAiGenerated)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Delete',
+                  onPressed: _isTranscribing ? null : () => _confirmDelete(context),
+                ),
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.all(20),

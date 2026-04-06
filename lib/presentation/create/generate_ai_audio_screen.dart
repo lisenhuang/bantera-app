@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
@@ -150,6 +153,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       _errorMessage = null;
     });
 
+    unawaited(WakelockPlus.enable());
     UploadedVideo? video;
     try {
       await AuthApiClient.instance.generateAiAudioStreaming(
@@ -185,6 +189,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } catch (e) {
       if (mounted) setState(() => _errorMessage = e.toString());
     } finally {
+      unawaited(WakelockPlus.disable());
       if (mounted) setState(() => _step = _GenerationStep.idle);
     }
   }

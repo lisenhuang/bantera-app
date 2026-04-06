@@ -45,6 +45,7 @@ dependencies:
   video_player: ^2.9.2
   drift: ^2.29.0
   sqlite3_flutter_libs: ^0.5.39
+  wakelock_plus: ^1.1.4
 
 dev_dependencies:
   flutter_test:
