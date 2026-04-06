@@ -30,6 +30,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   int _currentCueIndex = 0;
   SubtitleState _subtitleState = SubtitleState.hidden;
   bool _isPlaying = false;
+  bool _isPlayingAll = false;
   bool _isInitializingMedia = false;
   String? _mediaError;
   VideoPlayerController? _videoController;
@@ -43,6 +44,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isBackgroundTranslating = false;
   String? _translationErrorMessage;
   int _translationGeneration = 0;
+  double _playbackSpeed = 1.0;
+
+  static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
@@ -109,7 +113,136 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _togglePlay() {
-    unawaited(_togglePlayback());
+    if (_isPlayingAll) {
+      unawaited(_stopPlayAll());
+    } else {
+      unawaited(_togglePlayback());
+    }
+  }
+
+  Future<void> _setPlaybackSpeed(double speed) async {
+    setState(() => _playbackSpeed = speed);
+    final controller = _videoController;
+    if (controller != null && controller.value.isInitialized) {
+      await controller.setPlaybackSpeed(speed);
+    }
+    final ap = _audioPlayer;
+    if (ap != null) {
+      await ap.setPlaybackRate(speed);
+    }
+  }
+
+  Future<void> _startPlayAll() async {
+    if (_isPlayingAll) return;
+    setState(() {
+      _isPlayingAll = true;
+      _subtitleState = SubtitleState.original;
+    });
+
+    final audioPlayer = _audioPlayer;
+    if (audioPlayer != null && _audioPlayerReady) {
+      final startMs = widget.mediaItem.cues[_currentCueIndex].startTimeMs;
+      await audioPlayer.seek(Duration(milliseconds: startMs));
+      await audioPlayer.resume();
+      setState(() => _isPlaying = true);
+
+      // Listen for position to advance cues and stop at end.
+      _audioPositionSub?.cancel();
+      _audioPositionSub = audioPlayer.onPositionChanged.listen((pos) {
+        if (!mounted || !_isPlayingAll) return;
+        final cues = widget.mediaItem.cues;
+        // Find which cue we're in.
+        int newIndex = _currentCueIndex;
+        for (int i = 0; i < cues.length; i++) {
+          if (pos.inMilliseconds >= cues[i].startTimeMs &&
+              (i == cues.length - 1 || pos.inMilliseconds < cues[i + 1].startTimeMs)) {
+            newIndex = i;
+            break;
+          }
+        }
+        if (newIndex != _currentCueIndex) {
+          setState(() => _currentCueIndex = newIndex);
+        }
+        // Stop after last cue ends.
+        if (pos.inMilliseconds >= cues.last.endTimeMs) {
+          unawaited(_stopPlayAll());
+        }
+      });
+      return;
+    }
+
+    final controller = _videoController;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final startMs = widget.mediaItem.cues[_currentCueIndex].startTimeMs;
+    await controller.seekTo(Duration(milliseconds: startMs));
+
+    // Remove the per-cue stop listener and replace with play-all listener.
+    final oldListener = _videoListener;
+    if (oldListener != null) controller.removeListener(oldListener);
+
+    _videoListener = () {
+      if (!mounted || !_isPlayingAll) return;
+      final pos = controller.value.position.inMilliseconds;
+      final cues = widget.mediaItem.cues;
+      int newIndex = _currentCueIndex;
+      for (int i = 0; i < cues.length; i++) {
+        if (pos >= cues[i].startTimeMs &&
+            (i == cues.length - 1 || pos < cues[i + 1].startTimeMs)) {
+          newIndex = i;
+          break;
+        }
+      }
+      if (newIndex != _currentCueIndex) {
+        setState(() => _currentCueIndex = newIndex);
+      }
+      if (pos >= cues.last.endTimeMs) {
+        unawaited(_stopPlayAll());
+      }
+    };
+    controller.addListener(_videoListener!);
+    await controller.play();
+    setState(() => _isPlaying = true);
+  }
+
+  Future<void> _stopPlayAll() async {
+    if (!_isPlayingAll) return;
+    setState(() {
+      _isPlayingAll = false;
+      _isPlaying = false;
+    });
+    final ap = _audioPlayer;
+    if (ap != null) {
+      await ap.pause();
+      // Restore per-cue stop listener.
+      _audioPositionSub?.cancel();
+      _audioPositionSub = ap.onPositionChanged.listen((pos) {
+        if (!mounted) return;
+        final cue = widget.mediaItem.cues[_currentCueIndex];
+        if (_isPlaying && pos.inMilliseconds >= cue.endTimeMs) {
+          unawaited(ap.pause());
+          if (mounted) setState(() => _isPlaying = false);
+        }
+      });
+      return;
+    }
+    final controller = _videoController;
+    if (controller != null && controller.value.isInitialized) {
+      await controller.pause();
+      // Restore per-cue stop listener.
+      final oldListener = _videoListener;
+      if (oldListener != null) controller.removeListener(oldListener);
+      _videoListener = () {
+        if (!mounted) return;
+        final cue = widget.mediaItem.cues[_currentCueIndex];
+        if (_isPlaying &&
+            controller.value.position.inMilliseconds >= cue.endTimeMs) {
+          controller.pause();
+          if (mounted) setState(() => _isPlaying = false);
+        }
+      };
+      controller.addListener(_videoListener!);
+    }
   }
 
   Future<void> _handleSubtitleToggle() async {
@@ -188,6 +321,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ),
         centerTitle: true,
         actions: [
+          // Speed button
+          TextButton(
+            onPressed: () async {
+              final currentIndex = _speedOptions.indexOf(_playbackSpeed);
+              final nextIndex = (currentIndex + 1) % _speedOptions.length;
+              await _setPlaybackSpeed(_speedOptions[nextIndex]);
+            },
+            child: Text(
+              _playbackSpeed == _playbackSpeed.truncateToDouble()
+                  ? '${_playbackSpeed.toInt()}×'
+                  : '${_playbackSpeed}×',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
           IconButton(
             icon: const Icon(CupertinoIcons.settings),
             onPressed: _isTranslating
@@ -346,10 +493,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       IconButton(
                         iconSize: 36,
                         icon: const Icon(CupertinoIcons.backward_fill),
-                        color: _currentCueIndex > 0
+                        color: !_isPlayingAll && _currentCueIndex > 0
                             ? colorScheme.onSurface
                             : colorScheme.onSurface.withValues(alpha: 0.2),
-                        onPressed: _prevCue,
+                        onPressed: _isPlayingAll ? null : _prevCue,
                       ),
                       const SizedBox(width: 24),
                       IconButton(
@@ -366,11 +513,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       IconButton(
                         iconSize: 36,
                         icon: const Icon(CupertinoIcons.forward_fill),
-                        color:
+                        color: !_isPlayingAll &&
                             _currentCueIndex < widget.mediaItem.cues.length - 1
                             ? colorScheme.onSurface
                             : colorScheme.onSurface.withValues(alpha: 0.2),
-                        onPressed: _nextCue,
+                        onPressed: _isPlayingAll ? null : _nextCue,
                       ),
                     ],
                   ),
@@ -379,9 +526,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildActionBtn(
-                        CupertinoIcons.bookmark,
-                        'Note',
-                        () {},
+                        _isPlayingAll
+                            ? CupertinoIcons.stop_fill
+                            : CupertinoIcons.play_rectangle,
+                        _isPlayingAll ? 'Stop' : 'Play All',
+                        () => _isPlayingAll
+                            ? unawaited(_stopPlayAll())
+                            : unawaited(_startPlayAll()),
                         colorScheme,
                       ),
                       _buildActionBtn(
@@ -394,7 +545,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       _buildActionBtn(
                         CupertinoIcons.reply,
                         'Replay',
-                        _togglePlay,
+                        _isPlayingAll ? null : _togglePlay,
                         colorScheme,
                       ),
                     ],
@@ -1384,7 +1535,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   Widget _buildActionBtn(
     IconData icon,
     String label,
-    VoidCallback onTap,
+    VoidCallback? onTap,
     ColorScheme colorScheme, {
     bool isHighlight = false,
   }) {

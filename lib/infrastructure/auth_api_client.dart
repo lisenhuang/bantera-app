@@ -11,6 +11,7 @@ class AuthApiClient {
   static final AuthApiClient instance = AuthApiClient._();
 
   final HttpClient _httpClient = HttpClient();
+  List<String> _dialogueLines = [];
 
   String get displayBaseUrl => ApiConfigNotifier.instance.baseUrl;
 
@@ -327,7 +328,7 @@ class AuthApiClient {
 
   /// Streams progress from the single generate endpoint.
   /// Calls [onDialogueDone] when dialogue text is ready, then
-  /// [onAudioDone] with the saved video when audio is ready.
+  /// [onAudioDone] with the saved video and original dialogue lines when audio is ready.
   Future<void> generateAiAudioStreaming({
     required String accessToken,
     required String language,
@@ -335,7 +336,7 @@ class AuthApiClient {
     required String scenario,
     required int durationSeconds,
     required void Function() onDialogueDone,
-    required void Function(UploadedVideo video) onAudioDone,
+    required void Function(UploadedVideo video, List<String> lines) onAudioDone,
     bool retried = false,
   }) async {
     try {
@@ -373,6 +374,7 @@ class AuthApiClient {
               onAudioDone: onAudioDone,
               retried: true,
             );
+
           }
           throw const AuthApiException(
             code: 'session_expired',
@@ -397,10 +399,12 @@ class AuthApiClient {
 
         final step = data['step'];
         if (step == 'dialogue') {
+          _dialogueLines = (data['lines'] as List?)?.map((e) => e.toString()).toList() ?? [];
           onDialogueDone();
         } else if (step == 'done') {
           final videoMap = data['video'] as Map<String, dynamic>;
-          onAudioDone(_uploadedVideoFromJson(videoMap));
+          onAudioDone(_uploadedVideoFromJson(videoMap), _dialogueLines);
+          _dialogueLines = [];
         } else if (step == 'error') {
           throw AuthApiException(
             code: 'generation_failed',
@@ -443,6 +447,36 @@ class AuthApiClient {
       _throwApiException(json, response.statusCode);
     } on AuthApiException {
       rethrow;
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message: 'Cannot reach the Bantera API.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message: 'The app could not establish a secure connection.',
+      );
+    }
+  }
+
+  Future<UploadedVideo> correctVideoTranscript({
+    required String accessToken,
+    required String videoId,
+    required List<String> originalLines,
+    required List<VideoTranscriptCue> transcribedCues,
+  }) async {
+    try {
+      final json = await _sendJsonRequest(
+        method: 'POST',
+        path: '/api/me/videos/$videoId/transcript/correct',
+        payload: {
+          'originalLines': originalLines,
+          'transcribedCues': transcribedCues.map((c) => c.toJson()).toList(),
+        },
+        accessToken: accessToken,
+      );
+      return _uploadedVideoFromJson(json);
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',

@@ -155,6 +155,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
     unawaited(WakelockPlus.enable());
     UploadedVideo? video;
+    List<String> dialogueLines = [];
     try {
       await AuthApiClient.instance.generateAiAudioStreaming(
         accessToken: session.accessToken,
@@ -165,16 +166,28 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         onDialogueDone: () {
           if (mounted) setState(() => _step = _GenerationStep.generatingAudio);
         },
-        onAudioDone: (v) => video = v,
+        onAudioDone: (v, lines) {
+          video = v;
+          dialogueLines = lines;
+        },
       );
 
       if (!mounted || video == null) return;
       setState(() => _step = _GenerationStep.transcribing);
 
-      final updatedVideo = await _transcribeVideo(
+      final transcribedVideo = await _transcribeVideo(
         video: video!,
         accessToken: session.accessToken,
         localeIdentifier: locale.identifier,
+      );
+
+      if (!mounted) return;
+      setState(() => _step = _GenerationStep.correctingTranscript);
+
+      final updatedVideo = await _correctTranscript(
+        video: transcribedVideo,
+        accessToken: session.accessToken,
+        originalLines: dialogueLines,
       );
 
       if (!mounted) return;
@@ -191,6 +204,24 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } finally {
       unawaited(WakelockPlus.disable());
       if (mounted) setState(() => _step = _GenerationStep.idle);
+    }
+  }
+
+  Future<UploadedVideo> _correctTranscript({
+    required UploadedVideo video,
+    required String accessToken,
+    required List<String> originalLines,
+  }) async {
+    if (originalLines.isEmpty || video.transcriptCues.isEmpty) return video;
+    try {
+      return await AuthApiClient.instance.correctVideoTranscript(
+        accessToken: accessToken,
+        videoId: video.id,
+        originalLines: originalLines,
+        transcribedCues: video.transcriptCues,
+      );
+    } catch (_) {
+      return video;
     }
   }
 
@@ -250,9 +281,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   Widget _buildLoadingState() {
     final steps = [
-      (step: _GenerationStep.writingDialogue, label: 'Writing dialogue'),
-      (step: _GenerationStep.generatingAudio, label: 'Generating audio'),
-      (step: _GenerationStep.transcribing,    label: 'Transcribing'),
+      (step: _GenerationStep.writingDialogue,       label: 'Writing dialogue'),
+      (step: _GenerationStep.generatingAudio,       label: 'Generating audio'),
+      (step: _GenerationStep.transcribing,          label: 'Transcribing'),
+      (step: _GenerationStep.correctingTranscript,  label: 'Correcting transcript'),
     ];
 
     return Center(
@@ -462,4 +494,4 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 }
 
-enum _GenerationStep { idle, writingDialogue, generatingAudio, transcribing }
+enum _GenerationStep { idle, writingDialogue, generatingAudio, transcribing, correctingTranscript }
