@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
@@ -21,12 +25,12 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   TranscriptionLocaleOption? _selectedLocale;
   AiScenario? _selectedScenario;
   final TextEditingController _customScenarioController = TextEditingController();
-  int _durationSeconds = 60;
+  int _durationSeconds = 120;
 
   bool _isGenerating = false;
   String? _errorMessage;
 
-  static const _durationOptions = [30, 60, 90, 120];
+  static const _durationOptions = [60, 120, 180, 240];
 
   bool get _canGenerate =>
       _selectedLocale != null &&
@@ -45,15 +49,40 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     super.dispose();
   }
 
+  Future<File> _prefsFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/ai_audio_generate_prefs.json');
+  }
+
   Future<void> _loadLocales() async {
     try {
       final locales = await VideoProcessingService.instance.fetchSupportedLocales();
-      if (mounted) {
-        setState(() {
-          _locales = locales;
-          _isLoadingLocales = false;
-        });
-      }
+      if (!mounted) return;
+
+      // Restore last selections from prefs
+      TranscriptionLocaleOption? restoredLocale;
+      AiScenario? restoredScenario;
+      try {
+        final file = await _prefsFile();
+        if (await file.exists()) {
+          final prefs = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+          final lastId = prefs['lastLanguageIdentifier'] as String?;
+          if (lastId != null) {
+            restoredLocale = locales.where((l) => l.identifier == lastId).firstOrNull;
+          }
+          final lastScenarioId = prefs['lastScenarioId'] as String?;
+          if (lastScenarioId != null) {
+            restoredScenario = kAiScenarios.where((s) => s.id == lastScenarioId).firstOrNull;
+          }
+        }
+      } catch (_) {}
+
+      setState(() {
+        _locales = locales;
+        _isLoadingLocales = false;
+        if (restoredLocale != null) _selectedLocale = restoredLocale;
+        if (restoredScenario != null) _selectedScenario = restoredScenario;
+      });
     } on VideoProcessingException catch (e) {
       if (mounted) {
         setState(() {
@@ -69,6 +98,35 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         });
       }
     }
+  }
+
+  Future<void> _savePrefs() async {
+    try {
+      final file = await _prefsFile();
+      await file.writeAsString(jsonEncode({
+        if (_selectedLocale != null)
+          'lastLanguageIdentifier': _selectedLocale!.identifier,
+        if (_selectedScenario != null)
+          'lastScenarioId': _selectedScenario!.id,
+      }));
+    } catch (_) {}
+  }
+
+  static String _flagEmoji(String identifier) {
+    // Extract the 2-letter country code (last segment that is 2 uppercase letters)
+    final parts = identifier.split('-');
+    String? countryCode;
+    for (final part in parts.reversed) {
+      if (part.length == 2 && part.toUpperCase() == part) {
+        countryCode = part;
+        break;
+      }
+    }
+    if (countryCode == null) return '🌐';
+    const base = 0x1F1E6;
+    final codes = countryCode.codeUnits;
+    return String.fromCharCode(base + codes[0] - 0x41) +
+        String.fromCharCode(base + codes[1] - 0x41);
   }
 
   Future<void> _generate() async {
@@ -193,10 +251,13 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             items: _locales.map((locale) {
               return DropdownMenuItem(
                 value: locale,
-                child: Text(locale.displayName),
+                child: Text('${_flagEmoji(locale.identifier)}  ${locale.displayName}'),
               );
             }).toList(),
-            onChanged: (val) => setState(() => _selectedLocale = val),
+            onChanged: (val) {
+              setState(() => _selectedLocale = val);
+              _savePrefs();
+            },
           ),
 
         const SizedBox(height: 24),
@@ -217,9 +278,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             return ChoiceChip(
               label: Text('${scenario.emoji} ${scenario.label}'),
               selected: isSelected,
-              onSelected: (_) => setState(() {
-                _selectedScenario = isSelected ? null : scenario;
-              }),
+              onSelected: (_) {
+                setState(() => _selectedScenario = isSelected ? null : scenario);
+                _savePrefs();
+              },
             );
           }).toList(),
         ),
@@ -247,7 +309,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           segments: _durationOptions.map((s) {
             return ButtonSegment<int>(
               value: s,
-              label: Text(s < 60 ? '${s}s' : '${s ~/ 60}min'),
+              label: Text('${s ~/ 60}min'),
             );
           }).toList(),
           selected: {_durationSeconds},

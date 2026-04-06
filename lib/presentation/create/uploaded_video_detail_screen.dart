@@ -22,7 +22,13 @@ class UploadedVideoDetailScreen extends StatelessWidget {
         final profile = UserProfileNotifier.instance;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Your Video')),
+          appBar: AppBar(
+            title: Text(
+              video.videoWidth == null && video.videoHeight == null
+                  ? 'Your Audio'
+                  : 'Your Video',
+            ),
+          ),
           body: ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -125,13 +131,14 @@ class UploadedVideoDetailScreen extends StatelessWidget {
                       label: 'File size',
                       value: _formatBytes(video.fileSizeBytes),
                     ),
-                    _InfoRow(
-                      label: 'Resolution',
-                      value: _formatResolution(
-                        video.videoWidth,
-                        video.videoHeight,
+                    if (video.videoWidth != null && video.videoHeight != null)
+                      _InfoRow(
+                        label: 'Resolution',
+                        value: _formatResolution(
+                          video.videoWidth,
+                          video.videoHeight,
+                        ),
                       ),
-                    ),
                     _InfoRow(
                       label: 'Transcript',
                       value: video.transcriptLanguageCode.isEmpty

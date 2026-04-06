@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -53,11 +54,24 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   String? get _savedLocalPracticeId =>
       _isSavedLocalPractice ? widget.mediaItem.id : null;
 
+  // Uploaded server videos (have videoUrl but no local path) get a file-based
+  // translation cache so translations survive between sessions.
+  String? get _uploadedVideoId {
+    final hasVideoUrl = widget.mediaItem.videoUrl?.trim().isNotEmpty ?? false;
+    final hasLocalPath =
+        widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false;
+    if (hasVideoUrl && !hasLocalPath && !widget.mediaItem.deleteLocalMediaOnDispose) {
+      return widget.mediaItem.id;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
     _seedPreloadedTranslations();
     _initializeMedia();
+    unawaited(_loadUploadedVideoTranslations());
   }
 
   @override
@@ -1113,19 +1127,83 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     required String targetLocaleIdentifier,
     required Map<String, String> translations,
   }) async {
+    if (translations.isEmpty) return;
+
     final localPracticeId = _savedLocalPracticeId;
-    if (localPracticeId == null || translations.isEmpty) {
+    if (localPracticeId != null) {
+      try {
+        await LocalPracticeRepository.instance.storeTranslations(
+          id: localPracticeId,
+          translatedLanguage: targetLocaleIdentifier,
+          translations: translations,
+        );
+      } catch (_) {
+        // Local persistence should not block practice playback.
+      }
       return;
     }
 
-    try {
-      await LocalPracticeRepository.instance.storeTranslations(
-        id: localPracticeId,
-        translatedLanguage: targetLocaleIdentifier,
+    unawaited(
+      _persistUploadedVideoTranslations(
+        targetLocaleIdentifier: targetLocaleIdentifier,
         translations: translations,
-      );
+      ),
+    );
+  }
+
+  Future<Directory> _getTranslationCacheDir() async {
+    final base = await getApplicationSupportDirectory();
+    final dir = Directory('${base.path}/video_translations');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    return dir;
+  }
+
+  Future<void> _loadUploadedVideoTranslations() async {
+    final videoId = _uploadedVideoId;
+    if (videoId == null) return;
+    try {
+      final dir = await _getTranslationCacheDir();
+      final langFile = File('${dir.path}/${videoId}__lang.txt');
+      if (!await langFile.exists()) return;
+      final lang = (await langFile.readAsString()).trim();
+      if (lang.isEmpty) return;
+      final cacheFile = File('${dir.path}/${videoId}__$lang.json');
+      if (!await cacheFile.exists()) return;
+      final decoded = jsonDecode(await cacheFile.readAsString());
+      if (decoded is! Map) return;
+      final translations = decoded.cast<String, String>();
+      if (!mounted) return;
+      setState(() {
+        _translatedCueTexts = {..._translatedCueTexts, ...translations};
+        _translatedLanguageIdentifier = lang;
+      });
     } catch (_) {
-      // Local persistence should not block practice playback.
+      // Cache load failures should never break the practice session.
+    }
+  }
+
+  Future<void> _persistUploadedVideoTranslations({
+    required String targetLocaleIdentifier,
+    required Map<String, String> translations,
+  }) async {
+    final videoId = _uploadedVideoId;
+    if (videoId == null || translations.isEmpty) return;
+    try {
+      final dir = await _getTranslationCacheDir();
+      final cacheFile =
+          File('${dir.path}/${videoId}__$targetLocaleIdentifier.json');
+      Map<String, String> existing = {};
+      if (await cacheFile.exists()) {
+        final decoded = jsonDecode(await cacheFile.readAsString());
+        if (decoded is Map) existing = decoded.cast<String, String>();
+      }
+      existing.addAll(translations);
+      await cacheFile.writeAsString(jsonEncode(existing));
+      await File(
+        '${dir.path}/${videoId}__lang.txt',
+      ).writeAsString(targetLocaleIdentifier);
+    } catch (_) {
+      // Cache write failures should never break the practice session.
     }
   }
 

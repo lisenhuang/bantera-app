@@ -178,7 +178,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Your Videos',
+                  'Your Media',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 IconButton(
