@@ -620,17 +620,17 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                CupertinoIcons.video_camera_solid,
-                color: colorScheme.primary,
-              ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: video.coverImageUrl != null
+                  ? Image.network(
+                      video.coverImageUrl!,
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _fallbackMediaIcon(colorScheme),
+                    )
+                  : _fallbackMediaIcon(colorScheme),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -716,6 +716,18 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _fallbackMediaIcon(ColorScheme colorScheme) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(CupertinoIcons.video_camera_solid, color: colorScheme.primary),
     );
   }
 

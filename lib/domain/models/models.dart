@@ -61,6 +61,7 @@ class UploadedVideo {
   final int? videoHeight;
   final String videoContentType;
   final String? videoUrl;
+  final String? coverImageUrl;
   final DateTime createdAt;
 
   UploadedVideo({
@@ -80,6 +81,7 @@ class UploadedVideo {
     required this.videoHeight,
     required this.videoContentType,
     required this.videoUrl,
+    this.coverImageUrl,
     required this.createdAt,
   });
 }

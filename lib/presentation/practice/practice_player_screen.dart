@@ -575,6 +575,39 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     if (widget.mediaItem.isAudioOnly) {
+      final coverUrl = widget.mediaItem.coverUrl.trim();
+      if (coverUrl.isNotEmpty && _audioPlayerReady) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(coverUrl, fit: BoxFit.cover),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.14),
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.6),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: _buildSubtitleContent(
+                  cue,
+                  colorScheme,
+                  hasPlayableMedia: true,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
       return _buildSubtitleContent(
         cue,
         colorScheme,

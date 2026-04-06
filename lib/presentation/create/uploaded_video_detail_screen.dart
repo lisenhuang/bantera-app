@@ -202,27 +202,44 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.primary.withValues(alpha: 0.16),
-                            colorScheme.tertiary.withValues(alpha: 0.14),
-                          ],
-                        ),
+                        gradient: video.coverImageUrl == null
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  colorScheme.primary.withValues(alpha: 0.16),
+                                  colorScheme.tertiary.withValues(alpha: 0.14),
+                                ],
+                              )
+                            : null,
+                        image: video.coverImageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(video.coverImageUrl!),
+                                fit: BoxFit.cover,
+                                colorFilter: ColorFilter.mode(
+                                  Colors.black.withValues(alpha: 0.45),
+                                  BlendMode.darken,
+                                ),
+                              )
+                            : null,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.ondemand_video_rounded,
-                            size: 42,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(height: 18),
+                          if (video.coverImageUrl == null) ...[
+                            Icon(
+                              Icons.ondemand_video_rounded,
+                              size: 42,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(height: 18),
+                          ] else
+                            const SizedBox(height: 8),
                           Text(
                             _displayTitle(video.originalFileName),
-                            style: theme.textTheme.headlineSmall,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: video.coverImageUrl != null ? Colors.white : null,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Wrap(
@@ -440,7 +457,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
         learningLanguage: '',
         level: '',
       ),
-      coverUrl: '',
+      coverUrl: _video.coverImageUrl ?? '',
       videoUrl: _video.videoUrl,
       mediaHeaders: accessToken == null || accessToken.isEmpty
           ? const {}

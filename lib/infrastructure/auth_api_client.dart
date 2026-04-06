@@ -672,6 +672,7 @@ class AuthApiClient {
       videoHeight: (json['videoHeight'] as num?)?.toInt(),
       videoContentType: json['videoContentType'] as String,
       videoUrl: json['videoUrl'] as String?,
+      coverImageUrl: json['coverImageUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
