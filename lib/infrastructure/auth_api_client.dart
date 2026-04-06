@@ -4,6 +4,24 @@ import 'dart:io';
 import '../core/api_config_notifier.dart';
 import '../domain/models/models.dart';
 
+class AiDialogueResult {
+  const AiDialogueResult({
+    required this.title,
+    required this.voice1,
+    required this.voice2,
+    required this.language,
+    required this.languageCode,
+    required this.lines,
+  });
+
+  final String title;
+  final String voice1;
+  final String voice2;
+  final String language;
+  final String languageCode;
+  final List<Map<String, String>> lines;
+}
+
 class AuthApiClient {
   AuthApiClient._();
 
@@ -322,6 +340,117 @@ class AuthApiClient {
     }
   }
 
+  Future<AiDialogueResult> generateAiDialogue({
+    required String accessToken,
+    required String language,
+    required String languageCode,
+    required String scenario,
+    required int durationSeconds,
+  }) async {
+    try {
+      final json = await _sendJsonRequest(
+        method: 'POST',
+        path: '/api/me/audio/dialogue',
+        payload: {
+          'language': language,
+          'languageCode': languageCode,
+          'scenario': scenario,
+          'durationSeconds': durationSeconds,
+        },
+        accessToken: accessToken,
+      );
+      final rawLines = (json['lines'] as List?) ?? const [];
+      return AiDialogueResult(
+        title: json['title'] as String? ?? '',
+        voice1: json['voice1'] as String? ?? '',
+        voice2: json['voice2'] as String? ?? '',
+        language: json['language'] as String? ?? language,
+        languageCode: json['languageCode'] as String? ?? languageCode,
+        lines: rawLines.map((l) {
+          final m = l is Map ? l.cast<String, dynamic>() : <String, dynamic>{};
+          return <String, String>{
+            'speaker': m['speaker']?.toString() ?? '',
+            'text': m['text']?.toString() ?? '',
+          };
+        }).toList(),
+      );
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message: 'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message: 'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
+  Future<UploadedVideo> synthesiseAiAudio({
+    required String accessToken,
+    required AiDialogueResult dialogue,
+  }) async {
+    try {
+      final json = await _sendJsonRequest(
+        method: 'POST',
+        path: '/api/me/audio/synthesise',
+        payload: {
+          'language': dialogue.language,
+          'languageCode': dialogue.languageCode,
+          'title': dialogue.title,
+          'voice1': dialogue.voice1,
+          'voice2': dialogue.voice2,
+          'lines': dialogue.lines,
+        },
+        accessToken: accessToken,
+      );
+      return _uploadedVideoFromJson(json);
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message: 'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message: 'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
+  Future<UploadedVideo> updateVideoTranscript({
+    required String accessToken,
+    required String videoId,
+    required String transcriptText,
+    required List<VideoTranscriptCue> transcriptCues,
+  }) async {
+    try {
+      final json = await _sendJsonRequest(
+        method: 'PATCH',
+        path: '/api/me/videos/$videoId/transcript',
+        payload: {
+          'transcriptText': transcriptText,
+          'transcriptCues': transcriptCues.map((c) => c.toJson()).toList(),
+        },
+        accessToken: accessToken,
+      );
+      return _uploadedVideoFromJson(json);
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
   Future<AuthTokenResponse> _postAuth(
     String path,
     Map<String, dynamic> payload,
@@ -444,6 +573,7 @@ class AuthApiClient {
           .toList(),
       isPublic: json['isPublic'] as bool,
       isAiGenerated: json['isAiGenerated'] as bool? ?? false,
+      isTranscriptionEstimated: json['isTranscriptionEstimated'] as bool? ?? false,
       durationMs: (json['durationMs'] as num).toInt(),
       fileSizeBytes: (json['fileSizeBytes'] as num).toInt(),
       videoWidth: (json['videoWidth'] as num?)?.toInt(),

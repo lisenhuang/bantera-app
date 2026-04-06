@@ -54,6 +54,7 @@ class UploadedVideo {
   final List<VideoTranscriptCue> transcriptCues;
   final bool isPublic;
   final bool isAiGenerated;
+  final bool isTranscriptionEstimated;
   final int durationMs;
   final int fileSizeBytes;
   final int? videoWidth;
@@ -72,6 +73,7 @@ class UploadedVideo {
     required this.transcriptCues,
     required this.isPublic,
     required this.isAiGenerated,
+    required this.isTranscriptionEstimated,
     required this.durationMs,
     required this.fileSizeBytes,
     required this.videoWidth,

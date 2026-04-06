@@ -46,6 +46,8 @@ private final class BanteraVideoProcessingBridge {
       handlePrepareVideoForUpload(call: call, result: result)
     case "transcribeRecordedAudio":
       handleTranscribeRecordedAudio(call: call, result: result)
+    case "transcribeAudioForUpload":
+      handleTranscribeAudioForUpload(call: call, result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -150,6 +152,52 @@ private final class BanteraVideoProcessingBridge {
           result(
             FlutterError(
               code: "video_processing_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+  private func handleTranscribeAudioForUpload(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let inputPath = args["inputPath"] as? String,
+      let localeIdentifier = args["localeIdentifier"] as? String,
+      !inputPath.isEmpty,
+      !localeIdentifier.isEmpty
+    else {
+      result(BanteraVideoProcessingError.invalidArguments.flutterError)
+      return
+    }
+
+    Task {
+      do {
+        let response = try await BanteraVideoPreparationService().transcribeAudioForUpload(
+          inputURL: URL(fileURLWithPath: inputPath),
+          localeIdentifier: localeIdentifier
+        )
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch let error as BanteraVideoProcessingError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "transcription_failed",
               message: error.localizedDescription,
               details: nil
             )
@@ -649,6 +697,24 @@ private final class BanteraVideoPreparationService {
       "transcriptText": transcript.text,
       "transcriptLanguage": transcript.localeIdentifier,
       "transcriptLanguageCode": transcript.languageCode,
+    ]
+  }
+
+  func transcribeAudioForUpload(
+    inputURL: URL,
+    localeIdentifier: String
+  ) async throws -> [String: Any] {
+    let locale = try await resolveLocale(identifier: localeIdentifier)
+    let asset = AVAsset(url: inputURL)
+    // Use transcribe(asset:locale:) so the audio is extracted to Linear PCM
+    // before being passed to SpeechTranscriber (same path as prepareVideoForUpload).
+    let transcript = try await transcribe(asset: asset, locale: locale)
+
+    return [
+      "transcriptText": transcript.text,
+      "transcriptLanguage": transcript.localeIdentifier,
+      "transcriptLanguageCode": transcript.languageCode,
+      "transcriptCues": transcript.cues.map(\.dictionary),
     ]
   }
 

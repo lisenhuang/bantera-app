@@ -181,6 +181,61 @@ class VideoProcessingService {
     }
   }
 
+  Future<PreparedVideoUpload> transcribeAudioForUpload({
+    required File inputFile,
+    required String localeIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const VideoProcessingException(
+        code: 'unsupported_platform',
+        message: 'Audio transcription is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      final response = await _channel.invokeMapMethod<Object?, Object?>(
+        'transcribeAudioForUpload',
+        <String, Object?>{
+          'inputPath': inputFile.path,
+          'localeIdentifier': localeIdentifier,
+        },
+      );
+
+      final map = response ?? const <Object?, Object?>{};
+      return PreparedVideoUpload(
+        file: inputFile,
+        fileName: inputFile.uri.pathSegments.last,
+        transcriptText: map['transcriptText']?.toString() ?? '',
+        transcriptLanguage:
+            map['transcriptLanguage']?.toString() ?? localeIdentifier,
+        transcriptLanguageCode:
+            map['transcriptLanguageCode']?.toString() ??
+            localeIdentifier.split(RegExp(r'[-_]')).first.toLowerCase(),
+        transcriptCues: _parseTranscriptCues(map['transcriptCues']),
+        durationMs: 0,
+        fileSizeBytes: 0,
+        videoWidth: null,
+        videoHeight: null,
+        contentType: 'audio/wav',
+        shouldDeleteAfterUse: false,
+      );
+    } on VideoProcessingException {
+      rethrow;
+    } on PlatformException catch (error) {
+      throw VideoProcessingException(
+        code: error.code,
+        message:
+            error.message ??
+            'The app could not transcribe this audio file.',
+      );
+    } on MissingPluginException {
+      throw const VideoProcessingException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS video bridge is not available in this build.',
+      );
+    }
+  }
+
   Future<RecordedAttemptTranscription> transcribeRecordedAudio({
     required File inputFile,
     required String localeIdentifier,

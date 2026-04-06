@@ -27,8 +27,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   final TextEditingController _customScenarioController = TextEditingController();
   int _durationSeconds = 120;
 
-  bool _isGenerating = false;
+  _GenerationStep _step = _GenerationStep.idle;
   String? _errorMessage;
+
+  bool get _isGenerating => _step != _GenerationStep.idle;
 
   static const _durationOptions = [60, 120, 180, 240];
 
@@ -143,17 +145,25 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             : _selectedScenario!.scenarioText ?? _selectedScenario!.label;
 
     setState(() {
-      _isGenerating = true;
+      _step = _GenerationStep.writingDialogue;
       _errorMessage = null;
     });
 
     try {
-      final video = await AuthApiClient.instance.generateAiAudio(
+      final dialogue = await AuthApiClient.instance.generateAiDialogue(
         accessToken: session.accessToken,
         language: locale.displayName,
         languageCode: locale.identifier,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
+      );
+
+      if (!mounted) return;
+      setState(() => _step = _GenerationStep.generatingAudio);
+
+      final video = await AuthApiClient.instance.synthesiseAiAudio(
+        accessToken: session.accessToken,
+        dialogue: dialogue,
       );
 
       if (!mounted) return;
@@ -164,19 +174,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         ),
       );
     } on AuthApiException catch (e) {
-      setState(() {
-        _errorMessage = e.message;
-      });
+      if (mounted) setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-      });
+      if (mounted) setState(() => _errorMessage = e.toString());
     } finally {
-      if (mounted) {
-        setState(() {
-          _isGenerating = false;
-        });
-      }
+      if (mounted) setState(() => _step = _GenerationStep.idle);
     }
   }
 
@@ -192,22 +194,66 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 20),
-          Text(
-            'Generating dialogue and audio…',
-            style: TextStyle(fontSize: 15),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'This may take up to a minute.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
-          ),
-        ],
+    final steps = [
+      (step: _GenerationStep.writingDialogue, label: 'Writing dialogue'),
+      (step: _GenerationStep.generatingAudio, label: 'Generating audio'),
+    ];
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Creating your audio…',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 24),
+            ...steps.map((s) {
+              final isDone = _step.index > s.step.index;
+              final isActive = _step == s.step;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: isDone
+                          ? const Icon(Icons.check_circle_rounded,
+                              color: Colors.green, size: 24)
+                          : isActive
+                              ? const CircularProgressIndicator(strokeWidth: 2.5)
+                              : const Icon(Icons.radio_button_unchecked,
+                                  color: Colors.grey, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Text(
+                      s.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isDone
+                            ? Colors.green
+                            : isActive
+                                ? null
+                                : Colors.grey,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 8),
+            const Text(
+              'This may take up to a minute.',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -355,3 +401,5 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     );
   }
 }
+
+enum _GenerationStep { idle, writingDialogue, generatingAudio }

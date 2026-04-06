@@ -1,20 +1,123 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
+import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/video_processing_service.dart';
 import '../practice/practice_player_screen.dart';
 import '../shared/profile_avatar.dart';
 
-class UploadedVideoDetailScreen extends StatelessWidget {
+class UploadedVideoDetailScreen extends StatefulWidget {
   const UploadedVideoDetailScreen({super.key, required this.video});
 
   final UploadedVideo video;
 
   @override
+  State<UploadedVideoDetailScreen> createState() =>
+      _UploadedVideoDetailScreenState();
+}
+
+class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
+  late UploadedVideo _video;
+  bool _isTranscribing = false;
+  String? _transcriptionError;
+
+  @override
+  void initState() {
+    super.initState();
+    _video = widget.video;
+    if (_video.isAiGenerated && _video.isTranscriptionEstimated) {
+      unawaited(_runPhoneTranscription());
+    }
+  }
+
+  Future<void> _runPhoneTranscription() async {
+    final accessToken = AuthSessionNotifier.instance.session?.accessToken;
+    if (accessToken == null || accessToken.isEmpty) return;
+
+    final videoUrl = _video.videoUrl?.trim();
+    if (videoUrl == null || videoUrl.isEmpty) return;
+
+    final localeIdentifier = _video.transcriptLanguageCode.isNotEmpty
+        ? _video.transcriptLanguageCode
+        : _video.transcriptLanguage;
+
+    if (!mounted) return;
+    setState(() {
+      _isTranscribing = true;
+      _transcriptionError = null;
+    });
+
+    File? tempFile;
+    try {
+      // Download WAV to a temp file (HttpClient bypasses iOS ATS for HTTP)
+      final uri = Uri.parse(videoUrl);
+      final request = await HttpClient().getUrl(uri);
+      request.headers.set('Authorization', 'Bearer $accessToken');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Server returned ${response.statusCode}');
+      }
+      final tempDir = await getTemporaryDirectory();
+      tempFile = File('${tempDir.path}/bantera_transcribe_${_video.id}.wav');
+      final sink = tempFile.openWrite();
+      await response.pipe(sink);
+
+      // Transcribe with SFSpeechRecognizer
+      final result = await VideoProcessingService.instance.transcribeAudioForUpload(
+        inputFile: tempFile,
+        localeIdentifier: localeIdentifier,
+      );
+
+      if (result.transcriptCues.isEmpty) {
+        throw const VideoProcessingException(
+          code: 'no_cues',
+          message: 'The transcription returned no cues.',
+        );
+      }
+
+      // Send real cues to server
+      final updated = await AuthApiClient.instance.updateVideoTranscript(
+        accessToken: accessToken,
+        videoId: _video.id,
+        transcriptText: result.transcriptText,
+        transcriptCues: result.transcriptCues,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _video = updated;
+        _isTranscribing = false;
+      });
+    } on VideoProcessingException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isTranscribing = false;
+        _transcriptionError = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isTranscribing = false;
+        _transcriptionError = 'Transcription failed. Using estimated cues.';
+      });
+    } finally {
+      try {
+        await tempFile?.delete();
+      } catch (_) {}
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final video = _video;
 
     return ListenableBuilder(
       listenable: UserProfileNotifier.instance,
@@ -148,11 +251,66 @@ class UploadedVideoDetailScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Transcription status banner
+              if (_isTranscribing) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Transcribing…',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (_transcriptionError != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: colorScheme.errorContainer.withValues(alpha: 0.5),
+                  ),
+                  child: Text(
+                    _transcriptionError!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: video.transcriptCues.isEmpty
+                  onPressed: _isTranscribing || video.transcriptCues.isEmpty
                       ? null
                       : () {
                           Navigator.of(context).push(
@@ -220,12 +378,12 @@ class UploadedVideoDetailScreen extends StatelessWidget {
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
 
     return MediaItem(
-      id: video.id,
-      title: _displayTitle(video.originalFileName),
+      id: _video.id,
+      title: _displayTitle(_video.originalFileName),
       description:
-          'Your uploaded practice clip with ${video.transcriptCues.length} transcript cues.',
+          'Your uploaded practice clip with ${_video.transcriptCues.length} transcript cues.',
       creator: User(
-        id: video.userId,
+        id: _video.userId,
         displayName: profile.displayName,
         avatarUrl: profile.avatarUrl ?? '',
         firstLanguage: '',
@@ -233,20 +391,20 @@ class UploadedVideoDetailScreen extends StatelessWidget {
         level: '',
       ),
       coverUrl: '',
-      videoUrl: video.videoUrl,
+      videoUrl: _video.videoUrl,
       mediaHeaders: accessToken == null || accessToken.isEmpty
           ? const {}
           : <String, String>{'Authorization': 'Bearer $accessToken'},
-      spokenLanguage: video.transcriptLanguageCode.isEmpty
-          ? video.transcriptLanguage
-          : video.transcriptLanguageCode.toUpperCase(),
-      accent: video.transcriptLanguageCode.isNotEmpty
-          ? video.transcriptLanguageCode
-          : video.transcriptLanguage,
-      durationMs: video.durationMs,
-      cues: video.transcriptCues.map((cue) {
+      spokenLanguage: _video.transcriptLanguageCode.isEmpty
+          ? _video.transcriptLanguage
+          : _video.transcriptLanguageCode.toUpperCase(),
+      accent: _video.transcriptLanguageCode.isNotEmpty
+          ? _video.transcriptLanguageCode
+          : _video.transcriptLanguage,
+      durationMs: _video.durationMs,
+      cues: _video.transcriptCues.map((cue) {
         return Cue(
-          id: '${video.id}-${cue.index}',
+          id: '${_video.id}-${cue.index}',
           startTimeMs: cue.startMs,
           endTimeMs: cue.endMs,
           originalText: cue.text,
@@ -254,7 +412,7 @@ class UploadedVideoDetailScreen extends StatelessWidget {
         );
       }).toList(),
       transcriptionSource: 'Your Upload',
-      isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      isAudioOnly: _video.videoWidth == null && _video.videoHeight == null,
     );
   }
 
