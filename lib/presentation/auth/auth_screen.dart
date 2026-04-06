@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/theme.dart';
 import 'api_base_url_screen.dart';
@@ -19,6 +18,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
 
   bool _showEmailForm = false;
+  int _logoTapCount = 0;
+  DateTime? _lastLogoTap;
 
   AuthSessionNotifier get _auth => AuthSessionNotifier.instance;
 
@@ -36,10 +37,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: Listenable.merge([
-            _auth,
-            ApiConfigNotifier.instance,
-          ]),
+          listenable: _auth,
           builder: (context, _) {
             return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -54,11 +52,33 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              'Bantera',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.displayLarge?.copyWith(
-                                color: BanteraTheme.primaryColor,
+                            GestureDetector(
+                              onTap: () {
+                                final now = DateTime.now();
+                                if (_lastLogoTap == null ||
+                                    now.difference(_lastLogoTap!) >
+                                        const Duration(seconds: 3)) {
+                                  _logoTapCount = 1;
+                                } else {
+                                  _logoTapCount++;
+                                }
+                                _lastLogoTap = now;
+                                if (_logoTapCount >= 16) {
+                                  _logoTapCount = 0;
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const ApiBaseUrlScreen(),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Text(
+                                'Bantera',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.displayLarge?.copyWith(
+                                  color: BanteraTheme.primaryColor,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -205,27 +225,6 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                             ],
 
-                            const SizedBox(height: 20),
-                            TextButton.icon(
-                              onPressed: _auth.isBusy
-                                  ? null
-                                  : () async {
-                                      final changed =
-                                          await Navigator.of(context).push<bool>(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const ApiBaseUrlScreen(),
-                                        ),
-                                      );
-                                      if (changed == true) _auth.clearError();
-                                    },
-                              icon: const Icon(Icons.link, size: 16),
-                              label: Text(
-                                'API: ${ApiConfigNotifier.instance.baseUrl}',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ),
                           ],
                         ),
                       ),

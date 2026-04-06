@@ -56,10 +56,6 @@ class AppRoot extends StatelessWidget {
           );
         }
 
-        if (!ApiConfigNotifier.instance.hasConfiguredBaseUrl) {
-          return const ApiBaseUrlScreen(initialSetup: true);
-        }
-
         if (AuthSessionNotifier.instance.isAuthenticated) {
           return const MainScaffold();
         }
