@@ -26,6 +26,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
   late UploadedVideo _video;
   bool _isTranscribing = false;
   String? _transcriptionError;
+  bool _transcriptExpanded = false;
 
   @override
   void initState() {
@@ -393,47 +394,88 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Transcript Preview', style: theme.textTheme.titleLarge),
-              const SizedBox(height: 12),
-              if (video.transcriptCues.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    color: colorScheme.surface,
-                    border: Border.all(
-                      color: colorScheme.outline.withValues(alpha: 0.12),
-                    ),
+              // Transcript section – collapsed by default
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => setState(
+                  () => _transcriptExpanded = !_transcriptExpanded,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Transcript',
+                        style: theme.textTheme.titleLarge,
+                      ),
+                      const SizedBox(width: 6),
+                      if (video.transcriptCues.isNotEmpty)
+                        Text(
+                          '(${video.transcriptCues.length} cues)',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      const Spacer(),
+                      Icon(
+                        _transcriptExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        _transcriptExpanded ? 'Hide' : 'Show',
+                        style: TextStyle(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Text('No transcript cues are available yet.'),
-                )
-              else
-                ...video.transcriptCues.map((cue) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
+                ),
+              ),
+              if (_transcriptExpanded) ...[
+                const SizedBox(height: 12),
+                if (video.transcriptCues.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(18),
                       color: colorScheme.surface,
                       border: Border.all(
-                        color: colorScheme.outline.withValues(alpha: 0.1),
+                        color: colorScheme.outline.withValues(alpha: 0.12),
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${cue.index + 1}. ${_formatCueRange(cue)}',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colorScheme.primary,
-                          ),
+                    child: const Text('No transcript cues are available yet.'),
+                  )
+                else
+                  ...video.transcriptCues.map((cue) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        color: colorScheme.surface,
+                        border: Border.all(
+                          color: colorScheme.outline.withValues(alpha: 0.1),
                         ),
-                        const SizedBox(height: 8),
-                        Text(cue.text, style: theme.textTheme.bodyLarge),
-                      ],
-                    ),
-                  );
-                }),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${cue.index + 1}. ${_formatCueRange(cue)}',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(cue.text, style: theme.textTheme.bodyLarge),
+                        ],
+                      ),
+                    );
+                  }),
+              ],
             ],
           ),
         );

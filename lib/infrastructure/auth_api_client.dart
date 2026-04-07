@@ -279,12 +279,20 @@ class AuthApiClient {
   Future<List<UploadedVideo>> fetchPublicVideos({
     String? accessToken,
     String? languageCode,
-    int limit = 5,
+    int limit = 20,
+    int offset = 0,
+    String? search,
   }) async {
     try {
-      final params = <String, String>{'limit': limit.toString()};
+      final params = <String, String>{
+        'limit': limit.toString(),
+        'offset': offset.toString(),
+      };
       if (languageCode != null && languageCode.isNotEmpty) {
         params['languageCode'] = languageCode;
+      }
+      if (search != null && search.trim().isNotEmpty) {
+        params['search'] = search.trim();
       }
       final base = _resolve('/api/videos/public');
       final uri = base.replace(queryParameters: params);

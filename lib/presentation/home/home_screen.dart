@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
-import '../practice/practice_player_screen.dart';
+import '../practice/media_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../shared/profile_avatar.dart';
 
@@ -340,6 +341,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    // Audio / Video type badge – top-left
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isAudio
+                                  ? Icons.audiotrack
+                                  : Icons.videocam,
+                              color: Colors.white,
+                              size: 11,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              isAudio ? 'Audio' : 'Video',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Duration badge – bottom-right
                     Positioned(
                       bottom: 8,
                       right: 8,
@@ -390,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PracticePlayerScreen(mediaItem: _toMediaItem(video)),
+        builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
       ),
     );
   }
@@ -408,7 +446,8 @@ class _HomeScreenState extends State<HomeScreen> {
       creator: User(
         id: video.userId,
         displayName: 'Bantera',
-        avatarUrl: '',
+        avatarUrl:
+            '${ApiConfigNotifier.instance.baseUrl}/api/users/${video.userId}/avatar',
         firstLanguage: '',
         learningLanguage: '',
         level: '',

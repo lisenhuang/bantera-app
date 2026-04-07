@@ -12,8 +12,6 @@ import '../practice/practice_player_screen.dart';
 import 'generate_ai_audio_screen.dart';
 import 'local_video_practice_screen.dart';
 import 'uploaded_video_detail_screen.dart';
-import 'video_upload_screen.dart';
-
 class CreateHubScreen extends StatefulWidget {
   const CreateHubScreen({super.key});
 
@@ -31,6 +29,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   String? _loadError;
   String? _openingLocalVideoId;
   String? _deletingLocalVideoId;
+  String? _deletingUploadedVideoId;
 
   @override
   void initState() {
@@ -88,45 +87,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 Expanded(
                   child: _buildPrimaryAction(
                     context,
-                    CupertinoIcons.video_camera,
-                    'Upload Video',
-                    colorScheme,
-                    isSecondary: true,
-                    onTap: () async {
-                      final uploaded = await Navigator.of(context)
-                          .push<UploadedVideo>(
-                            MaterialPageRoute<UploadedVideo>(
-                              builder: (_) => const VideoUploadScreen(),
-                            ),
-                          );
-
-                      if (!mounted) {
-                        return;
-                      }
-
-                      if (uploaded != null) {
-                        setState(() {
-                          _myVideos = [
-                            uploaded,
-                            ..._myVideos.where(
-                              (video) => video.id != uploaded.id,
-                            ),
-                          ];
-                        });
-                      } else {
-                        await _loadMyVideos(showLoadingState: false);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPrimaryAction(
-                    context,
                     Icons.auto_awesome,
                     'Generate with AI',
                     colorScheme,
@@ -140,34 +100,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildPrimaryAction(
-                    context,
-                    CupertinoIcons.doc_text,
-                    'Import Transcript',
-                    colorScheme,
-                    isSecondary: true,
-                    onTap: () {},
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPrimaryAction(
-                    context,
-                    CupertinoIcons.link,
-                    'Paste Link',
-                    colorScheme,
-                    isSecondary: true,
-                    onTap: () {},
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(child: SizedBox()),
               ],
             ),
 
@@ -602,16 +534,19 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     ColorScheme colorScheme,
   ) {
     final theme = Theme.of(context);
+    final isDeleting = _deletingUploadedVideoId == video.id;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => UploadedVideoDetailScreen(video: video),
-          ),
-        );
-      },
+      onTap: isDeleting
+          ? null
+          : () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => UploadedVideoDetailScreen(video: video),
+                ),
+              );
+            },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -628,7 +563,8 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                       width: 52,
                       height: 52,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _fallbackMediaIcon(colorScheme),
+                      errorBuilder: (_, __, ___) =>
+                          _fallbackMediaIcon(colorScheme),
                     )
                   : _fallbackMediaIcon(colorScheme),
             ),
@@ -684,7 +620,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 if (video.isAiGenerated) ...[
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
@@ -692,7 +631,11 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.auto_awesome, size: 11, color: Colors.purple.shade700),
+                        Icon(
+                          Icons.auto_awesome,
+                          size: 11,
+                          color: Colors.purple.shade700,
+                        ),
                         const SizedBox(width: 3),
                         Text(
                           'AI',
@@ -705,12 +648,34 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: colorScheme.onSurface.withValues(alpha: 0.45),
-                  size: 18,
-                ),
+                const SizedBox(height: 10),
+                if (isDeleting)
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                else
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        unawaited(_confirmDeleteUploadedVideo(video));
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text('Delete'),
+                      ),
+                    ],
+                    icon: Icon(
+                      CupertinoIcons.ellipsis_circle,
+                      color: colorScheme.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
               ],
             ),
           ],
@@ -821,6 +786,60 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
           _deletingLocalVideoId = null;
         });
       }
+    }
+  }
+
+  Future<void> _confirmDeleteUploadedVideo(UploadedVideo video) async {
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Delete media?'),
+            content: Text(
+              'This will permanently delete "${_displayTitle(video.originalFileName)}" and its transcript. This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed || !mounted) return;
+
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) return;
+
+    setState(() => _deletingUploadedVideoId = video.id);
+
+    try {
+      await _apiClient.deleteVideo(
+        accessToken: session.accessToken,
+        videoId: video.id,
+      );
+      if (mounted) {
+        setState(() {
+          _myVideos = _myVideos.where((v) => v.id != video.id).toList();
+        });
+      }
+    } on AuthApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _deletingUploadedVideoId = null);
     }
   }
 
