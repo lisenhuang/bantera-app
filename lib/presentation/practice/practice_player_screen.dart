@@ -520,30 +520,41 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   ),
                   const SizedBox(height: 24),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionBtn(
-                        _isPlayingAll
-                            ? CupertinoIcons.stop_fill
-                            : CupertinoIcons.play_rectangle,
-                        _isPlayingAll ? 'Stop' : 'Play All',
-                        () => _isPlayingAll
-                            ? unawaited(_stopPlayAll())
-                            : unawaited(_startPlayAll()),
-                        colorScheme,
+                      Expanded(
+                        child: Center(
+                          child: _buildActionBtn(
+                            _isPlayingAll
+                                ? CupertinoIcons.stop_fill
+                                : CupertinoIcons.play_rectangle,
+                            _isPlayingAll ? 'Stop' : 'Play All',
+                            () => _isPlayingAll
+                                ? unawaited(_stopPlayAll())
+                                : unawaited(_startPlayAll()),
+                            colorScheme,
+                          ),
+                        ),
                       ),
-                      _buildActionBtn(
-                        CupertinoIcons.mic_solid,
-                        'Compare',
-                        _openCompareSheet,
-                        colorScheme,
-                        isHighlight: true,
+                      Expanded(
+                        child: Center(
+                          child: _buildActionBtn(
+                            CupertinoIcons.mic_solid,
+                            'Compare',
+                            _openCompareSheet,
+                            colorScheme,
+                            isHighlight: true,
+                          ),
+                        ),
                       ),
-                      _buildActionBtn(
-                        CupertinoIcons.gobackward,
-                        'Start Over',
-                        _isPlayingAll ? null : _confirmStartOver,
-                        colorScheme,
+                      Expanded(
+                        child: Center(
+                          child: _buildActionBtn(
+                            CupertinoIcons.gobackward,
+                            'Start Over',
+                            _isPlayingAll ? null : _confirmStartOver,
+                            colorScheme,
+                          ),
+                        ),
                       ),
                     ],
                   ),
