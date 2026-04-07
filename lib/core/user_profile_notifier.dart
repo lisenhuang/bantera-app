@@ -143,7 +143,7 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     final normalized = nativeLanguage.trim();
-    if (normalized.isEmpty || normalized.length > 35) {
+    if (normalized.length > 35) {
       _setError('Choose a valid native language.');
       return false;
     }
@@ -176,7 +176,7 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     final normalized = learningLanguage.trim();
-    if (normalized.isEmpty || normalized.length > 35) {
+    if (normalized.length > 35) {
       _setError('Choose a valid learning language.');
       return false;
     }

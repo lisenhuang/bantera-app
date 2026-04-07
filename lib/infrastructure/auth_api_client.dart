@@ -272,6 +272,81 @@ class AuthApiClient {
     }
   }
 
+  /// Fetches recent public videos (not owned by the caller) optionally
+  /// filtered by [languageCode] (e.g. "en", "ja"). [limit] defaults to 5.
+  /// Passing [accessToken] is optional — when provided the server excludes
+  /// videos owned by that user.
+  Future<List<UploadedVideo>> fetchPublicVideos({
+    String? accessToken,
+    String? languageCode,
+    int limit = 5,
+  }) async {
+    try {
+      final params = <String, String>{'limit': limit.toString()};
+      if (languageCode != null && languageCode.isNotEmpty) {
+        params['languageCode'] = languageCode;
+      }
+      final base = _resolve('/api/videos/public');
+      final uri = base.replace(queryParameters: params);
+
+      final request = await _httpClient.getUrl(uri);
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      if (accessToken != null && accessToken.isNotEmpty) {
+        request.headers.set(
+          HttpHeaders.authorizationHeader,
+          'Bearer $accessToken',
+        );
+      }
+
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      if (responseText.isEmpty) {
+        throw const AuthApiException(
+          code: 'invalid_response',
+          message: 'The Bantera API returned an empty response.',
+        );
+      }
+
+      final decoded = jsonDecode(responseText);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is! List) {
+          throw const AuthApiException(
+            code: 'invalid_response',
+            message: 'The Bantera API returned an unexpected response.',
+          );
+        }
+        return decoded
+            .whereType<Map>()
+            .map(
+              (item) => _uploadedVideoFromJson(
+                item.map((key, value) => MapEntry(key.toString(), value)),
+              ),
+            )
+            .toList();
+      }
+
+      if (decoded is Map<String, dynamic>) {
+        _throwApiException(decoded, response.statusCode);
+      }
+      throw AuthApiException(
+        code: 'request_failed',
+        message: 'The Bantera API request failed (${response.statusCode}).',
+      );
+    } on SocketException {
+      throw const AuthApiException(
+        code: 'network_error',
+        message:
+            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
+      );
+    } on HandshakeException {
+      throw const AuthApiException(
+        code: 'tls_error',
+        message:
+            'The app could not establish a secure connection to the Bantera API.',
+      );
+    }
+  }
+
   Future<List<UploadedVideo>> fetchMyVideos({
     required String accessToken,
   }) async {

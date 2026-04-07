@@ -157,14 +157,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 12),
                 _buildLanguageTile(
                   context,
-                  label: 'My Language',
+                  label: 'My Native Language',
                   subtitle: 'Your native or first language',
                   icon: Icons.record_voice_over_outlined,
                   currentIdentifier: _profile.nativeLanguage,
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
-                            title: 'My Language',
+                            title: 'My Native Language',
                             currentIdentifier: _profile.nativeLanguage,
                             onSelected: _saveNativeLanguage,
                           ),
@@ -365,24 +365,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveNativeLanguage(TranscriptionLocaleOption option) async {
     _profile.clearError();
+    final clearing = option.identifier.isEmpty;
     final updated = await _profile.updateNativeLanguage(option.identifier);
-    if (!mounted || !updated) {
-      return;
-    }
+    if (!mounted || !updated) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Native language set to ${option.displayName}.')),
+      SnackBar(
+        content: Text(
+          clearing
+              ? 'Native language cleared.'
+              : 'Native language set to ${option.displayName}.',
+        ),
+      ),
     );
   }
 
   Future<void> _saveLearningLanguage(TranscriptionLocaleOption option) async {
     _profile.clearError();
+    final clearing = option.identifier.isEmpty;
     final updated = await _profile.updateLearningLanguage(option.identifier);
-    if (!mounted || !updated) {
-      return;
-    }
+    if (!mounted || !updated) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Learning language set to ${option.displayName}.'),
+        content: Text(
+          clearing
+              ? 'Learning language cleared.'
+              : 'Learning language set to ${option.displayName}.',
+        ),
       ),
     );
   }
@@ -490,6 +498,25 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                 ),
               ),
             ),
+            // "None" clear row — only shown when a language is currently set
+            // and the search field is empty.
+            if ((widget.currentIdentifier?.isNotEmpty ?? false) &&
+                _searchController.text.isEmpty) ...[
+              const SizedBox(height: 4),
+              ListTile(
+                leading: const Text('🚫', style: TextStyle(fontSize: 28)),
+                title: const Text('None'),
+                subtitle: const Text('Clear selection'),
+                onTap: () => widget.onSelected(
+                  const TranscriptionLocaleOption(
+                    identifier: '',
+                    displayName: 'None',
+                    isInstalled: false,
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+            ],
             const SizedBox(height: 8),
             Expanded(
               child: _filtered.isEmpty
