@@ -75,6 +75,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     CupertinoIcons.play_rectangle_fill,
                     'Practice Video',
                     colorScheme,
+                    isSecondary: true,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(

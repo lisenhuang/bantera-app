@@ -31,7 +31,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   TranscriptionLocaleOption? _selectedLocale;
   AiScenario? _selectedScenario;
   final TextEditingController _customScenarioController = TextEditingController();
-  int _durationSeconds = 120;
+  int _durationSeconds = 60;
 
   _GenerationStep _step = _GenerationStep.idle;
   String? _errorMessage;
@@ -40,10 +40,15 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   static const _durationOptions = [60, 120, 180, 240];
 
-  bool get _canGenerate =>
-      _selectedLocale != null &&
-      (!(_selectedScenario?.isCustom ?? false) ||
-          _customScenarioController.text.trim().isNotEmpty);
+  bool get _canGenerate {
+    final learningLang =
+        UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
+    if (learningLang.isEmpty) return false;
+    if (_selectedLocale == null) return false;
+    if ((_selectedScenario?.isCustom ?? false) &&
+        _customScenarioController.text.trim().isEmpty) return false;
+    return true;
+  }
 
   @override
   void initState() {
@@ -82,15 +87,17 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             .firstOrNull;
       }
 
-      // Restore last selections from prefs (scenario always restored;
-      // locale only used as fallback when learning language isn't matched).
+      // Restore scenario from prefs; locale pref is only a fallback when a
+      // learning language IS set but didn't match exactly.
       AiScenario? restoredScenario;
       try {
         final file = await _prefsFile();
         if (await file.exists()) {
           final prefs =
               jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-          if (defaultLocale == null) {
+          // Only fall back to the saved locale when the user has a learning
+          // language configured (prevents re-enabling the button via old prefs).
+          if (defaultLocale == null && learningLang.isNotEmpty) {
             final lastId = prefs['lastLanguageIdentifier'] as String?;
             if (lastId != null) {
               defaultLocale =
@@ -379,8 +386,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       child: ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        // Prompt to set learning language when it's missing.
-        if (!hasLearningLang) ...[
+        // Language indicator / prompt
+        Text('Language', style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        if (!hasLearningLang)
+          // No learning language set — show prompt to go to settings.
           GestureDetector(
             onTap: () => Navigator.push(
               context,
@@ -405,7 +415,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Set your learning language to auto-select the default',
+                      'Set your learning language to enable generation',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -413,14 +423,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
-
-        // Language picker
-        Text('Language', style: theme.textTheme.titleSmall),
-        const SizedBox(height: 8),
-        if (_isLoadingLocales)
+          )
+        else if (_isLoadingLocales)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Row(
@@ -431,34 +435,46 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
                 SizedBox(width: 10),
-                Text('Loading available languages…', style: TextStyle(fontSize: 14)),
+                Text(
+                  'Loading language…',
+                  style: TextStyle(fontSize: 14),
+                ),
               ],
             ),
           )
-        else if (_localesError != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              _localesError!,
-              style: TextStyle(color: colorScheme.error, fontSize: 13),
+        else if (_selectedLocale != null)
+          // Show the matched locale as a read-only chip.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _flagEmoji(_selectedLocale!.identifier),
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _selectedLocale!.displayName,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           )
         else
-          DropdownButton<TranscriptionLocaleOption>(
-            value: _selectedLocale,
-            hint: const Text('Select a language'),
-            isExpanded: true,
-            underline: Container(height: 1, color: Colors.grey.shade400),
-            items: _locales.map((locale) {
-              return DropdownMenuItem(
-                value: locale,
-                child: Text('${_flagEmoji(locale.identifier)}  ${locale.displayName}'),
-              );
-            }).toList(),
-            onChanged: (val) {
-              setState(() => _selectedLocale = val);
-              _savePrefs();
-            },
+          // Language set but no matching locale found in the list.
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'Language "$learningLang" is not supported for generation.',
+              style: TextStyle(color: colorScheme.error, fontSize: 13),
+            ),
           ),
 
         const SizedBox(height: 24),
