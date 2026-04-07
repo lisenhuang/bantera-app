@@ -313,10 +313,28 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: Text(
-          '${_currentCueIndex + 1} / ${widget.mediaItem.cues.length}',
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 14,
+              foregroundImage: widget.mediaItem.creator.avatarUrl.trim().isEmpty
+                  ? null
+                  : NetworkImage(widget.mediaItem.creator.avatarUrl),
+              child: widget.mediaItem.creator.avatarUrl.trim().isEmpty
+                  ? const Icon(CupertinoIcons.person, size: 14)
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.mediaItem.title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
         actions: [
           // Speed button
           TextButton(
@@ -345,34 +363,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    foregroundImage:
-                        widget.mediaItem.creator.avatarUrl.trim().isEmpty
-                        ? null
-                        : NetworkImage(widget.mediaItem.creator.avatarUrl),
-                    child: widget.mediaItem.creator.avatarUrl.trim().isEmpty
-                        ? const Icon(CupertinoIcons.person, size: 14)
-                        : null,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.mediaItem.title,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: GestureDetector(
                 onTap: _togglePlay,
@@ -770,6 +760,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '${_currentCueIndex + 1}/${widget.mediaItem.cues.length}',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.primary,
             ),
           ),
         ],
@@ -1781,15 +1779,16 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
     }
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     setState(() {
       _currentCueIndex = nextIndex;
       _subtitleState = SubtitleState.hidden;
       _isPlaying = false;
     });
+
+    // Auto-play the new cue.
+    await _togglePlayback();
   }
 
   Future<void> _confirmStartOver() async {
