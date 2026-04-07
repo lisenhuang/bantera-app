@@ -52,35 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildSectionHeader(context, 'Appearance'),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    RadioListTile<ThemeMode>(
-                      title: const Text('Light'),
-                      value: ThemeMode.light,
-                      groupValue: settings.themeMode,
-                      onChanged: (val) => settings.setThemeMode(val!),
-                    ),
-                    const Divider(height: 1),
-                    RadioListTile<ThemeMode>(
-                      title: const Text('Dark'),
-                      value: ThemeMode.dark,
-                      groupValue: settings.themeMode,
-                      onChanged: (val) => settings.setThemeMode(val!),
-                    ),
-                    const Divider(height: 1),
-                    RadioListTile<ThemeMode>(
-                      title: const Text('System Default'),
-                      value: ThemeMode.system,
-                      groupValue: settings.themeMode,
-                      onChanged: (val) => settings.setThemeMode(val!),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
               _buildSectionHeader(context, 'Notifications'),
               Card(
                 margin: EdgeInsets.zero,
@@ -123,13 +94,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                               );
                             },
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.security),
-                      title: const Text('Privacy'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {},
                     ),
                     const Divider(height: 1),
                     ListTile(

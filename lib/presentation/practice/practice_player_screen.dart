@@ -1917,23 +1917,40 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
                           : const SizedBox(width: 18),
                       title: Text(_translationLanguageLabel(locale)),
                       subtitle: Text(locale.identifier),
-                      trailing: locale.isInstalled
-                          ? Container(
+                      trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.08),
+                                color: locale.isInstalled
+                                    ? Colors.green.withValues(alpha: 0.08)
+                                    : Colors.orange.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(999),
                               ),
-                              child: Text(
-                                'Installed',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: Colors.green.shade700),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (!locale.isInstalled) ...[
+                                    Icon(Icons.download_rounded,
+                                        size: 13,
+                                        color: Colors.orange.shade700),
+                                    const SizedBox(width: 4),
+                                  ],
+                                  Text(
+                                    locale.isInstalled
+                                        ? 'Installed'
+                                        : 'Download',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: locale.isInstalled
+                                              ? Colors.green.shade700
+                                              : Colors.orange.shade700,
+                                        ),
+                                  ),
+                                ],
                               ),
-                            )
-                          : null,
+                            ),
                       onTap: () => Navigator.of(context).pop(locale),
                     );
                   },

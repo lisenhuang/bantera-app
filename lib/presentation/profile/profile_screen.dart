@@ -96,30 +96,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: const Text('Edit Profile'),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStatColumn(context, 'Practiced', '12 hrs'),
-                    _buildStatColumn(
-                      context,
-                      'Uploads',
-                      stats.uploadCount != null ? '${stats.uploadCount}' : '–',
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SavedScreen(),
                     ),
-                    GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SavedScreen(),
-                        ),
-                      ),
-                      child: _buildStatColumn(
-                        context,
-                        'Saved',
-                        stats.savedCount != null ? '${stats.savedCount}' : '–',
-                        tappable: true,
-                      ),
-                    ),
-                  ],
+                  ),
+                  child: _buildStatColumn(
+                    context,
+                    'Saved',
+                    stats.savedCount != null ? '${stats.savedCount}' : '–',
+                    tappable: true,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Container(color: BanteraTheme.backgroundLight, height: 8),

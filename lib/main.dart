@@ -4,7 +4,6 @@ import 'core/api_config_notifier.dart';
 import 'core/theme.dart';
 import 'core/settings_notifier.dart';
 import 'core/user_profile_notifier.dart';
-import 'presentation/auth/api_base_url_screen.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
 
@@ -23,18 +22,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: SettingsNotifier.instance,
-      builder: (context, child) {
-        return MaterialApp(
-          title: 'Bantera',
-          theme: BanteraTheme.lightTheme,
-          darkTheme: BanteraTheme.darkTheme,
-          themeMode: SettingsNotifier.instance.themeMode,
-          home: const AppRoot(),
-          debugShowCheckedModeBanner: false,
-        );
-      },
+    return MaterialApp(
+      title: 'Bantera',
+      theme: BanteraTheme.lightTheme,
+      themeMode: ThemeMode.light,
+      home: const AppRoot(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

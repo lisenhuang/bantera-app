@@ -282,6 +282,7 @@ class AuthApiClient {
     int limit = 20,
     int offset = 0,
     String? search,
+    String? mediaType,
   }) async {
     try {
       final params = <String, String>{
@@ -293,6 +294,9 @@ class AuthApiClient {
       }
       if (search != null && search.trim().isNotEmpty) {
         params['search'] = search.trim();
+      }
+      if (mediaType != null && mediaType.isNotEmpty) {
+        params['mediaType'] = mediaType;
       }
       final base = _resolve('/api/videos/public');
       final uri = base.replace(queryParameters: params);

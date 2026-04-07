@@ -122,6 +122,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         limit: _kPageSize,
         offset: reset ? 0 : _currentOffset,
         search: search.isNotEmpty ? search : null,
+        mediaType: 'audio',
       );
 
       if (!mounted) return;
