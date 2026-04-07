@@ -101,6 +101,8 @@ class AuthApiClient {
     required String accessToken,
     String? name,
     String? translationLanguage,
+    String? nativeLanguage,
+    String? learningLanguage,
   }) async {
     final payload = <String, dynamic>{};
     if (name != null) {
@@ -108,6 +110,12 @@ class AuthApiClient {
     }
     if (translationLanguage != null) {
       payload['translationLanguage'] = translationLanguage;
+    }
+    if (nativeLanguage != null) {
+      payload['nativeLanguage'] = nativeLanguage;
+    }
+    if (learningLanguage != null) {
+      payload['learningLanguage'] = learningLanguage;
     }
     if (payload.isEmpty) {
       throw const AuthApiException(
@@ -638,6 +646,8 @@ class AuthApiClient {
       name: json['name'] as String,
       avatarUrl: json['avatarUrl'] as String?,
       translationLanguage: json['translationLanguage'] as String?,
+      nativeLanguage: json['nativeLanguage'] as String?,
+      learningLanguage: json['learningLanguage'] as String?,
     );
   }
 

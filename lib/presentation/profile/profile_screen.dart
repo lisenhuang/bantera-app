@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/mock_data.dart';
+import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
@@ -110,9 +111,9 @@ class ProfileScreen extends StatelessWidget {
                           color: BanteraTheme.primaryColor,
                         ),
                         title: const Text('First Language'),
-                        trailing: Text(
-                          user.firstLanguage,
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        trailing: _LanguageChip(
+                          identifier: profile.nativeLanguage,
+                          bold: false,
                         ),
                       ),
                       const Divider(),
@@ -122,44 +123,9 @@ class ProfileScreen extends StatelessWidget {
                           color: BanteraTheme.primaryColor,
                         ),
                         title: const Text('Learning'),
-                        subtitle: Text('Current Level: ${user.level}'),
-                        trailing: Text(
-                          user.learningLanguage,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const Divider(),
-                      SwitchListTile(
-                        activeColor: BanteraTheme.primaryColor,
-                        secondary: const Icon(Icons.handshake),
-                        title: const Text('Open to Language Exchange'),
-                        subtitle: const Text(
-                          'Allow matching with complementary learners',
-                        ),
-                        value: user.openToExchange,
-                        onChanged: (val) {},
-                      ),
-                    ],
-                  ),
-                ),
-                Container(color: BanteraTheme.backgroundLight, height: 8),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Recent Notes',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 16),
-                      Card(
-                        child: ListTile(
-                          title: const Text('New vocabs from Coffee dialog'),
-                          subtitle: const Text('Flat white, takeaway...'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {},
+                        trailing: _LanguageChip(
+                          identifier: profile.learningLanguage,
+                          bold: true,
                         ),
                       ),
                     ],
@@ -180,6 +146,33 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 4),
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
       ],
+    );
+  }
+}
+
+class _LanguageChip extends StatelessWidget {
+  const _LanguageChip({required this.identifier, required this.bold});
+
+  final String? identifier;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    if (identifier == null || identifier!.trim().isEmpty) {
+      return Text(
+        'Not set',
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+      );
+    }
+
+    final flag = flagEmojiForLocale(identifier!);
+    return Text(
+      '$flag  $identifier',
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+      ),
     );
   }
 }

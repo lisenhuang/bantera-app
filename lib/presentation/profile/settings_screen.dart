@@ -1,20 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../auth/api_base_url_screen.dart';
 import 'edit_profile_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int _titleTapCount = 0;
+
+  void _handleTitleTap() async {
+    _titleTapCount++;
+    if (_titleTapCount < 16) return;
+    _titleTapCount = 0;
+
+    final auth = AuthSessionNotifier.instance;
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (context) => const ApiBaseUrlScreen()),
+    );
+
+    if (changed == true && mounted) {
+      auth.signOut();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: _handleTitleTap,
+          behavior: HitTestBehavior.opaque,
+          child: const Text('Settings'),
+        ),
+      ),
       body: ListenableBuilder(
         listenable: Listenable.merge([
-          ApiConfigNotifier.instance,
           SettingsNotifier.instance,
           AuthSessionNotifier.instance,
         ]),
@@ -64,29 +91,6 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   value: settings.notificationsEnabled,
                   onChanged: (val) => settings.toggleNotifications(val),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, 'Environment'),
-              Card(
-                margin: EdgeInsets.zero,
-                child: ListTile(
-                  leading: const Icon(Icons.link),
-                  title: const Text('API Base URL'),
-                  subtitle: Text(ApiConfigNotifier.instance.baseUrl),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final changed = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(
-                        builder: (context) => const ApiBaseUrlScreen(),
-                      ),
-                    );
-
-                    if (changed == true && context.mounted) {
-                      auth.signOut();
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
-                  },
                 ),
               ),
               const SizedBox(height: 24),

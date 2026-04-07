@@ -3,12 +3,16 @@ class UserProfile {
   final String name;
   final String? avatarUrl;
   final String? translationLanguage;
+  final String? nativeLanguage;
+  final String? learningLanguage;
 
   UserProfile({
     required this.id,
     required this.name,
     this.avatarUrl,
     this.translationLanguage,
+    this.nativeLanguage,
+    this.learningLanguage,
   });
 }
 

@@ -37,6 +37,8 @@ class UserProfileNotifier extends ChangeNotifier {
   String? get avatarImagePath => _avatarImagePath;
   String? get avatarUrl => _profile?.avatarUrl;
   String? get translationLanguage => _profile?.translationLanguage;
+  String? get nativeLanguage => _profile?.nativeLanguage;
+  String? get learningLanguage => _profile?.learningLanguage;
 
   String get displayName {
     final profileName = _profile?.name.trim();
@@ -121,6 +123,72 @@ class UserProfileNotifier extends ChangeNotifier {
       final updatedProfile = await _apiClient.updateMyProfile(
         accessToken: session.accessToken,
         name: normalizedName,
+      );
+      await _applyRemoteProfile(session.cacheKey, updatedProfile);
+      return true;
+    } on AuthApiException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } finally {
+      _isSavingProfile = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateNativeLanguage(String nativeLanguage) async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) {
+      _setError('Sign in again to save your native language.');
+      return false;
+    }
+
+    final normalized = nativeLanguage.trim();
+    if (normalized.isEmpty || normalized.length > 35) {
+      _setError('Choose a valid native language.');
+      return false;
+    }
+
+    _isSavingProfile = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedProfile = await _apiClient.updateMyProfile(
+        accessToken: session.accessToken,
+        nativeLanguage: normalized,
+      );
+      await _applyRemoteProfile(session.cacheKey, updatedProfile);
+      return true;
+    } on AuthApiException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } finally {
+      _isSavingProfile = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateLearningLanguage(String learningLanguage) async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) {
+      _setError('Sign in again to save your learning language.');
+      return false;
+    }
+
+    final normalized = learningLanguage.trim();
+    if (normalized.isEmpty || normalized.length > 35) {
+      _setError('Choose a valid learning language.');
+      return false;
+    }
+
+    _isSavingProfile = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedProfile = await _apiClient.updateMyProfile(
+        accessToken: session.accessToken,
+        learningLanguage: normalized,
       );
       await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;

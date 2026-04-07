@@ -44,6 +44,8 @@ class UserProfileCacheStore {
           name: decoded['name']?.toString() ?? '',
           avatarUrl: decoded['avatarUrl']?.toString(),
           translationLanguage: decoded['translationLanguage']?.toString(),
+          nativeLanguage: decoded['nativeLanguage']?.toString(),
+          learningLanguage: decoded['learningLanguage']?.toString(),
         ),
         avatarPath: resolvedAvatarPath,
       );
@@ -65,6 +67,8 @@ class UserProfileCacheStore {
         'name': profile.name,
         'avatarUrl': profile.avatarUrl,
         'translationLanguage': profile.translationLanguage,
+        'nativeLanguage': profile.nativeLanguage,
+        'learningLanguage': profile.learningLanguage,
         'avatarPath': avatarPath,
       }),
     );
