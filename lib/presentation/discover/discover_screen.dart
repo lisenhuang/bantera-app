@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../shared/locale_flag.dart';
@@ -77,6 +78,23 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   Future<void> _load({required bool reset}) async {
+    final lang = UserProfileNotifier.instance.learningLanguage;
+
+    // No learning language set — show empty without hitting the API.
+    if (lang == null || lang.trim().isEmpty) {
+      _lastLanguage = lang;
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isLoadingMore = false;
+          _videos = [];
+          _currentOffset = 0;
+          _hasMore = false;
+        });
+      }
+      return;
+    }
+
     if (reset) {
       if (mounted) {
         setState(() {
@@ -91,7 +109,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       if (mounted) setState(() => _isLoadingMore = true);
     }
 
-    final lang = UserProfileNotifier.instance.learningLanguage;
     final search = _searchController.text.trim();
     _lastLanguage = lang;
     _lastSearch = search;
@@ -101,7 +118,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     try {
       final results = await AuthApiClient.instance.fetchPublicVideos(
         accessToken: accessToken,
-        languageCode: lang?.trim().isNotEmpty == true ? lang!.trim() : null,
+        languageCode: lang.trim(),
         limit: _kPageSize,
         offset: reset ? 0 : _currentOffset,
         search: search.isNotEmpty ? search : null,
@@ -336,6 +353,19 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
             ),
+            if (hasLang) ...[
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const GenerateAiAudioScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.auto_awesome, size: 18),
+                label: const Text('Generate with AI'),
+              ),
+            ],
           ],
         ),
       ),
@@ -448,7 +478,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       description: '',
       creator: User(
         id: video.userId,
-        displayName: 'Bantera',
+        displayName: video.creatorDisplayName ?? 'Bantera',
         avatarUrl:
             '${ApiConfigNotifier.instance.baseUrl}/api/users/${video.userId}/avatar',
         firstLanguage: '',

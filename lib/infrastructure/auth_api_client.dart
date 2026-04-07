@@ -551,6 +551,114 @@ class AuthApiClient {
     }
   }
 
+  Future<bool> checkVideoSaved({
+    required String accessToken,
+    required String videoId,
+  }) async {
+    try {
+      final request = await _httpClient.getUrl(
+        _resolve('/api/me/saved/$videoId'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode != 200) return false;
+      final decoded = jsonDecode(body);
+      if (decoded is Map) {
+        return decoded['isSaved'] == true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> saveVideo({
+    required String accessToken,
+    required String videoId,
+  }) async {
+    try {
+      final request = await _httpClient.openUrl(
+        'POST',
+        _resolve('/api/me/saved/$videoId'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      final response = await request.close();
+      await response.drain<void>();
+    } on SocketException {
+      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+  }
+
+  Future<void> unsaveVideo({
+    required String accessToken,
+    required String videoId,
+  }) async {
+    try {
+      final request = await _httpClient.openUrl(
+        'DELETE',
+        _resolve('/api/me/saved/$videoId'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      final response = await request.close();
+      await response.drain<void>();
+    } on SocketException {
+      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+  }
+
+  Future<List<UploadedVideo>> fetchSavedVideos({
+    required String accessToken,
+  }) async {
+    try {
+      final request = await _httpClient.getUrl(_resolve('/api/me/saved'));
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      final decoded = jsonDecode(responseText);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map((item) => _uploadedVideoFromJson(item.map((k, v) => MapEntry(k.toString(), v))))
+            .toList();
+      }
+      if (decoded is Map<String, dynamic>) _throwApiException(decoded, response.statusCode);
+      return [];
+    } on AuthApiException {
+      rethrow;
+    } on SocketException {
+      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+  }
+
+  Future<({int uploadCount, int savedCount})> fetchProfileStats({
+    required String accessToken,
+  }) async {
+    try {
+      final request = await _httpClient.getUrl(_resolve('/api/me/stats'));
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      final decoded = jsonDecode(responseText) as Map<String, dynamic>;
+      return (
+        uploadCount: (decoded['uploadCount'] as num?)?.toInt() ?? 0,
+        savedCount: (decoded['savedCount'] as num?)?.toInt() ?? 0,
+      );
+    } catch (_) {
+      return (uploadCount: 0, savedCount: 0);
+    }
+  }
+
   Future<UploadedVideo> correctVideoTranscript({
     required String accessToken,
     required String videoId,
@@ -767,6 +875,7 @@ class AuthApiClient {
       videoUrl: json['videoUrl'] as String?,
       coverImageUrl: json['coverImageUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      creatorDisplayName: json['creatorDisplayName'] as String?,
     );
   }
 

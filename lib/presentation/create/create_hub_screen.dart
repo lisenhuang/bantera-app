@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -832,6 +833,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
           _myVideos = _myVideos.where((v) => v.id != video.id).toList();
         });
       }
+      unawaited(ProfileStatsNotifier.instance.refresh());
     } on AuthApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

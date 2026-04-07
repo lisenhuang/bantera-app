@@ -1,24 +1,41 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../core/auth_session_notifier.dart';
+import '../../core/profile_stats_notifier.dart';
 import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
-import '../../infrastructure/mock_data.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
+import 'saved_screen.dart';
 import 'settings_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = MockData.currentUser;
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(ProfileStatsNotifier.instance.refresh());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: UserProfileNotifier.instance,
+      listenable: Listenable.merge([
+        UserProfileNotifier.instance,
+        ProfileStatsNotifier.instance,
+      ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
+        final stats = ProfileStatsNotifier.instance;
 
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
@@ -65,12 +82,6 @@ class ProfileScreen extends StatelessWidget {
                     context,
                   ).textTheme.displayLarge?.copyWith(fontSize: 24),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  user.bio,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
                 const SizedBox(height: 12),
                 TextButton.icon(
                   onPressed: () {
@@ -89,8 +100,25 @@ class ProfileScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildStatColumn(context, 'Practiced', '12 hrs'),
-                    _buildStatColumn(context, 'Uploads', '3'),
-                    _buildStatColumn(context, 'Saved', '14'),
+                    _buildStatColumn(
+                      context,
+                      'Uploads',
+                      stats.uploadCount != null ? '${stats.uploadCount}' : '–',
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SavedScreen(),
+                        ),
+                      ),
+                      child: _buildStatColumn(
+                        context,
+                        'Saved',
+                        stats.savedCount != null ? '${stats.savedCount}' : '–',
+                        tappable: true,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -110,7 +138,7 @@ class ProfileScreen extends StatelessWidget {
                           Icons.language,
                           color: BanteraTheme.primaryColor,
                         ),
-                        title: const Text('First Language'),
+                        title: const Text('My Native Language'),
                         trailing: _LanguageChip(
                           identifier: profile.nativeLanguage,
                           bold: false,
@@ -139,12 +167,30 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatColumn(BuildContext context, String label, String value) {
+  Widget _buildStatColumn(
+    BuildContext context,
+    String label,
+    String value, {
+    bool tappable = false,
+  }) {
     return Column(
       children: [
         Text(value, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            if (tappable) ...[
+              const SizedBox(width: 2),
+              Icon(
+                Icons.chevron_right,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ],
+        ),
       ],
     );
   }

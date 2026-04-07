@@ -8,10 +8,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../core/user_profile_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
+import '../profile/edit_profile_screen.dart';
 import 'uploaded_video_detail_screen.dart';
 
 class GenerateAiAudioScreen extends StatefulWidget {
@@ -65,20 +67,40 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       final locales = await VideoProcessingService.instance.fetchSupportedLocales();
       if (!mounted) return;
 
-      // Restore last selections from prefs
-      TranscriptionLocaleOption? restoredLocale;
+      // Determine default locale: learning language takes priority over saved pref.
+      final learningLang =
+          UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
+
+      TranscriptionLocaleOption? defaultLocale;
+      if (learningLang.isNotEmpty) {
+        // Exact match first (e.g. "en-US" → "en-US").
+        defaultLocale =
+            locales.where((l) => l.identifier == learningLang).firstOrNull;
+        // Prefix match fallback (e.g. "en" → first "en-*" locale).
+        defaultLocale ??= locales
+            .where((l) => l.identifier.startsWith('$learningLang-'))
+            .firstOrNull;
+      }
+
+      // Restore last selections from prefs (scenario always restored;
+      // locale only used as fallback when learning language isn't matched).
       AiScenario? restoredScenario;
       try {
         final file = await _prefsFile();
         if (await file.exists()) {
-          final prefs = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-          final lastId = prefs['lastLanguageIdentifier'] as String?;
-          if (lastId != null) {
-            restoredLocale = locales.where((l) => l.identifier == lastId).firstOrNull;
+          final prefs =
+              jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+          if (defaultLocale == null) {
+            final lastId = prefs['lastLanguageIdentifier'] as String?;
+            if (lastId != null) {
+              defaultLocale =
+                  locales.where((l) => l.identifier == lastId).firstOrNull;
+            }
           }
           final lastScenarioId = prefs['lastScenarioId'] as String?;
           if (lastScenarioId != null) {
-            restoredScenario = kAiScenarios.where((s) => s.id == lastScenarioId).firstOrNull;
+            restoredScenario =
+                kAiScenarios.where((s) => s.id == lastScenarioId).firstOrNull;
           }
         }
       } catch (_) {}
@@ -86,7 +108,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       setState(() {
         _locales = locales;
         _isLoadingLocales = false;
-        if (restoredLocale != null) _selectedLocale = restoredLocale;
+        if (defaultLocale != null) _selectedLocale = defaultLocale;
         if (restoredScenario != null) _selectedScenario = restoredScenario;
       });
     } on VideoProcessingException catch (e) {
@@ -347,12 +369,54 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 
   Widget _buildForm(ThemeData theme, ColorScheme colorScheme) {
+    final learningLang =
+        UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
+    final hasLearningLang = learningLang.isNotEmpty;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
       child: ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        // Prompt to set learning language when it's missing.
+        if (!hasLearningLang) ...[
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.35),
+                ),
+                color: colorScheme.primary.withValues(alpha: 0.05),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.school_outlined,
+                    size: 20,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Set your learning language to auto-select the default',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: colorScheme.primary),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+
         // Language picker
         Text('Language', style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),

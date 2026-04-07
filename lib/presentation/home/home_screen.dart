@@ -6,6 +6,7 @@ import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../shared/profile_avatar.dart';
@@ -281,17 +282,33 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.inbox_outlined, size: 32, color: Colors.grey),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'No uploaded content in $learningLang yet.\nUpload or generate audio to see it here.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+          Row(
+            children: [
+              const Icon(Icons.inbox_outlined, size: 32, color: Colors.grey),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'No public content in $learningLang yet.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const GenerateAiAudioScreen(),
+              ),
             ),
+            icon: const Icon(Icons.auto_awesome, size: 18),
+            label: const Text('Generate with AI'),
           ),
         ],
       ),
@@ -445,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> {
           : video.transcriptText,
       creator: User(
         id: video.userId,
-        displayName: 'Bantera',
+        displayName: video.creatorDisplayName ?? 'Bantera',
         avatarUrl:
             '${ApiConfigNotifier.instance.baseUrl}/api/users/${video.userId}/avatar',
         firstLanguage: '',

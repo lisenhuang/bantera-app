@@ -291,6 +291,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    // "zh-TW" is hidden from the Learning Language picker because iOS
+    // transcription treats it as Traditional Chinese, which overlaps with
+    // zh-Hans/zh-HK in practice.  It remains available for Native Language.
+    final filteredOptions = title == 'Learning Language'
+        ? options.where((o) => o.identifier != 'zh-TW').toList()
+        : options;
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -301,7 +308,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context) {
         return _LanguagePickerSheet(
           title: title,
-          options: options,
+          options: filteredOptions,
           currentIdentifier: currentIdentifier,
           onSelected: (option) {
             Navigator.of(context).pop();

@@ -67,6 +67,7 @@ class UploadedVideo {
   final String? videoUrl;
   final String? coverImageUrl;
   final DateTime createdAt;
+  final String? creatorDisplayName;
 
   UploadedVideo({
     required this.id,
@@ -87,6 +88,7 @@ class UploadedVideo {
     required this.videoUrl,
     this.coverImageUrl,
     required this.createdAt,
+    this.creatorDisplayName,
   });
 }
 

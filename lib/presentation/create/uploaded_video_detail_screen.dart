@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -70,6 +71,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
         accessToken: accessToken,
         videoId: _video.id,
       );
+      unawaited(ProfileStatsNotifier.instance.refresh());
       if (mounted) Navigator.of(context).pop();
     } on AuthApiException catch (e) {
       if (!mounted) return;
