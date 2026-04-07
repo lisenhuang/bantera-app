@@ -134,10 +134,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Future<void> _startPlayAll() async {
     if (_isPlayingAll) return;
-    setState(() {
-      _isPlayingAll = true;
-      _subtitleState = SubtitleState.original;
-    });
+    setState(() => _isPlayingAll = true);
 
     final audioPlayer = _audioPlayer;
     if (audioPlayer != null && _audioPlayerReady) {
@@ -543,9 +540,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         isHighlight: true,
                       ),
                       _buildActionBtn(
-                        CupertinoIcons.reply,
-                        'Replay',
-                        _isPlayingAll ? null : _togglePlay,
+                        CupertinoIcons.gobackward,
+                        'Start Over',
+                        _isPlayingAll ? null : _confirmStartOver,
                         colorScheme,
                       ),
                     ],
@@ -1782,6 +1779,34 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _subtitleState = SubtitleState.hidden;
       _isPlaying = false;
     });
+  }
+
+  Future<void> _confirmStartOver() async {
+    if (_currentCueIndex == 0) {
+      // Already at the start — just seek without confirmation.
+      await _selectCue(0);
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Start over?'),
+        content: const Text('Go back to the first cue?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Start Over'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _selectCue(0);
+    }
   }
 
   static Future<void> _deleteLocalMedia(String path) async {
