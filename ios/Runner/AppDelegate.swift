@@ -61,6 +61,12 @@ private final class BanteraVideoProcessingBridge {
 
     Task {
       let payload = await BanteraVideoPreparationService.supportedLocalePayload()
+      print("[Bantera] Supported transcription locales (\(payload.count)):")
+      for locale in payload {
+        let id = locale["identifier"] as? String ?? "?"
+        let name = locale["displayName"] as? String ?? "?"
+        print("[Bantera]   \(id) — \(name)")
+      }
       DispatchQueue.main.async {
         result(payload)
       }
