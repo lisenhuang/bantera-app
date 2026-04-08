@@ -13,6 +13,31 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   int _titleTapCount = 0;
 
+  Future<void> _confirmSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text(
+          'You will need to sign in again to use your account.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    AuthSessionNotifier.instance.signOut();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   void _handleTitleTap() async {
     _titleTapCount++;
     if (_titleTapCount < 16) return;
@@ -84,14 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Sign Out',
                         style: TextStyle(color: Colors.red),
                       ),
-                      onTap: auth.session == null
-                          ? null
-                          : () {
-                              auth.signOut();
-                              Navigator.of(
-                                context,
-                              ).popUntil((route) => route.isFirst);
-                            },
+                      onTap: auth.session == null ? null : _confirmSignOut,
                     ),
                   ],
                 ),

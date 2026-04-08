@@ -304,9 +304,36 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Generate with AI')),
-      body: _isGenerating ? _buildLoadingState() : _buildForm(theme, colorScheme),
+    return PopScope(
+      canPop: !_isGenerating,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !_isGenerating) return;
+        showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Leave this page?'),
+            content: const Text(
+              'Audio is still being generated. Leaving now will cancel the process.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Stay'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Leave'),
+              ),
+            ],
+          ),
+        ).then((confirmed) {
+          if (confirmed == true && mounted) Navigator.of(context).pop();
+        });
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Generate with AI')),
+        body: _isGenerating ? _buildLoadingState() : _buildForm(theme, colorScheme),
+      ),
     );
   }
 
@@ -368,7 +395,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             }),
             const SizedBox(height: 8),
             const Text(
-              'This may take up to a minute.',
+              'This may take up to a minute.\nPlease stay on this page while generating.',
               style: TextStyle(fontSize: 13, color: Colors.grey),
             ),
           ],
