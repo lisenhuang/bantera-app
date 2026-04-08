@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/auth_session_notifier.dart';
@@ -24,10 +28,51 @@ class _AuthScreenState extends State<AuthScreen> {
   AuthSessionNotifier get _auth => AuthSessionNotifier.instance;
 
   @override
+  void initState() {
+    super.initState();
+    _restoreCredentials();
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  static Future<File> get _credentialsFile async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/saved_credentials.json');
+  }
+
+  Future<void> _restoreCredentials() async {
+    try {
+      final file = await _credentialsFile;
+      if (await file.exists()) {
+        final raw = await file.readAsString();
+        if (raw.isNotEmpty) {
+          final decoded = jsonDecode(raw);
+          if (decoded is Map<String, dynamic>) {
+            final email = decoded['email'] as String? ?? '';
+            final password = decoded['password'] as String? ?? '';
+            if (email.isNotEmpty && mounted) {
+              _emailController.text = email;
+              _passwordController.text = password;
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> _saveCredentials(String email, String password) async {
+    try {
+      final file = await _credentialsFile;
+      await file.writeAsString(jsonEncode({
+        'email': email,
+        'password': password,
+      }));
+    } catch (_) {}
   }
 
   @override
@@ -255,9 +300,11 @@ class _AuthScreenState extends State<AuthScreen> {
     FocusScope.of(context).unfocus();
     _auth.clearError();
     if (!_formKey.currentState!.validate()) return;
-    await _auth.loginWithEmail(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    await _auth.loginWithEmail(email: email, password: password);
+    if (_auth.isAuthenticated) {
+      _saveCredentials(email, password);
+    }
   }
 }
