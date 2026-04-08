@@ -46,6 +46,34 @@ class AuthApiClient {
     }
   }
 
+  /// Runs [action] with the given [accessToken]. If the call throws an
+  /// [AuthApiException] whose code is `token_expired`, silently refreshes and
+  /// retries once. This covers every authenticated method that doesn't go
+  /// through [_sendJsonRequest].
+  Future<T> _retryWithRefresh<T>(
+    String? accessToken,
+    Future<T> Function(String? token) action,
+  ) async {
+    try {
+      return await action(accessToken);
+    } on AuthApiException catch (e) {
+      if (e.code == 'token_expired' && accessToken != null) {
+        final newToken = await _doRefresh();
+        if (newToken != null) return action(newToken);
+        throw const SessionExpiredException();
+      }
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic>? _tryDecodeJson(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) return decoded;
+    } catch (_) {}
+    return null;
+  }
+
   Future<AuthTokenResponse> refreshAuthToken({
     required String refreshToken,
   }) {
@@ -137,6 +165,7 @@ class AuthApiClient {
     required String accessToken,
     required File imageFile,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final filename = imageFile.uri.pathSegments.isNotEmpty
           ? imageFile.uri.pathSegments.last
@@ -150,7 +179,7 @@ class AuthApiClient {
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set(
         HttpHeaders.authorizationHeader,
-        'Bearer $accessToken',
+        'Bearer $token',
       );
       request.headers.set(
         HttpHeaders.contentTypeHeader,
@@ -172,6 +201,8 @@ class AuthApiClient {
       }
 
       _throwApiException(json, response.statusCode);
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',
@@ -185,6 +216,7 @@ class AuthApiClient {
             'The app could not establish a secure connection to the Bantera API.',
       );
     }
+    });
   }
 
   Future<UploadedVideo> uploadVideo({
@@ -199,6 +231,7 @@ class AuthApiClient {
     required int? videoWidth,
     required int? videoHeight,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final filename = videoFile.uri.pathSegments.isNotEmpty
           ? videoFile.uri.pathSegments.last
@@ -210,7 +243,7 @@ class AuthApiClient {
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set(
         HttpHeaders.authorizationHeader,
-        'Bearer $accessToken',
+        'Bearer $token',
       );
       request.headers.set(
         HttpHeaders.contentTypeHeader,
@@ -257,6 +290,8 @@ class AuthApiClient {
       }
 
       _throwApiException(json, response.statusCode);
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',
@@ -270,6 +305,7 @@ class AuthApiClient {
             'The app could not establish a secure connection to the Bantera API.',
       );
     }
+    });
   }
 
   /// Fetches recent public videos (not owned by the caller) optionally
@@ -284,6 +320,7 @@ class AuthApiClient {
     String? search,
     String? mediaType,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final params = <String, String>{
         'limit': limit.toString(),
@@ -303,10 +340,10 @@ class AuthApiClient {
 
       final request = await _httpClient.getUrl(uri);
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      if (accessToken != null && accessToken.isNotEmpty) {
+      if (token != null && token.isNotEmpty) {
         request.headers.set(
           HttpHeaders.authorizationHeader,
-          'Bearer $accessToken',
+          'Bearer $token',
         );
       }
 
@@ -344,6 +381,8 @@ class AuthApiClient {
         code: 'request_failed',
         message: 'The Bantera API request failed (${response.statusCode}).',
       );
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',
@@ -357,17 +396,19 @@ class AuthApiClient {
             'The app could not establish a secure connection to the Bantera API.',
       );
     }
+    });
   }
 
   Future<List<UploadedVideo>> fetchMyVideos({
     required String accessToken,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.getUrl(_resolve('/api/me/videos'));
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set(
         HttpHeaders.authorizationHeader,
-        'Bearer $accessToken',
+        'Bearer $token',
       );
 
       final response = await request.close();
@@ -406,6 +447,8 @@ class AuthApiClient {
         code: 'request_failed',
         message: 'The Bantera API request failed (${response.statusCode}).',
       );
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(
         code: 'network_error',
@@ -419,6 +462,7 @@ class AuthApiClient {
             'The app could not establish a secure connection to the Bantera API.',
       );
     }
+    });
   }
 
   /// Streams progress from the single generate endpoint.
@@ -453,7 +497,6 @@ class AuthApiClient {
         Map<String, dynamic> errJson = {};
         try { errJson = jsonDecode(body) as Map<String, dynamic>; } catch (_) {}
 
-        // Auto-refresh on token_expired, retry once.
         if (!retried &&
             response.statusCode == 401 &&
             errJson['code']?.toString() == 'token_expired') {
@@ -469,12 +512,8 @@ class AuthApiClient {
               onAudioDone: onAudioDone,
               retried: true,
             );
-
           }
-          throw const AuthApiException(
-            code: 'session_expired',
-            message: 'Your session has expired. Please sign in again.',
-          );
+          throw const SessionExpiredException();
         }
 
         _throwApiException(errJson, response.statusCode);
@@ -526,12 +565,13 @@ class AuthApiClient {
     required String accessToken,
     required String videoId,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.openUrl(
         'DELETE',
         _resolve('/api/me/videos/$videoId'),
       );
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       final response = await request.close();
       if (response.statusCode == 204) {
@@ -553,76 +593,112 @@ class AuthApiClient {
         message: 'The app could not establish a secure connection.',
       );
     }
+    });
   }
 
   Future<bool> checkVideoSaved({
     required String accessToken,
     required String videoId,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.getUrl(
         _resolve('/api/me/saved/$videoId'),
       );
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       final response = await request.close();
       final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode == 401) {
+        final decoded = jsonDecode(body);
+        if (decoded is Map && decoded['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+      }
       if (response.statusCode != 200) return false;
       final decoded = jsonDecode(body);
       if (decoded is Map) {
         return decoded['isSaved'] == true;
       }
       return false;
+    } on AuthApiException {
+      rethrow;
     } catch (_) {
       return false;
     }
+    });
   }
 
   Future<void> saveVideo({
     required String accessToken,
     required String videoId,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.openUrl(
         'POST',
         _resolve('/api/me/saved/$videoId'),
       );
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       final response = await request.close();
+      if (response.statusCode == 401) {
+        final body = await response.transform(utf8.decoder).join();
+        final json = _tryDecodeJson(body);
+        if (json != null && json['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+        return;
+      }
       await response.drain<void>();
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
+    });
   }
 
   Future<void> unsaveVideo({
     required String accessToken,
     required String videoId,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.openUrl(
         'DELETE',
         _resolve('/api/me/saved/$videoId'),
       );
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       final response = await request.close();
+      if (response.statusCode == 401) {
+        final body = await response.transform(utf8.decoder).join();
+        final json = _tryDecodeJson(body);
+        if (json != null && json['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+        return;
+      }
       await response.drain<void>();
+    } on AuthApiException {
+      rethrow;
     } on SocketException {
       throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
+    });
   }
 
   Future<List<UploadedVideo>> fetchSavedVideos({
     required String accessToken,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.getUrl(_resolve('/api/me/saved'));
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       final response = await request.close();
       final responseText = await response.transform(utf8.decoder).join();
       final decoded = jsonDecode(responseText);
@@ -642,25 +718,36 @@ class AuthApiClient {
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
+    });
   }
 
   Future<({int uploadCount, int savedCount})> fetchProfileStats({
     required String accessToken,
   }) async {
+    return _retryWithRefresh(accessToken, (token) async {
     try {
       final request = await _httpClient.getUrl(_resolve('/api/me/stats'));
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       final response = await request.close();
       final responseText = await response.transform(utf8.decoder).join();
+      if (response.statusCode == 401) {
+        final json = _tryDecodeJson(responseText);
+        if (json != null && json['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+      }
       final decoded = jsonDecode(responseText) as Map<String, dynamic>;
       return (
         uploadCount: (decoded['uploadCount'] as num?)?.toInt() ?? 0,
         savedCount: (decoded['savedCount'] as num?)?.toInt() ?? 0,
       );
+    } on AuthApiException {
+      rethrow;
     } catch (_) {
       return (uploadCount: 0, savedCount: 0);
     }
+    });
   }
 
   Future<UploadedVideo> correctVideoTranscript({
@@ -777,7 +864,6 @@ class AuthApiClient {
       return json;
     }
 
-    // Auto-refresh on token_expired, then retry once.
     if (!retried &&
         response.statusCode == 401 &&
         json['code']?.toString() == 'token_expired') {
@@ -791,10 +877,7 @@ class AuthApiClient {
           retried: true,
         );
       }
-      throw const AuthApiException(
-        code: 'session_expired',
-        message: 'Your session has expired. Please sign in again.',
-      );
+      throw const SessionExpiredException();
     }
 
     _throwApiException(json, response.statusCode);
@@ -947,4 +1030,12 @@ class AuthApiException implements Exception {
 
   final String code;
   final String message;
+}
+
+/// Thrown when the session could not be renewed and the user has been signed
+/// out. This is NOT an [AuthApiException] on purpose — callers that show
+/// `AuthApiException.message` to the user won't catch it, so no confusing
+/// error dialog appears while the app navigates back to the login screen.
+class SessionExpiredException implements Exception {
+  const SessionExpiredException();
 }

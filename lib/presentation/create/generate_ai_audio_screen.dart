@@ -226,6 +226,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           builder: (_) => UploadedVideoDetailScreen(video: updatedVideo),
         ),
       );
+    } on SessionExpiredException {
+      // User is being signed out — do nothing.
     } on AuthApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } catch (e) {
