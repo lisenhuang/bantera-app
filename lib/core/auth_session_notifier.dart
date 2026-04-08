@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -18,6 +19,7 @@ class AuthSession {
     required this.tokenType,
     required this.expiresIn,
     required this.refreshToken,
+    required this.issuedAt,
   });
 
   final AuthProviderType provider;
@@ -26,6 +28,7 @@ class AuthSession {
   final String tokenType;
   final int expiresIn;
   final String refreshToken;
+  final DateTime issuedAt;
 
   String get providerLabel => switch (provider) {
     AuthProviderType.email => 'Email',
@@ -39,6 +42,7 @@ class AuthSession {
     'tokenType': tokenType,
     'expiresIn': expiresIn,
     'refreshToken': refreshToken,
+    'issuedAt': issuedAt.toIso8601String(),
   };
 
   factory AuthSession.fromJson(Map<String, dynamic> json) {
@@ -52,6 +56,9 @@ class AuthSession {
       tokenType: json['tokenType'] as String? ?? 'Bearer',
       expiresIn: json['expiresIn'] as int? ?? 0,
       refreshToken: json['refreshToken'] as String? ?? '',
+      issuedAt: json['issuedAt'] != null
+          ? DateTime.tryParse(json['issuedAt'] as String) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
@@ -98,6 +105,9 @@ class AuthSessionNotifier extends ChangeNotifier {
   bool _isBusy = false;
   String? _errorMessage;
   bool _isInitialized = false;
+  Timer? _refreshTimer;
+
+  static const _refreshMargin = Duration(minutes: 5);
 
   AuthSession? get session => _session;
   bool get isBusy => _isBusy;
@@ -116,6 +126,7 @@ class AuthSessionNotifier extends ChangeNotifier {
           final decoded = jsonDecode(raw);
           if (decoded is Map<String, dynamic>) {
             _session = AuthSession.fromJson(decoded);
+            _scheduleRefresh();
           }
         }
       }
@@ -203,8 +214,10 @@ class AuthSessionNotifier extends ChangeNotifier {
         tokenType: response.tokenType,
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
+        issuedAt: DateTime.now(),
       );
       _persistSession();
+      _scheduleRefresh();
     } on SignInWithAppleAuthorizationException catch (error) {
       if (error.code != AuthorizationErrorCode.canceled) {
         _errorMessage = 'Apple sign-in could not be completed.';
@@ -217,10 +230,31 @@ class AuthSessionNotifier extends ChangeNotifier {
   }
 
   void signOut() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
     _session = null;
     _errorMessage = null;
     notifyListeners();
     _persistSession();
+  }
+
+  void _scheduleRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+
+    final session = _session;
+    if (session == null || session.expiresIn <= 0) return;
+
+    final expiresAt = session.issuedAt.add(Duration(seconds: session.expiresIn));
+    final refreshAt = expiresAt.subtract(_refreshMargin);
+    final remaining = refreshAt.difference(DateTime.now());
+
+    if (remaining <= Duration.zero) {
+      _silentRefresh();
+      return;
+    }
+
+    _refreshTimer = Timer(remaining, _silentRefresh);
   }
 
   /// Called automatically by AuthApiClient when a request returns token_expired.
@@ -240,9 +274,11 @@ class AuthSessionNotifier extends ChangeNotifier {
         tokenType: response.tokenType,
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
+        issuedAt: DateTime.now(),
       );
       notifyListeners();
       _persistSession();
+      _scheduleRefresh();
       return response.accessToken;
     } catch (_) {
       signOut();
@@ -277,8 +313,10 @@ class AuthSessionNotifier extends ChangeNotifier {
         tokenType: response.tokenType,
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
+        issuedAt: DateTime.now(),
       );
       _persistSession();
+      _scheduleRefresh();
     } on AuthApiException catch (error) {
       _errorMessage = error.message;
     } finally {

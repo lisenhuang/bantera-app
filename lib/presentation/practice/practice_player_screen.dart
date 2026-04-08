@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
@@ -92,6 +93,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   @override
   void dispose() {
+    unawaited(WakelockPlus.disable());
     final controller = _videoController;
     final listener = _videoListener;
     if (controller != null && listener != null) {
@@ -147,6 +149,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   Future<void> _startPlayAll() async {
     if (_isPlayingAll) return;
     setState(() => _isPlayingAll = true);
+    unawaited(WakelockPlus.enable());
 
     final audioPlayer = _audioPlayer;
     if (audioPlayer != null && _audioPlayerReady) {
@@ -220,6 +223,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Future<void> _stopPlayAll() async {
     if (!_isPlayingAll) return;
+    unawaited(WakelockPlus.disable());
     setState(() {
       _isPlayingAll = false;
       _isPlaying = false;
@@ -1736,11 +1740,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (audioPlayer != null && _audioPlayerReady) {
       if (_isPlaying) {
         await audioPlayer.pause();
+        unawaited(WakelockPlus.disable());
         if (mounted) setState(() => _isPlaying = false);
       } else {
         final cue = widget.mediaItem.cues[_currentCueIndex];
         await audioPlayer.seek(Duration(milliseconds: cue.startTimeMs));
         await audioPlayer.resume();
+        unawaited(WakelockPlus.enable());
         if (mounted) setState(() => _isPlaying = true);
       }
       return;
@@ -1756,6 +1762,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     if (_isPlaying) {
       await controller.pause();
+      unawaited(WakelockPlus.disable());
       if (mounted) {
         setState(() {
           _isPlaying = false;
@@ -1767,6 +1774,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final cue = widget.mediaItem.cues[_currentCueIndex];
     await controller.seekTo(Duration(milliseconds: cue.startTimeMs));
     await controller.play();
+    unawaited(WakelockPlus.enable());
     if (mounted) {
       setState(() {
         _isPlaying = true;
