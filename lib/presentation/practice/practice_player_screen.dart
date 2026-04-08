@@ -12,6 +12,7 @@ import 'package:video_player/video_player.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
+import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/translation_service.dart';
 import 'record_compare_sheet.dart';
 
@@ -74,8 +75,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   void initState() {
     super.initState();
     _seedPreloadedTranslations();
+    _restoreProgress();
     _initializeMedia();
     unawaited(_loadUploadedVideoTranslations());
+  }
+
+  Future<void> _restoreProgress() async {
+    final saved = await PracticeProgressStore.instance
+        .getCueIndex(widget.mediaItem.id);
+    if (saved > 0 &&
+        saved < widget.mediaItem.cues.length &&
+        mounted) {
+      setState(() => _currentCueIndex = saved);
+    }
   }
 
   @override
@@ -159,6 +171,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         }
         if (newIndex != _currentCueIndex) {
           setState(() => _currentCueIndex = newIndex);
+          unawaited(PracticeProgressStore.instance
+              .setCueIndex(widget.mediaItem.id, newIndex));
         }
         // Stop after last cue ends.
         if (pos.inMilliseconds >= cues.last.endTimeMs) {
@@ -192,6 +206,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
       if (newIndex != _currentCueIndex) {
         setState(() => _currentCueIndex = newIndex);
+        unawaited(PracticeProgressStore.instance
+            .setCueIndex(widget.mediaItem.id, newIndex));
       }
       if (pos >= cues.last.endTimeMs) {
         unawaited(_stopPlayAll());
@@ -1786,6 +1802,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _subtitleState = SubtitleState.hidden;
       _isPlaying = false;
     });
+
+    unawaited(PracticeProgressStore.instance
+        .setCueIndex(widget.mediaItem.id, nextIndex));
 
     // Auto-play the new cue.
     await _togglePlayback();
