@@ -6,12 +6,14 @@ import 'core/settings_notifier.dart';
 import 'core/user_profile_notifier.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
+import 'presentation/onboarding/learning_language_setup_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Future.wait([
     ApiConfigNotifier.instance.initialize(),
     SettingsNotifier.instance.initialize(),
+    AuthSessionNotifier.instance.initialize(),
   ]);
   UserProfileNotifier.instance;
   runApp(const MyApp());
@@ -41,6 +43,7 @@ class AppRoot extends StatelessWidget {
       listenable: Listenable.merge([
         AuthSessionNotifier.instance,
         ApiConfigNotifier.instance,
+        UserProfileNotifier.instance,
       ]),
       builder: (context, child) {
         if (!ApiConfigNotifier.instance.isInitialized) {
@@ -49,11 +52,23 @@ class AppRoot extends StatelessWidget {
           );
         }
 
-        if (AuthSessionNotifier.instance.isAuthenticated) {
-          return const MainScaffold();
+        if (!AuthSessionNotifier.instance.isAuthenticated) {
+          return const AuthScreen();
         }
 
-        return const AuthScreen();
+        final profile = UserProfileNotifier.instance;
+        if (profile.isLoading && profile.profile == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final lang = profile.learningLanguage?.trim() ?? '';
+        if (lang.isEmpty) {
+          return const LearningLanguageSetupScreen();
+        }
+
+        return const MainScaffold();
       },
     );
   }

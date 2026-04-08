@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_session_notifier.dart';
-import '../../core/settings_notifier.dart';
 import '../auth/api_base_url_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -41,30 +40,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: ListenableBuilder(
-        listenable: Listenable.merge([
-          SettingsNotifier.instance,
-          AuthSessionNotifier.instance,
-        ]),
+        listenable: AuthSessionNotifier.instance,
         builder: (context, _) {
-          final settings = SettingsNotifier.instance;
           final auth = AuthSessionNotifier.instance;
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildSectionHeader(context, 'Notifications'),
-              Card(
-                margin: EdgeInsets.zero,
-                child: SwitchListTile(
-                  title: const Text('Allow Notifications'),
-                  subtitle: const Text(
-                    'Receive alerts for messages and practice reminders.',
-                  ),
-                  value: settings.notificationsEnabled,
-                  onChanged: (val) => settings.toggleNotifications(val),
-                ),
-              ),
-              const SizedBox(height: 24),
               _buildSectionHeader(context, 'Account'),
               Card(
                 margin: EdgeInsets.zero,

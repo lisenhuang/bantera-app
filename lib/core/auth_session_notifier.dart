@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_config_notifier.dart';
@@ -29,6 +31,29 @@ class AuthSession {
     AuthProviderType.email => 'Email',
     AuthProviderType.apple => 'Apple',
   };
+
+  Map<String, dynamic> toJson() => {
+    'provider': provider.name,
+    'accountLabel': accountLabel,
+    'accessToken': accessToken,
+    'tokenType': tokenType,
+    'expiresIn': expiresIn,
+    'refreshToken': refreshToken,
+  };
+
+  factory AuthSession.fromJson(Map<String, dynamic> json) {
+    return AuthSession(
+      provider: AuthProviderType.values.firstWhere(
+        (e) => e.name == json['provider'],
+        orElse: () => AuthProviderType.email,
+      ),
+      accountLabel: json['accountLabel'] as String? ?? '',
+      accessToken: json['accessToken'] as String? ?? '',
+      tokenType: json['tokenType'] as String? ?? 'Bearer',
+      expiresIn: json['expiresIn'] as int? ?? 0,
+      refreshToken: json['refreshToken'] as String? ?? '',
+    );
+  }
 
   String get cacheKey {
     final subject = _jwtSubject(accessToken);
@@ -72,12 +97,48 @@ class AuthSessionNotifier extends ChangeNotifier {
   AuthSession? _session;
   bool _isBusy = false;
   String? _errorMessage;
+  bool _isInitialized = false;
 
   AuthSession? get session => _session;
   bool get isBusy => _isBusy;
   bool get isAuthenticated => _session != null;
+  bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
   String get apiBaseUrl => ApiConfigNotifier.instance.baseUrl;
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    try {
+      final file = await _sessionFile;
+      if (await file.exists()) {
+        final raw = await file.readAsString();
+        if (raw.isNotEmpty) {
+          final decoded = jsonDecode(raw);
+          if (decoded is Map<String, dynamic>) {
+            _session = AuthSession.fromJson(decoded);
+          }
+        }
+      }
+    } catch (_) {}
+    _isInitialized = true;
+    notifyListeners();
+  }
+
+  Future<File> get _sessionFile async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/auth_session.json');
+  }
+
+  Future<void> _persistSession() async {
+    try {
+      final file = await _sessionFile;
+      if (_session != null) {
+        await file.writeAsString(jsonEncode(_session!.toJson()));
+      } else {
+        if (await file.exists()) await file.delete();
+      }
+    } catch (_) {}
+  }
 
   Future<void> loginWithEmail({
     required String email,
@@ -143,6 +204,7 @@ class AuthSessionNotifier extends ChangeNotifier {
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
       );
+      _persistSession();
     } on SignInWithAppleAuthorizationException catch (error) {
       if (error.code != AuthorizationErrorCode.canceled) {
         _errorMessage = 'Apple sign-in could not be completed.';
@@ -158,6 +220,7 @@ class AuthSessionNotifier extends ChangeNotifier {
     _session = null;
     _errorMessage = null;
     notifyListeners();
+    _persistSession();
   }
 
   /// Called automatically by AuthApiClient when a request returns token_expired.
@@ -179,9 +242,9 @@ class AuthSessionNotifier extends ChangeNotifier {
         refreshToken: response.refreshToken,
       );
       notifyListeners();
+      _persistSession();
       return response.accessToken;
     } catch (_) {
-      // Refresh token is expired or revoked — force sign-out.
       signOut();
       return null;
     }
@@ -215,6 +278,7 @@ class AuthSessionNotifier extends ChangeNotifier {
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
       );
+      _persistSession();
     } on AuthApiException catch (error) {
       _errorMessage = error.message;
     } finally {

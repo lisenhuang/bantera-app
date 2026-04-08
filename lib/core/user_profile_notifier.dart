@@ -11,6 +11,11 @@ import 'auth_session_notifier.dart';
 class UserProfileNotifier extends ChangeNotifier {
   UserProfileNotifier._() {
     AuthSessionNotifier.instance.addListener(_handleAuthChanged);
+    // If a session was already restored from disk before this listener was
+    // registered, trigger the profile load now.
+    if (AuthSessionNotifier.instance.isAuthenticated) {
+      _handleAuthChanged();
+    }
   }
 
   static final UserProfileNotifier instance = UserProfileNotifier._();

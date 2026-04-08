@@ -48,12 +48,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       appBar: AppBar(
         title: const Text('Create'),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(CupertinoIcons.question_circle),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
