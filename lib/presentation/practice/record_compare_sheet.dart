@@ -41,8 +41,10 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
   bool _isProcessing = false;
   bool _isPlayingAttempt = false;
   bool _isLoadingHistory = true;
+  static const _maxRecordingDuration = Duration(seconds: 30);
   Duration _recordingDuration = Duration.zero;
   Timer? _recordingTimer;
+  Timer? _autoStopTimer;
   String? _errorMessage;
   bool _showsOpenSettingsAction = false;
   _AttemptComparisonResult? _result;
@@ -69,6 +71,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
   @override
   void dispose() {
     _recordingTimer?.cancel();
+    _autoStopTimer?.cancel();
     _audioRecorder.dispose();
     _audioPlayer.dispose();
     final path = _temporaryRecordingPath;
@@ -419,6 +422,10 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
           _recordingDuration += const Duration(seconds: 1);
         });
       });
+      _autoStopTimer?.cancel();
+      _autoStopTimer = Timer(_maxRecordingDuration, () {
+        if (mounted && _isRecording) _stopRecordingAndTranscribe();
+      });
       setState(() {
         _recordingPath = path;
         _temporaryRecordingPath = path;
@@ -437,6 +444,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
   Future<void> _stopRecordingAndTranscribe() async {
     _recordingTimer?.cancel();
+    _autoStopTimer?.cancel();
     setState(() {
       _isRecording = false;
       _isProcessing = true;
