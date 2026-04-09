@@ -182,6 +182,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             title: 'Learning Language',
                             currentIdentifier: _profile.learningLanguage,
                             onSelected: _saveLearningLanguage,
+                            showClearOption: false,
                           ),
                 ),
                 if (_profile.errorMessage != null) ...[
@@ -280,6 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String title,
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
+    bool showClearOption = true,
   }) async {
     final options = _localeOptions;
     if (options == null) {
@@ -310,6 +312,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           title: title,
           options: filteredOptions,
           currentIdentifier: currentIdentifier,
+          showClearOption: showClearOption,
           onSelected: (option) {
             Navigator.of(context).pop();
             onSelected(option);
@@ -408,12 +411,14 @@ class _LanguagePickerSheet extends StatefulWidget {
     required this.title,
     required this.options,
     required this.currentIdentifier,
+    required this.showClearOption,
     required this.onSelected,
   });
 
   final String title;
   final List<TranscriptionLocaleOption> options;
   final String? currentIdentifier;
+  final bool showClearOption;
   final void Function(TranscriptionLocaleOption) onSelected;
 
   @override
@@ -505,9 +510,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                 ),
               ),
             ),
-            // "None" clear row — only shown when a language is currently set
-            // and the search field is empty.
-            if ((widget.currentIdentifier?.isNotEmpty ?? false) &&
+            // "None" clear row — only for pickers that allow clearing (e.g. Native Language).
+            if (widget.showClearOption &&
+                (widget.currentIdentifier?.isNotEmpty ?? false) &&
                 _searchController.text.isEmpty) ...[
               const SizedBox(height: 4),
               ListTile(
