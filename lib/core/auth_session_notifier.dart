@@ -109,6 +109,17 @@ class AuthSessionNotifier extends ChangeNotifier {
 
   static const _refreshMargin = Duration(minutes: 5);
 
+  /// How long before access token expiry we refresh. Capped to at most half the
+  /// token lifetime so short-lived dev JWTs (e.g. 2 min) never make
+  /// `expiresAt - margin` land in the past, which would spin [_silentRefresh] forever.
+  Duration _refreshLeadTime(AuthSession session) {
+    if (session.expiresIn <= 0) return Duration.zero;
+    final lifetime = Duration(seconds: session.expiresIn);
+    final halfLifetime = lifetime ~/ 2;
+    if (halfLifetime <= Duration.zero) return Duration.zero;
+    return _refreshMargin < halfLifetime ? _refreshMargin : halfLifetime;
+  }
+
   AuthSession? get session => _session;
   bool get isBusy => _isBusy;
   bool get isAuthenticated => _session != null;
@@ -126,7 +137,11 @@ class AuthSessionNotifier extends ChangeNotifier {
           final decoded = jsonDecode(raw);
           if (decoded is Map<String, dynamic>) {
             _session = AuthSession.fromJson(decoded);
-            _scheduleRefresh();
+            if (_accessTokenNeedsRefreshNow(_session!)) {
+              await _silentRefresh();
+            } else {
+              _scheduleRefresh();
+            }
           }
         }
       }
@@ -238,6 +253,14 @@ class AuthSessionNotifier extends ChangeNotifier {
     _persistSession();
   }
 
+  /// Matches [_scheduleRefresh] timing: refresh when within [_refreshLeadTime] of access token expiry.
+  bool _accessTokenNeedsRefreshNow(AuthSession session) {
+    if (session.expiresIn <= 0) return true;
+    final expiresAt = session.issuedAt.add(Duration(seconds: session.expiresIn));
+    final refreshAt = expiresAt.subtract(_refreshLeadTime(session));
+    return refreshAt.difference(DateTime.now()) <= Duration.zero;
+  }
+
   void _scheduleRefresh() {
     _refreshTimer?.cancel();
     _refreshTimer = null;
@@ -246,7 +269,7 @@ class AuthSessionNotifier extends ChangeNotifier {
     if (session == null || session.expiresIn <= 0) return;
 
     final expiresAt = session.issuedAt.add(Duration(seconds: session.expiresIn));
-    final refreshAt = expiresAt.subtract(_refreshMargin);
+    final refreshAt = expiresAt.subtract(_refreshLeadTime(session));
     final remaining = refreshAt.difference(DateTime.now());
 
     if (remaining <= Duration.zero) {

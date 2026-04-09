@@ -48,6 +48,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   int _translationGeneration = 0;
   double _playbackSpeed = 1.0;
 
+  /// One [NetworkImage] for the creator avatar so play/state rebuilds do not
+  /// create new providers and fan out duplicate HTTP GETs to `/api/users/.../avatar`.
+  ImageProvider<Object>? _creatorAvatarProvider;
+
   static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
   bool get _hasPlayableMedia =>
@@ -75,6 +79,17 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   void initState() {
     super.initState();
+    final avatarUrl = widget.mediaItem.creator.avatarUrl.trim();
+    if (avatarUrl.isNotEmpty) {
+      _creatorAvatarProvider = NetworkImage(avatarUrl);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final p = _creatorAvatarProvider;
+        if (p != null) {
+          precacheImage(p, context);
+        }
+      });
+    }
     _seedPreloadedTranslations();
     _restoreProgress();
     _initializeMedia();
@@ -337,10 +352,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           children: [
             CircleAvatar(
               radius: 14,
-              foregroundImage: widget.mediaItem.creator.avatarUrl.trim().isEmpty
-                  ? null
-                  : NetworkImage(widget.mediaItem.creator.avatarUrl),
-              child: widget.mediaItem.creator.avatarUrl.trim().isEmpty
+              foregroundImage: _creatorAvatarProvider,
+              child: _creatorAvatarProvider == null
                   ? const Icon(CupertinoIcons.person, size: 14)
                   : null,
             ),
