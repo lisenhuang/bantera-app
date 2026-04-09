@@ -13,6 +13,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
+import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/translation_service.dart';
 import 'record_compare_sheet.dart';
@@ -33,6 +34,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   SubtitleState _subtitleState = SubtitleState.hidden;
   bool _isPlaying = false;
   bool _isPlayingAll = false;
+  bool _playAllInBetweenCueGap = false;
+  int _playAllSessionId = 0;
   bool _isInitializingMedia = false;
   String? _mediaError;
   VideoPlayerController? _videoController;
@@ -180,9 +183,220 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return cueStartMs;
   }
 
-  Future<void> _startPlayAll() async {
-    if (_isPlayingAll) return;
-    setState(() => _isPlayingAll = true);
+  Future<void> _promptPlayAll() async {
+    if (_isPlayingAll) {
+      return;
+    }
+    final initial =
+        await PlayAllPauseStore.instance.getSelectedPause();
+    if (!mounted) {
+      return;
+    }
+    var selected = initial;
+    final mode = await showDialog<PlayAllPauseBetweenCues>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setLocal) {
+          return AlertDialog(
+            title: const Text('Play all'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pause between cues for shadowing (repeat aloud without tapping):',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  RadioListTile<PlayAllPauseBetweenCues>(
+                    title: const Text('No extra pause (0 s)'),
+                    subtitle: const Text(
+                      'Play through the track continuously',
+                    ),
+                    dense: true,
+                    value: PlayAllPauseBetweenCues.none,
+                    groupValue: selected,
+                    onChanged: (v) {
+                      if (v != null) {
+                        setLocal(() => selected = v);
+                      }
+                    },
+                  ),
+                  RadioListTile<PlayAllPauseBetweenCues>(
+                    title: const Text('1 second'),
+                    dense: true,
+                    value: PlayAllPauseBetweenCues.oneSecond,
+                    groupValue: selected,
+                    onChanged: (v) {
+                      if (v != null) {
+                        setLocal(() => selected = v);
+                      }
+                    },
+                  ),
+                  RadioListTile<PlayAllPauseBetweenCues>(
+                    title: const Text('1× cue length'),
+                    subtitle: const Text(
+                      'Pause as long as the cue that just played',
+                    ),
+                    dense: true,
+                    value: PlayAllPauseBetweenCues.oneCueDuration,
+                    groupValue: selected,
+                    onChanged: (v) {
+                      if (v != null) {
+                        setLocal(() => selected = v);
+                      }
+                    },
+                  ),
+                  RadioListTile<PlayAllPauseBetweenCues>(
+                    title: const Text('2× cue length'),
+                    subtitle: const Text(
+                      'Pause twice as long as the cue that just played',
+                    ),
+                    dense: true,
+                    value: PlayAllPauseBetweenCues.twoCueDurations,
+                    groupValue: selected,
+                    onChanged: (v) {
+                      if (v != null) {
+                        setLocal(() => selected = v);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(selected),
+                child: const Text('Start'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (mode == null || !mounted) {
+      return;
+    }
+    await PlayAllPauseStore.instance.setSelectedPause(mode);
+    await _startPlayAll(mode);
+  }
+
+  int _playAllGapDelayMs({
+    required PlayAllPauseBetweenCues mode,
+    required Cue endedCue,
+  }) {
+    final cueLen = (endedCue.endTimeMs - endedCue.startTimeMs).clamp(0, 1 << 30);
+    return switch (mode) {
+      PlayAllPauseBetweenCues.none => 0,
+      PlayAllPauseBetweenCues.oneSecond => 1000,
+      PlayAllPauseBetweenCues.oneCueDuration => cueLen,
+      PlayAllPauseBetweenCues.twoCueDurations => cueLen * 2,
+    };
+  }
+
+  Future<void> _playAllGapThenNextCueAudio({
+    required AudioPlayer audioPlayer,
+    required PlayAllPauseBetweenCues pauseMode,
+    required int endedCueIndex,
+    required int sessionSnapshot,
+  }) async {
+    try {
+      await audioPlayer.pause();
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final cues = widget.mediaItem.cues;
+      final delayMs = _playAllGapDelayMs(
+        mode: pauseMode,
+        endedCue: cues[endedCueIndex],
+      );
+      await Future.delayed(Duration(milliseconds: delayMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final next = endedCueIndex + 1;
+      await audioPlayer.seek(Duration(milliseconds: cues[next].startTimeMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      _lastKnownAudioPositionMs = cues[next].startTimeMs;
+      setState(() {
+        _currentCueIndex = next;
+        _playAllInBetweenCueGap = false;
+      });
+      unawaited(
+        PracticeProgressStore.instance.setCueIndex(
+          widget.mediaItem.id,
+          next,
+        ),
+      );
+      await audioPlayer.resume();
+    } finally {
+      if (mounted && _playAllInBetweenCueGap) {
+        setState(() => _playAllInBetweenCueGap = false);
+      }
+    }
+  }
+
+  Future<void> _playAllGapThenNextCueVideo({
+    required VideoPlayerController controller,
+    required PlayAllPauseBetweenCues pauseMode,
+    required int endedCueIndex,
+    required int sessionSnapshot,
+  }) async {
+    try {
+      await controller.pause();
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final cues = widget.mediaItem.cues;
+      final delayMs = _playAllGapDelayMs(
+        mode: pauseMode,
+        endedCue: cues[endedCueIndex],
+      );
+      await Future.delayed(Duration(milliseconds: delayMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final next = endedCueIndex + 1;
+      await controller.seekTo(Duration(milliseconds: cues[next].startTimeMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      _lastKnownVideoPositionMs = cues[next].startTimeMs;
+      setState(() {
+        _currentCueIndex = next;
+        _playAllInBetweenCueGap = false;
+      });
+      unawaited(
+        PracticeProgressStore.instance.setCueIndex(
+          widget.mediaItem.id,
+          next,
+        ),
+      );
+      await controller.play();
+    } finally {
+      if (mounted && _playAllInBetweenCueGap) {
+        setState(() => _playAllInBetweenCueGap = false);
+      }
+    }
+  }
+
+  Future<void> _startPlayAll(PlayAllPauseBetweenCues pauseMode) async {
+    if (_isPlayingAll) {
+      return;
+    }
+    _playAllSessionId++;
+    final sessionAtStart = _playAllSessionId;
+    setState(() {
+      _isPlayingAll = true;
+      _playAllInBetweenCueGap = false;
+    });
     unawaited(WakelockPlus.enable());
 
     final audioPlayer = _audioPlayer;
@@ -198,28 +412,61 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await audioPlayer.resume();
       setState(() => _isPlaying = true);
 
-      // Listen for position to advance cues and stop at end.
       _audioPositionSub?.cancel();
       _audioPositionSub = audioPlayer.onPositionChanged.listen((pos) {
-        if (!mounted || !_isPlayingAll) return;
+        if (!mounted || !_isPlayingAll) {
+          return;
+        }
+        if (sessionAtStart != _playAllSessionId) {
+          return;
+        }
+        if (_playAllInBetweenCueGap) {
+          return;
+        }
         _lastKnownAudioPositionMs = pos.inMilliseconds;
         final cues = widget.mediaItem.cues;
-        // Find which cue we're in.
-        int newIndex = _currentCueIndex;
-        for (int i = 0; i < cues.length; i++) {
-          if (pos.inMilliseconds >= cues[i].startTimeMs &&
-              (i == cues.length - 1 || pos.inMilliseconds < cues[i + 1].startTimeMs)) {
-            newIndex = i;
-            break;
+        final posMs = pos.inMilliseconds;
+        final i = _currentCueIndex;
+        final cue = cues[i];
+
+        if (pauseMode != PlayAllPauseBetweenCues.none &&
+            i < cues.length - 1 &&
+            posMs >= cue.endTimeMs) {
+          _playAllInBetweenCueGap = true;
+          final snapshot = _playAllSessionId;
+          unawaited(
+            _playAllGapThenNextCueAudio(
+              audioPlayer: audioPlayer,
+              pauseMode: pauseMode,
+              endedCueIndex: i,
+              sessionSnapshot: snapshot,
+            ),
+          );
+          return;
+        }
+
+        if (pauseMode == PlayAllPauseBetweenCues.none) {
+          var newIndex = _currentCueIndex;
+          for (var j = 0; j < cues.length; j++) {
+            if (posMs >= cues[j].startTimeMs &&
+                (j == cues.length - 1 ||
+                    posMs < cues[j + 1].startTimeMs)) {
+              newIndex = j;
+              break;
+            }
+          }
+          if (newIndex != _currentCueIndex) {
+            setState(() => _currentCueIndex = newIndex);
+            unawaited(
+              PracticeProgressStore.instance.setCueIndex(
+                widget.mediaItem.id,
+                newIndex,
+              ),
+            );
           }
         }
-        if (newIndex != _currentCueIndex) {
-          setState(() => _currentCueIndex = newIndex);
-          unawaited(PracticeProgressStore.instance
-              .setCueIndex(widget.mediaItem.id, newIndex));
-        }
-        // Stop after last cue ends.
-        if (pos.inMilliseconds >= cues.last.endTimeMs) {
+
+        if (posMs >= cues.last.endTimeMs) {
           unawaited(_stopPlayAll());
         }
       });
@@ -227,38 +474,87 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     final controller = _videoController;
-    if (controller == null || !controller.value.isInitialized) return;
+    if (controller == null || !controller.value.isInitialized) {
+      _playAllSessionId++;
+      if (mounted) {
+        setState(() {
+          _isPlayingAll = false;
+          _playAllInBetweenCueGap = false;
+        });
+      }
+      unawaited(WakelockPlus.disable());
+      return;
+    }
 
-    final cue = widget.mediaItem.cues[_currentCueIndex];
-    final seekMs = _seekMsResumeWithinCurrentCue(
-      cueStartMs: cue.startTimeMs,
-      cueEndMs: cue.endTimeMs,
+    final vCue = widget.mediaItem.cues[_currentCueIndex];
+    final vSeekMs = _seekMsResumeWithinCurrentCue(
+      cueStartMs: vCue.startTimeMs,
+      cueEndMs: vCue.endTimeMs,
       mediaPositionMs: controller.value.position.inMilliseconds,
     );
-    await controller.seekTo(Duration(milliseconds: seekMs));
+    await controller.seekTo(Duration(milliseconds: vSeekMs));
 
-    // Remove the per-cue stop listener and replace with play-all listener.
     final oldListener = _videoListener;
-    if (oldListener != null) controller.removeListener(oldListener);
+    if (oldListener != null) {
+      controller.removeListener(oldListener);
+    }
 
     _videoListener = () {
-      if (!mounted || !_isPlayingAll) return;
-      final pos = controller.value.position.inMilliseconds;
+      if (!mounted || !_isPlayingAll) {
+        return;
+      }
+      if (sessionAtStart != _playAllSessionId) {
+        return;
+      }
+      if (_playAllInBetweenCueGap) {
+        return;
+      }
+      if (!controller.value.isInitialized) {
+        return;
+      }
+      final posMs = controller.value.position.inMilliseconds;
+      _lastKnownVideoPositionMs = posMs;
       final cues = widget.mediaItem.cues;
-      int newIndex = _currentCueIndex;
-      for (int i = 0; i < cues.length; i++) {
-        if (pos >= cues[i].startTimeMs &&
-            (i == cues.length - 1 || pos < cues[i + 1].startTimeMs)) {
-          newIndex = i;
-          break;
+      final i = _currentCueIndex;
+      final activeCue = cues[i];
+
+      if (pauseMode != PlayAllPauseBetweenCues.none &&
+          i < cues.length - 1 &&
+          posMs >= activeCue.endTimeMs) {
+        _playAllInBetweenCueGap = true;
+        final snapshot = _playAllSessionId;
+        unawaited(
+          _playAllGapThenNextCueVideo(
+            controller: controller,
+            pauseMode: pauseMode,
+            endedCueIndex: i,
+            sessionSnapshot: snapshot,
+          ),
+        );
+        return;
+      }
+
+      if (pauseMode == PlayAllPauseBetweenCues.none) {
+        var newIndex = _currentCueIndex;
+        for (var j = 0; j < cues.length; j++) {
+          if (posMs >= cues[j].startTimeMs &&
+              (j == cues.length - 1 || posMs < cues[j + 1].startTimeMs)) {
+            newIndex = j;
+            break;
+          }
+        }
+        if (newIndex != _currentCueIndex) {
+          setState(() => _currentCueIndex = newIndex);
+          unawaited(
+            PracticeProgressStore.instance.setCueIndex(
+              widget.mediaItem.id,
+              newIndex,
+            ),
+          );
         }
       }
-      if (newIndex != _currentCueIndex) {
-        setState(() => _currentCueIndex = newIndex);
-        unawaited(PracticeProgressStore.instance
-            .setCueIndex(widget.mediaItem.id, newIndex));
-      }
-      if (pos >= cues.last.endTimeMs) {
+
+      if (posMs >= cues.last.endTimeMs) {
         unawaited(_stopPlayAll());
       }
     };
@@ -268,11 +564,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _stopPlayAll() async {
-    if (!_isPlayingAll) return;
+    if (!_isPlayingAll) {
+      return;
+    }
+    _playAllSessionId++;
     unawaited(WakelockPlus.disable());
     setState(() {
       _isPlayingAll = false;
       _isPlaying = false;
+      _playAllInBetweenCueGap = false;
     });
     final ap = _audioPlayer;
     if (ap != null) {
@@ -587,7 +887,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             _isPlayingAll ? 'Stop' : 'Play All',
                             () => _isPlayingAll
                                 ? unawaited(_stopPlayAll())
-                                : unawaited(_startPlayAll()),
+                                : unawaited(_promptPlayAll()),
                             colorScheme,
                           ),
                         ),
