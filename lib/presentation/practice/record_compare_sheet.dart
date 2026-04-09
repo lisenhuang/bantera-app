@@ -870,13 +870,13 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
   }
 
   String _normalizeToken(String token) {
-    return token
-        .trim()
-        .toLowerCase()
-        .replaceAll(
-          RegExp(r'^[\.,!?:;"“”‘’()\[\]{}]+|[\.,!?:;"“”‘’()\[\]{}]+$'),
-          '',
-        );
+    var t = _normalizeConfusableQuotesForTokenCompare(token.trim());
+    t = t.toLowerCase();
+    t = t.replaceAll(
+      RegExp(r'^[\.,!?:;"“”‘’()\[\]{}]+|[\.,!?:;"“”‘’()\[\]{}]+$'),
+      '',
+    );
+    return t;
   }
 
   List<(int, int)> _longestCommonSubsequence(
@@ -990,6 +990,20 @@ class _SummaryChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Maps typographic / fullwidth apostrophes and common curly quotes to ASCII so
+/// transcript tokens like `i've` and recognition `I've` (U+2019) still match.
+String _normalizeConfusableQuotesForTokenCompare(String input) {
+  var s = input.replaceAll(
+    RegExp(r"[\u2018\u2019\u201B\u0060\u00B4\u02BC\u02BB\uFF07\u2032]"),
+    "'",
+  );
+  s = s.replaceAll(
+    RegExp(r'[\u201C\u201D\u201E\u00AB\u00BB]'),
+    '"',
+  );
+  return s;
 }
 
 class _AttemptComparisonResult {
