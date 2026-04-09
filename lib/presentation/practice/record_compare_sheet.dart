@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:characters/characters.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -796,6 +797,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
           result.segments,
           baseStyle: baseStyle,
           mismatchStyle: mismatchStyle,
+          joinWithSpace: result.joinSegmentsWithSpace,
         ),
       ),
     );
@@ -805,6 +807,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     List<_DiffSegment> segments, {
     required TextStyle? baseStyle,
     required TextStyle? mismatchStyle,
+    bool joinWithSpace = true,
   }) {
     final spans = <InlineSpan>[];
     for (var i = 0; i < segments.length; i += 1) {
@@ -815,7 +818,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
           style: segment.isMatch ? baseStyle : mismatchStyle,
         ),
       );
-      if (i != segments.length - 1) {
+      if (joinWithSpace && i != segments.length - 1) {
         spans.add(const TextSpan(text: ' '));
       }
     }
@@ -826,46 +829,74 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     required String expectedText,
     required String actualText,
   }) {
-    final expectedTokens = _tokenize(expectedText);
-    final actualTokens = _tokenize(actualText);
-    final lcs = _longestCommonSubsequence(
-      expectedTokens.map((token) => token.normalized).toList(growable: false),
-      actualTokens.map((token) => token.normalized).toList(growable: false),
+    final expectedClean = _stripInvisibleSeparators(expectedText.trim());
+    final actualClean = _stripInvisibleSeparators(actualText.trim());
+    final useCharacterTokens =
+        _containsCjk(expectedClean) || _containsCjk(actualClean);
+
+    final expectedTokens = _tokenize(
+      expectedClean,
+      useCharacterTokens: useCharacterTokens,
+    );
+    final actualTokens = _tokenize(
+      actualClean,
+      useCharacterTokens: useCharacterTokens,
     );
 
-    final matchedActualIndexes = <int>{};
-    final matchedExpectedIndexes = <int>{};
+    final expComp = _comparableTokensForLcs(expectedTokens);
+    final actComp = _comparableTokensForLcs(actualTokens);
+    final lcs = _longestCommonSubsequence(expComp.norms, actComp.norms);
+
+    final matchedActualOriginalIndexes = <int>{};
     for (final pair in lcs) {
-      matchedExpectedIndexes.add(pair.$1);
-      matchedActualIndexes.add(pair.$2);
+      matchedActualOriginalIndexes.add(actComp.sourceIndexes[pair.$2]);
     }
 
     final segments = <_DiffSegment>[];
     for (var i = 0; i < actualTokens.length; i += 1) {
+      final punctOnly = actualTokens[i].normalized.isEmpty;
       segments.add(
         _DiffSegment(
           text: actualTokens[i].display,
-          isMatch: matchedActualIndexes.contains(i),
+          isMatch: punctOnly || matchedActualOriginalIndexes.contains(i),
         ),
       );
     }
 
+    final contentMatches = lcs.length;
+    final contentUnexpected = actComp.norms.length - contentMatches;
+    final contentMissing = expComp.norms.length - contentMatches;
+
     return _AttemptComparisonResult(
       transcriptText: actualText,
       segments: segments,
-      matchedCount: matchedActualIndexes.length,
-      unexpectedCount: actualTokens.length - matchedActualIndexes.length,
-      missingCount: expectedTokens.length - matchedExpectedIndexes.length,
+      matchedCount: contentMatches,
+      unexpectedCount: contentUnexpected,
+      missingCount: contentMissing,
+      joinSegmentsWithSpace: !useCharacterTokens,
     );
   }
 
-  List<_DiffToken> _tokenize(String text) {
+  List<_DiffToken> _tokenize(
+    String text, {
+    required bool useCharacterTokens,
+  }) {
+    if (useCharacterTokens) {
+      return Characters(text)
+          .map(
+            (g) => _DiffToken(
+              display: g,
+              normalized: _normalizeGraphemeForCompare(g),
+            ),
+          )
+          .toList(growable: false);
+    }
+
     return text
         .trim()
         .split(RegExp(r'\s+'))
         .where((token) => token.trim().isNotEmpty)
         .map((token) => _DiffToken(display: token, normalized: _normalizeToken(token)))
-        .where((token) => token.normalized.isNotEmpty)
         .toList(growable: false);
   }
 
@@ -876,7 +907,25 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       RegExp(r'^[\.,!?:;"“”‘’()\[\]{}]+|[\.,!?:;"“”‘’()\[\]{}]+$'),
       '',
     );
-    return t;
+    return _stripIgnorableForComparison(t);
+  }
+
+  /// Indices in [tokens] where [normalized] is non-empty — used so LCS ignores
+  /// punctuation-only units while segments still show the full transcript.
+  ({List<String> norms, List<int> sourceIndexes}) _comparableTokensForLcs(
+    List<_DiffToken> tokens,
+  ) {
+    final norms = <String>[];
+    final sourceIndexes = <int>[];
+    for (var i = 0; i < tokens.length; i += 1) {
+      final n = tokens[i].normalized;
+      if (n.isEmpty) {
+        continue;
+      }
+      norms.add(n);
+      sourceIndexes.add(i);
+    }
+    return (norms: norms, sourceIndexes: sourceIndexes);
   }
 
   List<(int, int)> _longestCommonSubsequence(
@@ -992,6 +1041,184 @@ class _SummaryChip extends StatelessWidget {
   }
 }
 
+/// Zero-width / BOM characters that often differ between ASR and stored text.
+String _stripInvisibleSeparators(String s) {
+  return s.replaceAll(RegExp(r'[\u200B-\u200D\uFEFF\u2060]'), '');
+}
+
+/// Whether [s] contains scripts that are not meaningfully split on ASCII spaces.
+bool _containsCjk(String s) {
+  for (final r in s.runes) {
+    if (_isCjkKanaHangulOrFullwidthPunctRune(r)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool _isCjkKanaHangulOrFullwidthPunctRune(int r) {
+  return (r >= 0x2E80 && r <= 0x9FFF) ||
+      (r >= 0xA960 && r <= 0xA97F) ||
+      (r >= 0xAC00 && r <= 0xD7AF) ||
+      (r >= 0xF900 && r <= 0xFAFF) ||
+      (r >= 0xFE10 && r <= 0xFE19) ||
+      (r >= 0xFE30 && r <= 0xFE4F) ||
+      (r >= 0xFF00 && r <= 0xFFEF) ||
+      (r >= 0x1B000 && r <= 0x1B122) ||
+      (r >= 0x20000 && r <= 0x3134F);
+}
+
+/// Normalize one user-perceived character for comparison (CJK / mixed scripts).
+/// Punctuation and symbols map to empty so they do not affect LCS or counts.
+String _normalizeGraphemeForCompare(String grapheme) {
+  var t = _normalizeConfusableQuotesForTokenCompare(grapheme);
+  t = t.toLowerCase();
+  final mapped = _fullwidthToHalfwidthForCompare(t);
+  return _stripIgnorableForComparison(mapped.trim());
+}
+
+/// Removes characters that should not affect transcript comparison (punctuation,
+/// spaces, symbols). Keeps letters, digits, CJK, kana, hangul, and in-word `'` / `-`.
+String _stripIgnorableForComparison(String t) {
+  if (t.isEmpty) {
+    return t;
+  }
+  final b = StringBuffer();
+  for (final g in Characters(t)) {
+    if (!_isIgnorableForComparisonGrapheme(g)) {
+      b.write(g);
+    }
+  }
+  return b.toString();
+}
+
+bool _isIgnorableForComparisonGrapheme(String g) {
+  if (g.isEmpty) {
+    return true;
+  }
+  // Contractions and hyphenated words (ASCII and common dash variants).
+  if (g == "'" ||
+      g == '-' ||
+      g == '\u2010' ||
+      g == '\u2011' ||
+      g == '\u2013') {
+    return false;
+  }
+  for (final r in g.runes) {
+    if (_isLetterDigitOrIdeographOrKanaRune(r)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool _isLetterDigitOrIdeographOrKanaRune(int r) {
+  // ASCII letters and digits.
+  if ((r >= 0x30 && r <= 0x39) ||
+      (r >= 0x41 && r <= 0x5A) ||
+      (r >= 0x61 && r <= 0x7A)) {
+    return true;
+  }
+  // Latin extended (covers most European languages).
+  if ((r >= 0x00C0 && r <= 0x024F) || (r >= 0x1E00 && r <= 0x1EFF)) {
+    return true;
+  }
+  // Greek, Cyrillic.
+  if ((r >= 0x0370 && r <= 0x052F) || (r >= 0x0400 && r <= 0x052F)) {
+    return true;
+  }
+  // Arabic, Hebrew.
+  if ((r >= 0x0600 && r <= 0x06FF) || (r >= 0x0590 && r <= 0x05FF)) {
+    return true;
+  }
+  // Indic / Southeast Asian scripts (broad block).
+  if (r >= 0x0900 && r <= 0x0FFF) {
+    return true;
+  }
+  // Thai, Lao, Khmer, Myanmar.
+  if (r >= 0x0E00 && r <= 0x109F) {
+    return true;
+  }
+  // Ethiopic.
+  if (r >= 0x1200 && r <= 0x137F) {
+    return true;
+  }
+  // Georgian.
+  if (r >= 0x10A0 && r <= 0x10FF) {
+    return true;
+  }
+  // Hangul jamo and syllables.
+  if ((r >= 0x1100 && r <= 0x11FF) ||
+      (r >= 0x3130 && r <= 0x318F) ||
+      (r >= 0xA960 && r <= 0xA97F) ||
+      (r >= 0xAC00 && r <= 0xD7AF)) {
+    return true;
+  }
+  // Hiragana, Katakana, Katakana phonetic extensions.
+  if ((r >= 0x3040 && r <= 0x30FF) || (r >= 0x31F0 && r <= 0x31FF)) {
+    return true;
+  }
+  // CJK Unified Ideographs and compatibility, extensions.
+  if ((r >= 0x2E80 && r <= 0x9FFF) ||
+      (r >= 0xF900 && r <= 0xFAFF) ||
+      (r >= 0x20000 && r <= 0x3134F)) {
+    return true;
+  }
+  // Combining marks (treated as content when paired with letters in one grapheme).
+  if (r >= 0x0300 && r <= 0x036F) {
+    return true;
+  }
+  return false;
+}
+
+const _cjkPunctMap = <String, String>{
+  '，': ',',
+  '。': '.',
+  '、': ',',
+  '．': '.',
+  '？': '?',
+  '！': '!',
+  '：': ':',
+  '；': ';',
+  '（': '(',
+  '）': ')',
+  '【': '[',
+  '】': ']',
+  '「': '"',
+  '」': '"',
+  '『': '"',
+  '』': '"',
+  '《': '<',
+  '》': '>',
+  '〈': '<',
+  '〉': '>',
+  '…': '.',
+  '—': '-',
+  '–': '-',
+  '・': '.',
+  '·': '.',
+};
+
+String _fullwidthToHalfwidthForCompare(String t) {
+  if (t.isEmpty) return t;
+  final b = StringBuffer();
+  for (final ch in Characters(t)) {
+    if (ch.length == 1) {
+      final c = ch.codeUnitAt(0);
+      if (c >= 0xFF01 && c <= 0xFF5E) {
+        b.writeCharCode(c - 0xFEE0);
+        continue;
+      }
+      if (c == 0x3000) {
+        b.write(' ');
+        continue;
+      }
+    }
+    b.write(_cjkPunctMap[ch] ?? ch);
+  }
+  return b.toString();
+}
+
 /// Maps typographic / fullwidth apostrophes and common curly quotes to ASCII so
 /// transcript tokens like `i've` and recognition `I've` (U+2019) still match.
 String _normalizeConfusableQuotesForTokenCompare(String input) {
@@ -1013,6 +1240,7 @@ class _AttemptComparisonResult {
     required this.matchedCount,
     required this.unexpectedCount,
     required this.missingCount,
+    this.joinSegmentsWithSpace = true,
   });
 
   final String transcriptText;
@@ -1020,6 +1248,9 @@ class _AttemptComparisonResult {
   final int matchedCount;
   final int unexpectedCount;
   final int missingCount;
+
+  /// False for CJK character-level diff — inserting spaces would break Chinese.
+  final bool joinSegmentsWithSpace;
 }
 
 class _DiffSegment {
