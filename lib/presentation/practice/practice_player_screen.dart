@@ -1055,11 +1055,28 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     });
 
     try {
-      final translated = await TranslationService.instance.translateCues(
-        sourceLocaleIdentifier: sourceLocaleIdentifier,
-        targetLocaleIdentifier: targetLocale,
-        cues: [cue],
-      );
+      Future<Map<String, String>> translateOnce() {
+        return TranslationService.instance.translateCues(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocale,
+          cues: [cue],
+        );
+      }
+
+      late final Map<String, String> translated;
+      try {
+        translated = await translateOnce();
+      } on TranslationException catch (error) {
+        if (error.code == 'translation_assets_not_installed' && mounted) {
+          await TranslationService.instance.prepareTranslationAssets(
+            sourceLocaleIdentifier: sourceLocaleIdentifier,
+            targetLocaleIdentifier: targetLocale,
+          );
+          translated = await translateOnce();
+        } else {
+          rethrow;
+        }
+      }
       if (!_isCurrentTranslationGeneration(generation, targetLocale) ||
           !mounted) {
         return;
@@ -1125,11 +1142,28 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _isBackgroundTranslating = true;
 
     try {
-      final translated = await TranslationService.instance.translateCues(
-        sourceLocaleIdentifier: sourceLocaleIdentifier,
-        targetLocaleIdentifier: targetLocaleIdentifier,
-        cues: remainingCues,
-      );
+      Future<Map<String, String>> translateOnce() {
+        return TranslationService.instance.translateCues(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocaleIdentifier,
+          cues: remainingCues,
+        );
+      }
+
+      late final Map<String, String> translated;
+      try {
+        translated = await translateOnce();
+      } on TranslationException catch (error) {
+        if (error.code == 'translation_assets_not_installed') {
+          await TranslationService.instance.prepareTranslationAssets(
+            sourceLocaleIdentifier: sourceLocaleIdentifier,
+            targetLocaleIdentifier: targetLocaleIdentifier,
+          );
+          translated = await translateOnce();
+        } else {
+          rethrow;
+        }
+      }
       if (!_isCurrentTranslationGeneration(
             generation,
             targetLocaleIdentifier,
@@ -1186,6 +1220,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final savedIdentifier = UserProfileNotifier.instance.translationLanguage;
     final savedLocale = _findTranslationLocale(locales, savedIdentifier);
     if (savedLocale != null) {
+      try {
+        await _ensureTranslationAssetsDownloaded(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          target: savedLocale,
+        );
+      } on TranslationException catch (error) {
+        if (mounted) {
+          setState(() {
+            _translationErrorMessage = error.message;
+          });
+        }
+        return null;
+      }
       return savedLocale.identifier;
     }
 
@@ -1207,6 +1254,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return null;
     }
 
+    try {
+      await _ensureTranslationAssetsDownloaded(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        target: selectedLocale,
+      );
+    } on TranslationException catch (error) {
+      if (mounted) {
+        setState(() {
+          _translationErrorMessage = error.message;
+        });
+      }
+      return null;
+    }
+
     final saved = await UserProfileNotifier.instance.updateTranslationLanguage(
       selectedLocale.identifier,
     );
@@ -1223,6 +1284,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     return selectedLocale.identifier;
+  }
+
+  /// Downloads on-device translation models when needed (iOS system sheet).
+  Future<void> _ensureTranslationAssetsDownloaded({
+    required String sourceLocaleIdentifier,
+    required TranslationLocaleOption target,
+  }) async {
+    if (target.isInstalled) {
+      return;
+    }
+    await TranslationService.instance.prepareTranslationAssets(
+      sourceLocaleIdentifier: sourceLocaleIdentifier,
+      targetLocaleIdentifier: target.identifier,
+    );
   }
 
   Future<void> _changeTranslationLanguage() async {
@@ -1272,6 +1347,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       selectedLocale,
     );
     if (!mounted || !confirmed) {
+      return;
+    }
+
+    try {
+      await _ensureTranslationAssetsDownloaded(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        target: selectedLocale,
+      );
+    } on TranslationException catch (error) {
+      if (mounted) {
+        setState(() {
+          _translationErrorMessage = error.message;
+        });
+      }
       return;
     }
 

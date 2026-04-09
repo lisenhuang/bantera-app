@@ -181,7 +181,7 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     final normalized = learningLanguage.trim();
-    if (normalized.length > 35) {
+    if (normalized.isEmpty || normalized.length > 35) {
       _setError('Choose a valid learning language.');
       return false;
     }

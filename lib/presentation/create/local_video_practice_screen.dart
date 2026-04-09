@@ -433,11 +433,26 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     }
 
     try {
-      return await TranslationService.instance.translateCues(
-        sourceLocaleIdentifier: prepared.transcriptLanguage,
-        targetLocaleIdentifier: translationLanguage,
-        cues: cues,
-      );
+      Future<Map<String, String>> translateOnce() {
+        return TranslationService.instance.translateCues(
+          sourceLocaleIdentifier: prepared.transcriptLanguage,
+          targetLocaleIdentifier: translationLanguage,
+          cues: cues,
+        );
+      }
+
+      try {
+        return await translateOnce();
+      } on TranslationException catch (error) {
+        if (error.code == 'translation_assets_not_installed') {
+          await TranslationService.instance.prepareTranslationAssets(
+            sourceLocaleIdentifier: prepared.transcriptLanguage,
+            targetLocaleIdentifier: translationLanguage,
+          );
+          return await translateOnce();
+        }
+        rethrow;
+      }
     } on TranslationException {
       return const {};
     }

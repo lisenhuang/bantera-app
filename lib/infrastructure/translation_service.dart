@@ -37,6 +37,43 @@ class TranslationService {
   static final TranslationService instance = TranslationService._();
   static const MethodChannel _channel = MethodChannel('bantera/translation');
 
+  /// Ensures on-device translation language packs are downloaded for the pair.
+  /// On iOS 26+, may present the system download UI (SwiftUI `translationTask`).
+  /// No-op when the target is already installed.
+  Future<void> prepareTranslationAssets({
+    required String sourceLocaleIdentifier,
+    required String targetLocaleIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const TranslationException(
+        code: 'unsupported_platform',
+        message: 'Cue translation is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      await _channel.invokeMethod<void>(
+        'prepareTranslationAssets',
+        <String, Object?>{
+          'sourceLocaleIdentifier': sourceLocaleIdentifier,
+          'targetLocaleIdentifier': targetLocaleIdentifier,
+        },
+      );
+    } on PlatformException catch (error) {
+      throw TranslationException(
+        code: error.code,
+        message:
+            error.message ??
+            'The app could not prepare on-device translation for this language.',
+      );
+    } on MissingPluginException {
+      throw const TranslationException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS translation bridge is not available.',
+      );
+    }
+  }
+
   Future<List<TranslationLocaleOption>> fetchSupportedLocales({
     required String sourceLocaleIdentifier,
   }) async {

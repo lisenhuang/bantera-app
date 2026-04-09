@@ -229,6 +229,8 @@ private final class BanteraTranslationBridge {
     switch call.method {
     case "getSupportedTranslationLocales":
       handleGetSupportedTranslationLocales(call: call, result: result)
+    case "prepareTranslationAssets":
+      handlePrepareTranslationAssets(call: call, result: result)
     case "translateTranscriptCues":
       handleTranslateTranscriptCues(call: call, result: result)
     default:
@@ -275,6 +277,51 @@ private final class BanteraTranslationBridge {
               details: nil
             )
           )
+        }
+      }
+    }
+  }
+
+  private func handlePrepareTranslationAssets(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let sourceLocaleIdentifier = args["sourceLocaleIdentifier"] as? String,
+      let targetLocaleIdentifier = args["targetLocaleIdentifier"] as? String,
+      !sourceLocaleIdentifier.isEmpty,
+      !targetLocaleIdentifier.isEmpty
+    else {
+      result(BanteraTranslationError.invalidArguments.flutterError)
+      return
+    }
+
+    BanteraTranslationPrepareCoordinator.prepareAssets(
+      sourceLocaleIdentifier: sourceLocaleIdentifier,
+      targetLocaleIdentifier: targetLocaleIdentifier
+    ) { prepareResult in
+      DispatchQueue.main.async {
+        switch prepareResult {
+        case .success:
+          result(nil)
+        case let .failure(error):
+          if let bantera = error as? BanteraTranslationError {
+            result(bantera.flutterError)
+          } else {
+            result(
+              FlutterError(
+                code: "translation_prepare_failed",
+                message: error.localizedDescription,
+                details: nil
+              )
+            )
+          }
         }
       }
     }
@@ -329,48 +376,6 @@ private final class BanteraTranslationBridge {
         }
       }
     }
-  }
-}
-
-private enum BanteraTranslationError: LocalizedError {
-  case unsupportedIosVersion
-  case invalidArguments
-  case unsupportedLanguagePair(source: String, target: String)
-  case translationUnavailable
-  case translationFailed(String)
-
-  var errorDescription: String? {
-    switch self {
-    case .unsupportedIosVersion:
-      return "Cue translation requires iOS 26 or later."
-    case .invalidArguments:
-      return "The translation request was missing required cue or language data."
-    case let .unsupportedLanguagePair(source, target):
-      return "iPhone translation is not available from \(source) to \(target) for this practice session."
-    case .translationUnavailable:
-      return "Translation is not available on this iPhone right now."
-    case let .translationFailed(message):
-      return message
-    }
-  }
-
-  var code: String {
-    switch self {
-    case .unsupportedIosVersion:
-      return "unsupported_ios_version"
-    case .invalidArguments:
-      return "invalid_arguments"
-    case .unsupportedLanguagePair:
-      return "unsupported_language_pair"
-    case .translationUnavailable:
-      return "translation_unavailable"
-    case .translationFailed:
-      return "translation_failed"
-    }
-  }
-
-  var flutterError: FlutterError {
-    FlutterError(code: code, message: errorDescription, details: nil)
   }
 }
 
@@ -471,7 +476,14 @@ private final class BanteraTranslationService {
 
     let availability = LanguageAvailability()
     let status = await availability.status(from: sourceLanguage, to: targetLanguage)
-    guard status == .installed || status == .supported else {
+    if status == .installed {
+      // Ready to translate.
+    } else if status == .supported {
+      throw BanteraTranslationError.translationAssetsNotInstalled(
+        source: normalizedSource,
+        target: normalizedTarget
+      )
+    } else {
       throw BanteraTranslationError.unsupportedLanguagePair(
         source: normalizedSource,
         target: normalizedTarget
@@ -479,16 +491,6 @@ private final class BanteraTranslationService {
     }
 
     let session = TranslationSession(installedSource: sourceLanguage, target: targetLanguage)
-    if status == .supported {
-      do {
-        try await session.prepareTranslation()
-      } catch {
-        throw BanteraTranslationError.translationFailed(
-          "iPhone could not download the translation model for \(normalizedTarget)."
-        )
-      }
-    }
-
     return try await translate(cues: cues, session: session)
   }
 
