@@ -63,4 +63,13 @@ class PracticeProgressStore {
       await _write();
     }
   }
+
+  /// Clears all persisted cue indices (e.g. after account deletion).
+  Future<void> clearAll() async {
+    _cache = {};
+    try {
+      final f = await _file;
+      await f.writeAsString('{}');
+    } catch (_) {}
+  }
 }

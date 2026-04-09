@@ -225,6 +225,23 @@ class LocalPracticeRepository extends ChangeNotifier {
     return video;
   }
 
+  /// Deletes all local practice rows and files for the current session's [cacheKey].
+  /// Call before sign-out (e.g. after server account deletion).
+  Future<void> wipeAllDataForCurrentUser() async {
+    final ownerCacheKey = _currentOwnerCacheKey;
+    if (ownerCacheKey == null) {
+      return;
+    }
+
+    final entries = await (_database.select(_database.localPracticeEntries)
+          ..where((table) => table.ownerCacheKey.equals(ownerCacheKey)))
+        .get();
+
+    for (final entry in entries) {
+      await deleteVideo(entry.id);
+    }
+  }
+
   Future<void> deleteVideo(String id) async {
     final ownerCacheKey = _currentOwnerCacheKey;
     if (ownerCacheKey == null) {

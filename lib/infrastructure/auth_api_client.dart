@@ -596,6 +596,48 @@ class AuthApiClient {
     });
   }
 
+  /// Permanently deletes the authenticated user's account on the server.
+  Future<void> deleteAccount({
+    required String accessToken,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+      try {
+        final request = await _httpClient.openUrl(
+          'DELETE',
+          _resolve('/api/me'),
+        );
+        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+        request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+        final response = await request.close();
+        if (response.statusCode == 204) {
+          await response.drain<void>();
+          return;
+        }
+        if (response.statusCode == 404) {
+          await response.drain<void>();
+          throw const AuthApiException(
+            code: 'not_found',
+            message: 'Account could not be found.',
+          );
+        }
+        final json = await _parseJsonResponse(response);
+        _throwApiException(json, response.statusCode);
+      } on AuthApiException {
+        rethrow;
+      } on SocketException {
+        throw const AuthApiException(
+          code: 'network_error',
+          message: 'Cannot reach the Bantera API.',
+        );
+      } on HandshakeException {
+        throw const AuthApiException(
+          code: 'tls_error',
+          message: 'The app could not establish a secure connection.',
+        );
+      }
+    });
+  }
+
   Future<bool> checkVideoSaved({
     required String accessToken,
     required String videoId,

@@ -26,4 +26,10 @@ class ProfileStatsNotifier extends ChangeNotifier {
       notifyListeners();
     } catch (_) {}
   }
+
+  void reset() {
+    uploadCount = null;
+    savedCount = null;
+    notifyListeners();
+  }
 }

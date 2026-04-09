@@ -123,6 +123,19 @@ class UserProfileCacheStore {
     await _deleteAvatarFiles(cacheKey);
   }
 
+  /// Removes cached profile JSON and avatar files for [cacheKey].
+  Future<void> removeAllForCacheKey(String cacheKey) async {
+    await clearAvatar(cacheKey);
+    try {
+      final file = await _profileFile(cacheKey);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // Ignore cache cleanup failures.
+    }
+  }
+
   Future<File> _profileFile(String cacheKey) async {
     final directory = await _cacheDirectory;
     return File('${directory.path}/${_safeCacheKey(cacheKey)}.json');
