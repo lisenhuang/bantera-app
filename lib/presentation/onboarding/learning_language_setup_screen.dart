@@ -33,7 +33,7 @@ class _LearningLanguageSetupScreenState
           await VideoProcessingService.instance.fetchSupportedLocales();
       if (!mounted) return;
       setState(() {
-        _locales = locales.where((o) => o.identifier != 'zh-TW').toList();
+        _locales = locales;
         _isLoading = false;
       });
     } catch (e) {
@@ -164,7 +164,7 @@ class _LearningLanguageSetupScreenState
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final locale = items[index];
-        final flag = flagEmojiForLocale(locale.identifier);
+        final flag = locale.effectiveFlagEmoji;
         return ListTile(
           leading: Text(flag, style: const TextStyle(fontSize: 24)),
           title: Text(locale.displayName),

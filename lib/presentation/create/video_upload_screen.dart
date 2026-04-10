@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../../core/settings_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
+import '../shared/locale_flag.dart';
 
 class VideoUploadScreen extends StatefulWidget {
   const VideoUploadScreen({super.key});
@@ -678,7 +679,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
   }
 
   static String _languageLabel(TranscriptionLocaleOption locale) {
-    return '${_flagPrefixForIdentifier(locale.identifier)} ${locale.displayName} (${locale.identifier})';
+    return '${locale.effectiveFlagEmoji} ${locale.displayName} (${locale.identifier})';
   }
 }
 
@@ -815,113 +816,4 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
       ),
     );
   }
-}
-
-String _flagPrefixForIdentifier(String identifier) {
-  final region = _regionCodeFromIdentifier(identifier);
-  if (region == null) {
-    return '🌐';
-  }
-  if (_isNumericRegion(region)) {
-    return '🌎';
-  }
-  if (region.length != 2 || !_isAlphaRegion(region)) {
-    return '🏳️';
-  }
-
-  final upper = region.toUpperCase();
-  return String.fromCharCodes(
-    upper.codeUnits.map((unit) => 0x1F1E6 + unit - 0x41),
-  );
-}
-
-String? _regionCodeFromIdentifier(String identifier) {
-  final components = identifier
-      .replaceAll('_', '-')
-      .split('-')
-      .where((component) => component.isNotEmpty)
-      .toList();
-
-  if (components.isEmpty) {
-    return null;
-  }
-
-  var candidateIndex = 1;
-  if (components.length > 2 && _isScriptSubtag(components[1])) {
-    candidateIndex = 2;
-  }
-
-  if (candidateIndex < components.length &&
-      _isRegionSubtag(components[candidateIndex])) {
-    return components[candidateIndex].toUpperCase();
-  }
-
-  for (final component in components.skip(1)) {
-    if (_isRegionSubtag(component)) {
-      return component.toUpperCase();
-    }
-  }
-
-  return _defaultRegionForLanguageCode(components.first.toLowerCase());
-}
-
-bool _isRegionSubtag(String value) {
-  return (value.length == 2 && _isAlphaRegion(value)) ||
-      (value.length == 3 && _isNumericRegion(value));
-}
-
-bool _isScriptSubtag(String value) {
-  return value.length == 4 && _isAlphaRegion(value);
-}
-
-bool _isAlphaRegion(String value) {
-  final codeUnits = value.codeUnits;
-  return codeUnits.every(
-    (unit) => (unit >= 0x41 && unit <= 0x5A) || (unit >= 0x61 && unit <= 0x7A),
-  );
-}
-
-bool _isNumericRegion(String value) {
-  final codeUnits = value.codeUnits;
-  return codeUnits.every((unit) => unit >= 0x30 && unit <= 0x39);
-}
-
-String? _defaultRegionForLanguageCode(String languageCode) {
-  const defaults = <String, String>{
-    'ar': 'SA',
-    'ca': 'ES',
-    'cs': 'CZ',
-    'da': 'DK',
-    'de': 'DE',
-    'el': 'GR',
-    'en': 'US',
-    'es': 'ES',
-    'fi': 'FI',
-    'fr': 'FR',
-    'he': 'IL',
-    'hi': 'IN',
-    'hr': 'HR',
-    'hu': 'HU',
-    'id': 'ID',
-    'it': 'IT',
-    'ja': 'JP',
-    'ko': 'KR',
-    'ms': 'MY',
-    'nl': 'NL',
-    'no': 'NO',
-    'pl': 'PL',
-    'pt': 'BR',
-    'ro': 'RO',
-    'ru': 'RU',
-    'sk': 'SK',
-    'sv': 'SE',
-    'th': 'TH',
-    'tr': 'TR',
-    'uk': 'UA',
-    'vi': 'VN',
-    'yue': 'HK',
-    'zh': 'CN',
-  };
-
-  return defaults[languageCode];
 }

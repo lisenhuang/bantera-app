@@ -1,3 +1,5 @@
+import '../../infrastructure/transcription_locale_option.dart';
+
 /// Converts a BCP-47 locale identifier to a country flag emoji.
 /// Extracts the region subtag (e.g. "US" from "en-US") and maps it to the
 /// corresponding Unicode regional indicator pair. Falls back to a
@@ -73,4 +75,9 @@ String _countryCodeToFlag(String countryCode) {
   final first = base + upper.codeUnitAt(0) - charA;
   final second = base + upper.codeUnitAt(1) - charA;
   return String.fromCharCode(first) + String.fromCharCode(second);
+}
+
+extension TranscriptionLocaleFlag on TranscriptionLocaleOption {
+  /// Server/catalog [flagEmoji] when present; otherwise derived from [identifier].
+  String get effectiveFlagEmoji => flagEmoji ?? flagEmojiForLocale(identifier);
 }

@@ -3,26 +3,11 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
+import 'auth_api_client.dart';
+import 'learning_language_catalog.dart';
+import 'transcription_locale_option.dart';
 
-class TranscriptionLocaleOption {
-  const TranscriptionLocaleOption({
-    required this.identifier,
-    required this.displayName,
-    required this.isInstalled,
-  });
-
-  factory TranscriptionLocaleOption.fromMap(Map<Object?, Object?> map) {
-    return TranscriptionLocaleOption(
-      identifier: map['identifier']?.toString() ?? '',
-      displayName: map['displayName']?.toString() ?? '',
-      isInstalled: map['isInstalled'] == true,
-    );
-  }
-
-  final String identifier;
-  final String displayName;
-  final bool isInstalled;
-}
+export 'transcription_locale_option.dart';
 
 class PreparedVideoUpload {
   const PreparedVideoUpload({
@@ -115,39 +100,60 @@ class VideoProcessingService {
     }
   }
 
+  static List<TranscriptionLocaleOption> _withoutZhTw(
+    List<TranscriptionLocaleOption> options,
+  ) =>
+      options.where((o) => o.identifier != 'zh-TW').toList();
+
+  /// Resolves locales for UI: native iOS list when available, otherwise public API,
+  /// then embedded [kFallbackLearningLanguages]. Listing languages is supported on
+  /// all platforms; transcription features remain iOS-only elsewhere.
   Future<List<TranscriptionLocaleOption>> fetchSupportedLocales() async {
-    if (!Platform.isIOS) {
-      throw const VideoProcessingException(
-        code: 'unsupported_platform',
-        message: 'Video transcription is currently available on iPhone only.',
+    if (Platform.isIOS) {
+      try {
+        final locales =
+            await _channel.invokeListMethod<dynamic>(
+              'getSupportedTranscriptionLocales',
+            ) ??
+            const <dynamic>[];
+
+        final parsed = locales
+            .whereType<Map<Object?, Object?>>()
+            .map(TranscriptionLocaleOption.fromMap)
+            .where((option) => option.identifier.isNotEmpty)
+            .toList();
+
+        final filtered = _withoutZhTw(parsed);
+        if (filtered.isNotEmpty) {
+          return filtered;
+        }
+      } on PlatformException {
+        // Fall through to API / embedded fallback.
+      } on MissingPluginException {
+        // Fall through to API / embedded fallback.
+      }
+    }
+
+    final fromApi = await AuthApiClient.instance.fetchLearningLanguagesCatalog();
+    if (fromApi != null && fromApi.isNotEmpty) {
+      return _withoutZhTw(
+        fromApi
+            .where((row) => row.identifier.isNotEmpty)
+            .map(
+              (row) => TranscriptionLocaleOption(
+                identifier: row.identifier,
+                displayName: row.displayName,
+                isInstalled: false,
+                flagEmoji: row.flagEmoji,
+              ),
+            )
+            .toList(),
       );
     }
 
-    try {
-      final locales =
-          await _channel.invokeListMethod<dynamic>(
-            'getSupportedTranscriptionLocales',
-          ) ??
-          const <dynamic>[];
-
-      return locales
-          .whereType<Map<Object?, Object?>>()
-          .map(TranscriptionLocaleOption.fromMap)
-          .where((option) => option.identifier.isNotEmpty)
-          .toList();
-    } on PlatformException catch (error) {
-      throw VideoProcessingException(
-        code: error.code,
-        message:
-            error.message ??
-            'The app could not load the transcription language list.',
-      );
-    } on MissingPluginException {
-      throw const VideoProcessingException(
-        code: 'missing_native_bridge',
-        message: 'The Bantera iOS video bridge is not available in this build.',
-      );
-    }
+    return _withoutZhTw(
+      List<TranscriptionLocaleOption>.from(kFallbackLearningLanguages),
+    );
   }
 
   Future<PreparedVideoUpload> prepareVideoForUpload({

@@ -15,6 +15,7 @@ import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../profile/edit_profile_screen.dart';
+import '../shared/locale_flag.dart';
 import 'uploaded_video_detail_screen.dart';
 
 String _localizedScenarioLabel(AppLocalizations l10n, AiScenario scenario) {
@@ -171,23 +172,6 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           'lastScenarioId': _selectedScenario!.id,
       }));
     } catch (_) {}
-  }
-
-  static String _flagEmoji(String identifier) {
-    // Extract the 2-letter country code (last segment that is 2 uppercase letters)
-    final parts = identifier.split('-');
-    String? countryCode;
-    for (final part in parts.reversed) {
-      if (part.length == 2 && part.toUpperCase() == part) {
-        countryCode = part;
-        break;
-      }
-    }
-    if (countryCode == null) return '🌐';
-    const base = 0x1F1E6;
-    final codes = countryCode.codeUnits;
-    return String.fromCharCode(base + codes[0] - 0x41) +
-        String.fromCharCode(base + codes[1] - 0x41);
   }
 
   Future<void> _generate() async {
@@ -534,7 +518,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _flagEmoji(_selectedLocale!.identifier),
+                  _selectedLocale!.effectiveFlagEmoji,
                   style: const TextStyle(fontSize: 18),
                 ),
                 const SizedBox(width: 8),
