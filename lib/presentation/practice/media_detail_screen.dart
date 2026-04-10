@@ -100,7 +100,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                   ? _toggleSave
                   : null,
             ),
-          IconButton(icon: const Icon(Icons.more_horiz), onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(

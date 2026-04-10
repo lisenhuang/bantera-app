@@ -66,14 +66,14 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 Expanded(
                   child: _buildPrimaryAction(
                     context,
-                    CupertinoIcons.play_rectangle_fill,
-                    'Practice Video',
+                    Icons.auto_awesome,
+                    'Generate with AI',
                     colorScheme,
                     isSecondary: true,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const LocalVideoPracticeScreen(),
+                          builder: (_) => const GenerateAiAudioScreen(),
                         ),
                       );
                     },
@@ -83,14 +83,14 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 Expanded(
                   child: _buildPrimaryAction(
                     context,
-                    Icons.auto_awesome,
-                    'Generate with AI',
+                    CupertinoIcons.play_rectangle_fill,
+                    'Practice Video',
                     colorScheme,
                     isSecondary: true,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const GenerateAiAudioScreen(),
+                          builder: (_) => const LocalVideoPracticeScreen(),
                         ),
                       );
                     },
@@ -271,14 +271,22 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         height: 120,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSecondary ? colorScheme.surface : colorScheme.primary,
+          color: isSecondary
+              ? colorScheme.surfaceContainerHighest
+              : colorScheme.primary,
           borderRadius: BorderRadius.circular(20),
+          border: isSecondary
+              ? Border.all(
+                  color: colorScheme.outline,
+                  width: 1.5,
+                )
+              : null,
           boxShadow: isSecondary
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: colorScheme.shadow.withValues(alpha: 0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ]
               : [
