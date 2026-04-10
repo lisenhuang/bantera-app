@@ -1,19 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:characters/characters.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
 
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
-import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'attempt_comparison.dart';
 
+/// Bottom sheet: saved attempts for the current cue (no recording UI).
 class RecordCompareSheet extends StatefulWidget {
   const RecordCompareSheet({
     super.key,
@@ -36,37 +32,25 @@ class RecordCompareSheet extends StatefulWidget {
 }
 
 class _RecordCompareSheetState extends State<RecordCompareSheet> {
-  late final AudioRecorder _audioRecorder;
   late final AudioPlayer _audioPlayer;
+  StreamSubscription<PlayerState>? _playerStateSub;
+
   final LocalPracticeRepository _localPracticeRepository =
       LocalPracticeRepository.instance;
 
-  String? _recordingPath;
-  String? _temporaryRecordingPath;
-  bool _isRecording = false;
-  bool _isProcessing = false;
   bool _isPlayingAttempt = false;
   bool _isLoadingHistory = true;
-  static const _maxRecordingDuration = Duration(seconds: 30);
-  Duration _recordingDuration = Duration.zero;
-  Timer? _recordingTimer;
-  Timer? _autoStopTimer;
-  String? _errorMessage;
-  bool _showsOpenSettingsAction = false;
-  _AttemptComparisonResult? _result;
+  AttemptComparisonResult? _result;
   LocalCuePracticeAttempt? _selectedAttempt;
   List<LocalCuePracticeAttempt> _attemptHistory = const [];
+  String? _playbackPath;
 
   @override
   void initState() {
     super.initState();
-    _audioRecorder = AudioRecorder();
     _audioPlayer = AudioPlayer();
-    _audioPlayer.onPlayerStateChanged.listen((state) {
-      if (!mounted) {
-        return;
-      }
-
+    _playerStateSub = _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
       setState(() {
         _isPlayingAttempt = state == PlayerState.playing;
       });
@@ -76,15 +60,63 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
   @override
   void dispose() {
-    _recordingTimer?.cancel();
-    _autoStopTimer?.cancel();
-    _audioRecorder.dispose();
-    _audioPlayer.dispose();
-    final path = _temporaryRecordingPath;
-    if (path != null && path.isNotEmpty) {
-      unawaited(_deleteFileIfExists(path));
-    }
+    unawaited(_playerStateSub?.cancel());
+    unawaited(_audioPlayer.dispose());
     super.dispose();
+  }
+
+  Future<void> _loadAttemptHistory() async {
+    try {
+      final attempts = await _localPracticeRepository.fetchCueAttempts(
+        mediaItemId: widget.mediaItemId,
+        cueId: widget.cue.id,
+      );
+      if (!mounted) return;
+
+      setState(() {
+        _attemptHistory = attempts;
+        _isLoadingHistory = false;
+      });
+
+      if (attempts.isNotEmpty) {
+        _selectAttempt(attempts.first);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingHistory = false;
+      });
+    }
+  }
+
+  void _selectAttempt(LocalCuePracticeAttempt attempt) {
+    if (!mounted) return;
+
+    setState(() {
+      _selectedAttempt = attempt;
+      _playbackPath = attempt.audioPath;
+      _result = buildAttemptComparison(
+        expectedText: widget.cue.originalText,
+        actualText: attempt.transcriptText,
+      );
+    });
+  }
+
+  Future<void> _playSavedAttempt(LocalCuePracticeAttempt attempt) async {
+    _selectAttempt(attempt);
+    await _toggleAttemptPlayback();
+  }
+
+  Future<void> _toggleAttemptPlayback() async {
+    final path = _playbackPath;
+    if (path == null || path.isEmpty) return;
+
+    if (_isPlayingAttempt) {
+      await _audioPlayer.pause();
+      return;
+    }
+
+    await _audioPlayer.play(DeviceFileSource(path));
   }
 
   @override
@@ -107,7 +139,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                l10n.compareRecordYourVersion,
+                l10n.practiceRecords,
                 style: theme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -131,90 +163,47 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
-              Center(
-                child: GestureDetector(
-                  onTap: _isProcessing ? null : _handlePrimaryTap,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 88,
-                    width: 88,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isRecording
-                          ? Colors.redAccent.withValues(alpha: 0.1)
-                          : colorScheme.primary.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: _isRecording
-                            ? Colors.redAccent
-                            : colorScheme.primary,
-                        width: 4,
-                      ),
-                    ),
-                    child: Center(
-                      child: _isProcessing
-                          ? const SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(strokeWidth: 3),
-                            )
-                          : Icon(
-                              _isRecording
-                                  ? CupertinoIcons.stop_fill
-                                  : CupertinoIcons.mic_solid,
-                              color: _isRecording
-                                  ? Colors.redAccent
-                                  : colorScheme.primary,
-                              size: 34,
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _statusLine(l10n),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _recordingDuration == Duration.zero
-                    ? ' '
-                    : _formatDuration(_recordingDuration),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: _isRecording ? Colors.redAccent : colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
-                  ),
+              const SizedBox(height: 24),
+              if (_isLoadingHistory && _attemptHistory.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_attemptHistory.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    _errorMessage!,
+                    l10n.practiceRecordsEmpty,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.red.shade700,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
+                )
+              else ...[
+                Text(
+                  l10n.compareRecentAttempts,
+                  style: theme.textTheme.titleMedium,
                 ),
-                if (_showsOpenSettingsAction) ...[
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: openAppSettings,
-                    icon: const Icon(CupertinoIcons.settings),
-                    label: Text(l10n.compareOpenIphoneSettings),
-                  ),
-                ],
+                const SizedBox(height: 16),
+                ..._attemptHistory.map((attempt) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _AttemptHistoryCard(
+                      attempt: attempt,
+                      isSelected: _selectedAttempt?.id == attempt.id,
+                      isPlaying:
+                          _isPlayingAttempt && _selectedAttempt?.id == attempt.id,
+                      timestampLabel: _formatAttemptTimestamp(attempt.createdAt),
+                      l10n: l10n,
+                      onSelect: () => _selectAttempt(attempt),
+                      onPlay: () => unawaited(_playSavedAttempt(attempt)),
+                    ),
+                  );
+                }),
               ],
-              if (_result != null) ...[
-                const SizedBox(height: 28),
+              if (_result != null && _selectedAttempt != null) ...[
+                const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 18),
                 Row(
@@ -237,7 +226,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryChips(context, l10n, _result!),
+                _SummaryChipsRow(l10n: l10n, result: _result!),
                 const SizedBox(height: 18),
                 Text(
                   l10n.compareYourTranscribedAttempt,
@@ -253,7 +242,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                       color: Colors.orange.withValues(alpha: 0.2),
                     ),
                   ),
-                  child: _buildAttemptTranscript(context, _result!),
+                  child: _AttemptTranscriptRichText(result: _result!),
                 ),
                 const SizedBox(height: 14),
                 Row(
@@ -278,39 +267,15 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        onPressed: _resetForRetry,
-                        child: Text(l10n.compareTryAgain),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(l10n.compareDone),
-                      ),
-                    ),
-                  ],
+              ],
+              const SizedBox(height: 28),
+              Text(
+                l10n.practiceRecordsLocalOnlyFooter,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
-              ],
-              if (_isLoadingHistory || _attemptHistory.isNotEmpty) ...[
-                const SizedBox(height: 28),
-                const Divider(),
-                const SizedBox(height: 18),
-                _buildAttemptHistorySection(context, l10n),
-              ],
+              ),
             ],
           ),
         ),
@@ -318,387 +283,51 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     );
   }
 
-  String _statusLine(AppLocalizations l10n) {
-    if (_isProcessing) {
-      return l10n.compareStatusTranscribing;
-    }
-    if (_isRecording) {
-      return l10n.compareStatusRecording;
-    }
-    if (_selectedAttempt != null) {
-      return l10n.compareStatusSavedAttempt;
-    }
-    if (_result != null) {
-      return l10n.compareStatusReplayOrRetry;
-    }
-    return l10n.compareStatusTapToRecord;
+  static String _formatAttemptTimestamp(DateTime dateTime) {
+    const monthNames = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final local = dateTime.toLocal();
+    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final minute = local.minute.toString().padLeft(2, '0');
+    final suffix = local.hour >= 12 ? 'PM' : 'AM';
+    return '${monthNames[local.month - 1]} ${local.day}, $hour:$minute $suffix';
   }
+}
 
-  Future<void> _loadAttemptHistory() async {
-    try {
-      final attempts = await _localPracticeRepository.fetchCueAttempts(
-        mediaItemId: widget.mediaItemId,
-        cueId: widget.cue.id,
-      );
-      if (!mounted) {
-        return;
-      }
+class _AttemptHistoryCard extends StatelessWidget {
+  const _AttemptHistoryCard({
+    required this.attempt,
+    required this.isSelected,
+    required this.isPlaying,
+    required this.timestampLabel,
+    required this.l10n,
+    required this.onSelect,
+    required this.onPlay,
+  });
 
-      setState(() {
-        _attemptHistory = attempts;
-        _isLoadingHistory = false;
-      });
+  final LocalCuePracticeAttempt attempt;
+  final bool isSelected;
+  final bool isPlaying;
+  final String timestampLabel;
+  final AppLocalizations l10n;
+  final VoidCallback onSelect;
+  final VoidCallback onPlay;
 
-      if (attempts.isNotEmpty) {
-        _selectAttempt(attempts.first);
-      }
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoadingHistory = false;
-      });
-    }
-  }
-
-  void _selectAttempt(LocalCuePracticeAttempt attempt) {
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _selectedAttempt = attempt;
-      _recordingPath = attempt.audioPath;
-      _temporaryRecordingPath = null;
-      _recordingDuration = Duration(milliseconds: attempt.recordingDurationMs);
-      _result = _buildComparisonResult(
-        expectedText: widget.cue.originalText,
-        actualText: attempt.transcriptText,
-      );
-      _errorMessage = null;
-      _showsOpenSettingsAction = false;
-    });
-  }
-
-  Future<void> _handlePrimaryTap() async {
-    if (_isRecording) {
-      await _stopRecordingAndTranscribe();
-      return;
-    }
-
-    await _startRecording();
-  }
-
-  Future<void> _startRecording() async {
-    setState(() {
-      _errorMessage = null;
-      _showsOpenSettingsAction = false;
-      _result = null;
-      _selectedAttempt = null;
-      _recordingDuration = Duration.zero;
-    });
-
-    final granted = await _ensureMicrophonePermission();
-    if (!granted) {
-      return;
-    }
-
-    if (_isPlayingAttempt) {
-      await _audioPlayer.stop();
-    }
-
-    final directory = await getTemporaryDirectory();
-    final path =
-        '${directory.path}/bantera_attempt_${DateTime.now().millisecondsSinceEpoch}.wav';
-
-    await _deleteCurrentRecordingIfNeeded();
-
-    try {
-      await _audioRecorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.wav,
-          sampleRate: 16000,
-          numChannels: 1,
-        ),
-        path: path,
-      );
-      _recordingTimer?.cancel();
-      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _recordingDuration += const Duration(seconds: 1);
-        });
-      });
-      _autoStopTimer?.cancel();
-      _autoStopTimer = Timer(_maxRecordingDuration, () {
-        if (mounted && _isRecording) _stopRecordingAndTranscribe();
-      });
-      setState(() {
-        _recordingPath = path;
-        _temporaryRecordingPath = path;
-        _isRecording = true;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _errorMessage = AppLocalizations.of(context)!.compareCouldNotStartRecording;
-        _showsOpenSettingsAction = false;
-      });
-    }
-  }
-
-  Future<void> _stopRecordingAndTranscribe() async {
-    _recordingTimer?.cancel();
-    _autoStopTimer?.cancel();
-    setState(() {
-      _isRecording = false;
-      _isProcessing = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final path = await _audioRecorder.stop();
-      final resolvedPath = path ?? _recordingPath;
-      if (resolvedPath == null || resolvedPath.isEmpty) {
-        throw const VideoProcessingException(
-          code: 'missing_recording',
-          message: 'Bantera could not access the recorded audio.',
-        );
-      }
-
-      final transcription = await VideoProcessingService.instance
-          .transcribeRecordedAudio(
-            inputFile: File(resolvedPath),
-            localeIdentifier: widget.sourceLocaleIdentifier,
-          );
-      final recognizedText = transcription.transcriptText.trim();
-      if (recognizedText.isEmpty) {
-        throw const VideoProcessingException(
-          code: 'empty_transcript',
-          message:
-              'No transcript could be generated for this attempt. Try again closer to the microphone.',
-        );
-      }
-
-      if (!mounted) {
-        return;
-      }
-
-      final comparison = _buildComparisonResult(
-        expectedText: widget.cue.originalText,
-        actualText: recognizedText,
-      );
-
-      LocalCuePracticeAttempt? savedAttempt;
-      String? saveFailureMessage;
-      try {
-        savedAttempt = await _localPracticeRepository.saveCueAttempt(
-          mediaItemId: widget.mediaItemId,
-          cueId: widget.cue.id,
-          transcriptText: recognizedText,
-          sourceLocaleIdentifier: widget.sourceLocaleIdentifier,
-          audioPath: resolvedPath,
-          matchedCount: comparison.matchedCount,
-          unexpectedCount: comparison.unexpectedCount,
-          missingCount: comparison.missingCount,
-          recordingDurationMs: _recordingDuration.inMilliseconds,
-        );
-      } on LocalPracticeRepositoryException catch (error) {
-        saveFailureMessage = error.message;
-      }
-
-      setState(() {
-        _recordingPath = savedAttempt?.audioPath ?? resolvedPath;
-        _temporaryRecordingPath = savedAttempt == null ? resolvedPath : null;
-        _selectedAttempt = savedAttempt;
-        _result = comparison;
-        _errorMessage = saveFailureMessage;
-        _showsOpenSettingsAction = false;
-        if (savedAttempt != null) {
-          _attemptHistory = [
-            savedAttempt,
-            ..._attemptHistory.where((attempt) => attempt.id != savedAttempt!.id),
-          ];
-        }
-      });
-    } on VideoProcessingException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      final l10n = AppLocalizations.of(context)!;
-      final displayMessage = switch (error.code) {
-        'missing_recording' => l10n.compareCouldNotAccessRecording,
-        'empty_transcript' => l10n.compareNoTranscriptGenerated,
-        _ => error.message,
-      };
-      setState(() {
-        _errorMessage = displayMessage;
-        _showsOpenSettingsAction = false;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _toggleAttemptPlayback() async {
-    final path = _recordingPath;
-    if (path == null || path.isEmpty) {
-      return;
-    }
-
-    if (_isPlayingAttempt) {
-      await _audioPlayer.pause();
-      return;
-    }
-
-    await _audioPlayer.play(DeviceFileSource(path));
-  }
-
-  Future<void> _resetForRetry() async {
-    if (_isPlayingAttempt) {
-      await _audioPlayer.stop();
-    }
-    await _deleteCurrentRecordingIfNeeded();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _recordingDuration = Duration.zero;
-      _errorMessage = null;
-      _showsOpenSettingsAction = false;
-      _result = null;
-      _selectedAttempt = null;
-      _recordingPath = null;
-      _temporaryRecordingPath = null;
-    });
-  }
-
-  Future<bool> _ensureMicrophonePermission() async {
-    try {
-      if (await _audioRecorder.hasPermission()) {
-        return true;
-      }
-    } catch (_) {
-      // Fall through to permission_handler for clearer recovery UX.
-    }
-
-    var status = await Permission.microphone.status;
-    if (status.isGranted) {
-      return true;
-    }
-
-    if (status.isDenied) {
-      status = await Permission.microphone.request();
-      if (status.isGranted) {
-        return true;
-      }
-    }
-
-    if (!mounted) {
-      return false;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final message = switch (status) {
-      PermissionStatus.permanentlyDenied => l10n.compareMicrophoneDeniedPermanent,
-      PermissionStatus.restricted => l10n.compareMicrophoneDeniedRestricted,
-      _ => l10n.compareMicrophoneDeniedDefault,
-    };
-
-    setState(() {
-      _errorMessage = message;
-      _showsOpenSettingsAction = true;
-    });
-
-    return false;
-  }
-
-  Widget _buildSummaryChips(
-    BuildContext context,
-    AppLocalizations l10n,
-    _AttemptComparisonResult result,
-  ) {
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _SummaryChip(
-          label: l10n.compareMatchedCount(result.matchedCount),
-          color: Colors.green,
-          textStyle: theme.textTheme.labelLarge,
-        ),
-        _SummaryChip(
-          label: l10n.compareDifferentCount(result.unexpectedCount),
-          color: Colors.orange,
-          textStyle: theme.textTheme.labelLarge,
-        ),
-        if (result.missingCount > 0)
-          _SummaryChip(
-            label: l10n.compareMissingCount(result.missingCount),
-            color: Colors.redAccent,
-            textStyle: theme.textTheme.labelLarge,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildAttemptHistorySection(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final theme = Theme.of(context);
-    if (_isLoadingHistory && _attemptHistory.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.compareRecentAttempts, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 12),
-          const Center(child: CircularProgressIndicator()),
-        ],
-      );
-    }
-
-    if (_attemptHistory.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l10n.compareRecentAttempts, style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          l10n.compareAttemptsFooterNote,
-          style: theme.textTheme.bodySmall,
-        ),
-        const SizedBox(height: 16),
-        ..._attemptHistory.map((attempt) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildAttemptHistoryCard(context, l10n, attempt),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildAttemptHistoryCard(
-    BuildContext context,
-    AppLocalizations l10n,
-    LocalCuePracticeAttempt attempt,
-  ) {
-    final theme = Theme.of(context);
-    final isSelected = _selectedAttempt?.id == attempt.id;
 
     return Material(
       color: isSelected
@@ -707,9 +336,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () {
-          _selectAttempt(attempt);
-        },
+        onTap: onSelect,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -719,7 +346,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _formatAttemptTimestamp(attempt.createdAt),
+                      timestampLabel,
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: isSelected
@@ -738,15 +365,13 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                       ),
                     ),
                   IconButton(
-                    onPressed: () {
-                      unawaited(_playSavedAttempt(attempt));
-                    },
+                    onPressed: onPlay,
                     icon: Icon(
-                      _isPlayingAttempt && isSelected
+                      isPlaying
                           ? CupertinoIcons.pause_fill
                           : CupertinoIcons.play_fill,
                     ),
-                    tooltip: _isPlayingAttempt && isSelected
+                    tooltip: isPlaying
                         ? l10n.comparePauseAttemptTooltip
                         : l10n.comparePlayAttemptTooltip,
                   ),
@@ -788,244 +413,42 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       ),
     );
   }
+}
 
-  Future<void> _playSavedAttempt(LocalCuePracticeAttempt attempt) async {
-    _selectAttempt(attempt);
-    await _toggleAttemptPlayback();
-  }
+class _SummaryChipsRow extends StatelessWidget {
+  const _SummaryChipsRow({
+    required this.l10n,
+    required this.result,
+  });
 
-  Widget _buildAttemptTranscript(
-    BuildContext context,
-    _AttemptComparisonResult result,
-  ) {
-    final baseStyle = Theme.of(
-      context,
-    ).textTheme.bodyLarge?.copyWith(fontSize: 18);
-    final mismatchStyle = baseStyle?.copyWith(
-      color: Colors.orange[800],
-      fontWeight: FontWeight.bold,
-      decoration: TextDecoration.underline,
-    );
+  final AppLocalizations l10n;
+  final AttemptComparisonResult result;
 
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        style: baseStyle,
-        children: _buildDiffSpans(
-          result.segments,
-          baseStyle: baseStyle,
-          mismatchStyle: mismatchStyle,
-          joinWithSpace: result.joinSegmentsWithSpace,
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _SummaryChip(
+          label: l10n.compareMatchedCount(result.matchedCount),
+          color: Colors.green,
+          textStyle: theme.textTheme.labelLarge,
         ),
-      ),
-    );
-  }
-
-  List<InlineSpan> _buildDiffSpans(
-    List<_DiffSegment> segments, {
-    required TextStyle? baseStyle,
-    required TextStyle? mismatchStyle,
-    bool joinWithSpace = true,
-  }) {
-    final spans = <InlineSpan>[];
-    for (var i = 0; i < segments.length; i += 1) {
-      final segment = segments[i];
-      spans.add(
-        TextSpan(
-          text: segment.text,
-          style: segment.isMatch ? baseStyle : mismatchStyle,
+        _SummaryChip(
+          label: l10n.compareDifferentCount(result.unexpectedCount),
+          color: Colors.orange,
+          textStyle: theme.textTheme.labelLarge,
         ),
-      );
-      if (joinWithSpace && i != segments.length - 1) {
-        spans.add(const TextSpan(text: ' '));
-      }
-    }
-    return spans;
-  }
-
-  _AttemptComparisonResult _buildComparisonResult({
-    required String expectedText,
-    required String actualText,
-  }) {
-    final expectedClean = _stripInvisibleSeparators(expectedText.trim());
-    final actualClean = _stripInvisibleSeparators(actualText.trim());
-    final useCharacterTokens =
-        _containsCjk(expectedClean) || _containsCjk(actualClean);
-
-    final expectedTokens = _tokenize(
-      expectedClean,
-      useCharacterTokens: useCharacterTokens,
+        if (result.missingCount > 0)
+          _SummaryChip(
+            label: l10n.compareMissingCount(result.missingCount),
+            color: Colors.redAccent,
+            textStyle: theme.textTheme.labelLarge,
+          ),
+      ],
     );
-    final actualTokens = _tokenize(
-      actualClean,
-      useCharacterTokens: useCharacterTokens,
-    );
-
-    final expComp = _comparableTokensForLcs(expectedTokens);
-    final actComp = _comparableTokensForLcs(actualTokens);
-    final lcs = _longestCommonSubsequence(expComp.norms, actComp.norms);
-
-    final matchedActualOriginalIndexes = <int>{};
-    for (final pair in lcs) {
-      matchedActualOriginalIndexes.add(actComp.sourceIndexes[pair.$2]);
-    }
-
-    final segments = <_DiffSegment>[];
-    for (var i = 0; i < actualTokens.length; i += 1) {
-      final punctOnly = actualTokens[i].normalized.isEmpty;
-      segments.add(
-        _DiffSegment(
-          text: actualTokens[i].display,
-          isMatch: punctOnly || matchedActualOriginalIndexes.contains(i),
-        ),
-      );
-    }
-
-    final contentMatches = lcs.length;
-    final contentUnexpected = actComp.norms.length - contentMatches;
-    final contentMissing = expComp.norms.length - contentMatches;
-
-    return _AttemptComparisonResult(
-      transcriptText: actualText,
-      segments: segments,
-      matchedCount: contentMatches,
-      unexpectedCount: contentUnexpected,
-      missingCount: contentMissing,
-      joinSegmentsWithSpace: !useCharacterTokens,
-    );
-  }
-
-  List<_DiffToken> _tokenize(
-    String text, {
-    required bool useCharacterTokens,
-  }) {
-    if (useCharacterTokens) {
-      return Characters(text)
-          .map(
-            (g) => _DiffToken(
-              display: g,
-              normalized: _normalizeGraphemeForCompare(g),
-            ),
-          )
-          .toList(growable: false);
-    }
-
-    return text
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((token) => token.trim().isNotEmpty)
-        .map((token) => _DiffToken(display: token, normalized: _normalizeToken(token)))
-        .toList(growable: false);
-  }
-
-  String _normalizeToken(String token) {
-    var t = _normalizeConfusableQuotesForTokenCompare(token.trim());
-    t = t.toLowerCase();
-    t = t.replaceAll(
-      RegExp(r'^[\.,!?:;"“”‘’()\[\]{}]+|[\.,!?:;"“”‘’()\[\]{}]+$'),
-      '',
-    );
-    return _stripIgnorableForComparison(t);
-  }
-
-  /// Indices in [tokens] where [normalized] is non-empty — used so LCS ignores
-  /// punctuation-only units while segments still show the full transcript.
-  ({List<String> norms, List<int> sourceIndexes}) _comparableTokensForLcs(
-    List<_DiffToken> tokens,
-  ) {
-    final norms = <String>[];
-    final sourceIndexes = <int>[];
-    for (var i = 0; i < tokens.length; i += 1) {
-      final n = tokens[i].normalized;
-      if (n.isEmpty) {
-        continue;
-      }
-      norms.add(n);
-      sourceIndexes.add(i);
-    }
-    return (norms: norms, sourceIndexes: sourceIndexes);
-  }
-
-  List<(int, int)> _longestCommonSubsequence(
-    List<String> expected,
-    List<String> actual,
-  ) {
-    final rows = expected.length + 1;
-    final cols = actual.length + 1;
-    final dp = List.generate(rows, (_) => List.filled(cols, 0));
-
-    for (var i = expected.length - 1; i >= 0; i -= 1) {
-      for (var j = actual.length - 1; j >= 0; j -= 1) {
-        if (expected[i] == actual[j]) {
-          dp[i][j] = dp[i + 1][j + 1] + 1;
-        } else {
-          dp[i][j] = dp[i + 1][j] >= dp[i][j + 1]
-              ? dp[i + 1][j]
-              : dp[i][j + 1];
-        }
-      }
-    }
-
-    final matches = <(int, int)>[];
-    var i = 0;
-    var j = 0;
-    while (i < expected.length && j < actual.length) {
-      if (expected[i] == actual[j]) {
-        matches.add((i, j));
-        i += 1;
-        j += 1;
-      } else if (dp[i + 1][j] >= dp[i][j + 1]) {
-        i += 1;
-      } else {
-        j += 1;
-      }
-    }
-
-    return matches;
-  }
-
-  static String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  static String _formatAttemptTimestamp(DateTime dateTime) {
-    const monthNames = <String>[
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final local = dateTime.toLocal();
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final minute = local.minute.toString().padLeft(2, '0');
-    final suffix = local.hour >= 12 ? 'PM' : 'AM';
-    return '${monthNames[local.month - 1]} ${local.day}, $hour:$minute $suffix';
-  }
-
-  Future<void> _deleteCurrentRecordingIfNeeded() async {
-    final path = _temporaryRecordingPath;
-    if (path == null || path.isEmpty) {
-      return;
-    }
-    await _deleteFileIfExists(path);
-    _temporaryRecordingPath = null;
-  }
-
-  Future<void> _deleteFileIfExists(String path) async {
-    final file = File(path);
-    if (await file.exists()) {
-      await file.delete();
-    }
   }
 }
 
@@ -1059,228 +482,39 @@ class _SummaryChip extends StatelessWidget {
   }
 }
 
-/// Zero-width / BOM characters that often differ between ASR and stored text.
-String _stripInvisibleSeparators(String s) {
-  return s.replaceAll(RegExp(r'[\u200B-\u200D\uFEFF\u2060]'), '');
-}
+class _AttemptTranscriptRichText extends StatelessWidget {
+  const _AttemptTranscriptRichText({required this.result});
 
-/// Whether [s] contains scripts that are not meaningfully split on ASCII spaces.
-bool _containsCjk(String s) {
-  for (final r in s.runes) {
-    if (_isCjkKanaHangulOrFullwidthPunctRune(r)) {
-      return true;
-    }
-  }
-  return false;
-}
+  final AttemptComparisonResult result;
 
-bool _isCjkKanaHangulOrFullwidthPunctRune(int r) {
-  return (r >= 0x2E80 && r <= 0x9FFF) ||
-      (r >= 0xA960 && r <= 0xA97F) ||
-      (r >= 0xAC00 && r <= 0xD7AF) ||
-      (r >= 0xF900 && r <= 0xFAFF) ||
-      (r >= 0xFE10 && r <= 0xFE19) ||
-      (r >= 0xFE30 && r <= 0xFE4F) ||
-      (r >= 0xFF00 && r <= 0xFFEF) ||
-      (r >= 0x1B000 && r <= 0x1B122) ||
-      (r >= 0x20000 && r <= 0x3134F);
-}
+  @override
+  Widget build(BuildContext context) {
+    final baseStyle = Theme.of(
+      context,
+    ).textTheme.bodyLarge?.copyWith(fontSize: 18);
+    final mismatchStyle = baseStyle?.copyWith(
+      color: Colors.orange[800],
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,
+    );
 
-/// Normalize one user-perceived character for comparison (CJK / mixed scripts).
-/// Punctuation and symbols map to empty so they do not affect LCS or counts.
-String _normalizeGraphemeForCompare(String grapheme) {
-  var t = _normalizeConfusableQuotesForTokenCompare(grapheme);
-  t = t.toLowerCase();
-  final mapped = _fullwidthToHalfwidthForCompare(t);
-  return _stripIgnorableForComparison(mapped.trim());
-}
-
-/// Removes characters that should not affect transcript comparison (punctuation,
-/// spaces, symbols). Keeps letters, digits, CJK, kana, hangul, and in-word `'` / `-`.
-String _stripIgnorableForComparison(String t) {
-  if (t.isEmpty) {
-    return t;
-  }
-  final b = StringBuffer();
-  for (final g in Characters(t)) {
-    if (!_isIgnorableForComparisonGrapheme(g)) {
-      b.write(g);
-    }
-  }
-  return b.toString();
-}
-
-bool _isIgnorableForComparisonGrapheme(String g) {
-  if (g.isEmpty) {
-    return true;
-  }
-  // Contractions and hyphenated words (ASCII and common dash variants).
-  if (g == "'" ||
-      g == '-' ||
-      g == '\u2010' ||
-      g == '\u2011' ||
-      g == '\u2013') {
-    return false;
-  }
-  for (final r in g.runes) {
-    if (_isLetterDigitOrIdeographOrKanaRune(r)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool _isLetterDigitOrIdeographOrKanaRune(int r) {
-  // ASCII letters and digits.
-  if ((r >= 0x30 && r <= 0x39) ||
-      (r >= 0x41 && r <= 0x5A) ||
-      (r >= 0x61 && r <= 0x7A)) {
-    return true;
-  }
-  // Latin extended (covers most European languages).
-  if ((r >= 0x00C0 && r <= 0x024F) || (r >= 0x1E00 && r <= 0x1EFF)) {
-    return true;
-  }
-  // Greek, Cyrillic.
-  if ((r >= 0x0370 && r <= 0x052F) || (r >= 0x0400 && r <= 0x052F)) {
-    return true;
-  }
-  // Arabic, Hebrew.
-  if ((r >= 0x0600 && r <= 0x06FF) || (r >= 0x0590 && r <= 0x05FF)) {
-    return true;
-  }
-  // Indic / Southeast Asian scripts (broad block).
-  if (r >= 0x0900 && r <= 0x0FFF) {
-    return true;
-  }
-  // Thai, Lao, Khmer, Myanmar.
-  if (r >= 0x0E00 && r <= 0x109F) {
-    return true;
-  }
-  // Ethiopic.
-  if (r >= 0x1200 && r <= 0x137F) {
-    return true;
-  }
-  // Georgian.
-  if (r >= 0x10A0 && r <= 0x10FF) {
-    return true;
-  }
-  // Hangul jamo and syllables.
-  if ((r >= 0x1100 && r <= 0x11FF) ||
-      (r >= 0x3130 && r <= 0x318F) ||
-      (r >= 0xA960 && r <= 0xA97F) ||
-      (r >= 0xAC00 && r <= 0xD7AF)) {
-    return true;
-  }
-  // Hiragana, Katakana, Katakana phonetic extensions.
-  if ((r >= 0x3040 && r <= 0x30FF) || (r >= 0x31F0 && r <= 0x31FF)) {
-    return true;
-  }
-  // CJK Unified Ideographs and compatibility, extensions.
-  if ((r >= 0x2E80 && r <= 0x9FFF) ||
-      (r >= 0xF900 && r <= 0xFAFF) ||
-      (r >= 0x20000 && r <= 0x3134F)) {
-    return true;
-  }
-  // Combining marks (treated as content when paired with letters in one grapheme).
-  if (r >= 0x0300 && r <= 0x036F) {
-    return true;
-  }
-  return false;
-}
-
-const _cjkPunctMap = <String, String>{
-  '，': ',',
-  '。': '.',
-  '、': ',',
-  '．': '.',
-  '？': '?',
-  '！': '!',
-  '：': ':',
-  '；': ';',
-  '（': '(',
-  '）': ')',
-  '【': '[',
-  '】': ']',
-  '「': '"',
-  '」': '"',
-  '『': '"',
-  '』': '"',
-  '《': '<',
-  '》': '>',
-  '〈': '<',
-  '〉': '>',
-  '…': '.',
-  '—': '-',
-  '–': '-',
-  '・': '.',
-  '·': '.',
-};
-
-String _fullwidthToHalfwidthForCompare(String t) {
-  if (t.isEmpty) return t;
-  final b = StringBuffer();
-  for (final ch in Characters(t)) {
-    if (ch.length == 1) {
-      final c = ch.codeUnitAt(0);
-      if (c >= 0xFF01 && c <= 0xFF5E) {
-        b.writeCharCode(c - 0xFEE0);
-        continue;
-      }
-      if (c == 0x3000) {
-        b.write(' ');
-        continue;
+    final spans = <InlineSpan>[];
+    for (var i = 0; i < result.segments.length; i += 1) {
+      final segment = result.segments[i];
+      spans.add(
+        TextSpan(
+          text: segment.text,
+          style: segment.isMatch ? baseStyle : mismatchStyle,
+        ),
+      );
+      if (result.joinSegmentsWithSpace && i != result.segments.length - 1) {
+        spans.add(const TextSpan(text: ' '));
       }
     }
-    b.write(_cjkPunctMap[ch] ?? ch);
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(style: baseStyle, children: spans),
+    );
   }
-  return b.toString();
-}
-
-/// Maps typographic / fullwidth apostrophes and common curly quotes to ASCII so
-/// transcript tokens like `i've` and recognition `I've` (U+2019) still match.
-String _normalizeConfusableQuotesForTokenCompare(String input) {
-  var s = input.replaceAll(
-    RegExp(r"[\u2018\u2019\u201B\u0060\u00B4\u02BC\u02BB\uFF07\u2032]"),
-    "'",
-  );
-  s = s.replaceAll(
-    RegExp(r'[\u201C\u201D\u201E\u00AB\u00BB]'),
-    '"',
-  );
-  return s;
-}
-
-class _AttemptComparisonResult {
-  const _AttemptComparisonResult({
-    required this.transcriptText,
-    required this.segments,
-    required this.matchedCount,
-    required this.unexpectedCount,
-    required this.missingCount,
-    this.joinSegmentsWithSpace = true,
-  });
-
-  final String transcriptText;
-  final List<_DiffSegment> segments;
-  final int matchedCount;
-  final int unexpectedCount;
-  final int missingCount;
-
-  /// False for CJK character-level diff — inserting spaces would break Chinese.
-  final bool joinSegmentsWithSpace;
-}
-
-class _DiffSegment {
-  const _DiffSegment({required this.text, required this.isMatch});
-
-  final String text;
-  final bool isMatch;
-}
-
-class _DiffToken {
-  const _DiffToken({required this.display, required this.normalized});
-
-  final String display;
-  final String normalized;
 }

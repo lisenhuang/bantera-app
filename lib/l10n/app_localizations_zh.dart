@@ -279,6 +279,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceCompare => '对比';
 
   @override
+  String get practiceRecord => '录音';
+
+  @override
+  String get practiceStopRecording => '停止';
+
+  @override
+  String get practiceRecords => '记录';
+
+  @override
+  String get practiceRecordsLocalOnlyFooter => '练习尝试仅保存在本设备，不会上传。';
+
+  @override
+  String get practiceRecordsEmpty => '此句暂无保存的尝试。';
+
+  @override
+  String get practiceRecordingProcessError => '处理录音时出错，请重试。';
+
+  @override
   String get practiceStartOver => '重新开始';
 
   @override
@@ -1053,6 +1071,24 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get practiceCompare => '对比';
+
+  @override
+  String get practiceRecord => '录音';
+
+  @override
+  String get practiceStopRecording => '停止';
+
+  @override
+  String get practiceRecords => '记录';
+
+  @override
+  String get practiceRecordsLocalOnlyFooter => '练习尝试仅保存在本设备，不会上传。';
+
+  @override
+  String get practiceRecordsEmpty => '此句暂无保存的尝试。';
+
+  @override
+  String get practiceRecordingProcessError => '处理录音时出错，请重试。';
 
   @override
   String get practiceStartOver => '重新开始';

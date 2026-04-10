@@ -631,6 +631,42 @@ abstract class AppLocalizations {
   /// **'Compare'**
   String get practiceCompare;
 
+  /// No description provided for @practiceRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get practiceRecord;
+
+  /// No description provided for @practiceStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get practiceStopRecording;
+
+  /// No description provided for @practiceRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Records'**
+  String get practiceRecords;
+
+  /// No description provided for @practiceRecordsLocalOnlyFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts are stored only on this device and are not uploaded.'**
+  String get practiceRecordsLocalOnlyFooter;
+
+  /// No description provided for @practiceRecordsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved attempts for this cue yet.'**
+  String get practiceRecordsEmpty;
+
+  /// No description provided for @practiceRecordingProcessError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while processing your recording.'**
+  String get practiceRecordingProcessError;
+
   /// No description provided for @practiceStartOver.
   ///
   /// In en, this message translates to:

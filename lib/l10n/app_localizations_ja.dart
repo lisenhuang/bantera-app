@@ -280,6 +280,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceCompare => '比較';
 
   @override
+  String get practiceRecord => '録音';
+
+  @override
+  String get practiceStopRecording => '停止';
+
+  @override
+  String get practiceRecords => '記録';
+
+  @override
+  String get practiceRecordsLocalOnlyFooter => '試行はこのデバイスにのみ保存され、アップロードされません。';
+
+  @override
+  String get practiceRecordsEmpty => 'この文にはまだ保存された試行がありません。';
+
+  @override
+  String get practiceRecordingProcessError => '録音の処理中に問題が発生しました。';
+
+  @override
   String get practiceStartOver => '最初から';
 
   @override

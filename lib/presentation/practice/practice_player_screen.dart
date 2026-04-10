@@ -7,6 +7,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -16,8 +18,11 @@ import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/translation_service.dart';
+import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'cue_recording_pipeline.dart';
 import 'record_compare_sheet.dart';
+import 'session_compare_result_sheet.dart';
 
 enum SubtitleState { hidden, original, translated }
 
@@ -62,6 +67,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   /// One [NetworkImage] for the creator avatar so play/state rebuilds do not
   /// create new providers and fan out duplicate HTTP GETs to `/api/users/.../avatar`.
   ImageProvider<Object>? _creatorAvatarProvider;
+
+  final AudioRecorder _cueRecorder = AudioRecorder();
+  Timer? _practiceRecordingTimer;
+  Timer? _practiceAutoStopTimer;
+  static const _maxCueRecordingDuration = Duration(seconds: 30);
+  Duration _practiceRecordingElapsed = Duration.zero;
+  bool _isCueRecording = false;
+  bool _isCueTranscribing = false;
+  String? _cueRecordingTempPath;
 
   static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
@@ -135,6 +149,17 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (localPath != null && localPath.isNotEmpty) {
         unawaited(_deleteLocalMedia(localPath));
       }
+    }
+
+    _practiceRecordingTimer?.cancel();
+    _practiceAutoStopTimer?.cancel();
+    if (_isCueRecording) {
+      unawaited(_cueRecorder.stop());
+    }
+    unawaited(_cueRecorder.dispose());
+    final tempRec = _cueRecordingTempPath;
+    if (tempRec != null) {
+      unawaited(_deleteCueTempRecordingFile(tempRec));
     }
 
     super.dispose();
@@ -676,7 +701,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     });
   }
 
-  void _openCompareSheet() {
+  void _openRecordsSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -695,6 +720,269 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _deleteCueTempRecordingFile(String path) async {
+    final file = File(path);
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  Future<void> _abortCueRecordingIfActive() async {
+    if (!_isCueRecording) return;
+    _practiceRecordingTimer?.cancel();
+    _practiceAutoStopTimer?.cancel();
+    try {
+      final stopped = await _cueRecorder.stop();
+      final path = stopped ?? _cueRecordingTempPath;
+      if (path != null && path.isNotEmpty) {
+        await _deleteCueTempRecordingFile(path);
+      }
+    } catch (_) {
+      // Best-effort cleanup.
+    }
+    _cueRecordingTempPath = null;
+    if (mounted) {
+      setState(() {
+        _isCueRecording = false;
+        _practiceRecordingElapsed = Duration.zero;
+      });
+    }
+  }
+
+  Future<void> _pausePracticePlaybackForRecording() async {
+    if (_isPlayingAll) return;
+    final audioPlayer = _audioPlayer;
+    if (audioPlayer != null && _audioPlayerReady) {
+      if (_isPlaying) {
+        final p = await audioPlayer.getCurrentPosition();
+        if (p != null) {
+          _lastKnownAudioPositionMs = p.inMilliseconds;
+        }
+        await audioPlayer.pause();
+        unawaited(WakelockPlus.disable());
+        if (mounted) setState(() => _isPlaying = false);
+      }
+      return;
+    }
+
+    final controller = _videoController;
+    if (controller != null && controller.value.isInitialized && _isPlaying) {
+      _lastKnownVideoPositionMs = controller.value.position.inMilliseconds;
+      await controller.pause();
+      unawaited(WakelockPlus.disable());
+      if (mounted) {
+        setState(() {
+          _isPlaying = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _ensureMicrophonePermissionForCue() async {
+    try {
+      if (await _cueRecorder.hasPermission()) {
+        return true;
+      }
+    } catch (_) {
+      // Fall through to permission_handler.
+    }
+
+    var status = await Permission.microphone.status;
+    if (status.isGranted) {
+      return true;
+    }
+
+    if (status.isDenied) {
+      status = await Permission.microphone.request();
+      if (status.isGranted) {
+        return true;
+      }
+    }
+
+    if (!mounted) {
+      return false;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final message = switch (status) {
+      PermissionStatus.permanentlyDenied => l10n.compareMicrophoneDeniedPermanent,
+      PermissionStatus.restricted => l10n.compareMicrophoneDeniedRestricted,
+      _ => l10n.compareMicrophoneDeniedDefault,
+    };
+
+    final showSettings = status == PermissionStatus.permanentlyDenied;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: showSettings
+            ? SnackBarAction(
+                label: l10n.compareOpenIphoneSettings,
+                onPressed: openAppSettings,
+              )
+            : null,
+      ),
+    );
+    return false;
+  }
+
+  String _formatRecordingDuration(Duration d) {
+    final minutes = d.inMinutes;
+    final seconds = d.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _onRecordTap() async {
+    if (_isCueTranscribing) {
+      return;
+    }
+    if (_isCueRecording) {
+      await _stopCueRecordingAndProcess();
+      return;
+    }
+    await _startCueRecording();
+  }
+
+  Future<void> _startCueRecording() async {
+    setState(() {
+      _practiceRecordingElapsed = Duration.zero;
+    });
+
+    final granted = await _ensureMicrophonePermissionForCue();
+    if (!granted || !mounted) {
+      return;
+    }
+
+    await _pausePracticePlaybackForRecording();
+    if (!mounted) return;
+
+    final directory = await getTemporaryDirectory();
+    final path =
+        '${directory.path}/bantera_attempt_${DateTime.now().millisecondsSinceEpoch}.wav';
+
+    final prev = _cueRecordingTempPath;
+    if (prev != null && prev.isNotEmpty) {
+      await _deleteCueTempRecordingFile(prev);
+    }
+
+    try {
+      await _cueRecorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.wav,
+          sampleRate: 16000,
+          numChannels: 1,
+        ),
+        path: path,
+      );
+      _practiceRecordingTimer?.cancel();
+      _practiceRecordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        setState(() {
+          _practiceRecordingElapsed += const Duration(seconds: 1);
+        });
+      });
+      _practiceAutoStopTimer?.cancel();
+      _practiceAutoStopTimer = Timer(_maxCueRecordingDuration, () {
+        if (mounted && _isCueRecording) {
+          unawaited(_stopCueRecordingAndProcess());
+        }
+      });
+      setState(() {
+        _cueRecordingTempPath = path;
+        _isCueRecording = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_l10n.compareCouldNotStartRecording)),
+      );
+    }
+  }
+
+  Future<void> _stopCueRecordingAndProcess() async {
+    _practiceRecordingTimer?.cancel();
+    _practiceAutoStopTimer?.cancel();
+    setState(() {
+      _isCueRecording = false;
+      _isCueTranscribing = true;
+    });
+
+    try {
+      final stoppedPath = await _cueRecorder.stop();
+      final resolvedPath = stoppedPath ?? _cueRecordingTempPath;
+      if (resolvedPath == null || resolvedPath.isEmpty) {
+        throw const VideoProcessingException(
+          code: 'missing_recording',
+          message: 'Bantera could not access the recorded audio.',
+        );
+      }
+
+      final cue = widget.mediaItem.cues[_currentCueIndex];
+      final processed = await processRecordingFile(
+        audioFile: File(resolvedPath),
+        expectedCueText: cue.originalText,
+        mediaItemId: widget.mediaItem.id,
+        cueId: cue.id,
+        sourceLocaleIdentifier: _sourceLocaleIdentifier,
+        recordingDurationMs: _practiceRecordingElapsed.inMilliseconds,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isCueTranscribing = false;
+        _practiceRecordingElapsed = Duration.zero;
+        _cueRecordingTempPath = null;
+      });
+
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        showDragHandle: true,
+        builder: (context) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.75,
+          minChildSize: 0.35,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => SessionCompareResultSheet(
+            scrollController: scrollController,
+            cue: cue,
+            sourceLocaleIdentifier: _sourceLocaleIdentifier,
+            result: processed.comparison,
+            audioPath: processed.resolvedAudioPath,
+            saveErrorMessage: processed.saveErrorMessage,
+            onTryAgain: () {},
+          ),
+        ),
+      );
+    } on VideoProcessingException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isCueTranscribing = false;
+        _practiceRecordingElapsed = Duration.zero;
+      });
+
+      final l10n = AppLocalizations.of(context)!;
+      final displayMessage = switch (error.code) {
+        'missing_recording' => l10n.compareCouldNotAccessRecording,
+        'empty_transcript' => l10n.compareNoTranscriptGenerated,
+        _ => error.message,
+      };
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(displayMessage)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isCueTranscribing = false;
+        _practiceRecordingElapsed = Duration.zero;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_l10n.practiceRecordingProcessError)),
+      );
+    }
   }
 
   void _seedPreloadedTranslations() {
@@ -946,21 +1234,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       ),
                       Expanded(
                         child: Center(
-                          child: _buildActionBtn(
-                            CupertinoIcons.mic_solid,
-                            _l10n.practiceCompare,
-                            _openCompareSheet,
-                            colorScheme,
-                            isHighlight: true,
-                          ),
+                          child: _buildRecordActionColumn(colorScheme),
                         ),
                       ),
                       Expanded(
                         child: Center(
                           child: _buildActionBtn(
-                            CupertinoIcons.gobackward,
-                            _l10n.practiceStartOver,
-                            _isPlayingAll ? null : _confirmStartOver,
+                            CupertinoIcons.list_bullet,
+                            _l10n.practiceRecords,
+                            _isPlayingAll ? null : _openRecordsSheet,
                             colorScheme,
                           ),
                         ),
@@ -2114,6 +2396,54 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
+  Widget _buildRecordActionColumn(ColorScheme colorScheme) {
+    final disabled =
+        _isPlayingAll || _isCueTranscribing || (_isInitializingMedia && _hasPlayableMedia);
+    final onTap = disabled ? null : () => unawaited(_onRecordTap());
+    final isRecording = _isCueRecording;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor:
+                isRecording ? Colors.redAccent : colorScheme.primary,
+            foregroundColor:
+                isRecording ? Colors.white : colorScheme.onPrimary,
+            child: _isCueTranscribing
+                ? const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: Colors.white,
+                    ),
+                  )
+                : Icon(
+                    isRecording
+                        ? CupertinoIcons.stop_fill
+                        : CupertinoIcons.mic_solid,
+                    size: 28,
+                  ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isRecording
+                ? _formatRecordingDuration(_practiceRecordingElapsed)
+                : _l10n.practiceRecord,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isRecording ? Colors.redAccent : colorScheme.primary,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _initializeMedia() async {
     if (!_hasPlayableMedia) {
       return;
@@ -2316,6 +2646,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    await _abortCueRecordingIfActive();
+
     final audioPlayer = _audioPlayer;
     if (audioPlayer != null && _audioPlayerReady) {
       await audioPlayer.pause();
@@ -2345,37 +2677,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     // Auto-play the new cue.
     await _togglePlayback();
-  }
-
-  Future<void> _confirmStartOver() async {
-    if (_currentCueIndex == 0) {
-      // Already at the start — just seek without confirmation.
-      await _selectCue(0);
-      return;
-    }
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final l10n = AppLocalizations.of(ctx)!;
-        return AlertDialog(
-          title: Text(l10n.practiceStartOverTitle),
-          content: Text(l10n.practiceStartOverBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(l10n.practiceStartOver),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed == true && mounted) {
-      await _selectCue(0);
-    }
   }
 
   static Future<void> _deleteLocalMedia(String path) async {

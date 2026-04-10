@@ -281,6 +281,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceCompare => '비교';
 
   @override
+  String get practiceRecord => '녹음';
+
+  @override
+  String get practiceStopRecording => '중지';
+
+  @override
+  String get practiceRecords => '기록';
+
+  @override
+  String get practiceRecordsLocalOnlyFooter => '시도는 이 기기에만 저장되며 업로드되지 않습니다.';
+
+  @override
+  String get practiceRecordsEmpty => '이 문장에 저장된 시도가 없습니다.';
+
+  @override
+  String get practiceRecordingProcessError => '녹음을 처리하는 중 문제가 발생했습니다.';
+
+  @override
   String get practiceStartOver => '처음부터';
 
   @override

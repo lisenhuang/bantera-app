@@ -289,6 +289,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceCompare => 'Compare';
 
   @override
+  String get practiceRecord => 'Record';
+
+  @override
+  String get practiceStopRecording => 'Stop';
+
+  @override
+  String get practiceRecords => 'Records';
+
+  @override
+  String get practiceRecordsLocalOnlyFooter =>
+      'Attempts are stored only on this device and are not uploaded.';
+
+  @override
+  String get practiceRecordsEmpty => 'No saved attempts for this cue yet.';
+
+  @override
+  String get practiceRecordingProcessError =>
+      'Something went wrong while processing your recording.';
+
+  @override
   String get practiceStartOver => 'Start Over';
 
   @override
