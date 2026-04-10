@@ -527,4 +527,137 @@ class AppLocalizationsJa extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '「$title」と書き起こしが完全に削除されます。元に戻せません。';
   }
+
+  @override
+  String get editProfileChangeImage => 'プロフィール写真を変更';
+
+  @override
+  String get editProfileUploading => 'アップロード中…';
+
+  @override
+  String get editProfileNameLabel => '名前';
+
+  @override
+  String get editProfileNameHint => 'Banteraにどのように表示しますか？';
+
+  @override
+  String get editProfileSaveNameButton => '名前を保存';
+
+  @override
+  String get editProfileSaving => '保存中…';
+
+  @override
+  String get editProfileLanguagesSection => '言語';
+
+  @override
+  String get editProfileMyNativeLanguage => '母語';
+
+  @override
+  String get editProfileMyNativeLanguageSubtitle => '母語または第一言語';
+
+  @override
+  String get editProfileLearningLanguage => '学習言語';
+
+  @override
+  String get editProfileLearningLanguageSubtitle => '練習したい言語';
+
+  @override
+  String get editProfileImageUpdated => 'プロフィール写真を更新しました。';
+
+  @override
+  String get editProfileNameUpdated => '名前を更新しました。';
+
+  @override
+  String get editProfileEnterName => '名前を入力してください。';
+
+  @override
+  String get editProfileNameMaxLength => '80文字以内にしてください。';
+
+  @override
+  String get editProfileCouldNotLoadLanguages => '言語リストを読み込めませんでした。';
+
+  @override
+  String get languagePickerNone => 'なし';
+
+  @override
+  String get languagePickerClearSelection => '選択をクリア';
+
+  @override
+  String get languagePickerNoMatchingLanguages => '該当する言語がありません。';
+
+  @override
+  String get editProfileNativeLanguageCleared => '母語をクリアしました。';
+
+  @override
+  String get editProfileLearningLanguageCleared => '学習言語をクリアしました。';
+
+  @override
+  String editProfileNativeLanguageSetTo(String language) {
+    return '母語を$languageに設定しました。';
+  }
+
+  @override
+  String editProfileLearningLanguageSetTo(String language) {
+    return '学習言語を$languageに設定しました。';
+  }
+
+  @override
+  String get profileLanguageSettings => '言語設定';
+
+  @override
+  String get profileLearningLabel => '学習';
+
+  @override
+  String get profileNotSet => '未設定';
+
+  @override
+  String get uploadedDetailYourAudio => 'あなたの音声';
+
+  @override
+  String get uploadedDetailYourVideo => 'あなたの動画';
+
+  @override
+  String get uploadedDetailDeleteAudioTitle => '音声を削除しますか？';
+
+  @override
+  String get uploadedDetailDeleteAudioBody => '音声と書き起こしが永久に削除されます。元に戻せません。';
+
+  @override
+  String get uploadedDetailDeleteVideoTitle => '動画を削除しますか？';
+
+  @override
+  String get uploadedDetailDeleteVideoBody => '動画と書き起こしが永久に削除されます。元に戻せません。';
+
+  @override
+  String get uploadedDetailAiGenerated => 'AI生成';
+
+  @override
+  String get uploadedDetailFileSize => 'ファイルサイズ';
+
+  @override
+  String get uploadedDetailResolution => '解像度';
+
+  @override
+  String get uploadedDetailResolutionUnknown => '不明';
+
+  @override
+  String get uploadedDetailTranscribing => '書き起こし中…';
+
+  @override
+  String get uploadedDetailNoTranscriptCuesYet => '書き起こしのキューはまだありません。';
+
+  @override
+  String uploadedDetailMediaDescription(int count) {
+    return 'アップロードした練習クリップ。書き起こしキューは$count件。';
+  }
+
+  @override
+  String get uploadedDetailTranscriptionFailedFallback =>
+      '書き起こしに失敗しました。推定キューを使用します。';
+
+  @override
+  String get uploadedDetailTranscriptionNoCues => '書き起こし結果にキューがありません。';
+
+  @override
+  String get uploadedDetailTranscriptionSourceYourUpload => 'あなたのアップロード';
 }

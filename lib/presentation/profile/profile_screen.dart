@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
         final stats = ProfileStatsNotifier.instance;
+        final l10n = AppLocalizations.of(context)!;
 
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
@@ -93,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   },
                   icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Edit Profile'),
+                  label: Text(l10n.editProfile),
                 ),
                 const SizedBox(height: 24),
                 GestureDetector(
@@ -105,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: _buildStatColumn(
                     context,
-                    'Saved',
+                    l10n.savedTitle,
                     stats.savedCount != null ? '${stats.savedCount}' : '–',
                     tappable: true,
                   ),
@@ -124,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Language Settings',
+                        l10n.profileLanguageSettings,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
@@ -133,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Icons.language,
                           color: BanteraTheme.primaryColor,
                         ),
-                        title: const Text('My Native Language'),
+                        title: Text(l10n.editProfileMyNativeLanguage),
                         trailing: _LanguageChip(
                           identifier: profile.nativeLanguage,
                           bold: false,
@@ -145,7 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Icons.school,
                           color: BanteraTheme.primaryColor,
                         ),
-                        title: const Text('Learning'),
+                        title: Text(l10n.profileLearningLabel),
                         trailing: _LanguageChip(
                           identifier: profile.learningLanguage,
                           bold: true,
@@ -201,7 +202,7 @@ class _LanguageChip extends StatelessWidget {
   Widget build(BuildContext context) {
     if (identifier == null || identifier!.trim().isEmpty) {
       return Text(
-        'Not set',
+        AppLocalizations.of(context)!.profileNotSet,
         style: Theme.of(
           context,
         ).textTheme.bodyMedium?.copyWith(color: Colors.grey),

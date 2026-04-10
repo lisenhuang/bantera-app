@@ -555,4 +555,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return 'This will permanently delete \"$title\" and its transcript. This cannot be undone.';
   }
+
+  @override
+  String get editProfileChangeImage => 'Change Profile Image';
+
+  @override
+  String get editProfileUploading => 'Uploading…';
+
+  @override
+  String get editProfileNameLabel => 'Name';
+
+  @override
+  String get editProfileNameHint => 'How should Bantera show your name?';
+
+  @override
+  String get editProfileSaveNameButton => 'Save Name';
+
+  @override
+  String get editProfileSaving => 'Saving…';
+
+  @override
+  String get editProfileLanguagesSection => 'Languages';
+
+  @override
+  String get editProfileMyNativeLanguage => 'My Native Language';
+
+  @override
+  String get editProfileMyNativeLanguageSubtitle =>
+      'Your native or first language';
+
+  @override
+  String get editProfileLearningLanguage => 'Learning Language';
+
+  @override
+  String get editProfileLearningLanguageSubtitle =>
+      'The language you want to practice';
+
+  @override
+  String get editProfileImageUpdated => 'Profile image updated.';
+
+  @override
+  String get editProfileNameUpdated => 'Name updated.';
+
+  @override
+  String get editProfileEnterName => 'Enter a name.';
+
+  @override
+  String get editProfileNameMaxLength => 'Use 80 characters or fewer.';
+
+  @override
+  String get editProfileCouldNotLoadLanguages =>
+      'Could not load language list.';
+
+  @override
+  String get languagePickerNone => 'None';
+
+  @override
+  String get languagePickerClearSelection => 'Clear selection';
+
+  @override
+  String get languagePickerNoMatchingLanguages => 'No languages found.';
+
+  @override
+  String get editProfileNativeLanguageCleared => 'Native language cleared.';
+
+  @override
+  String get editProfileLearningLanguageCleared => 'Learning language cleared.';
+
+  @override
+  String editProfileNativeLanguageSetTo(String language) {
+    return 'Native language set to $language.';
+  }
+
+  @override
+  String editProfileLearningLanguageSetTo(String language) {
+    return 'Learning language set to $language.';
+  }
+
+  @override
+  String get profileLanguageSettings => 'Language Settings';
+
+  @override
+  String get profileLearningLabel => 'Learning';
+
+  @override
+  String get profileNotSet => 'Not set';
+
+  @override
+  String get uploadedDetailYourAudio => 'Your Audio';
+
+  @override
+  String get uploadedDetailYourVideo => 'Your Video';
+
+  @override
+  String get uploadedDetailDeleteAudioTitle => 'Delete audio?';
+
+  @override
+  String get uploadedDetailDeleteAudioBody =>
+      'This will permanently delete the audio and its transcript. This cannot be undone.';
+
+  @override
+  String get uploadedDetailDeleteVideoTitle => 'Delete video?';
+
+  @override
+  String get uploadedDetailDeleteVideoBody =>
+      'This will permanently delete the video and its transcript. This cannot be undone.';
+
+  @override
+  String get uploadedDetailAiGenerated => 'AI Generated';
+
+  @override
+  String get uploadedDetailFileSize => 'File size';
+
+  @override
+  String get uploadedDetailResolution => 'Resolution';
+
+  @override
+  String get uploadedDetailResolutionUnknown => 'Unknown';
+
+  @override
+  String get uploadedDetailTranscribing => 'Transcribing…';
+
+  @override
+  String get uploadedDetailNoTranscriptCuesYet =>
+      'No transcript cues are available yet.';
+
+  @override
+  String uploadedDetailMediaDescription(int count) {
+    return 'Your uploaded practice clip with $count transcript cues.';
+  }
+
+  @override
+  String get uploadedDetailTranscriptionFailedFallback =>
+      'Transcription failed. Using estimated cues.';
+
+  @override
+  String get uploadedDetailTranscriptionNoCues =>
+      'The transcription returned no cues.';
+
+  @override
+  String get uploadedDetailTranscriptionSourceYourUpload => 'Your Upload';
 }

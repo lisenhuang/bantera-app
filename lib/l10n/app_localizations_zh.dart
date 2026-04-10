@@ -522,6 +522,138 @@ class AppLocalizationsZh extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '将永久删除「$title」及其字幕稿，此操作无法撤销。';
   }
+
+  @override
+  String get editProfileChangeImage => '更换头像';
+
+  @override
+  String get editProfileUploading => '上传中…';
+
+  @override
+  String get editProfileNameLabel => '姓名';
+
+  @override
+  String get editProfileNameHint => 'Bantera 应如何显示你的姓名？';
+
+  @override
+  String get editProfileSaveNameButton => '保存姓名';
+
+  @override
+  String get editProfileSaving => '保存中…';
+
+  @override
+  String get editProfileLanguagesSection => '语言';
+
+  @override
+  String get editProfileMyNativeLanguage => '我的母语';
+
+  @override
+  String get editProfileMyNativeLanguageSubtitle => '你的母语或第一语言';
+
+  @override
+  String get editProfileLearningLanguage => '学习语言';
+
+  @override
+  String get editProfileLearningLanguageSubtitle => '你想练习的语言';
+
+  @override
+  String get editProfileImageUpdated => '头像已更新。';
+
+  @override
+  String get editProfileNameUpdated => '姓名已更新。';
+
+  @override
+  String get editProfileEnterName => '请输入姓名。';
+
+  @override
+  String get editProfileNameMaxLength => '请使用不超过 80 个字符。';
+
+  @override
+  String get editProfileCouldNotLoadLanguages => '无法加载语言列表。';
+
+  @override
+  String get languagePickerNone => '无';
+
+  @override
+  String get languagePickerClearSelection => '清除选择';
+
+  @override
+  String get languagePickerNoMatchingLanguages => '未找到语言。';
+
+  @override
+  String get editProfileNativeLanguageCleared => '已清除母语。';
+
+  @override
+  String get editProfileLearningLanguageCleared => '已清除学习语言。';
+
+  @override
+  String editProfileNativeLanguageSetTo(String language) {
+    return '母语已设为 $language。';
+  }
+
+  @override
+  String editProfileLearningLanguageSetTo(String language) {
+    return '学习语言已设为 $language。';
+  }
+
+  @override
+  String get profileLanguageSettings => '语言设置';
+
+  @override
+  String get profileLearningLabel => '学习';
+
+  @override
+  String get profileNotSet => '未设置';
+
+  @override
+  String get uploadedDetailYourAudio => '你的音频';
+
+  @override
+  String get uploadedDetailYourVideo => '你的视频';
+
+  @override
+  String get uploadedDetailDeleteAudioTitle => '删除音频？';
+
+  @override
+  String get uploadedDetailDeleteAudioBody => '将永久删除此音频及其字幕稿，无法撤销。';
+
+  @override
+  String get uploadedDetailDeleteVideoTitle => '删除视频？';
+
+  @override
+  String get uploadedDetailDeleteVideoBody => '将永久删除此视频及其字幕稿，无法撤销。';
+
+  @override
+  String get uploadedDetailAiGenerated => 'AI 生成';
+
+  @override
+  String get uploadedDetailFileSize => '文件大小';
+
+  @override
+  String get uploadedDetailResolution => '分辨率';
+
+  @override
+  String get uploadedDetailResolutionUnknown => '未知';
+
+  @override
+  String get uploadedDetailTranscribing => '转写中…';
+
+  @override
+  String get uploadedDetailNoTranscriptCuesYet => '暂无字幕分句。';
+
+  @override
+  String uploadedDetailMediaDescription(int count) {
+    return '你上传的练习片段，包含 $count 条字幕分句。';
+  }
+
+  @override
+  String get uploadedDetailTranscriptionFailedFallback => '转写失败，正使用估算分句。';
+
+  @override
+  String get uploadedDetailTranscriptionNoCues => '转写未返回任何分句。';
+
+  @override
+  String get uploadedDetailTranscriptionSourceYourUpload => '你的上传';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1042,4 +1174,136 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String createDeleteMediaBody(String title) {
     return '将永久删除「$title」及其字幕稿，此操作无法撤销。';
   }
+
+  @override
+  String get editProfileChangeImage => '更换头像';
+
+  @override
+  String get editProfileUploading => '上传中…';
+
+  @override
+  String get editProfileNameLabel => '姓名';
+
+  @override
+  String get editProfileNameHint => 'Bantera 应如何显示你的姓名？';
+
+  @override
+  String get editProfileSaveNameButton => '保存姓名';
+
+  @override
+  String get editProfileSaving => '保存中…';
+
+  @override
+  String get editProfileLanguagesSection => '语言';
+
+  @override
+  String get editProfileMyNativeLanguage => '我的母语';
+
+  @override
+  String get editProfileMyNativeLanguageSubtitle => '你的母语或第一语言';
+
+  @override
+  String get editProfileLearningLanguage => '学习语言';
+
+  @override
+  String get editProfileLearningLanguageSubtitle => '你想练习的语言';
+
+  @override
+  String get editProfileImageUpdated => '头像已更新。';
+
+  @override
+  String get editProfileNameUpdated => '姓名已更新。';
+
+  @override
+  String get editProfileEnterName => '请输入姓名。';
+
+  @override
+  String get editProfileNameMaxLength => '请使用不超过 80 个字符。';
+
+  @override
+  String get editProfileCouldNotLoadLanguages => '无法加载语言列表。';
+
+  @override
+  String get languagePickerNone => '无';
+
+  @override
+  String get languagePickerClearSelection => '清除选择';
+
+  @override
+  String get languagePickerNoMatchingLanguages => '未找到语言。';
+
+  @override
+  String get editProfileNativeLanguageCleared => '已清除母语。';
+
+  @override
+  String get editProfileLearningLanguageCleared => '已清除学习语言。';
+
+  @override
+  String editProfileNativeLanguageSetTo(String language) {
+    return '母语已设为 $language。';
+  }
+
+  @override
+  String editProfileLearningLanguageSetTo(String language) {
+    return '学习语言已设为 $language。';
+  }
+
+  @override
+  String get profileLanguageSettings => '语言设置';
+
+  @override
+  String get profileLearningLabel => '学习';
+
+  @override
+  String get profileNotSet => '未设置';
+
+  @override
+  String get uploadedDetailYourAudio => '你的音频';
+
+  @override
+  String get uploadedDetailYourVideo => '你的视频';
+
+  @override
+  String get uploadedDetailDeleteAudioTitle => '删除音频？';
+
+  @override
+  String get uploadedDetailDeleteAudioBody => '将永久删除此音频及其字幕稿，无法撤销。';
+
+  @override
+  String get uploadedDetailDeleteVideoTitle => '删除视频？';
+
+  @override
+  String get uploadedDetailDeleteVideoBody => '将永久删除此视频及其字幕稿，无法撤销。';
+
+  @override
+  String get uploadedDetailAiGenerated => 'AI 生成';
+
+  @override
+  String get uploadedDetailFileSize => '文件大小';
+
+  @override
+  String get uploadedDetailResolution => '分辨率';
+
+  @override
+  String get uploadedDetailResolutionUnknown => '未知';
+
+  @override
+  String get uploadedDetailTranscribing => '转写中…';
+
+  @override
+  String get uploadedDetailNoTranscriptCuesYet => '暂无字幕分句。';
+
+  @override
+  String uploadedDetailMediaDescription(int count) {
+    return '你上传的练习片段，包含 $count 条字幕分句。';
+  }
+
+  @override
+  String get uploadedDetailTranscriptionFailedFallback => '转写失败，正使用估算分句。';
+
+  @override
+  String get uploadedDetailTranscriptionNoCues => '转写未返回任何分句。';
+
+  @override
+  String get uploadedDetailTranscriptionSourceYourUpload => '你的上传';
 }

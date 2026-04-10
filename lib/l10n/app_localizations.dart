@@ -1074,6 +1074,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This will permanently delete \"{title}\" and its transcript. This cannot be undone.'**
   String createDeleteMediaBody(String title);
+
+  /// No description provided for @editProfileChangeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Profile Image'**
+  String get editProfileChangeImage;
+
+  /// No description provided for @editProfileUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get editProfileUploading;
+
+  /// No description provided for @editProfileNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get editProfileNameLabel;
+
+  /// No description provided for @editProfileNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How should Bantera show your name?'**
+  String get editProfileNameHint;
+
+  /// No description provided for @editProfileSaveNameButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Name'**
+  String get editProfileSaveNameButton;
+
+  /// No description provided for @editProfileSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get editProfileSaving;
+
+  /// No description provided for @editProfileLanguagesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get editProfileLanguagesSection;
+
+  /// No description provided for @editProfileMyNativeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'My Native Language'**
+  String get editProfileMyNativeLanguage;
+
+  /// No description provided for @editProfileMyNativeLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your native or first language'**
+  String get editProfileMyNativeLanguageSubtitle;
+
+  /// No description provided for @editProfileLearningLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Language'**
+  String get editProfileLearningLanguage;
+
+  /// No description provided for @editProfileLearningLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The language you want to practice'**
+  String get editProfileLearningLanguageSubtitle;
+
+  /// No description provided for @editProfileImageUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile image updated.'**
+  String get editProfileImageUpdated;
+
+  /// No description provided for @editProfileNameUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Name updated.'**
+  String get editProfileNameUpdated;
+
+  /// No description provided for @editProfileEnterName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name.'**
+  String get editProfileEnterName;
+
+  /// No description provided for @editProfileNameMaxLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 80 characters or fewer.'**
+  String get editProfileNameMaxLength;
+
+  /// No description provided for @editProfileCouldNotLoadLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load language list.'**
+  String get editProfileCouldNotLoadLanguages;
+
+  /// No description provided for @languagePickerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get languagePickerNone;
+
+  /// No description provided for @languagePickerClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get languagePickerClearSelection;
+
+  /// No description provided for @languagePickerNoMatchingLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'No languages found.'**
+  String get languagePickerNoMatchingLanguages;
+
+  /// No description provided for @editProfileNativeLanguageCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Native language cleared.'**
+  String get editProfileNativeLanguageCleared;
+
+  /// No description provided for @editProfileLearningLanguageCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning language cleared.'**
+  String get editProfileLearningLanguageCleared;
+
+  /// No description provided for @editProfileNativeLanguageSetTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Native language set to {language}.'**
+  String editProfileNativeLanguageSetTo(String language);
+
+  /// No description provided for @editProfileLearningLanguageSetTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning language set to {language}.'**
+  String editProfileLearningLanguageSetTo(String language);
+
+  /// No description provided for @profileLanguageSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Language Settings'**
+  String get profileLanguageSettings;
+
+  /// No description provided for @profileLearningLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get profileLearningLabel;
+
+  /// No description provided for @profileNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get profileNotSet;
+
+  /// No description provided for @uploadedDetailYourAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Audio'**
+  String get uploadedDetailYourAudio;
+
+  /// No description provided for @uploadedDetailYourVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Video'**
+  String get uploadedDetailYourVideo;
+
+  /// No description provided for @uploadedDetailDeleteAudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete audio?'**
+  String get uploadedDetailDeleteAudioTitle;
+
+  /// No description provided for @uploadedDetailDeleteAudioBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete the audio and its transcript. This cannot be undone.'**
+  String get uploadedDetailDeleteAudioBody;
+
+  /// No description provided for @uploadedDetailDeleteVideoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete video?'**
+  String get uploadedDetailDeleteVideoTitle;
+
+  /// No description provided for @uploadedDetailDeleteVideoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete the video and its transcript. This cannot be undone.'**
+  String get uploadedDetailDeleteVideoBody;
+
+  /// No description provided for @uploadedDetailAiGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Generated'**
+  String get uploadedDetailAiGenerated;
+
+  /// No description provided for @uploadedDetailFileSize.
+  ///
+  /// In en, this message translates to:
+  /// **'File size'**
+  String get uploadedDetailFileSize;
+
+  /// No description provided for @uploadedDetailResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get uploadedDetailResolution;
+
+  /// No description provided for @uploadedDetailResolutionUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get uploadedDetailResolutionUnknown;
+
+  /// No description provided for @uploadedDetailTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing…'**
+  String get uploadedDetailTranscribing;
+
+  /// No description provided for @uploadedDetailNoTranscriptCuesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No transcript cues are available yet.'**
+  String get uploadedDetailNoTranscriptCuesYet;
+
+  /// No description provided for @uploadedDetailMediaDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your uploaded practice clip with {count} transcript cues.'**
+  String uploadedDetailMediaDescription(int count);
+
+  /// No description provided for @uploadedDetailTranscriptionFailedFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription failed. Using estimated cues.'**
+  String get uploadedDetailTranscriptionFailedFallback;
+
+  /// No description provided for @uploadedDetailTranscriptionNoCues.
+  ///
+  /// In en, this message translates to:
+  /// **'The transcription returned no cues.'**
+  String get uploadedDetailTranscriptionNoCues;
+
+  /// No description provided for @uploadedDetailTranscriptionSourceYourUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Upload'**
+  String get uploadedDetailTranscriptionSourceYourUpload;
 }
 
 class _AppLocalizationsDelegate

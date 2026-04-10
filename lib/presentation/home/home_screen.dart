@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
@@ -82,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       listenable: UserProfileNotifier.instance,
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
+        final l10n = AppLocalizations.of(context)!;
 
         return Scaffold(
           body: SafeArea(
@@ -177,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 16),
-                    _buildRecommendedSection(context, profile),
+                    _buildRecommendedSection(context, profile, l10n),
                   ],
                 ),
               ),
@@ -191,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildRecommendedSection(
     BuildContext context,
     UserProfileNotifier profile,
+    AppLocalizations l10n,
   ) {
     final learningLang = profile.learningLanguage;
 
@@ -207,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final recommended = _recommended();
     if (recommended.isEmpty) {
-      return _buildEmptyState(context, learningLang);
+      return _buildEmptyState(context, learningLang, l10n);
     }
 
     return SizedBox(
@@ -275,7 +278,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, String learningLang) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    String learningLang,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -291,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'No public content in $learningLang yet.',
+                  l10n.discoverNoPublicContentInLanguage(learningLang),
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
@@ -308,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             icon: const Icon(Icons.auto_awesome, size: 18),
-            label: const Text('Generate with AI'),
+            label: Text(l10n.generateWithAiTitle),
           ),
         ],
       ),

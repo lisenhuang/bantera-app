@@ -238,5 +238,68 @@
         "type": "String"
       }
     }
-  }
+  },
+  "editProfileChangeImage": "Change Profile Image",
+  "editProfileUploading": "Uploading…",
+  "editProfileNameLabel": "Name",
+  "editProfileNameHint": "How should Bantera show your name?",
+  "editProfileSaveNameButton": "Save Name",
+  "editProfileSaving": "Saving…",
+  "editProfileLanguagesSection": "Languages",
+  "editProfileMyNativeLanguage": "My Native Language",
+  "editProfileMyNativeLanguageSubtitle": "Your native or first language",
+  "editProfileLearningLanguage": "Learning Language",
+  "editProfileLearningLanguageSubtitle": "The language you want to practice",
+  "editProfileImageUpdated": "Profile image updated.",
+  "editProfileNameUpdated": "Name updated.",
+  "editProfileEnterName": "Enter a name.",
+  "editProfileNameMaxLength": "Use 80 characters or fewer.",
+  "editProfileCouldNotLoadLanguages": "Could not load language list.",
+  "languagePickerNone": "None",
+  "languagePickerClearSelection": "Clear selection",
+  "languagePickerNoMatchingLanguages": "No languages found.",
+  "editProfileNativeLanguageCleared": "Native language cleared.",
+  "editProfileLearningLanguageCleared": "Learning language cleared.",
+  "editProfileNativeLanguageSetTo": "Native language set to {language}.",
+  "@editProfileNativeLanguageSetTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "editProfileLearningLanguageSetTo": "Learning language set to {language}.",
+  "@editProfileLearningLanguageSetTo": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "profileLanguageSettings": "Language Settings",
+  "profileLearningLabel": "Learning",
+  "profileNotSet": "Not set",
+  "uploadedDetailYourAudio": "Your Audio",
+  "uploadedDetailYourVideo": "Your Video",
+  "uploadedDetailDeleteAudioTitle": "Delete audio?",
+  "uploadedDetailDeleteAudioBody": "This will permanently delete the audio and its transcript. This cannot be undone.",
+  "uploadedDetailDeleteVideoTitle": "Delete video?",
+  "uploadedDetailDeleteVideoBody": "This will permanently delete the video and its transcript. This cannot be undone.",
+  "uploadedDetailAiGenerated": "AI Generated",
+  "uploadedDetailFileSize": "File size",
+  "uploadedDetailResolution": "Resolution",
+  "uploadedDetailResolutionUnknown": "Unknown",
+  "uploadedDetailTranscribing": "Transcribing…",
+  "uploadedDetailNoTranscriptCuesYet": "No transcript cues are available yet.",
+  "uploadedDetailMediaDescription": "Your uploaded practice clip with {count} transcript cues.",
+  "@uploadedDetailMediaDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadedDetailTranscriptionFailedFallback": "Transcription failed. Using estimated cues.",
+  "uploadedDetailTranscriptionNoCues": "The transcription returned no cues.",
+  "uploadedDetailTranscriptionSourceYourUpload": "Your Upload"
 }

@@ -530,4 +530,137 @@ class AppLocalizationsKo extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '\"$title\"과(와) 대본이 영구 삭제됩니다. 되돌릴 수 없습니다.';
   }
+
+  @override
+  String get editProfileChangeImage => '프로필 사진 변경';
+
+  @override
+  String get editProfileUploading => '업로드 중…';
+
+  @override
+  String get editProfileNameLabel => '이름';
+
+  @override
+  String get editProfileNameHint => 'Bantera에 어떻게 표시할까요?';
+
+  @override
+  String get editProfileSaveNameButton => '이름 저장';
+
+  @override
+  String get editProfileSaving => '저장 중…';
+
+  @override
+  String get editProfileLanguagesSection => '언어';
+
+  @override
+  String get editProfileMyNativeLanguage => '모국어';
+
+  @override
+  String get editProfileMyNativeLanguageSubtitle => '모국어 또는 첫 언어';
+
+  @override
+  String get editProfileLearningLanguage => '학습 언어';
+
+  @override
+  String get editProfileLearningLanguageSubtitle => '연습하고 싶은 언어';
+
+  @override
+  String get editProfileImageUpdated => '프로필 사진이 업데이트되었습니다.';
+
+  @override
+  String get editProfileNameUpdated => '이름이 업데이트되었습니다.';
+
+  @override
+  String get editProfileEnterName => '이름을 입력하세요.';
+
+  @override
+  String get editProfileNameMaxLength => '80자 이하여야 합니다.';
+
+  @override
+  String get editProfileCouldNotLoadLanguages => '언어 목록을 불러올 수 없습니다.';
+
+  @override
+  String get languagePickerNone => '없음';
+
+  @override
+  String get languagePickerClearSelection => '선택 해제';
+
+  @override
+  String get languagePickerNoMatchingLanguages => '언어를 찾을 수 없습니다.';
+
+  @override
+  String get editProfileNativeLanguageCleared => '모국어가 지워졌습니다.';
+
+  @override
+  String get editProfileLearningLanguageCleared => '학습 언어가 지워졌습니다.';
+
+  @override
+  String editProfileNativeLanguageSetTo(String language) {
+    return '모국어가 $language(으)로 설정되었습니다.';
+  }
+
+  @override
+  String editProfileLearningLanguageSetTo(String language) {
+    return '학습 언어가 $language(으)로 설정되었습니다.';
+  }
+
+  @override
+  String get profileLanguageSettings => '언어 설정';
+
+  @override
+  String get profileLearningLabel => '학습';
+
+  @override
+  String get profileNotSet => '미설정';
+
+  @override
+  String get uploadedDetailYourAudio => '내 오디오';
+
+  @override
+  String get uploadedDetailYourVideo => '내 동영상';
+
+  @override
+  String get uploadedDetailDeleteAudioTitle => '오디오를 삭제할까요?';
+
+  @override
+  String get uploadedDetailDeleteAudioBody => '오디오와 대본이 영구 삭제됩니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get uploadedDetailDeleteVideoTitle => '동영상을 삭제할까요?';
+
+  @override
+  String get uploadedDetailDeleteVideoBody => '동영상과 대본이 영구 삭제됩니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get uploadedDetailAiGenerated => 'AI 생성';
+
+  @override
+  String get uploadedDetailFileSize => '파일 크기';
+
+  @override
+  String get uploadedDetailResolution => '해상도';
+
+  @override
+  String get uploadedDetailResolutionUnknown => '알 수 없음';
+
+  @override
+  String get uploadedDetailTranscribing => '전사 중…';
+
+  @override
+  String get uploadedDetailNoTranscriptCuesYet => '아직 전사 큐가 없습니다.';
+
+  @override
+  String uploadedDetailMediaDescription(int count) {
+    return '업로드한 연습 클립, 전사 큐 $count개.';
+  }
+
+  @override
+  String get uploadedDetailTranscriptionFailedFallback =>
+      '전사에 실패했습니다. 추정 큐를 사용합니다.';
+
+  @override
+  String get uploadedDetailTranscriptionNoCues => '전사 결과에 큐가 없습니다.';
+
+  @override
+  String get uploadedDetailTranscriptionSourceYourUpload => '내 업로드';
 }

@@ -70,7 +70,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _localeLoadError = 'Could not load language list.';
+          _localeLoadError =
+              AppLocalizations.of(context)!.editProfileCouldNotLoadLanguages;
           _loadingLocales = false;
         });
       }
@@ -87,6 +88,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: ListenableBuilder(
           listenable: _profile,
           builder: (context, _) {
+            final l10n = AppLocalizations.of(context)!;
             final profile = _profile.profile;
             if (!_seededInitialName &&
                 profile != null &&
@@ -124,8 +126,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     icon: const Icon(Icons.photo_library_outlined),
                     label: Text(
                       _profile.isUploadingImage
-                          ? 'Uploading...'
-                          : 'Change Profile Image',
+                          ? l10n.editProfileUploading
+                          : l10n.editProfileChangeImage,
                     ),
                   ),
                 ),
@@ -136,12 +138,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _nameController,
                     textInputAction: TextInputAction.done,
                     maxLength: 80,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      hintText: 'How should Bantera show your name?',
-                      prefixIcon: Icon(Icons.person_outline),
+                    decoration: InputDecoration(
+                      labelText: l10n.editProfileNameLabel,
+                      hintText: l10n.editProfileNameHint,
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
-                    validator: _validateName,
+                    validator: (value) => _validateName(l10n, value),
                     onFieldSubmitted: (_) => _saveName(),
                   ),
                 ),
@@ -151,23 +153,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: ElevatedButton(
                     onPressed: _profile.isSavingProfile ? null : _saveName,
                     child: Text(
-                      _profile.isSavingProfile ? 'Saving...' : 'Save Name',
+                      _profile.isSavingProfile
+                          ? l10n.editProfileSaving
+                          : l10n.editProfileSaveNameButton,
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
-                _buildSectionHeader(context, 'Languages'),
+                _buildSectionHeader(context, l10n.editProfileLanguagesSection),
                 const SizedBox(height: 12),
                 _buildLanguageTile(
                   context,
-                  label: 'My Native Language',
-                  subtitle: 'Your native or first language',
+                  label: l10n.editProfileMyNativeLanguage,
+                  subtitle: l10n.editProfileMyNativeLanguageSubtitle,
                   icon: Icons.record_voice_over_outlined,
                   currentIdentifier: _profile.nativeLanguage,
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
-                            title: 'My Native Language',
+                            title: l10n.editProfileMyNativeLanguage,
+                            excludeZhTwForLearning: false,
                             currentIdentifier: _profile.nativeLanguage,
                             onSelected: _saveNativeLanguage,
                           ),
@@ -175,14 +180,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 12),
                 _buildLanguageTile(
                   context,
-                  label: 'Learning Language',
-                  subtitle: 'The language you want to practice',
+                  label: l10n.editProfileLearningLanguage,
+                  subtitle: l10n.editProfileLearningLanguageSubtitle,
                   icon: Icons.school_outlined,
                   currentIdentifier: _profile.learningLanguage,
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
-                            title: 'Learning Language',
+                            title: l10n.editProfileLearningLanguage,
+                            excludeZhTwForLearning: true,
                             currentIdentifier: _profile.learningLanguage,
                             onSelected: _saveLearningLanguage,
                             showClearOption: false,
@@ -282,6 +288,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _showLanguagePicker({
     required String title,
+    required bool excludeZhTwForLearning,
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
@@ -299,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // "zh-TW" is hidden from the Learning Language picker because iOS
     // transcription treats it as Traditional Chinese, which overlaps with
     // zh-Hans/zh-HK in practice.  It remains available for Native Language.
-    final filteredOptions = title == 'Learning Language'
+    final filteredOptions = excludeZhTwForLearning
         ? options.where((o) => o.identifier != 'zh-TW').toList()
         : options;
 
@@ -325,13 +332,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  String? _validateName(String? value) {
+  String? _validateName(AppLocalizations l10n, String? value) {
     final normalized = value?.trim() ?? '';
     if (normalized.isEmpty) {
-      return 'Enter a name.';
+      return l10n.editProfileEnterName;
     }
     if (normalized.length > 80) {
-      return 'Use 80 characters or fewer.';
+      return l10n.editProfileNameMaxLength;
     }
     return null;
   }
@@ -354,9 +361,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Profile image updated.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.editProfileImageUpdated)),
+    );
   }
 
   Future<void> _saveName() async {
@@ -371,9 +378,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Name updated.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.editProfileNameUpdated)),
+    );
   }
 
   Future<void> _saveNativeLanguage(TranscriptionLocaleOption option) async {
@@ -381,12 +388,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final clearing = option.identifier.isEmpty;
     final updated = await _profile.updateNativeLanguage(option.identifier);
     if (!mounted || !updated) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           clearing
-              ? 'Native language cleared.'
-              : 'Native language set to ${option.displayName}.',
+              ? l10n.editProfileNativeLanguageCleared
+              : l10n.editProfileNativeLanguageSetTo(option.displayName),
         ),
       ),
     );
@@ -397,12 +405,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final clearing = option.identifier.isEmpty;
     final updated = await _profile.updateLearningLanguage(option.identifier);
     if (!mounted || !updated) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           clearing
-              ? 'Learning language cleared.'
-              : 'Learning language set to ${option.displayName}.',
+              ? l10n.editProfileLearningLanguageCleared
+              : l10n.editProfileLearningLanguageSetTo(option.displayName),
         ),
       ),
     );
@@ -470,6 +479,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
       maxChildSize: 0.95,
       minChildSize: 0.4,
       builder: (context, scrollController) {
+        final l10n = AppLocalizations.of(context)!;
         return Column(
           children: [
             const SizedBox(height: 8),
@@ -496,7 +506,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                 controller: _searchController,
                 autofocus: false,
                 decoration: InputDecoration(
-                  hintText: 'Search languages…',
+                  hintText: l10n.onboardingSearchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
@@ -520,12 +530,12 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
               const SizedBox(height: 4),
               ListTile(
                 leading: const Text('🚫', style: TextStyle(fontSize: 28)),
-                title: const Text('None'),
-                subtitle: const Text('Clear selection'),
+                title: Text(l10n.languagePickerNone),
+                subtitle: Text(l10n.languagePickerClearSelection),
                 onTap: () => widget.onSelected(
-                  const TranscriptionLocaleOption(
+                  TranscriptionLocaleOption(
                     identifier: '',
-                    displayName: 'None',
+                    displayName: l10n.languagePickerNone,
                     isInstalled: false,
                   ),
                 ),
@@ -535,7 +545,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
             const SizedBox(height: 8),
             Expanded(
               child: _filtered.isEmpty
-                  ? const Center(child: Text('No languages found.'))
+                  ? Center(child: Text(l10n.languagePickerNoMatchingLanguages))
                   : ListView.builder(
                       controller: scrollController,
                       itemCount: _filtered.length,

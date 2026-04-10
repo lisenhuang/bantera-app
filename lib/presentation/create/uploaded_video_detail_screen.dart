@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/auth_session_notifier.dart';
@@ -10,6 +11,7 @@ import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../practice/practice_player_screen.dart';
 import '../shared/profile_avatar.dart';
 
@@ -38,28 +40,41 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     }
   }
 
+  bool get _isAudioOnlyUpload =>
+      _video.videoWidth == null && _video.videoHeight == null;
+
   Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete audio?'),
-        content: const Text(
-          'This will permanently delete the audio and its transcript. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        final isAudio = _isAudioOnlyUpload;
+        return AlertDialog(
+          title: Text(
+            isAudio
+                ? l10n.uploadedDetailDeleteAudioTitle
+                : l10n.uploadedDetailDeleteVideoTitle,
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(ctx).colorScheme.error,
+          content: Text(
+            isAudio
+                ? l10n.uploadedDetailDeleteAudioBody
+                : l10n.uploadedDetailDeleteVideoBody,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
             ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              child: Text(l10n.deleteLabel),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true || !mounted) return;
 
@@ -141,15 +156,20 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       });
     } on VideoProcessingException catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final message = e.code == 'no_cues'
+          ? l10n.uploadedDetailTranscriptionNoCues
+          : e.message;
       setState(() {
         _isTranscribing = false;
-        _transcriptionError = e.message;
+        _transcriptionError = message;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isTranscribing = false;
-        _transcriptionError = 'Transcription failed. Using estimated cues.';
+        _transcriptionError = AppLocalizations.of(context)!
+            .uploadedDetailTranscriptionFailedFallback;
       });
     } finally {
       try {
@@ -168,19 +188,20 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       listenable: UserProfileNotifier.instance,
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
+        final l10n = AppLocalizations.of(context)!;
 
         return Scaffold(
           appBar: AppBar(
             title: Text(
               video.videoWidth == null && video.videoHeight == null
-                  ? 'Your Audio'
-                  : 'Your Video',
+                  ? l10n.uploadedDetailYourAudio
+                  : l10n.uploadedDetailYourVideo,
             ),
             actions: [
               if (video.isAiGenerated)
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: 'Delete',
+                  tooltip: l10n.deleteLabel,
                   onPressed: _isTranscribing ? null : () => _confirmDelete(context),
                 ),
             ],
@@ -250,14 +271,16 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                             runSpacing: 8,
                             children: [
                               _MetaChip(
-                                label: video.isPublic ? 'Public' : 'Private',
+                                label: video.isPublic
+                                    ? l10n.createPublicBadge
+                                    : l10n.createPrivateBadge,
                                 icon: video.isPublic
                                     ? Icons.public
                                     : Icons.lock_outline,
                               ),
                               if (video.isAiGenerated)
                                 _MetaChip(
-                                  label: 'AI Generated',
+                                  label: l10n.uploadedDetailAiGenerated,
                                   icon: Icons.auto_awesome,
                                   color: Colors.purple,
                                 ),
@@ -266,7 +289,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                                 icon: Icons.translate_outlined,
                               ),
                               _MetaChip(
-                                label: '${video.transcriptCues.length} cues',
+                                label: l10n.createVideoMetaCues(
+                                  video.transcriptCues.length,
+                                ),
                                 icon: Icons.subtitles_outlined,
                               ),
                               _MetaChip(
@@ -294,26 +319,27 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                           ),
                         ),
                         Text(
-                          _formatDate(video.createdAt),
+                          _formatDateLabel(context, video.createdAt),
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
                     _InfoRow(
-                      label: 'File size',
+                      label: l10n.uploadedDetailFileSize,
                       value: _formatBytes(video.fileSizeBytes),
                     ),
                     if (video.videoWidth != null && video.videoHeight != null)
                       _InfoRow(
-                        label: 'Resolution',
-                        value: _formatResolution(
+                        label: l10n.uploadedDetailResolution,
+                        value: _formatResolutionLabel(
+                          context,
                           video.videoWidth,
                           video.videoHeight,
                         ),
                       ),
                     _InfoRow(
-                      label: 'Transcript',
+                      label: l10n.mediaTranscript,
                       value: video.transcriptLanguageCode.isEmpty
                           ? video.transcriptLanguage
                           : '${video.transcriptLanguage} · ${video.transcriptLanguageCode.toUpperCase()}',
@@ -347,7 +373,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Transcribing…',
+                          l10n.uploadedDetailTranscribing,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onPrimaryContainer,
                           ),
@@ -386,13 +412,13 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => PracticePlayerScreen(
-                                mediaItem: _toMediaItem(profile),
+                                mediaItem: _toMediaItem(profile, l10n),
                               ),
                             ),
                           );
                         },
                   icon: const Icon(Icons.headphones_rounded),
-                  label: const Text('Start Practice'),
+                  label: Text(l10n.mediaStartPractice),
                 ),
               ),
               const SizedBox(height: 18),
@@ -407,13 +433,13 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                   child: Row(
                     children: [
                       Text(
-                        'Transcript',
+                        l10n.mediaTranscript,
                         style: theme.textTheme.titleLarge,
                       ),
                       const SizedBox(width: 6),
                       if (video.transcriptCues.isNotEmpty)
                         Text(
-                          '(${video.transcriptCues.length} cues)',
+                          '(${l10n.createVideoMetaCues(video.transcriptCues.length)})',
                           style: theme.textTheme.bodySmall,
                         ),
                       const Spacer(),
@@ -425,7 +451,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        _transcriptExpanded ? 'Hide' : 'Show',
+                        _transcriptExpanded ? l10n.mediaHide : l10n.mediaShow,
                         style: TextStyle(
                           color: colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -448,7 +474,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                         color: colorScheme.outline.withValues(alpha: 0.12),
                       ),
                     ),
-                    child: const Text('No transcript cues are available yet.'),
+                    child: Text(l10n.uploadedDetailNoTranscriptCuesYet),
                   )
                 else
                   ...video.transcriptCues.map((cue) {
@@ -485,14 +511,15 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     );
   }
 
-  MediaItem _toMediaItem(UserProfileNotifier profile) {
+  MediaItem _toMediaItem(UserProfileNotifier profile, AppLocalizations l10n) {
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
 
     return MediaItem(
       id: _video.id,
       title: _displayTitle(_video.originalFileName),
-      description:
-          'Your uploaded practice clip with ${_video.transcriptCues.length} transcript cues.',
+      description: l10n.uploadedDetailMediaDescription(
+        _video.transcriptCues.length,
+      ),
       creator: User(
         id: _video.userId,
         displayName: profile.displayName,
@@ -522,7 +549,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
           translatedText: '',
         );
       }).toList(),
-      transcriptionSource: 'Your Upload',
+      transcriptionSource: l10n.uploadedDetailTranscriptionSourceYourUpload,
       isAudioOnly: _video.videoWidth == null && _video.videoHeight == null,
     );
   }
@@ -553,11 +580,21 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     return '$bytes B';
   }
 
-  static String _formatResolution(int? width, int? height) {
+  String _formatResolutionLabel(
+    BuildContext context,
+    int? width,
+    int? height,
+  ) {
     if (width == null || height == null) {
-      return 'Unknown';
+      return AppLocalizations.of(context)!.uploadedDetailResolutionUnknown;
     }
     return '$width×$height';
+  }
+
+  String _formatDateLabel(BuildContext context, DateTime value) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(value.toLocal());
   }
 
   static String _formatCueRange(VideoTranscriptCue cue) {
@@ -571,30 +608,6 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
-  static String _formatDate(DateTime value) {
-    final local = value.toLocal();
-    final month = _monthLabel(local.month);
-    return '$month ${local.day}, ${local.year}';
-  }
-
-  static String _monthLabel(int month) {
-    const months = <String>[
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    return months[(month - 1).clamp(0, 11)];
-  }
 }
 
 class _MetaChip extends StatelessWidget {
