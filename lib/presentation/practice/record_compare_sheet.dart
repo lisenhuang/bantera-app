@@ -16,10 +16,15 @@ import '../../infrastructure/video_processing_service.dart';
 class RecordCompareSheet extends StatefulWidget {
   const RecordCompareSheet({
     super.key,
+    required this.scrollController,
     required this.mediaItemId,
     required this.cue,
     required this.sourceLocaleIdentifier,
   });
+
+  /// From [DraggableScrollableSheet] so the sheet can be dragged to dismiss
+  /// while the inner list scrolls when content is tall (e.g. attempt history).
+  final ScrollController scrollController;
 
   final String mediaItemId;
   final Cue cue;
@@ -87,7 +92,6 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -95,6 +99,8 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
+          controller: widget.scrollController,
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

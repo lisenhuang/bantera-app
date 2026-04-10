@@ -640,10 +640,18 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => RecordCompareSheet(
-        mediaItemId: widget.mediaItem.id,
-        cue: widget.mediaItem.cues[_currentCueIndex],
-        sourceLocaleIdentifier: _sourceLocaleIdentifier,
+      showDragHandle: true,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.75,
+        minChildSize: 0.35,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => RecordCompareSheet(
+          scrollController: scrollController,
+          mediaItemId: widget.mediaItem.id,
+          cue: widget.mediaItem.cues[_currentCueIndex],
+          sourceLocaleIdentifier: _sourceLocaleIdentifier,
+        ),
       ),
     );
   }
