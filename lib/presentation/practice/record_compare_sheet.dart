@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
-import '../../core/theme.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/video_processing_service.dart';
@@ -89,9 +88,9 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: BanteraTheme.surfaceColorLight,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -108,9 +107,9 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: BanteraTheme.backgroundLight,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Text(
                   widget.cue.originalText,
@@ -136,11 +135,11 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                       shape: BoxShape.circle,
                       color: _isRecording
                           ? Colors.redAccent.withValues(alpha: 0.1)
-                          : BanteraTheme.primaryColor.withValues(alpha: 0.1),
+                          : colorScheme.primary.withValues(alpha: 0.1),
                       border: Border.all(
                         color: _isRecording
                             ? Colors.redAccent
-                            : BanteraTheme.primaryColor,
+                            : colorScheme.primary,
                         width: 4,
                       ),
                     ),
@@ -157,7 +156,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                                   : CupertinoIcons.mic_solid,
                               color: _isRecording
                                   ? Colors.redAccent
-                                  : BanteraTheme.primaryColor,
+                                  : colorScheme.primary,
                               size: 34,
                             ),
                     ),
@@ -684,8 +683,8 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
     return Material(
       color: isSelected
-          ? BanteraTheme.primaryColor.withValues(alpha: 0.08)
-          : BanteraTheme.backgroundLight,
+          ? theme.colorScheme.primary.withValues(alpha: 0.08)
+          : theme.colorScheme.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -705,17 +704,17 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: isSelected
-                            ? BanteraTheme.primaryColor
+                            ? theme.colorScheme.primary
                             : theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
                   if (isSelected)
-                    const Padding(
-                      padding: EdgeInsets.only(right: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
                       child: Icon(
                         CupertinoIcons.check_mark_circled_solid,
-                        color: BanteraTheme.primaryColor,
+                        color: theme.colorScheme.primary,
                         size: 18,
                       ),
                     ),

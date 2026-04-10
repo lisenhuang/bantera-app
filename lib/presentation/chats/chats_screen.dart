@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
 import '../../infrastructure/mock_data.dart';
 import 'chat_conversation_screen.dart';
 
@@ -9,6 +8,7 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final threads = MockData.recentChats;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +24,7 @@ class ChatsScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: BanteraTheme.surfaceColorLight,
+            color: colorScheme.surfaceContainerHighest,
             child: Row(
               children: [
                 Expanded(
@@ -32,8 +32,8 @@ class ChatsScreen extends StatelessWidget {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                        elevation: 0,
-                       backgroundColor: BanteraTheme.primaryColor.withOpacity(0.1),
-                       foregroundColor: BanteraTheme.primaryColor,
+                       backgroundColor: colorScheme.primary.withOpacity(0.1),
+                       foregroundColor: colorScheme.primary,
                     ),
                     child: const Text('DMs'),
                   ),
@@ -43,8 +43,8 @@ class ChatsScreen extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
-                       foregroundColor: BanteraTheme.textSecondaryLight,
-                       side: BorderSide(color: Colors.grey[300]!),
+                       foregroundColor: colorScheme.onSurfaceVariant,
+                       side: BorderSide(color: colorScheme.outlineVariant),
                     ),
                     child: const Text('Groups'),
                   ),
@@ -54,8 +54,8 @@ class ChatsScreen extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
-                       foregroundColor: BanteraTheme.textSecondaryLight,
-                       side: BorderSide(color: Colors.grey[300]!),
+                       foregroundColor: colorScheme.onSurfaceVariant,
+                       side: BorderSide(color: colorScheme.outlineVariant),
                     ),
                     child: const Text('Exchange'),
                   ),
@@ -75,9 +75,9 @@ class ChatsScreen extends StatelessWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
                     radius: 28,
-                    backgroundColor: thread.isGroup ? BanteraTheme.primaryColor.withOpacity(0.1) : Colors.transparent,
+                    backgroundColor: thread.isGroup ? colorScheme.primary.withOpacity(0.1) : Colors.transparent,
                     backgroundImage: thread.isGroup ? null : NetworkImage(partner.avatarUrl),
-                    child: thread.isGroup ? const Icon(Icons.group, color: BanteraTheme.primaryColor) : null,
+                    child: thread.isGroup ? Icon(Icons.group, color: colorScheme.primary) : null,
                   ),
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,9 +91,15 @@ class ChatsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        const Icon(Icons.mic, size: 16, color: BanteraTheme.primaryColor),
+                        Icon(Icons.mic, size: 16, color: colorScheme.primary),
                         const SizedBox(width: 4),
-                        Text('0:${(thread.lastMessage.durationMs / 1000).round()}', style: const TextStyle(fontWeight: FontWeight.bold, color: BanteraTheme.primaryColor)),
+                        Text(
+                          '0:${(thread.lastMessage.durationMs / 1000).round()}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(

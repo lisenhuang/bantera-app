@@ -848,8 +848,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         iconSize: 36,
                         icon: const Icon(CupertinoIcons.backward_fill),
                         color: !_isPlayingAll && _currentCueIndex > 0
-                            ? colorScheme.onSurface
-                            : colorScheme.onSurface.withValues(alpha: 0.2),
+                            ? colorScheme.primary
+                            : colorScheme.primary.withValues(alpha: 0.2),
                         onPressed: _isPlayingAll ? null : _prevCue,
                       ),
                       const SizedBox(width: 24),
@@ -869,8 +869,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         icon: const Icon(CupertinoIcons.forward_fill),
                         color: !_isPlayingAll &&
                             _currentCueIndex < widget.mediaItem.cues.length - 1
-                            ? colorScheme.onSurface
-                            : colorScheme.onSurface.withValues(alpha: 0.2),
+                            ? colorScheme.primary
+                            : colorScheme.primary.withValues(alpha: 0.2),
                         onPressed: _isPlayingAll ? null : _nextCue,
                       ),
                     ],

@@ -76,7 +76,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     final flag = langCode.isNotEmpty ? flagEmojiForLocale(langCode) : '';
 
     return Scaffold(
-      backgroundColor: BanteraTheme.surfaceColorLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: const Text('Lesson Details'),
         actions: [

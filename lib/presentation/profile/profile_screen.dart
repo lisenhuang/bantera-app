@@ -111,7 +111,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Container(color: BanteraTheme.backgroundLight, height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(
+                    height: 1,
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(

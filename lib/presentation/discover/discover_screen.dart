@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
-import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -154,6 +153,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
         final learningLang = profile.learningLanguage;
+        final colorScheme = Theme.of(context).colorScheme;
 
         return Scaffold(
           appBar: AppBar(
@@ -165,15 +165,21 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
+                  style: TextStyle(color: colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Search title or transcript…',
-                    prefixIcon: const Icon(
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    prefixIcon: Icon(
                       Icons.search,
-                      color: BanteraTheme.textSecondaryLight,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
+                            icon: Icon(
+                              Icons.clear,
+                              size: 18,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               _load(reset: true);
@@ -181,7 +187,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: BanteraTheme.backgroundLight,
+                    fillColor: colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
