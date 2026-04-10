@@ -24,12 +24,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Bantera',
-      theme: BanteraTheme.lightTheme,
-      themeMode: ThemeMode.light,
-      home: const AppRoot(),
-      debugShowCheckedModeBanner: false,
+    return ListenableBuilder(
+      listenable: SettingsNotifier.instance,
+      builder: (context, _) {
+        final settings = SettingsNotifier.instance;
+        return MaterialApp(
+          title: 'Bantera',
+          theme: BanteraTheme.lightTheme,
+          darkTheme: BanteraTheme.darkTheme,
+          themeMode: settings.themeMode,
+          home: const AppRoot(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

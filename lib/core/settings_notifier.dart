@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 class SettingsNotifier extends ChangeNotifier {
   SettingsNotifier._();
 
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light;
   bool _notificationsEnabled = true;
   String? _lastTranscriptionLocale;
   bool _isInitialized = false;
@@ -41,7 +41,7 @@ class SettingsNotifier extends ChangeNotifier {
         }
       }
     } catch (_) {
-      _themeMode = ThemeMode.system;
+      _themeMode = ThemeMode.light;
       _notificationsEnabled = true;
       _lastTranscriptionLocale = null;
     } finally {
@@ -107,7 +107,8 @@ class SettingsNotifier extends ChangeNotifier {
     return switch (value) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
-      _ => ThemeMode.system,
+      'system' => ThemeMode.system,
+      _ => ThemeMode.light,
     };
   }
 }

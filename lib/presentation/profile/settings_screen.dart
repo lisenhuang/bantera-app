@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/profile_stats_notifier.dart';
+import '../../core/settings_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/practice_progress_store.dart';
@@ -165,6 +166,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  _buildSectionHeader(context, 'Appearance'),
+                  ListenableBuilder(
+                    listenable: SettingsNotifier.instance,
+                    builder: (context, _) {
+                      final settings = SettingsNotifier.instance;
+                      return Card(
+                        margin: EdgeInsets.zero,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.brightness_6_outlined,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Theme',
+                                    style: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SegmentedButton<ThemeMode>(
+                                segments: const [
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.light,
+                                    label: Text('Light'),
+                                    icon: Icon(Icons.light_mode_outlined),
+                                  ),
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.dark,
+                                    label: Text('Dark'),
+                                    icon: Icon(Icons.dark_mode_outlined),
+                                  ),
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.system,
+                                    label: Text('System'),
+                                    icon: Icon(Icons.brightness_auto_outlined),
+                                  ),
+                                ],
+                                selected: {settings.themeMode},
+                                onSelectionChanged: (Set<ThemeMode> next) {
+                                  if (busy || next.isEmpty) {
+                                    return;
+                                  }
+                                  SettingsNotifier.instance.setThemeMode(
+                                    next.first,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
                   _buildSectionHeader(context, 'Account'),
                   Card(
                     margin: EdgeInsets.zero,
