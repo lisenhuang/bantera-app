@@ -93,9 +93,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeSystem => '시스템';
 
   @override
-  String get languageSystem => '시스템 기본값';
-
-  @override
   String get languageEnglish => '영어';
 
   @override

@@ -19,6 +19,8 @@ class BanteraTheme {
         surface: surfaceColorLight,
         onSurface: textPrimaryLight,
         onBackground: textPrimaryLight,
+        outline: Color(0xFFCACACE),
+        outlineVariant: Color(0xFFDCDCE0),
       ),
       scaffoldBackgroundColor: backgroundLight,
       appBarTheme: const AppBarTheme(
@@ -76,6 +78,8 @@ class BanteraTheme {
         surface: surfaceColorDark,
         onSurface: textPrimaryDark,
         onBackground: textPrimaryDark,
+        outline: Color(0xFF52525B),
+        outlineVariant: Color(0xFF3F3F46),
       ),
       scaffoldBackgroundColor: backgroundDark,
       appBarTheme: const AppBarTheme(

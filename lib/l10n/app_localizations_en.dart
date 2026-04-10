@@ -96,9 +96,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
-  String get languageSystem => 'System default';
-
-  @override
   String get languageEnglish => 'English';
 
   @override

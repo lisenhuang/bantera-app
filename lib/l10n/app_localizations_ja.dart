@@ -93,9 +93,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeSystem => 'システム';
 
   @override
-  String get languageSystem => 'システムに合わせる';
-
-  @override
   String get languageEnglish => '英語';
 
   @override

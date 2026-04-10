@@ -47,6 +47,19 @@ enum AppLocalePreference {
       };
 }
 
+/// Fixed display names for the language picker (each language in its own script).
+class AppLocaleAutonyms {
+  AppLocaleAutonyms._();
+
+  /// Always shown in English (not translated with app locale).
+  static const String systemDefault = 'System default';
+
+  static const String english = 'English';
+  static const String chineseSimplified = '中文（简体）';
+  static const String korean = '한국어';
+  static const String japanese = '日本語';
+}
+
 /// Maps device locale to one of: en, zh_CN, ko, ja. Any `zh_*` → zh_CN.
 Locale resolvePlatformLocale(Locale platform) {
   final lang = platform.languageCode;

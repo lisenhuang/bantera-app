@@ -93,9 +93,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeSystem => '跟随系统';
 
   @override
-  String get languageSystem => '跟随系统';
-
-  @override
   String get languageEnglish => '英语';
 
   @override
@@ -284,9 +281,6 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get themeSystem => '跟随系统';
-
-  @override
-  String get languageSystem => '跟随系统';
 
   @override
   String get languageEnglish => '英语';

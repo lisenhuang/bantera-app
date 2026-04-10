@@ -105,6 +105,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           const SizedBox(height: 12),
                           SegmentedButton<ThemeMode>(
+                            style: SegmentedButton.styleFrom(
+                              side: BorderSide(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant,
+                              ),
+                            ),
                             segments: [
                               ButtonSegment<ThemeMode>(
                                 value: ThemeMode.light,
@@ -144,53 +151,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 margin: EdgeInsets.zero,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.languageSectionSubtitle,
-                        style: Theme.of(context).textTheme.bodySmall,
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.language_outlined,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      ListenableBuilder(
-                        listenable: SettingsNotifier.instance,
-                        builder: (context, _) {
-                          final settings = SettingsNotifier.instance;
-                          return DropdownButton<AppLocalePreference>(
-                            isExpanded: true,
-                            value: settings.appLocalePreference,
-                            borderRadius: BorderRadius.circular(12),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            items: [
-                              DropdownMenuItem(
-                                value: AppLocalePreference.system,
-                                child: Text(l10n.languageSystem),
-                              ),
-                              DropdownMenuItem(
-                                value: AppLocalePreference.en,
-                                child: Text(l10n.languageEnglish),
-                              ),
-                              DropdownMenuItem(
-                                value: AppLocalePreference.zhCn,
-                                child: Text(l10n.languageChineseSimplified),
-                              ),
-                              DropdownMenuItem(
-                                value: AppLocalePreference.ko,
-                                child: Text(l10n.languageKorean),
-                              ),
-                              DropdownMenuItem(
-                                value: AppLocalePreference.ja,
-                                child: Text(l10n.languageJapanese),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              if (v != null) {
-                                SettingsNotifier.instance
-                                    .setAppLocalePreference(v);
-                              }
-                            },
-                          );
-                        },
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.languageSectionSubtitle,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 12),
+                            ListenableBuilder(
+                              listenable: SettingsNotifier.instance,
+                              builder: (context, _) {
+                                final settings = SettingsNotifier.instance;
+                                return DropdownButton<AppLocalePreference>(
+                                  isExpanded: true,
+                                  value: settings.appLocalePreference,
+                                  borderRadius: BorderRadius.circular(12),
+                                  padding: EdgeInsets.zero,
+                                  alignment: AlignmentDirectional.centerStart,
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: AppLocalePreference.system,
+                                      child: const Text(
+                                        AppLocaleAutonyms.systemDefault,
+                                      ),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: AppLocalePreference.en,
+                                      child: const Text(AppLocaleAutonyms.english),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: AppLocalePreference.zhCn,
+                                      child: const Text(
+                                        AppLocaleAutonyms.chineseSimplified,
+                                      ),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: AppLocalePreference.ko,
+                                      child: const Text(AppLocaleAutonyms.korean),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: AppLocalePreference.ja,
+                                      child: const Text(AppLocaleAutonyms.japanese),
+                                    ),
+                                  ],
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      SettingsNotifier.instance
+                                          .setAppLocalePreference(v);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -211,7 +238,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             : l10n.signedInWith(auth.session!.providerLabel),
                       ),
                     ),
-                    const Divider(height: 1),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                     ListTile(
                       leading: const Icon(Icons.person),
                       title: Text(l10n.editProfile),
@@ -227,7 +258,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                             },
                     ),
-                    const Divider(height: 1),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                     ListTile(
                       leading: const Icon(Icons.more_horiz),
                       title: Text(l10n.more),
@@ -243,7 +278,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                             },
                     ),
-                    const Divider(height: 1),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                     ListTile(
                       leading: const Icon(Icons.logout, color: Colors.red),
                       title: Text(

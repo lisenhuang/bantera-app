@@ -271,12 +271,6 @@ abstract class AppLocalizations {
   /// **'System'**
   String get themeSystem;
 
-  /// No description provided for @languageSystem.
-  ///
-  /// In en, this message translates to:
-  /// **'System default'**
-  String get languageSystem;
-
   /// No description provided for @languageEnglish.
   ///
   /// In en, this message translates to:
