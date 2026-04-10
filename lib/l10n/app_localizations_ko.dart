@@ -663,4 +663,118 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get uploadedDetailTranscriptionSourceYourUpload => '내 업로드';
+
+  @override
+  String get aiGenLeaveTitle => '이 페이지에서 나갈까요?';
+
+  @override
+  String get aiGenLeaveBody => '오디오를 생성 중입니다. 지금 나가면 작업이 취소됩니다.';
+
+  @override
+  String get aiGenStay => '머무르기';
+
+  @override
+  String get aiGenLeave => '나가기';
+
+  @override
+  String get aiGenLoadingTitle => '오디오를 만드는 중…';
+
+  @override
+  String get aiGenLoadingSubtitle =>
+      '최대 1분 정도 걸릴 수 있습니다.\n생성 중에는 이 페이지에 머물러 주세요.';
+
+  @override
+  String get aiGenStepWritingDialogue => '대화 작성 중';
+
+  @override
+  String get aiGenStepGeneratingAudio => '오디오 생성 중';
+
+  @override
+  String get aiGenStepTranscribing => '전사 중';
+
+  @override
+  String get aiGenStepCorrectingTranscript => '대본 교정 중';
+
+  @override
+  String get aiGenLanguageSection => '언어';
+
+  @override
+  String get aiGenSetLearningLanguagePrompt => '생성을 켜려면 학습 언어를 설정하세요';
+
+  @override
+  String get aiGenLoadingLanguage => '언어 불러오는 중…';
+
+  @override
+  String aiGenLanguageUnsupported(String language) {
+    return '\"$language\" 언어는 생성을 지원하지 않습니다.';
+  }
+
+  @override
+  String get aiGenScenarioSection => '시나리오';
+
+  @override
+  String get aiGenScenarioOptionalHint => '선택 사항 — 비워 두면 무작위 시나리오가 사용됩니다.';
+
+  @override
+  String get aiGenCustomScenarioHint => '시나리오를 설명하세요…';
+
+  @override
+  String get aiGenDurationSection => '길이';
+
+  @override
+  String aiGenDurationMinutes(int minutes) {
+    return '$minutes분';
+  }
+
+  @override
+  String get aiGenGenerateButton => '생성';
+
+  @override
+  String get aiGenFooterNotice =>
+      'AI가 두 명의 대화를 쓰고 오디오로 합성합니다. 결과는 공개 연습 오디오로 저장됩니다.';
+
+  @override
+  String get aiScenarioCoffeeShop => '카페';
+
+  @override
+  String get aiScenarioAirportReunion => '공항에서 재회';
+
+  @override
+  String get aiScenarioGroceryStore => '마트';
+
+  @override
+  String get aiScenarioDoctorVisit => '병원 진료';
+
+  @override
+  String get aiScenarioJobInterview => '취업 면접';
+
+  @override
+  String get aiScenarioNewNeighbour => '새 이웃';
+
+  @override
+  String get aiScenarioTechSupport => '기술 지원';
+
+  @override
+  String get aiScenarioBirthdaySurprise => '깜짝 생일 파티';
+
+  @override
+  String get aiScenarioGymTips => '헬스 팁';
+
+  @override
+  String get aiScenarioWeatherSmalltalk => '날씨 잡담';
+
+  @override
+  String get aiScenarioRestaurantOrder => '레스토랑 주문';
+
+  @override
+  String get aiScenarioBookRecommendation => '책 추천';
+
+  @override
+  String get aiScenarioBusDelay => '버스 지연';
+
+  @override
+  String get aiScenarioMovieDebate => '영화 토론';
+
+  @override
+  String get aiScenarioCustom => '사용자 지정…';
 }

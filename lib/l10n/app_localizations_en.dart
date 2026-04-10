@@ -695,4 +695,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadedDetailTranscriptionSourceYourUpload => 'Your Upload';
+
+  @override
+  String get aiGenLeaveTitle => 'Leave this page?';
+
+  @override
+  String get aiGenLeaveBody =>
+      'Audio is still being generated. Leaving now will cancel the process.';
+
+  @override
+  String get aiGenStay => 'Stay';
+
+  @override
+  String get aiGenLeave => 'Leave';
+
+  @override
+  String get aiGenLoadingTitle => 'Creating your audio…';
+
+  @override
+  String get aiGenLoadingSubtitle =>
+      'This may take up to a minute.\nPlease stay on this page while generating.';
+
+  @override
+  String get aiGenStepWritingDialogue => 'Writing dialogue';
+
+  @override
+  String get aiGenStepGeneratingAudio => 'Generating audio';
+
+  @override
+  String get aiGenStepTranscribing => 'Transcribing';
+
+  @override
+  String get aiGenStepCorrectingTranscript => 'Correcting transcript';
+
+  @override
+  String get aiGenLanguageSection => 'Language';
+
+  @override
+  String get aiGenSetLearningLanguagePrompt =>
+      'Set your learning language to enable generation';
+
+  @override
+  String get aiGenLoadingLanguage => 'Loading language…';
+
+  @override
+  String aiGenLanguageUnsupported(String language) {
+    return 'Language \"$language\" is not supported for generation.';
+  }
+
+  @override
+  String get aiGenScenarioSection => 'Scenario';
+
+  @override
+  String get aiGenScenarioOptionalHint =>
+      'Optional — leave unselected for a random scenario.';
+
+  @override
+  String get aiGenCustomScenarioHint => 'Describe your scenario…';
+
+  @override
+  String get aiGenDurationSection => 'Duration';
+
+  @override
+  String aiGenDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get aiGenGenerateButton => 'Generate';
+
+  @override
+  String get aiGenFooterNotice =>
+      'AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.';
+
+  @override
+  String get aiScenarioCoffeeShop => 'Coffee shop';
+
+  @override
+  String get aiScenarioAirportReunion => 'Airport reunion';
+
+  @override
+  String get aiScenarioGroceryStore => 'Grocery store';
+
+  @override
+  String get aiScenarioDoctorVisit => 'Doctor visit';
+
+  @override
+  String get aiScenarioJobInterview => 'Job interview';
+
+  @override
+  String get aiScenarioNewNeighbour => 'New neighbour';
+
+  @override
+  String get aiScenarioTechSupport => 'Tech support';
+
+  @override
+  String get aiScenarioBirthdaySurprise => 'Birthday surprise';
+
+  @override
+  String get aiScenarioGymTips => 'Gym tips';
+
+  @override
+  String get aiScenarioWeatherSmalltalk => 'Weather small talk';
+
+  @override
+  String get aiScenarioRestaurantOrder => 'Restaurant order';
+
+  @override
+  String get aiScenarioBookRecommendation => 'Book recommendation';
+
+  @override
+  String get aiScenarioBusDelay => 'Bus delay';
+
+  @override
+  String get aiScenarioMovieDebate => 'Movie debate';
+
+  @override
+  String get aiScenarioCustom => 'Custom…';
 }

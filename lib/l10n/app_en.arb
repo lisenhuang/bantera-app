@@ -301,5 +301,55 @@
   },
   "uploadedDetailTranscriptionFailedFallback": "Transcription failed. Using estimated cues.",
   "uploadedDetailTranscriptionNoCues": "The transcription returned no cues.",
-  "uploadedDetailTranscriptionSourceYourUpload": "Your Upload"
+  "uploadedDetailTranscriptionSourceYourUpload": "Your Upload",
+  "aiGenLeaveTitle": "Leave this page?",
+  "aiGenLeaveBody": "Audio is still being generated. Leaving now will cancel the process.",
+  "aiGenStay": "Stay",
+  "aiGenLeave": "Leave",
+  "aiGenLoadingTitle": "Creating your audio…",
+  "aiGenLoadingSubtitle": "This may take up to a minute.\nPlease stay on this page while generating.",
+  "aiGenStepWritingDialogue": "Writing dialogue",
+  "aiGenStepGeneratingAudio": "Generating audio",
+  "aiGenStepTranscribing": "Transcribing",
+  "aiGenStepCorrectingTranscript": "Correcting transcript",
+  "aiGenLanguageSection": "Language",
+  "aiGenSetLearningLanguagePrompt": "Set your learning language to enable generation",
+  "aiGenLoadingLanguage": "Loading language…",
+  "aiGenLanguageUnsupported": "Language \"{language}\" is not supported for generation.",
+  "@aiGenLanguageUnsupported": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "aiGenScenarioSection": "Scenario",
+  "aiGenScenarioOptionalHint": "Optional — leave unselected for a random scenario.",
+  "aiGenCustomScenarioHint": "Describe your scenario…",
+  "aiGenDurationSection": "Duration",
+  "aiGenDurationMinutes": "{minutes} min",
+  "@aiGenDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiGenGenerateButton": "Generate",
+  "aiGenFooterNotice": "AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.",
+  "aiScenarioCoffeeShop": "Coffee shop",
+  "aiScenarioAirportReunion": "Airport reunion",
+  "aiScenarioGroceryStore": "Grocery store",
+  "aiScenarioDoctorVisit": "Doctor visit",
+  "aiScenarioJobInterview": "Job interview",
+  "aiScenarioNewNeighbour": "New neighbour",
+  "aiScenarioTechSupport": "Tech support",
+  "aiScenarioBirthdaySurprise": "Birthday surprise",
+  "aiScenarioGymTips": "Gym tips",
+  "aiScenarioWeatherSmalltalk": "Weather small talk",
+  "aiScenarioRestaurantOrder": "Restaurant order",
+  "aiScenarioBookRecommendation": "Book recommendation",
+  "aiScenarioBusDelay": "Bus delay",
+  "aiScenarioMovieDebate": "Movie debate",
+  "aiScenarioCustom": "Custom…"
 }

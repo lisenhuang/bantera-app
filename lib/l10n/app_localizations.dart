@@ -1326,6 +1326,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Upload'**
   String get uploadedDetailTranscriptionSourceYourUpload;
+
+  /// No description provided for @aiGenLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this page?'**
+  String get aiGenLeaveTitle;
+
+  /// No description provided for @aiGenLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio is still being generated. Leaving now will cancel the process.'**
+  String get aiGenLeaveBody;
+
+  /// No description provided for @aiGenStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get aiGenStay;
+
+  /// No description provided for @aiGenLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get aiGenLeave;
+
+  /// No description provided for @aiGenLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating your audio…'**
+  String get aiGenLoadingTitle;
+
+  /// No description provided for @aiGenLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This may take up to a minute.\nPlease stay on this page while generating.'**
+  String get aiGenLoadingSubtitle;
+
+  /// No description provided for @aiGenStepWritingDialogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing dialogue'**
+  String get aiGenStepWritingDialogue;
+
+  /// No description provided for @aiGenStepGeneratingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating audio'**
+  String get aiGenStepGeneratingAudio;
+
+  /// No description provided for @aiGenStepTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing'**
+  String get aiGenStepTranscribing;
+
+  /// No description provided for @aiGenStepCorrectingTranscript.
+  ///
+  /// In en, this message translates to:
+  /// **'Correcting transcript'**
+  String get aiGenStepCorrectingTranscript;
+
+  /// No description provided for @aiGenLanguageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get aiGenLanguageSection;
+
+  /// No description provided for @aiGenSetLearningLanguagePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your learning language to enable generation'**
+  String get aiGenSetLearningLanguagePrompt;
+
+  /// No description provided for @aiGenLoadingLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading language…'**
+  String get aiGenLoadingLanguage;
+
+  /// No description provided for @aiGenLanguageUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Language \"{language}\" is not supported for generation.'**
+  String aiGenLanguageUnsupported(String language);
+
+  /// No description provided for @aiGenScenarioSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Scenario'**
+  String get aiGenScenarioSection;
+
+  /// No description provided for @aiGenScenarioOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — leave unselected for a random scenario.'**
+  String get aiGenScenarioOptionalHint;
+
+  /// No description provided for @aiGenCustomScenarioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe your scenario…'**
+  String get aiGenCustomScenarioHint;
+
+  /// No description provided for @aiGenDurationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get aiGenDurationSection;
+
+  /// No description provided for @aiGenDurationMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String aiGenDurationMinutes(int minutes);
+
+  /// No description provided for @aiGenGenerateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate'**
+  String get aiGenGenerateButton;
+
+  /// No description provided for @aiGenFooterNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.'**
+  String get aiGenFooterNotice;
+
+  /// No description provided for @aiScenarioCoffeeShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee shop'**
+  String get aiScenarioCoffeeShop;
+
+  /// No description provided for @aiScenarioAirportReunion.
+  ///
+  /// In en, this message translates to:
+  /// **'Airport reunion'**
+  String get aiScenarioAirportReunion;
+
+  /// No description provided for @aiScenarioGroceryStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Grocery store'**
+  String get aiScenarioGroceryStore;
+
+  /// No description provided for @aiScenarioDoctorVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Doctor visit'**
+  String get aiScenarioDoctorVisit;
+
+  /// No description provided for @aiScenarioJobInterview.
+  ///
+  /// In en, this message translates to:
+  /// **'Job interview'**
+  String get aiScenarioJobInterview;
+
+  /// No description provided for @aiScenarioNewNeighbour.
+  ///
+  /// In en, this message translates to:
+  /// **'New neighbour'**
+  String get aiScenarioNewNeighbour;
+
+  /// No description provided for @aiScenarioTechSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Tech support'**
+  String get aiScenarioTechSupport;
+
+  /// No description provided for @aiScenarioBirthdaySurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday surprise'**
+  String get aiScenarioBirthdaySurprise;
+
+  /// No description provided for @aiScenarioGymTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Gym tips'**
+  String get aiScenarioGymTips;
+
+  /// No description provided for @aiScenarioWeatherSmalltalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather small talk'**
+  String get aiScenarioWeatherSmalltalk;
+
+  /// No description provided for @aiScenarioRestaurantOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant order'**
+  String get aiScenarioRestaurantOrder;
+
+  /// No description provided for @aiScenarioBookRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Book recommendation'**
+  String get aiScenarioBookRecommendation;
+
+  /// No description provided for @aiScenarioBusDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Bus delay'**
+  String get aiScenarioBusDelay;
+
+  /// No description provided for @aiScenarioMovieDebate.
+  ///
+  /// In en, this message translates to:
+  /// **'Movie debate'**
+  String get aiScenarioMovieDebate;
+
+  /// No description provided for @aiScenarioCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get aiScenarioCustom;
 }
 
 class _AppLocalizationsDelegate

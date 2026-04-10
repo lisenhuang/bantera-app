@@ -654,6 +654,118 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get uploadedDetailTranscriptionSourceYourUpload => '你的上传';
+
+  @override
+  String get aiGenLeaveTitle => '离开此页面？';
+
+  @override
+  String get aiGenLeaveBody => '音频正在生成中。现在离开将取消该过程。';
+
+  @override
+  String get aiGenStay => '留在本页';
+
+  @override
+  String get aiGenLeave => '离开';
+
+  @override
+  String get aiGenLoadingTitle => '正在创建你的音频…';
+
+  @override
+  String get aiGenLoadingSubtitle => '这可能需要约一分钟。\n生成期间请保持在此页面。';
+
+  @override
+  String get aiGenStepWritingDialogue => '撰写对白';
+
+  @override
+  String get aiGenStepGeneratingAudio => '生成音频';
+
+  @override
+  String get aiGenStepTranscribing => '转写';
+
+  @override
+  String get aiGenStepCorrectingTranscript => '校正字幕';
+
+  @override
+  String get aiGenLanguageSection => '语言';
+
+  @override
+  String get aiGenSetLearningLanguagePrompt => '请设置学习语言以启用生成';
+
+  @override
+  String get aiGenLoadingLanguage => '正在加载语言…';
+
+  @override
+  String aiGenLanguageUnsupported(String language) {
+    return '语言「$language」暂不支持生成。';
+  }
+
+  @override
+  String get aiGenScenarioSection => '场景';
+
+  @override
+  String get aiGenScenarioOptionalHint => '可选 — 不选则随机场景。';
+
+  @override
+  String get aiGenCustomScenarioHint => '描述你的场景…';
+
+  @override
+  String get aiGenDurationSection => '时长';
+
+  @override
+  String aiGenDurationMinutes(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String get aiGenGenerateButton => '生成';
+
+  @override
+  String get aiGenFooterNotice => 'AI 将创作双人对话并合成为音频。结果将保存为公开的练习音频。';
+
+  @override
+  String get aiScenarioCoffeeShop => '咖啡店';
+
+  @override
+  String get aiScenarioAirportReunion => '机场重逢';
+
+  @override
+  String get aiScenarioGroceryStore => '超市';
+
+  @override
+  String get aiScenarioDoctorVisit => '看医生';
+
+  @override
+  String get aiScenarioJobInterview => '面试';
+
+  @override
+  String get aiScenarioNewNeighbour => '新邻居';
+
+  @override
+  String get aiScenarioTechSupport => '技术支持';
+
+  @override
+  String get aiScenarioBirthdaySurprise => '生日惊喜';
+
+  @override
+  String get aiScenarioGymTips => '健身建议';
+
+  @override
+  String get aiScenarioWeatherSmalltalk => '闲聊天气';
+
+  @override
+  String get aiScenarioRestaurantOrder => '餐厅点餐';
+
+  @override
+  String get aiScenarioBookRecommendation => '图书推荐';
+
+  @override
+  String get aiScenarioBusDelay => '公交延误';
+
+  @override
+  String get aiScenarioMovieDebate => '电影争论';
+
+  @override
+  String get aiScenarioCustom => '自定义…';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1306,4 +1418,116 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get uploadedDetailTranscriptionSourceYourUpload => '你的上传';
+
+  @override
+  String get aiGenLeaveTitle => '离开此页面？';
+
+  @override
+  String get aiGenLeaveBody => '音频正在生成中。现在离开将取消该过程。';
+
+  @override
+  String get aiGenStay => '留在本页';
+
+  @override
+  String get aiGenLeave => '离开';
+
+  @override
+  String get aiGenLoadingTitle => '正在创建你的音频…';
+
+  @override
+  String get aiGenLoadingSubtitle => '这可能需要约一分钟。\n生成期间请保持在此页面。';
+
+  @override
+  String get aiGenStepWritingDialogue => '撰写对白';
+
+  @override
+  String get aiGenStepGeneratingAudio => '生成音频';
+
+  @override
+  String get aiGenStepTranscribing => '转写';
+
+  @override
+  String get aiGenStepCorrectingTranscript => '校正字幕';
+
+  @override
+  String get aiGenLanguageSection => '语言';
+
+  @override
+  String get aiGenSetLearningLanguagePrompt => '请设置学习语言以启用生成';
+
+  @override
+  String get aiGenLoadingLanguage => '正在加载语言…';
+
+  @override
+  String aiGenLanguageUnsupported(String language) {
+    return '语言「$language」暂不支持生成。';
+  }
+
+  @override
+  String get aiGenScenarioSection => '场景';
+
+  @override
+  String get aiGenScenarioOptionalHint => '可选 — 不选则随机场景。';
+
+  @override
+  String get aiGenCustomScenarioHint => '描述你的场景…';
+
+  @override
+  String get aiGenDurationSection => '时长';
+
+  @override
+  String aiGenDurationMinutes(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String get aiGenGenerateButton => '生成';
+
+  @override
+  String get aiGenFooterNotice => 'AI 将创作双人对话并合成为音频。结果将保存为公开的练习音频。';
+
+  @override
+  String get aiScenarioCoffeeShop => '咖啡店';
+
+  @override
+  String get aiScenarioAirportReunion => '机场重逢';
+
+  @override
+  String get aiScenarioGroceryStore => '超市';
+
+  @override
+  String get aiScenarioDoctorVisit => '看医生';
+
+  @override
+  String get aiScenarioJobInterview => '面试';
+
+  @override
+  String get aiScenarioNewNeighbour => '新邻居';
+
+  @override
+  String get aiScenarioTechSupport => '技术支持';
+
+  @override
+  String get aiScenarioBirthdaySurprise => '生日惊喜';
+
+  @override
+  String get aiScenarioGymTips => '健身建议';
+
+  @override
+  String get aiScenarioWeatherSmalltalk => '闲聊天气';
+
+  @override
+  String get aiScenarioRestaurantOrder => '餐厅点餐';
+
+  @override
+  String get aiScenarioBookRecommendation => '图书推荐';
+
+  @override
+  String get aiScenarioBusDelay => '公交延误';
+
+  @override
+  String get aiScenarioMovieDebate => '电影争论';
+
+  @override
+  String get aiScenarioCustom => '自定义…';
 }

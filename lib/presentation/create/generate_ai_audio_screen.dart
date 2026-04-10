@@ -17,6 +17,27 @@ import '../../infrastructure/video_processing_service.dart';
 import '../profile/edit_profile_screen.dart';
 import 'uploaded_video_detail_screen.dart';
 
+String _localizedScenarioLabel(AppLocalizations l10n, AiScenario scenario) {
+  return switch (scenario.id) {
+    'coffee_shop' => l10n.aiScenarioCoffeeShop,
+    'airport_reunion' => l10n.aiScenarioAirportReunion,
+    'grocery_store' => l10n.aiScenarioGroceryStore,
+    'doctor_visit' => l10n.aiScenarioDoctorVisit,
+    'job_interview' => l10n.aiScenarioJobInterview,
+    'new_neighbour' => l10n.aiScenarioNewNeighbour,
+    'tech_support' => l10n.aiScenarioTechSupport,
+    'birthday_surprise' => l10n.aiScenarioBirthdaySurprise,
+    'gym_tips' => l10n.aiScenarioGymTips,
+    'weather_smalltalk' => l10n.aiScenarioWeatherSmalltalk,
+    'restaurant_order' => l10n.aiScenarioRestaurantOrder,
+    'book_rec' => l10n.aiScenarioBookRecommendation,
+    'bus_delay' => l10n.aiScenarioBusDelay,
+    'movie_debate' => l10n.aiScenarioMovieDebate,
+    'custom' => l10n.aiScenarioCustom,
+    _ => scenario.label,
+  };
+}
+
 class GenerateAiAudioScreen extends StatefulWidget {
   const GenerateAiAudioScreen({super.key});
 
@@ -304,6 +325,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: !_isGenerating,
@@ -311,41 +333,47 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         if (didPop || !_isGenerating) return;
         showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Leave this page?'),
-            content: const Text(
-              'Audio is still being generated. Leaving now will cancel the process.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Stay'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Leave'),
-              ),
-            ],
-          ),
+          builder: (ctx) {
+            final d = AppLocalizations.of(ctx)!;
+            return AlertDialog(
+              title: Text(d.aiGenLeaveTitle),
+              content: Text(d.aiGenLeaveBody),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(d.aiGenStay),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(d.aiGenLeave),
+                ),
+              ],
+            );
+          },
         ).then((confirmed) {
           if (confirmed == true && mounted) Navigator.of(context).pop();
         });
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.generateWithAiTitle),
+          title: Text(l10n.generateWithAiTitle),
         ),
-        body: _isGenerating ? _buildLoadingState() : _buildForm(theme, colorScheme),
+        body: _isGenerating
+            ? _buildLoadingState(l10n)
+            : _buildForm(theme, colorScheme, l10n),
       ),
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(AppLocalizations l10n) {
     final steps = [
-      (step: _GenerationStep.writingDialogue,       label: 'Writing dialogue'),
-      (step: _GenerationStep.generatingAudio,       label: 'Generating audio'),
-      (step: _GenerationStep.transcribing,          label: 'Transcribing'),
-      (step: _GenerationStep.correctingTranscript,  label: 'Correcting transcript'),
+      (step: _GenerationStep.writingDialogue, label: l10n.aiGenStepWritingDialogue),
+      (step: _GenerationStep.generatingAudio, label: l10n.aiGenStepGeneratingAudio),
+      (step: _GenerationStep.transcribing, label: l10n.aiGenStepTranscribing),
+      (
+        step: _GenerationStep.correctingTranscript,
+        label: l10n.aiGenStepCorrectingTranscript,
+      ),
     ];
 
     return Center(
@@ -355,9 +383,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Creating your audio…',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            Text(
+              l10n.aiGenLoadingTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
             ...steps.map((s) {
@@ -397,9 +425,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
               );
             }),
             const SizedBox(height: 8),
-            const Text(
-              'This may take up to a minute.\nPlease stay on this page while generating.',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+            Text(
+              l10n.aiGenLoadingSubtitle,
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
             ),
           ],
         ),
@@ -407,7 +435,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     );
   }
 
-  Widget _buildForm(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildForm(ThemeData theme, ColorScheme colorScheme, AppLocalizations l10n) {
     final learningLang =
         UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
     final hasLearningLang = learningLang.isNotEmpty;
@@ -419,7 +447,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       padding: const EdgeInsets.all(20),
       children: [
         // Language indicator / prompt
-        Text('Language', style: theme.textTheme.titleSmall),
+        Text(l10n.aiGenLanguageSection, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         if (!hasLearningLang)
           // No learning language set — show prompt to go to settings.
@@ -447,7 +475,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Set your learning language to enable generation',
+                      l10n.aiGenSetLearningLanguagePrompt,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -457,19 +485,19 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             ),
           )
         else if (_isLoadingLocales)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Text(
-                  'Loading language…',
-                  style: TextStyle(fontSize: 14),
+                  l10n.aiGenLoadingLanguage,
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -504,7 +532,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
-              'Language "$learningLang" is not supported for generation.',
+              l10n.aiGenLanguageUnsupported(learningLang),
               style: TextStyle(color: colorScheme.error, fontSize: 13),
             ),
           ),
@@ -512,10 +540,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         const SizedBox(height: 24),
 
         // Scenario picker
-        Text('Scenario', style: theme.textTheme.titleSmall),
+        Text(l10n.aiGenScenarioSection, style: theme.textTheme.titleSmall),
         const SizedBox(height: 4),
         Text(
-          'Optional — leave unselected for a random scenario.',
+          l10n.aiGenScenarioOptionalHint,
           style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
         ),
         const SizedBox(height: 8),
@@ -525,7 +553,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           children: kAiScenarios.map((scenario) {
             final isSelected = _selectedScenario?.id == scenario.id;
             return ChoiceChip(
-              label: Text('${scenario.emoji} ${scenario.label}'),
+              label: Text(
+                '${scenario.emoji} ${_localizedScenarioLabel(l10n, scenario)}',
+              ),
               selected: isSelected,
               onSelected: (_) {
                 setState(() => _selectedScenario = isSelected ? null : scenario);
@@ -541,9 +571,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           TextField(
             controller: _customScenarioController,
             maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Describe your scenario…',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: l10n.aiGenCustomScenarioHint,
+              border: const OutlineInputBorder(),
             ),
             onChanged: (_) => setState(() {}),
           ),
@@ -552,13 +582,13 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         const SizedBox(height: 24),
 
         // Duration picker
-        Text('Duration', style: theme.textTheme.titleSmall),
+        Text(l10n.aiGenDurationSection, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         SegmentedButton<int>(
           segments: _durationOptions.map((s) {
             return ButtonSegment<int>(
               value: s,
-              label: Text('${s ~/ 60}min'),
+              label: Text(l10n.aiGenDurationMinutes(s ~/ 60)),
             );
           }).toList(),
           selected: {_durationSeconds},
@@ -587,7 +617,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         FilledButton.icon(
           onPressed: _canGenerate ? _generate : null,
           icon: const Icon(Icons.auto_awesome),
-          label: const Text('Generate'),
+          label: Text(l10n.aiGenGenerateButton),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
           ),
@@ -595,8 +625,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
         const SizedBox(height: 16),
         Text(
-          'AI will write a two-speaker dialogue and synthesise it as audio. '
-          'The result will be saved as a public practice audio.',
+          l10n.aiGenFooterNotice,
           style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
           textAlign: TextAlign.center,
         ),
