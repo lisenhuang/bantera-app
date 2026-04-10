@@ -748,7 +748,7 @@ abstract class AppLocalizations {
   /// No description provided for @practicePlayAllDescription.
   ///
   /// In en, this message translates to:
-  /// **'Pause between cues for shadowing (repeat aloud without tapping):'**
+  /// **'Pause between cues for shadowing:'**
   String get practicePlayAllDescription;
 
   /// No description provided for @practicePlayAllPauseNoneTitle.
@@ -792,6 +792,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pause twice as long as the cue that just played'**
   String get practicePlayAllPauseTwoCuesSubtitle;
+
+  /// No description provided for @practicePlayAllTimesPerCueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Times per cue'**
+  String get practicePlayAllTimesPerCueTitle;
+
+  /// No description provided for @practicePlayAllTimesOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'1×'**
+  String get practicePlayAllTimesOnce;
+
+  /// No description provided for @practicePlayAllTimesTwice.
+  ///
+  /// In en, this message translates to:
+  /// **'2×'**
+  String get practicePlayAllTimesTwice;
+
+  /// No description provided for @practicePlayAllTimesThrice.
+  ///
+  /// In en, this message translates to:
+  /// **'3×'**
+  String get practicePlayAllTimesThrice;
 
   /// No description provided for @practiceSearchLanguagesHint.
   ///

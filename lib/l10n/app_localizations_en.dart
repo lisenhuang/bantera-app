@@ -357,8 +357,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practicePlayAllTitle => 'Play all';
 
   @override
-  String get practicePlayAllDescription =>
-      'Pause between cues for shadowing (repeat aloud without tapping):';
+  String get practicePlayAllDescription => 'Pause between cues for shadowing:';
 
   @override
   String get practicePlayAllPauseNoneTitle => 'No extra pause (0 s)';
@@ -383,6 +382,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get practicePlayAllPauseTwoCuesSubtitle =>
       'Pause twice as long as the cue that just played';
+
+  @override
+  String get practicePlayAllTimesPerCueTitle => 'Times per cue';
+
+  @override
+  String get practicePlayAllTimesOnce => '1×';
+
+  @override
+  String get practicePlayAllTimesTwice => '2×';
+
+  @override
+  String get practicePlayAllTimesThrice => '3×';
 
   @override
   String get practiceSearchLanguagesHint => 'Search languages';

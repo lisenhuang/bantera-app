@@ -342,7 +342,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practicePlayAllTitle => '전체 재생';
 
   @override
-  String get practicePlayAllDescription => '큐 사이에 멈춤(따라 말하기, 탭 없이):';
+  String get practicePlayAllDescription => '큐 사이에 멈춤(따라 말하기):';
 
   @override
   String get practicePlayAllPauseNoneTitle => '추가 멈춤 없음 (0초)';
@@ -364,6 +364,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get practicePlayAllPauseTwoCuesSubtitle => '방금 재생한 큐의 두 배만큼 멈춤';
+
+  @override
+  String get practicePlayAllTimesPerCueTitle => '큐당 재생 횟수';
+
+  @override
+  String get practicePlayAllTimesOnce => '1×';
+
+  @override
+  String get practicePlayAllTimesTwice => '2×';
+
+  @override
+  String get practicePlayAllTimesThrice => '3×';
 
   @override
   String get practiceSearchLanguagesHint => '언어 검색';

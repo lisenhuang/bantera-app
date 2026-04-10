@@ -340,7 +340,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practicePlayAllTitle => 'すべて再生';
 
   @override
-  String get practicePlayAllDescription => 'キュー間に一時停止（シャドーイング、タップ不要）：';
+  String get practicePlayAllDescription => 'キュー間に一時停止（シャドーイング）：';
 
   @override
   String get practicePlayAllPauseNoneTitle => '追加の一時停止なし（0秒）';
@@ -362,6 +362,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get practicePlayAllPauseTwoCuesSubtitle => '直前のキューの2倍の長さ一時停止';
+
+  @override
+  String get practicePlayAllTimesPerCueTitle => '各キューの再生回数';
+
+  @override
+  String get practicePlayAllTimesOnce => '1×';
+
+  @override
+  String get practicePlayAllTimesTwice => '2×';
+
+  @override
+  String get practicePlayAllTimesThrice => '3×';
 
   @override
   String get practiceSearchLanguagesHint => '言語を検索';

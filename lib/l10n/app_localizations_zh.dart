@@ -339,7 +339,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practicePlayAllTitle => '连续播放';
 
   @override
-  String get practicePlayAllDescription => '分句之间暂停，便于跟读（无需重复点击）：';
+  String get practicePlayAllDescription => '分句之间暂停，便于跟读：';
 
   @override
   String get practicePlayAllPauseNoneTitle => '无额外暂停（0 秒）';
@@ -361,6 +361,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get practicePlayAllPauseTwoCuesSubtitle => '暂停时长为刚播放分句的两倍';
+
+  @override
+  String get practicePlayAllTimesPerCueTitle => '每条播放次数';
+
+  @override
+  String get practicePlayAllTimesOnce => '1×';
+
+  @override
+  String get practicePlayAllTimesTwice => '2×';
+
+  @override
+  String get practicePlayAllTimesThrice => '3×';
 
   @override
   String get practiceSearchLanguagesHint => '搜索语言';
@@ -1133,7 +1145,7 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get practicePlayAllTitle => '连续播放';
 
   @override
-  String get practicePlayAllDescription => '分句之间暂停，便于跟读（无需重复点击）：';
+  String get practicePlayAllDescription => '分句之间暂停，便于跟读：';
 
   @override
   String get practicePlayAllPauseNoneTitle => '无额外暂停（0 秒）';
@@ -1155,6 +1167,18 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get practicePlayAllPauseTwoCuesSubtitle => '暂停时长为刚播放分句的两倍';
+
+  @override
+  String get practicePlayAllTimesPerCueTitle => '每条播放次数';
+
+  @override
+  String get practicePlayAllTimesOnce => '1×';
+
+  @override
+  String get practicePlayAllTimesTwice => '2×';
+
+  @override
+  String get practicePlayAllTimesThrice => '3×';
 
   @override
   String get practiceSearchLanguagesHint => '搜索语言';

@@ -4,6 +4,7 @@ import '../../core/auth_session_notifier.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
+import '../../infrastructure/practice_playback_speed_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/user_profile_cache_store.dart';
 import '../../l10n/app_localizations.dart';
@@ -74,6 +75,7 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
       }
       await LocalPracticeRepository.instance.wipeAllDataForCurrentUser();
       await PracticeProgressStore.instance.clearAll();
+      await PracticePlaybackSpeedStore.instance.clear();
       await UserProfileCacheStore.instance.removeAllForCacheKey(cacheKey);
       ProfileStatsNotifier.instance.reset();
       AuthSessionNotifier.instance.signOut();

@@ -16,6 +16,7 @@ import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
+import '../../infrastructure/practice_playback_speed_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
@@ -44,6 +45,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isPlayingAll = false;
   bool _playAllInBetweenCueGap = false;
   int _playAllSessionId = 0;
+  int _playAllCompletedPlaysForCurrentCue = 0;
   bool _isInitializingMedia = false;
   String? _mediaError;
   VideoPlayerController? _videoController;
@@ -77,7 +79,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isCueTranscribing = false;
   String? _cueRecordingTempPath;
 
-  static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
@@ -116,9 +117,36 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       });
     }
     _seedPreloadedTranslations();
-    _restoreProgress();
-    _initializeMedia();
+    unawaited(_startupPracticeSession());
+  }
+
+  Future<void> _startupPracticeSession() async {
+    final savedSpeed = await PracticePlaybackSpeedStore.instance.getSpeed();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _playbackSpeed = savedSpeed);
+    await _restoreProgress();
+    if (!mounted) {
+      return;
+    }
+    await _initializeMedia();
+    if (!mounted) {
+      return;
+    }
+    await _applyPlaybackSpeedToMedia();
     unawaited(_loadUploadedVideoTranslations());
+  }
+
+  Future<void> _applyPlaybackSpeedToMedia() async {
+    final controller = _videoController;
+    if (controller != null && controller.value.isInitialized) {
+      await controller.setPlaybackSpeed(_playbackSpeed);
+    }
+    final ap = _audioPlayer;
+    if (ap != null) {
+      await ap.setPlaybackRate(_playbackSpeed);
+    }
   }
 
   Future<void> _restoreProgress() async {
@@ -216,15 +244,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _setPlaybackSpeed(double speed) async {
-    setState(() => _playbackSpeed = speed);
-    final controller = _videoController;
-    if (controller != null && controller.value.isInitialized) {
-      await controller.setPlaybackSpeed(speed);
-    }
-    final ap = _audioPlayer;
-    if (ap != null) {
-      await ap.setPlaybackRate(speed);
-    }
+    final snapped = nearestPracticePlaybackSpeed(speed);
+    setState(() => _playbackSpeed = snapped);
+    await PracticePlaybackSpeedStore.instance.setSpeed(snapped);
+    await _applyPlaybackSpeedToMedia();
   }
 
   /// Where single-cue playback should stop: next cue's start when present
@@ -260,13 +283,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
     final l10n = _l10n;
-    final initial =
-        await PlayAllPauseStore.instance.getSelectedPause();
+    final initial = await PlayAllPauseStore.instance.getSettings();
     if (!mounted) {
       return;
     }
-    var selected = initial;
-    final mode = await showDialog<PlayAllPauseBetweenCues>(
+    var selectedPause = initial.pauseBetweenCues;
+    var selectedPlays = initial.playsPerCue.clamp(1, 3);
+    final result = await showDialog<PlayAllSettings>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setLocal) {
@@ -287,10 +310,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     subtitle: Text(l10n.practicePlayAllPauseNoneSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.none,
-                    groupValue: selected,
+                    groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
-                        setLocal(() => selected = v);
+                        setLocal(() => selectedPause = v);
                       }
                     },
                   ),
@@ -298,10 +321,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     title: Text(l10n.practicePlayAllPauseOneSecond),
                     dense: true,
                     value: PlayAllPauseBetweenCues.oneSecond,
-                    groupValue: selected,
+                    groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
-                        setLocal(() => selected = v);
+                        setLocal(() => selectedPause = v);
                       }
                     },
                   ),
@@ -310,10 +333,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     subtitle: Text(l10n.practicePlayAllPauseOneCueSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.oneCueDuration,
-                    groupValue: selected,
+                    groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
-                        setLocal(() => selected = v);
+                        setLocal(() => selectedPause = v);
                       }
                     },
                   ),
@@ -322,12 +345,42 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     subtitle: Text(l10n.practicePlayAllPauseTwoCuesSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.twoCueDurations,
-                    groupValue: selected,
+                    groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
-                        setLocal(() => selected = v);
+                        setLocal(() => selectedPause = v);
                       }
                     },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.practicePlayAllTimesPerCueTitle,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: SegmentedButton<int>(
+                      segments: [
+                        ButtonSegment<int>(
+                          value: 1,
+                          label: Text(l10n.practicePlayAllTimesOnce),
+                        ),
+                        ButtonSegment<int>(
+                          value: 2,
+                          label: Text(l10n.practicePlayAllTimesTwice),
+                        ),
+                        ButtonSegment<int>(
+                          value: 3,
+                          label: Text(l10n.practicePlayAllTimesThrice),
+                        ),
+                      ],
+                      selected: {selectedPlays},
+                      onSelectionChanged: (Set<int> selection) {
+                        setLocal(() {
+                          selectedPlays = selection.single;
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -338,7 +391,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 child: Text(l10n.cancel),
               ),
               FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(selected),
+                onPressed: () => Navigator.of(ctx).pop(
+                  PlayAllSettings(
+                    pauseBetweenCues: selectedPause,
+                    playsPerCue: selectedPlays,
+                  ),
+                ),
                 child: Text(l10n.startLabel),
               ),
             ],
@@ -346,23 +404,29 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         },
       ),
     );
-    if (mode == null || !mounted) {
+    if (result == null || !mounted) {
       return;
     }
-    await PlayAllPauseStore.instance.setSelectedPause(mode);
-    await _startPlayAll(mode);
+    await PlayAllPauseStore.instance.saveSettings(result);
+    await _startPlayAll(result);
   }
 
+  /// Wall-clock pause so shadowing time matches how long cues take to play at [playbackSpeed].
   int _playAllGapDelayMs({
     required PlayAllPauseBetweenCues mode,
     required Cue endedCue,
+    required double playbackSpeed,
   }) {
+    final s = playbackSpeed <= 0 ? 1.0 : playbackSpeed;
+    final scale = 1.0 / s;
+    int scaledWallMs(int baseMs) => (baseMs * scale).round();
+
     final cueLen = (endedCue.endTimeMs - endedCue.startTimeMs).clamp(0, 1 << 30);
     return switch (mode) {
       PlayAllPauseBetweenCues.none => 0,
-      PlayAllPauseBetweenCues.oneSecond => 1000,
-      PlayAllPauseBetweenCues.oneCueDuration => cueLen,
-      PlayAllPauseBetweenCues.twoCueDurations => cueLen * 2,
+      PlayAllPauseBetweenCues.oneSecond => scaledWallMs(1000),
+      PlayAllPauseBetweenCues.oneCueDuration => scaledWallMs(cueLen),
+      PlayAllPauseBetweenCues.twoCueDurations => scaledWallMs(cueLen * 2),
     };
   }
 
@@ -381,6 +445,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[endedCueIndex],
+        playbackSpeed: _playbackSpeed,
       );
       await Future.delayed(Duration(milliseconds: delayMs));
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
@@ -425,6 +490,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[endedCueIndex],
+        playbackSpeed: _playbackSpeed,
       );
       await Future.delayed(Duration(milliseconds: delayMs));
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
@@ -454,15 +520,92 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
   }
 
-  Future<void> _startPlayAll(PlayAllPauseBetweenCues pauseMode) async {
+  Future<void> _playAllGapThenReplaySameCueAudio({
+    required AudioPlayer audioPlayer,
+    required PlayAllPauseBetweenCues pauseMode,
+    required int cueIndex,
+    required int sessionSnapshot,
+  }) async {
+    try {
+      await audioPlayer.pause();
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final cues = widget.mediaItem.cues;
+      final delayMs = _playAllGapDelayMs(
+        mode: pauseMode,
+        endedCue: cues[cueIndex],
+        playbackSpeed: _playbackSpeed,
+      );
+      await Future.delayed(Duration(milliseconds: delayMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      await audioPlayer.seek(Duration(milliseconds: cues[cueIndex].startTimeMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      _lastKnownAudioPositionMs = cues[cueIndex].startTimeMs;
+      setState(() {
+        _playAllInBetweenCueGap = false;
+      });
+      await audioPlayer.resume();
+    } finally {
+      if (mounted && _playAllInBetweenCueGap) {
+        setState(() => _playAllInBetweenCueGap = false);
+      }
+    }
+  }
+
+  Future<void> _playAllGapThenReplaySameCueVideo({
+    required VideoPlayerController controller,
+    required PlayAllPauseBetweenCues pauseMode,
+    required int cueIndex,
+    required int sessionSnapshot,
+  }) async {
+    try {
+      await controller.pause();
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      final cues = widget.mediaItem.cues;
+      final delayMs = _playAllGapDelayMs(
+        mode: pauseMode,
+        endedCue: cues[cueIndex],
+        playbackSpeed: _playbackSpeed,
+      );
+      await Future.delayed(Duration(milliseconds: delayMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      await controller.seekTo(Duration(milliseconds: cues[cueIndex].startTimeMs));
+      if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
+        return;
+      }
+      _lastKnownVideoPositionMs = cues[cueIndex].startTimeMs;
+      setState(() {
+        _playAllInBetweenCueGap = false;
+      });
+      await controller.play();
+    } finally {
+      if (mounted && _playAllInBetweenCueGap) {
+        setState(() => _playAllInBetweenCueGap = false);
+      }
+    }
+  }
+
+  Future<void> _startPlayAll(PlayAllSettings settings) async {
     if (_isPlayingAll) {
       return;
     }
+    final pauseMode = settings.pauseBetweenCues;
+    final playsPerCue = settings.playsPerCue.clamp(1, 3);
     _playAllSessionId++;
     final sessionAtStart = _playAllSessionId;
     setState(() {
       _isPlayingAll = true;
       _playAllInBetweenCueGap = false;
+      _playAllCompletedPlaysForCurrentCue = 0;
     });
     unawaited(WakelockPlus.enable());
 
@@ -495,23 +638,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final posMs = pos.inMilliseconds;
         final i = _currentCueIndex;
 
-        if (pauseMode != PlayAllPauseBetweenCues.none &&
-            i < cues.length - 1 &&
-            posMs >= _playbackStopMsForCueIndex(i)) {
-          _playAllInBetweenCueGap = true;
-          final snapshot = _playAllSessionId;
-          unawaited(
-            _playAllGapThenNextCueAudio(
-              audioPlayer: audioPlayer,
-              pauseMode: pauseMode,
-              endedCueIndex: i,
-              sessionSnapshot: snapshot,
-            ),
-          );
-          return;
-        }
+        final continuous = pauseMode == PlayAllPauseBetweenCues.none &&
+            playsPerCue == 1;
 
-        if (pauseMode == PlayAllPauseBetweenCues.none) {
+        if (continuous) {
           var newIndex = _currentCueIndex;
           for (var j = 0; j < cues.length; j++) {
             if (posMs >= cues[j].startTimeMs &&
@@ -530,10 +660,41 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               ),
             );
           }
+          if (posMs >= cues.last.endTimeMs) {
+            unawaited(_stopPlayAll());
+          }
+          return;
         }
 
-        if (posMs >= cues.last.endTimeMs) {
-          unawaited(_stopPlayAll());
+        if (posMs >= _playbackStopMsForCueIndex(i)) {
+          _playAllInBetweenCueGap = true;
+          _playAllCompletedPlaysForCurrentCue++;
+          if (_playAllCompletedPlaysForCurrentCue < playsPerCue) {
+            final snapshot = _playAllSessionId;
+            unawaited(
+              _playAllGapThenReplaySameCueAudio(
+                audioPlayer: audioPlayer,
+                pauseMode: pauseMode,
+                cueIndex: i,
+                sessionSnapshot: snapshot,
+              ),
+            );
+            return;
+          }
+          _playAllCompletedPlaysForCurrentCue = 0;
+          if (i < cues.length - 1) {
+            final snapshot = _playAllSessionId;
+            unawaited(
+              _playAllGapThenNextCueAudio(
+                audioPlayer: audioPlayer,
+                pauseMode: pauseMode,
+                endedCueIndex: i,
+                sessionSnapshot: snapshot,
+              ),
+            );
+          } else {
+            unawaited(_stopPlayAll());
+          }
         }
       });
       return;
@@ -583,23 +744,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final cues = widget.mediaItem.cues;
       final i = _currentCueIndex;
 
-      if (pauseMode != PlayAllPauseBetweenCues.none &&
-          i < cues.length - 1 &&
-          posMs >= _playbackStopMsForCueIndex(i)) {
-        _playAllInBetweenCueGap = true;
-        final snapshot = _playAllSessionId;
-        unawaited(
-          _playAllGapThenNextCueVideo(
-            controller: controller,
-            pauseMode: pauseMode,
-            endedCueIndex: i,
-            sessionSnapshot: snapshot,
-          ),
-        );
-        return;
-      }
+      final continuous = pauseMode == PlayAllPauseBetweenCues.none &&
+          playsPerCue == 1;
 
-      if (pauseMode == PlayAllPauseBetweenCues.none) {
+      if (continuous) {
         var newIndex = _currentCueIndex;
         for (var j = 0; j < cues.length; j++) {
           if (posMs >= cues[j].startTimeMs &&
@@ -617,10 +765,41 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             ),
           );
         }
+        if (posMs >= cues.last.endTimeMs) {
+          unawaited(_stopPlayAll());
+        }
+        return;
       }
 
-      if (posMs >= cues.last.endTimeMs) {
-        unawaited(_stopPlayAll());
+      if (posMs >= _playbackStopMsForCueIndex(i)) {
+        _playAllInBetweenCueGap = true;
+        _playAllCompletedPlaysForCurrentCue++;
+        if (_playAllCompletedPlaysForCurrentCue < playsPerCue) {
+          final snapshot = _playAllSessionId;
+          unawaited(
+            _playAllGapThenReplaySameCueVideo(
+              controller: controller,
+              pauseMode: pauseMode,
+              cueIndex: i,
+              sessionSnapshot: snapshot,
+            ),
+          );
+          return;
+        }
+        _playAllCompletedPlaysForCurrentCue = 0;
+        if (i < cues.length - 1) {
+          final snapshot = _playAllSessionId;
+          unawaited(
+            _playAllGapThenNextCueVideo(
+              controller: controller,
+              pauseMode: pauseMode,
+              endedCueIndex: i,
+              sessionSnapshot: snapshot,
+            ),
+          );
+        } else {
+          unawaited(_stopPlayAll());
+        }
       }
     };
     controller.addListener(_videoListener!);
@@ -1045,9 +1224,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           // Speed button
           TextButton(
             onPressed: () async {
-              final currentIndex = _speedOptions.indexOf(_playbackSpeed);
-              final nextIndex = (currentIndex + 1) % _speedOptions.length;
-              await _setPlaybackSpeed(_speedOptions[nextIndex]);
+              final speed = nearestPracticePlaybackSpeed(_playbackSpeed);
+              final currentIndex =
+                  kPracticePlaybackSpeedOptions.indexOf(speed);
+              final idx = currentIndex >= 0
+                  ? currentIndex
+                  : kPracticePlaybackSpeedOptions.indexOf(1.0);
+              final nextIndex =
+                  (idx + 1) % kPracticePlaybackSpeedOptions.length;
+              await _setPlaybackSpeed(kPracticePlaybackSpeedOptions[nextIndex]);
             },
             child: Text(
               _playbackSpeed == _playbackSpeed.truncateToDouble()
