@@ -12,6 +12,7 @@ import 'package:record/record.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../core/apple_system_version.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
@@ -860,6 +861,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    if (isLegacyAppleOsPre26) {
+      if (_subtitleState == SubtitleState.hidden) {
+        setState(() {
+          _subtitleState = SubtitleState.original;
+          _translationErrorMessage = null;
+        });
+        return;
+      }
+      setState(() {
+        _subtitleState = SubtitleState.hidden;
+        _translationErrorMessage = null;
+      });
+      return;
+    }
+
     if (_subtitleState == SubtitleState.hidden) {
       setState(() {
         _subtitleState = SubtitleState.original;
@@ -1195,6 +1211,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     final cue = widget.mediaItem.cues[_currentCueIndex];
     final colorScheme = Theme.of(context).colorScheme;
+    final legacyApple = isLegacyAppleOsPre26;
+
+    if (legacyApple && _subtitleState == SubtitleState.translated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _subtitleState = SubtitleState.original);
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -1240,14 +1265,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               style: Theme.of(context).textTheme.labelLarge,
             ),
           ),
-          IconButton(
-            icon: const Icon(CupertinoIcons.settings),
-            onPressed: _isTranslating
-                ? null
-                : () {
-                    unawaited(_changeTranslationLanguage());
-                  },
-          ),
+          if (!legacyApple)
+            IconButton(
+              icon: const Icon(CupertinoIcons.settings),
+              onPressed: _isTranslating
+                  ? null
+                  : () {
+                      unawaited(_changeTranslationLanguage());
+                    },
+            ),
         ],
       ),
       body: SafeArea(
@@ -1314,27 +1340,35 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Icon(
-                            _subtitleState == SubtitleState.hidden
-                                ? CupertinoIcons.eye
-                                : _subtitleState == SubtitleState.original
-                                ? CupertinoIcons.globe
-                                : CupertinoIcons.eye_slash,
+                            legacyApple
+                                ? (_subtitleState == SubtitleState.hidden
+                                    ? CupertinoIcons.eye
+                                    : CupertinoIcons.eye_slash)
+                                : (_subtitleState == SubtitleState.hidden
+                                    ? CupertinoIcons.eye
+                                    : _subtitleState == SubtitleState.original
+                                        ? CupertinoIcons.globe
+                                        : CupertinoIcons.eye_slash),
                           ),
                     label: Text(
                       _isTranslating
                           ? _l10n.practiceTranslating
-                          : _subtitleState == SubtitleState.hidden
-                          ? _l10n.practiceShowTranscript
-                          : _subtitleState == SubtitleState.original
-                          ? _l10n.practiceTranslate
-                          : _l10n.practiceHideText,
+                          : legacyApple
+                              ? (_subtitleState == SubtitleState.hidden
+                                  ? _l10n.practiceShowTranscript
+                                  : _l10n.practiceHideText)
+                              : (_subtitleState == SubtitleState.hidden
+                                  ? _l10n.practiceShowTranscript
+                                  : _subtitleState == SubtitleState.original
+                                      ? _l10n.practiceTranslate
+                                      : _l10n.practiceHideText),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
-            if (_translationErrorMessage != null)
+            if (_translationErrorMessage != null && !legacyApple)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Container(
@@ -1400,37 +1434,56 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(
-                        child: Center(
-                          child: _buildActionBtn(
-                            _isPlayingAll
-                                ? CupertinoIcons.stop_fill
-                                : CupertinoIcons.play_rectangle,
-                            _isPlayingAll
-                                ? _l10n.practiceStop
-                                : _l10n.practicePlayAll,
-                            () => _isPlayingAll
-                                ? unawaited(_stopPlayAll())
-                                : unawaited(_promptPlayAll()),
-                            colorScheme,
+                      if (legacyApple)
+                        Expanded(
+                          child: Center(
+                            child: _buildActionBtn(
+                              _isPlayingAll
+                                  ? CupertinoIcons.stop_fill
+                                  : CupertinoIcons.play_rectangle,
+                              _isPlayingAll
+                                  ? _l10n.practiceStop
+                                  : _l10n.practicePlayAll,
+                              () => _isPlayingAll
+                                  ? unawaited(_stopPlayAll())
+                                  : unawaited(_promptPlayAll()),
+                              colorScheme,
+                            ),
+                          ),
+                        )
+                      else ...[
+                        Expanded(
+                          child: Center(
+                            child: _buildActionBtn(
+                              _isPlayingAll
+                                  ? CupertinoIcons.stop_fill
+                                  : CupertinoIcons.play_rectangle,
+                              _isPlayingAll
+                                  ? _l10n.practiceStop
+                                  : _l10n.practicePlayAll,
+                              () => _isPlayingAll
+                                  ? unawaited(_stopPlayAll())
+                                  : unawaited(_promptPlayAll()),
+                              colorScheme,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: _buildRecordActionColumn(colorScheme),
-                        ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: _buildActionBtn(
-                            CupertinoIcons.list_bullet,
-                            _l10n.practiceRecords,
-                            _isPlayingAll ? null : _openRecordsSheet,
-                            colorScheme,
+                        Expanded(
+                          child: Center(
+                            child: _buildRecordActionColumn(colorScheme),
                           ),
                         ),
-                      ),
+                        Expanded(
+                          child: Center(
+                            child: _buildActionBtn(
+                              CupertinoIcons.list_bullet,
+                              _l10n.practiceRecords,
+                              _isPlayingAll ? null : _openRecordsSheet,
+                              colorScheme,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],

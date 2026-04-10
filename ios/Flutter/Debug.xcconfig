@@ -1,2 +1,4 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
+// Serial CocoaPods framework signing avoids rare races with embedded Dart/native frameworks.
+COCOAPODS_PARALLEL_CODE_SIGN = NO
