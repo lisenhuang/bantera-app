@@ -43,6 +43,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -56,7 +57,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'What would you like to do today?',
+              l10n.createWhatToday,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
@@ -68,7 +69,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   child: _buildPrimaryAction(
                     context,
                     Icons.auto_awesome,
-                    'Generate with AI',
+                    l10n.generateWithAiTitle,
                     colorScheme,
                     isSecondary: true,
                     onTap: () {
@@ -85,7 +86,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   child: _buildPrimaryAction(
                     context,
                     CupertinoIcons.play_rectangle_fill,
-                    'Practice Video',
+                    l10n.createPracticeVideo,
                     colorScheme,
                     isSecondary: true,
                     onTap: () {
@@ -101,13 +102,13 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
             ),
 
             const SizedBox(height: 48),
-            _buildLocalPracticeSection(context, colorScheme),
+            _buildLocalPracticeSection(context, colorScheme, l10n),
             const SizedBox(height: 48),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Your Media',
+                  l10n.createYourMedia,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 IconButton(
@@ -144,7 +145,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: () => _loadMyVideos(),
-                      child: const Text('Try Again'),
+                      child: Text(l10n.createTryAgain),
                     ),
                   ],
                 ),
@@ -160,7 +161,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                 ),
                 child: Text(
-                  'Your uploaded videos will show up here so you can reopen them and practice cue by cue.',
+                  l10n.createUploadedVideosEmptyHint,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )
@@ -168,13 +169,13 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               ..._myVideos.map((video) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildUploadedVideoItem(context, video, colorScheme),
+                  child: _buildUploadedVideoItem(context, video, colorScheme, l10n),
                 );
               }),
 
             const SizedBox(height: 48),
             Text(
-              'Uploading Tips',
+              l10n.createUploadingTips,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -197,7 +198,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Keep your audio under 3 minutes for the best engagement. Clear subtitles are generated automatically!',
+                      l10n.createUploadingTipsBody,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -219,7 +220,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       setState(() {
         _myVideos = const [];
         _isLoadingVideos = false;
-        _loadError = 'Sign in again to load your uploaded videos.';
+        _loadError = AppLocalizations.of(context)!.createSignInToLoadVideos;
       });
       return;
     }
@@ -320,6 +321,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   Widget _buildLocalPracticeSection(
     BuildContext context,
     ColorScheme colorScheme,
+    AppLocalizations l10n,
   ) {
     final theme = Theme.of(context);
 
@@ -337,7 +339,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'On This iPhone',
+                  l10n.createOnThisIphone,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 IconButton(
@@ -377,7 +379,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     OutlinedButton(
                       onPressed: () => _localPracticeRepository
                           .refreshForCurrentUser(),
-                      child: const Text('Try Again'),
+                      child: Text(l10n.createTryAgain),
                     ),
                   ],
                 ),
@@ -393,7 +395,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                 ),
                 child: Text(
-                  'Videos you practice locally will be saved on this iPhone so you can reopen them later without retranscribing.',
+                  l10n.createLocalVideosEmptyHint,
                   style: theme.textTheme.bodyMedium,
                 ),
               )
@@ -401,7 +403,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               ...localVideos.map((video) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildLocalPracticeItem(context, video, colorScheme),
+                  child: _buildLocalPracticeItem(context, video, colorScheme, l10n),
                 );
               }),
           ],
@@ -414,6 +416,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     BuildContext context,
     LocalPracticeVideoSummary video,
     ColorScheme colorScheme,
+    AppLocalizations l10n,
   ) {
     final theme = Theme.of(context);
     final isOpening = _openingLocalVideoId == video.id;
@@ -459,7 +462,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${video.accent} · ${_formatDuration(video.durationMs)} · ${video.cueCount} cues',
+                    '${video.accent} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.cueCount)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -486,7 +489,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    'On Device',
+                    l10n.createOnDeviceBadge,
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -509,10 +512,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                         unawaited(_confirmDeleteLocalVideo(video));
                       }
                     },
-                    itemBuilder: (context) => const [
+                    itemBuilder: (context) => [
                       PopupMenuItem<String>(
                         value: 'delete',
-                        child: Text('Delete'),
+                        child: Text(l10n.deleteLabel),
                       ),
                     ],
                     icon: Icon(
@@ -532,6 +535,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     BuildContext context,
     UploadedVideo video,
     ColorScheme colorScheme,
+    AppLocalizations l10n,
   ) {
     final theme = Theme.of(context);
     final isDeleting = _deletingUploadedVideoId == video.id;
@@ -581,7 +585,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${video.transcriptCues.length} cues',
+                    '${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.transcriptCues.length)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -610,7 +614,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    video.isPublic ? 'Public' : 'Private',
+                    video.isPublic ? l10n.createPublicBadge : l10n.createPrivateBadge,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: video.isPublic ? colorScheme.primary : null,
                       fontWeight: FontWeight.w700,
@@ -638,7 +642,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                         ),
                         const SizedBox(width: 3),
                         Text(
-                          'AI',
+                          l10n.createAiBadge,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: Colors.purple.shade700,
                             fontWeight: FontWeight.w700,
@@ -665,10 +669,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                         unawaited(_confirmDeleteUploadedVideo(video));
                       }
                     },
-                    itemBuilder: (context) => const [
+                    itemBuilder: (context) => [
                       PopupMenuItem<String>(
                         value: 'delete',
-                        child: Text('Delete'),
+                        child: Text(l10n.deleteLabel),
                       ),
                     ],
                     icon: Icon(
@@ -749,20 +753,19 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     final confirmed =
         await showDialog<bool>(
           context: context,
-          builder: (context) {
+          builder: (dialogContext) {
+            final l10n = AppLocalizations.of(dialogContext)!;
             return AlertDialog(
-              title: const Text('Delete Saved Video?'),
-              content: Text(
-                'Bantera will remove "${video.title}" from this iPhone and delete its saved transcript cues.',
-              ),
+              title: Text(l10n.createDeleteSavedVideoTitle),
+              content: Text(l10n.createDeleteSavedVideoBody(video.title)),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(l10n.cancel),
                 ),
                 FilledButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Delete'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(l10n.deleteLabel),
                 ),
               ],
             );
@@ -793,25 +796,30 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     final confirmed =
         await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Delete media?'),
-            content: Text(
-              'This will permanently delete "${_displayTitle(video.originalFileName)}" and its transcript. This cannot be undone.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(ctx).colorScheme.error,
+          builder: (ctx) {
+            final l10n = AppLocalizations.of(ctx)!;
+            return AlertDialog(
+              title: Text(l10n.createDeleteMediaTitle),
+              content: Text(
+                l10n.createDeleteMediaBody(
+                  _displayTitle(video.originalFileName),
                 ),
-                child: const Text('Delete'),
               ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(ctx).colorScheme.error,
+                  ),
+                  child: Text(l10n.deleteLabel),
+                ),
+              ],
+            );
+          },
         ) ??
         false;
 

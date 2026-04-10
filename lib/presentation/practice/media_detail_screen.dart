@@ -72,6 +72,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasCover = widget.mediaItem.coverUrl.trim().isNotEmpty;
     final langCode = widget.mediaItem.accent.trim();
     final flag = langCode.isNotEmpty ? flagEmojiForLocale(langCode) : '';
@@ -96,7 +97,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                 _isSaved == true ? Icons.bookmark : Icons.bookmark_border,
                 color: _isSaved == true ? BanteraTheme.primaryColor : null,
               ),
-              tooltip: _isSaved == true ? 'Unsave' : 'Save',
+              tooltip: _isSaved == true
+                  ? l10n.lessonUnsaveTooltip
+                  : l10n.lessonSaveTooltip,
               onPressed: AuthSessionNotifier.instance.session != null
                   ? _toggleSave
                   : null,
@@ -155,7 +158,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              widget.mediaItem.isAudioOnly ? 'Audio' : 'Video',
+                              widget.mediaItem.isAudioOnly
+                                  ? l10n.mediaKindAudio
+                                  : l10n.mediaKindVideo,
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -223,9 +228,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                         );
                       },
                       icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                      label: const Text(
-                        'Start Practice',
-                        style: TextStyle(fontSize: 18),
+                      label: Text(
+                        l10n.mediaStartPractice,
+                        style: const TextStyle(fontSize: 18),
                       ),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -247,6 +252,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
   }
 
   Widget _buildTranscriptSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cues = widget.mediaItem.cues;
 
     return Column(
@@ -261,13 +267,13 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             child: Row(
               children: [
                 Text(
-                  'Transcript',
+                  l10n.mediaTranscript,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(width: 6),
                 if (cues.isNotEmpty)
                   Text(
-                    '(${cues.length} lines)',
+                    l10n.mediaTranscriptLineCount(cues.length),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 const Spacer(),
@@ -279,7 +285,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  _transcriptExpanded ? 'Hide' : 'Show',
+                  _transcriptExpanded ? l10n.mediaHide : l10n.mediaShow,
                   style: const TextStyle(
                     color: BanteraTheme.primaryColor,
                     fontWeight: FontWeight.w600,
@@ -294,7 +300,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
           const SizedBox(height: 16),
           if (cues.isEmpty)
             Text(
-              'No transcript available.',
+              l10n.mediaNoTranscriptAvailable,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey),

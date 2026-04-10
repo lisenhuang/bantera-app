@@ -155,6 +155,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         final profile = UserProfileNotifier.instance;
         final learningLang = profile.learningLanguage;
         final colorScheme = Theme.of(context).colorScheme;
+        final l10n = AppLocalizations.of(context)!;
 
         return Scaffold(
           appBar: AppBar(
@@ -168,7 +169,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   onChanged: _onSearchChanged,
                   style: TextStyle(color: colorScheme.onSurface),
                   decoration: InputDecoration(
-                    hintText: 'Search title or transcript…',
+                    hintText: l10n.discoverSearchHint,
                     hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                     prefixIcon: Icon(
                       Icons.search,
@@ -244,7 +245,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               ? const SizedBox.shrink()
                               : Center(
                                   child: Text(
-                                    'No more results',
+                                    l10n.discoverNoMoreResults,
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall?.copyWith(
@@ -264,6 +265,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   Widget _buildLanguageHeader(BuildContext context, String? learningLang) {
+    final l10n = AppLocalizations.of(context)!;
     if (learningLang == null || learningLang.isEmpty) {
       return GestureDetector(
         onTap: () => Navigator.push(
@@ -293,7 +295,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Set your learning language to see content here',
+                  l10n.discoverSetLearningLanguagePrompt,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
@@ -333,16 +335,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          'content',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
       ],
     );
   }
 
   Widget _buildEmptyState(BuildContext context, String? learningLang) {
+    final l10n = AppLocalizations.of(context)!;
     final hasLang = learningLang != null && learningLang.isNotEmpty;
     return Center(
       child: Padding(
@@ -353,9 +351,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Icon(Icons.inbox_outlined, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
-              hasLang
-                  ? 'No public content in $learningLang yet'
-                  : 'Set a learning language to discover content',
+              switch (learningLang) {
+                final l when l != null && l.isNotEmpty =>
+                  l10n.discoverNoPublicContentInLanguage(l),
+                _ => l10n.discoverSetLanguageToDiscover,
+              },
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -371,7 +371,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                 ),
                 icon: const Icon(Icons.auto_awesome, size: 18),
-                label: const Text('Generate with AI'),
+                label: Text(l10n.generateWithAiTitle),
               ),
             ],
           ],

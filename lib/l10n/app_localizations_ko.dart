@@ -194,4 +194,340 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get continueLabel => '계속';
+
+  @override
+  String get confirmLabel => '확인';
+
+  @override
+  String get deleteLabel => '삭제';
+
+  @override
+  String get startLabel => '시작';
+
+  @override
+  String get doneLabel => '완료';
+
+  @override
+  String get discoverSearchHint => '제목이나 자막 검색…';
+
+  @override
+  String get discoverNoMoreResults => '더 이상 결과 없음';
+
+  @override
+  String get discoverSetLearningLanguagePrompt => '학습 언어를 설정하면 여기에 콘텐츠가 표시됩니다';
+
+  @override
+  String discoverNoPublicContentInLanguage(String language) {
+    return '$language 공개 콘텐츠가 아직 없습니다';
+  }
+
+  @override
+  String get discoverSetLanguageToDiscover => '학습 언어를 설정해 콘텐츠를 찾아보세요';
+
+  @override
+  String get mediaStartPractice => '연습 시작';
+
+  @override
+  String get mediaTranscript => '대본';
+
+  @override
+  String mediaTranscriptLineCount(int count) {
+    return '($count줄)';
+  }
+
+  @override
+  String get mediaShow => '펼치기';
+
+  @override
+  String get mediaHide => '접기';
+
+  @override
+  String get mediaNoTranscriptAvailable => '대본이 없습니다.';
+
+  @override
+  String get lessonSaveTooltip => '저장';
+
+  @override
+  String get lessonUnsaveTooltip => '저장 취소';
+
+  @override
+  String get mediaKindAudio => '오디오';
+
+  @override
+  String get mediaKindVideo => '동영상';
+
+  @override
+  String get practiceNoCues => '큐가 없습니다';
+
+  @override
+  String get practiceTranslating => '번역 중…';
+
+  @override
+  String get practiceShowTranscript => '대본 보기';
+
+  @override
+  String get practiceTranslate => '번역';
+
+  @override
+  String get practiceHideText => '글 숨기기';
+
+  @override
+  String get practiceStop => '정지';
+
+  @override
+  String get practicePlayAll => '전체 재생';
+
+  @override
+  String get practiceCompare => '비교';
+
+  @override
+  String get practiceStartOver => '처음부터';
+
+  @override
+  String get practiceTranscriptHidden => '대본 숨김';
+
+  @override
+  String get practiceListenCarefully => '잘 들어보세요…';
+
+  @override
+  String get practiceTranslationUnavailableForCue => '이 큐는 지금 번역할 수 없습니다.';
+
+  @override
+  String get practiceChooseTranslationLanguageTitle => '번역 언어 선택';
+
+  @override
+  String get practiceChooseTranslationLanguageDescription =>
+      'Bantera가 듣기 연습을 이 언어로 번역하고 프로필에 저장해 다음에도 사용합니다.';
+
+  @override
+  String get practiceChangeTranslationLanguageTitle => '번역 언어 변경';
+
+  @override
+  String get practiceChangeTranslationLanguageDescription =>
+      'Bantera가 번역할 언어를 선택하세요. 새 선택이 프로필에 저장됩니다.';
+
+  @override
+  String get practiceConfirmTranslationLanguageTitle => '번역 언어 확인';
+
+  @override
+  String get practiceConfirmTranslationLanguageBody =>
+      '이 언어가 프로필에 저장되어 앞으로 듣기 연습의 기본 번역 언어로 사용됩니다.';
+
+  @override
+  String get practiceCouldNotSaveTranslationLanguage => '번역 언어를 저장할 수 없습니다.';
+
+  @override
+  String get practiceNoTranslationLanguagesFound =>
+      '이 대본에 사용할 수 있는 번역 언어를 찾을 수 없습니다.';
+
+  @override
+  String get practicePlayAllTitle => '전체 재생';
+
+  @override
+  String get practicePlayAllDescription => '큐 사이에 멈춤(따라 말하기, 탭 없이):';
+
+  @override
+  String get practicePlayAllPauseNoneTitle => '추가 멈춤 없음 (0초)';
+
+  @override
+  String get practicePlayAllPauseNoneSubtitle => '끊김 없이 재생';
+
+  @override
+  String get practicePlayAllPauseOneSecond => '1초';
+
+  @override
+  String get practicePlayAllPauseOneCueTitle => '1× 큐 길이';
+
+  @override
+  String get practicePlayAllPauseOneCueSubtitle => '방금 재생한 큐만큼 멈춤';
+
+  @override
+  String get practicePlayAllPauseTwoCuesTitle => '2× 큐 길이';
+
+  @override
+  String get practicePlayAllPauseTwoCuesSubtitle => '방금 재생한 큐의 두 배만큼 멈춤';
+
+  @override
+  String get practiceSearchLanguagesHint => '언어 검색';
+
+  @override
+  String get practiceTranslationInstalled => '설치됨';
+
+  @override
+  String get practiceTranslationDownload => '다운로드';
+
+  @override
+  String get practiceStartOverTitle => '처음부터?';
+
+  @override
+  String get practiceStartOverBody => '첫 번째 큐로 돌아갈까요?';
+
+  @override
+  String get practiceVideoOpenError => '선택한 동영상을 열 수 없습니다.';
+
+  @override
+  String practiceAudioError(String message) {
+    return '오디오 오류: $message';
+  }
+
+  @override
+  String get compareRecordYourVersion => '내 버전 녹음';
+
+  @override
+  String compareTranscriptionLanguage(String locale) {
+    return '전사 언어: $locale';
+  }
+
+  @override
+  String get compareOpenIphoneSettings => 'iPhone 설정 열기';
+
+  @override
+  String get comparePauseAttempt => '시도 일시정지';
+
+  @override
+  String get comparePlayAttempt => '시도 재생';
+
+  @override
+  String get compareYourTranscribedAttempt => '전사된 시도';
+
+  @override
+  String get compareHighlightHint => 'Bantera가 다르게 인식한 단어는 강조됩니다.';
+
+  @override
+  String get compareTryAgain => '다시 시도';
+
+  @override
+  String get compareDone => '완료';
+
+  @override
+  String get compareStatusTranscribing => 'iPhone에서 시도 전사 중…';
+
+  @override
+  String get compareStatusRecording => '녹음 중… 다시 탭하면 중지합니다.';
+
+  @override
+  String get compareStatusSavedAttempt =>
+      '이 큐에 저장된 시도를 표시 중입니다. 다시 재생하거나 다시 시도하세요.';
+
+  @override
+  String get compareStatusReplayOrRetry => '이 시도를 다시 재생하거나 큐를 다시 연습할 수 있습니다.';
+
+  @override
+  String get compareStatusTapToRecord => '탭하여 이 큐의 버전을 녹음하세요.';
+
+  @override
+  String get compareCouldNotStartRecording => '지금은 녹음을 시작할 수 없습니다.';
+
+  @override
+  String get compareCouldNotAccessRecording => '녹음된 오디오에 접근할 수 없습니다.';
+
+  @override
+  String get compareNoTranscriptGenerated =>
+      '이 시도에 대한 전사를 만들 수 없습니다. 마이크에 더 가까이서 다시 시도하세요.';
+
+  @override
+  String get compareRecentAttempts => '최근 시도';
+
+  @override
+  String get compareAttemptsFooterNote =>
+      'Bantera는 같은 큐에서 진행 상황을 볼 수 있도록 이 iPhone에 시도를 저장합니다.';
+
+  @override
+  String compareMatchedCount(int count) {
+    return '일치 $count개';
+  }
+
+  @override
+  String compareDifferentCount(int count) {
+    return '다름 $count개';
+  }
+
+  @override
+  String compareMissingCount(int count) {
+    return '누락 $count개';
+  }
+
+  @override
+  String get compareMicrophoneDeniedPermanent =>
+      'Bantera의 마이크 접근이 꺼져 있습니다. iPhone 설정 > Bantera > 마이크에서 켜 주세요.';
+
+  @override
+  String get compareMicrophoneDeniedRestricted =>
+      '이 iPhone이 Bantera의 마이크 사용을 제한하고 있습니다. 스크린 타임·기기 관리·시스템 설정을 확인하세요.';
+
+  @override
+  String get compareMicrophoneDeniedDefault =>
+      '내 버전을 녹음하려면 마이크 권한이 필요합니다. 이전에 요청을 닫았다면 iPhone 설정 > Bantera > 마이크에서 켜 주세요.';
+
+  @override
+  String get comparePlayAttemptTooltip => '시도 재생';
+
+  @override
+  String get comparePauseAttemptTooltip => '시도 일시정지';
+
+  @override
+  String get createWhatToday => '오늘 무엇을 하시겠어요?';
+
+  @override
+  String get createPracticeVideo => '동영상 연습';
+
+  @override
+  String get createYourMedia => '내 미디어';
+
+  @override
+  String get createTryAgain => '다시 시도';
+
+  @override
+  String get createUploadedVideosEmptyHint =>
+      '업로드한 동영상이 여기에 표시되며, 언제든 열어 큐별로 연습할 수 있습니다.';
+
+  @override
+  String get createUploadingTips => '업로드 팁';
+
+  @override
+  String get createUploadingTipsBody =>
+      '참여도를 위해 오디오는 3분 이내로 유지하세요. 자막은 자동으로 생성됩니다!';
+
+  @override
+  String get createOnThisIphone => '이 iPhone에 있는 동영상';
+
+  @override
+  String get createLocalVideosEmptyHint =>
+      '로컬로 연습한 동영상은 이 iPhone에 저장되어 나중에 다시 열 수 있으며 다시 전사할 필요가 없습니다.';
+
+  @override
+  String get createOnDeviceBadge => '기기 내';
+
+  @override
+  String get createSignInToLoadVideos => '업로드한 동영상을 불러오려면 다시 로그인하세요.';
+
+  @override
+  String createVideoMetaCues(int count) {
+    return '큐 $count개';
+  }
+
+  @override
+  String get createPublicBadge => '공개';
+
+  @override
+  String get createPrivateBadge => '비공개';
+
+  @override
+  String get createAiBadge => 'AI';
+
+  @override
+  String get createDeleteSavedVideoTitle => '저장한 동영상을 삭제할까요?';
+
+  @override
+  String createDeleteSavedVideoBody(String title) {
+    return 'Bantera가 이 iPhone에서 \"$title\"을(를) 제거하고 저장된 대본 큐를 삭제합니다.';
+  }
+
+  @override
+  String get createDeleteMediaTitle => '미디어를 삭제할까요?';
+
+  @override
+  String createDeleteMediaBody(String title) {
+    return '\"$title\"과(와) 대본이 영구 삭제됩니다. 되돌릴 수 없습니다.';
+  }
 }

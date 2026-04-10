@@ -67,5 +67,176 @@
   "deleteAccountQuestionTitle": "Delete account?",
   "deleteAccountQuestionBody": "All of your personal information and any data you've generated will be permanently removed from our servers and can't be recovered.",
   "typeDeleteLabel": "Type \"DELETE\" to continue",
-  "continueLabel": "Continue"
+  "continueLabel": "Continue",
+  "confirmLabel": "Confirm",
+  "deleteLabel": "Delete",
+  "startLabel": "Start",
+  "doneLabel": "Done",
+  "discoverSearchHint": "Search title or transcript…",
+  "discoverNoMoreResults": "No more results",
+  "discoverSetLearningLanguagePrompt": "Set your learning language to see content here",
+  "discoverNoPublicContentInLanguage": "No public content in {language} yet",
+  "@discoverNoPublicContentInLanguage": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "discoverSetLanguageToDiscover": "Set a learning language to discover content",
+  "mediaStartPractice": "Start Practice",
+  "mediaTranscript": "Transcript",
+  "mediaTranscriptLineCount": "({count} lines)",
+  "@mediaTranscriptLineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaShow": "Show",
+  "mediaHide": "Hide",
+  "mediaNoTranscriptAvailable": "No transcript available.",
+  "lessonSaveTooltip": "Save",
+  "lessonUnsaveTooltip": "Unsave",
+  "mediaKindAudio": "Audio",
+  "mediaKindVideo": "Video",
+  "practiceNoCues": "No cues",
+  "practiceTranslating": "Translating…",
+  "practiceShowTranscript": "Show Transcript",
+  "practiceTranslate": "Translate",
+  "practiceHideText": "Hide Text",
+  "practiceStop": "Stop",
+  "practicePlayAll": "Play All",
+  "practiceCompare": "Compare",
+  "practiceStartOver": "Start Over",
+  "practiceTranscriptHidden": "Transcript hidden",
+  "practiceListenCarefully": "Listen carefully…",
+  "practiceTranslationUnavailableForCue": "Translation unavailable for this cue right now.",
+  "practiceChooseTranslationLanguageTitle": "Choose Translation Language",
+  "practiceChooseTranslationLanguageDescription": "Bantera will translate listening practice into this language and save it to your profile for future sessions.",
+  "practiceChangeTranslationLanguageTitle": "Change Translation Language",
+  "practiceChangeTranslationLanguageDescription": "Choose the language Bantera should translate into. The new choice will be saved to your profile.",
+  "practiceConfirmTranslationLanguageTitle": "Confirm Translation Language",
+  "practiceConfirmTranslationLanguageBody": "Bantera will save this language to your profile and use it as the default translation language in future listening practice.",
+  "practiceCouldNotSaveTranslationLanguage": "Bantera could not save your translation language.",
+  "practiceNoTranslationLanguagesFound": "Bantera could not find any translation languages for this transcript.",
+  "practicePlayAllTitle": "Play all",
+  "practicePlayAllDescription": "Pause between cues for shadowing (repeat aloud without tapping):",
+  "practicePlayAllPauseNoneTitle": "No extra pause (0 s)",
+  "practicePlayAllPauseNoneSubtitle": "Play through the track continuously",
+  "practicePlayAllPauseOneSecond": "1 second",
+  "practicePlayAllPauseOneCueTitle": "1× cue length",
+  "practicePlayAllPauseOneCueSubtitle": "Pause as long as the cue that just played",
+  "practicePlayAllPauseTwoCuesTitle": "2× cue length",
+  "practicePlayAllPauseTwoCuesSubtitle": "Pause twice as long as the cue that just played",
+  "practiceSearchLanguagesHint": "Search languages",
+  "practiceTranslationInstalled": "Installed",
+  "practiceTranslationDownload": "Download",
+  "practiceStartOverTitle": "Start over?",
+  "practiceStartOverBody": "Go back to the first cue?",
+  "practiceVideoOpenError": "The selected video could not be opened for practice.",
+  "practiceAudioError": "Audio error: {message}",
+  "@practiceAudioError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "compareRecordYourVersion": "Record your version",
+  "compareTranscriptionLanguage": "Transcription language: {locale}",
+  "@compareTranscriptionLanguage": {
+    "placeholders": {
+      "locale": {
+        "type": "String"
+      }
+    }
+  },
+  "compareOpenIphoneSettings": "Open iPhone Settings",
+  "comparePauseAttempt": "Pause Attempt",
+  "comparePlayAttempt": "Play Attempt",
+  "compareYourTranscribedAttempt": "Your transcribed attempt",
+  "compareHighlightHint": "Words that Bantera recognised differently are highlighted.",
+  "compareTryAgain": "Try Again",
+  "compareDone": "Done",
+  "compareStatusTranscribing": "Transcribing your attempt on iPhone…",
+  "compareStatusRecording": "Recording… Tap again to stop.",
+  "compareStatusSavedAttempt": "Showing a saved attempt for this cue. You can replay it or try again.",
+  "compareStatusReplayOrRetry": "You can replay this attempt or try the cue again.",
+  "compareStatusTapToRecord": "Tap to start recording your version of this cue.",
+  "compareCouldNotStartRecording": "Bantera could not start recording right now.",
+  "compareCouldNotAccessRecording": "Bantera could not access the recorded audio.",
+  "compareNoTranscriptGenerated": "No transcript could be generated for this attempt. Try again closer to the microphone.",
+  "compareRecentAttempts": "Recent attempts",
+  "compareAttemptsFooterNote": "Bantera keeps your attempts on this iPhone so you can review progress on the same cue.",
+  "compareMatchedCount": "{count} matched",
+  "@compareMatchedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareDifferentCount": "{count} different",
+  "@compareDifferentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareMissingCount": "{count} missing",
+  "@compareMissingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareMicrophoneDeniedPermanent": "Microphone access is turned off for Bantera. Open iPhone Settings > Bantera > Microphone and enable it to record your own version.",
+  "compareMicrophoneDeniedRestricted": "This iPhone is currently restricting microphone access for Bantera. Check Screen Time, device management, or system settings to enable it.",
+  "compareMicrophoneDeniedDefault": "Microphone permission is required to record your own version. If you dismissed the prompt before, open iPhone Settings > Bantera > Microphone and enable it.",
+  "comparePlayAttemptTooltip": "Play attempt",
+  "comparePauseAttemptTooltip": "Pause attempt",
+  "createWhatToday": "What would you like to do today?",
+  "createPracticeVideo": "Practice Video",
+  "createYourMedia": "Your Media",
+  "createTryAgain": "Try Again",
+  "createUploadedVideosEmptyHint": "Your uploaded videos will show up here so you can reopen them and practice cue by cue.",
+  "createUploadingTips": "Uploading Tips",
+  "createUploadingTipsBody": "Keep your audio under 3 minutes for the best engagement. Clear subtitles are generated automatically!",
+  "createOnThisIphone": "On This iPhone",
+  "createLocalVideosEmptyHint": "Videos you practice locally will be saved on this iPhone so you can reopen them later without retranscribing.",
+  "createOnDeviceBadge": "On Device",
+  "createSignInToLoadVideos": "Sign in again to load your uploaded videos.",
+  "createVideoMetaCues": "{count} cues",
+  "@createVideoMetaCues": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createPublicBadge": "Public",
+  "createPrivateBadge": "Private",
+  "createAiBadge": "AI",
+  "createDeleteSavedVideoTitle": "Delete Saved Video?",
+  "createDeleteSavedVideoBody": "Bantera will remove \"{title}\" from this iPhone and delete its saved transcript cues.",
+  "@createDeleteSavedVideoBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "createDeleteMediaTitle": "Delete media?",
+  "createDeleteMediaBody": "This will permanently delete \"{title}\" and its transcript. This cannot be undone.",
+  "@createDeleteMediaBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

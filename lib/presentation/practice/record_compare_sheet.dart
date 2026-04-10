@@ -12,6 +12,7 @@ import 'package:record/record.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/video_processing_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class RecordCompareSheet extends StatefulWidget {
   const RecordCompareSheet({
@@ -90,6 +91,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -105,7 +107,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Record your version',
+                l10n.compareRecordYourVersion,
                 style: theme.textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -125,7 +127,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Transcription language: ${widget.sourceLocaleIdentifier}',
+                l10n.compareTranscriptionLanguage(widget.sourceLocaleIdentifier),
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -171,7 +173,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
               ),
               const SizedBox(height: 16),
               Text(
-                _statusText,
+                _statusLine(l10n),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
@@ -207,7 +209,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                   OutlinedButton.icon(
                     onPressed: openAppSettings,
                     icon: const Icon(CupertinoIcons.settings),
-                    label: const Text('Open iPhone Settings'),
+                    label: Text(l10n.compareOpenIphoneSettings),
                   ),
                 ],
               ],
@@ -226,17 +228,19 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                               : CupertinoIcons.play_fill,
                         ),
                         label: Text(
-                          _isPlayingAttempt ? 'Pause Attempt' : 'Play Attempt',
+                          _isPlayingAttempt
+                              ? l10n.comparePauseAttempt
+                              : l10n.comparePlayAttempt,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryChips(context, _result!),
+                _buildSummaryChips(context, l10n, _result!),
                 const SizedBox(height: 18),
                 Text(
-                  'Your transcribed attempt',
+                  l10n.compareYourTranscribedAttempt,
                   style: theme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
@@ -263,7 +267,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        'Words that Bantera recognised differently are highlighted.',
+                        l10n.compareHighlightHint,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.orange[800],
@@ -283,7 +287,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         onPressed: _resetForRetry,
-                        child: const Text('Try Again'),
+                        child: Text(l10n.compareTryAgain),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -295,7 +299,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: const Text('Done'),
+                        child: Text(l10n.compareDone),
                       ),
                     ),
                   ],
@@ -305,7 +309,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                 const SizedBox(height: 28),
                 const Divider(),
                 const SizedBox(height: 18),
-                _buildAttemptHistorySection(context),
+                _buildAttemptHistorySection(context, l10n),
               ],
             ],
           ),
@@ -314,20 +318,20 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     );
   }
 
-  String get _statusText {
+  String _statusLine(AppLocalizations l10n) {
     if (_isProcessing) {
-      return 'Transcribing your attempt on iPhone...';
+      return l10n.compareStatusTranscribing;
     }
     if (_isRecording) {
-      return 'Recording... Tap again to stop.';
+      return l10n.compareStatusRecording;
     }
     if (_selectedAttempt != null) {
-      return 'Showing a saved attempt for this cue. You can replay it or try again.';
+      return l10n.compareStatusSavedAttempt;
     }
     if (_result != null) {
-      return 'You can replay this attempt or try the cue again.';
+      return l10n.compareStatusReplayOrRetry;
     }
-    return 'Tap to start recording your version of this cue.';
+    return l10n.compareStatusTapToRecord;
   }
 
   Future<void> _loadAttemptHistory() async {
@@ -442,7 +446,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
         return;
       }
       setState(() {
-        _errorMessage = 'Bantera could not start recording right now.';
+        _errorMessage = AppLocalizations.of(context)!.compareCouldNotStartRecording;
         _showsOpenSettingsAction = false;
       });
     }
@@ -526,8 +530,14 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       if (!mounted) {
         return;
       }
+      final l10n = AppLocalizations.of(context)!;
+      final displayMessage = switch (error.code) {
+        'missing_recording' => l10n.compareCouldNotAccessRecording,
+        'empty_transcript' => l10n.compareNoTranscriptGenerated,
+        _ => error.message,
+      };
       setState(() {
-        _errorMessage = error.message;
+        _errorMessage = displayMessage;
         _showsOpenSettingsAction = false;
       });
     } finally {
@@ -597,13 +607,11 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       return false;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final message = switch (status) {
-      PermissionStatus.permanentlyDenied =>
-        'Microphone access is turned off for Bantera. Open iPhone Settings > Bantera > Microphone and enable it to record your own version.',
-      PermissionStatus.restricted =>
-        'This iPhone is currently restricting microphone access for Bantera. Check Screen Time, device management, or system settings to enable it.',
-      _ =>
-        'Microphone permission is required to record your own version. If you dismissed the prompt before, open iPhone Settings > Bantera > Microphone and enable it.',
+      PermissionStatus.permanentlyDenied => l10n.compareMicrophoneDeniedPermanent,
+      PermissionStatus.restricted => l10n.compareMicrophoneDeniedRestricted,
+      _ => l10n.compareMicrophoneDeniedDefault,
     };
 
     setState(() {
@@ -616,6 +624,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
   Widget _buildSummaryChips(
     BuildContext context,
+    AppLocalizations l10n,
     _AttemptComparisonResult result,
   ) {
     final theme = Theme.of(context);
@@ -624,18 +633,18 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       runSpacing: 8,
       children: [
         _SummaryChip(
-          label: '${result.matchedCount} matched',
+          label: l10n.compareMatchedCount(result.matchedCount),
           color: Colors.green,
           textStyle: theme.textTheme.labelLarge,
         ),
         _SummaryChip(
-          label: '${result.unexpectedCount} different',
+          label: l10n.compareDifferentCount(result.unexpectedCount),
           color: Colors.orange,
           textStyle: theme.textTheme.labelLarge,
         ),
         if (result.missingCount > 0)
           _SummaryChip(
-            label: '${result.missingCount} missing',
+            label: l10n.compareMissingCount(result.missingCount),
             color: Colors.redAccent,
             textStyle: theme.textTheme.labelLarge,
           ),
@@ -643,13 +652,16 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     );
   }
 
-  Widget _buildAttemptHistorySection(BuildContext context) {
+  Widget _buildAttemptHistorySection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     final theme = Theme.of(context);
     if (_isLoadingHistory && _attemptHistory.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent attempts', style: theme.textTheme.titleMedium),
+          Text(l10n.compareRecentAttempts, style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           const Center(child: CircularProgressIndicator()),
         ],
@@ -663,17 +675,17 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Recent attempts', style: theme.textTheme.titleMedium),
+        Text(l10n.compareRecentAttempts, style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Text(
-          'Bantera keeps your attempts on this iPhone so you can review progress on the same cue.',
+          l10n.compareAttemptsFooterNote,
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 16),
         ..._attemptHistory.map((attempt) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _buildAttemptHistoryCard(context, attempt),
+            child: _buildAttemptHistoryCard(context, l10n, attempt),
           );
         }),
       ],
@@ -682,6 +694,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
 
   Widget _buildAttemptHistoryCard(
     BuildContext context,
+    AppLocalizations l10n,
     LocalCuePracticeAttempt attempt,
   ) {
     final theme = Theme.of(context);
@@ -734,8 +747,8 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                           : CupertinoIcons.play_fill,
                     ),
                     tooltip: _isPlayingAttempt && isSelected
-                        ? 'Pause attempt'
-                        : 'Play attempt',
+                        ? l10n.comparePauseAttemptTooltip
+                        : l10n.comparePlayAttemptTooltip,
                   ),
                 ],
               ),
@@ -745,18 +758,18 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                 runSpacing: 8,
                 children: [
                   _SummaryChip(
-                    label: '${attempt.matchedCount} matched',
+                    label: l10n.compareMatchedCount(attempt.matchedCount),
                     color: Colors.green,
                     textStyle: theme.textTheme.labelMedium,
                   ),
                   _SummaryChip(
-                    label: '${attempt.unexpectedCount} different',
+                    label: l10n.compareDifferentCount(attempt.unexpectedCount),
                     color: Colors.orange,
                     textStyle: theme.textTheme.labelMedium,
                   ),
                   if (attempt.missingCount > 0)
                     _SummaryChip(
-                      label: '${attempt.missingCount} missing',
+                      label: l10n.compareMissingCount(attempt.missingCount),
                       color: Colors.redAccent,
                       textStyle: theme.textTheme.labelMedium,
                     ),

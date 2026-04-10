@@ -16,6 +16,7 @@ import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/translation_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'record_compare_sheet.dart';
 
 enum SubtitleState { hidden, original, translated }
@@ -30,6 +31,8 @@ class PracticePlayerScreen extends StatefulWidget {
 }
 
 class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
+  AppLocalizations get _l10n => AppLocalizations.of(context)!;
+
   int _currentCueIndex = 0;
   SubtitleState _subtitleState = SubtitleState.hidden;
   bool _isPlaying = false;
@@ -187,6 +190,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (_isPlayingAll) {
       return;
     }
+    final l10n = _l10n;
     final initial =
         await PlayAllPauseStore.instance.getSelectedPause();
     if (!mounted) {
@@ -198,22 +202,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setLocal) {
           return AlertDialog(
-            title: const Text('Play all'),
+            title: Text(l10n.practicePlayAllTitle),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pause between cues for shadowing (repeat aloud without tapping):',
+                    l10n.practicePlayAllDescription,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: const Text('No extra pause (0 s)'),
-                    subtitle: const Text(
-                      'Play through the track continuously',
-                    ),
+                    title: Text(l10n.practicePlayAllPauseNoneTitle),
+                    subtitle: Text(l10n.practicePlayAllPauseNoneSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.none,
                     groupValue: selected,
@@ -224,7 +226,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: const Text('1 second'),
+                    title: Text(l10n.practicePlayAllPauseOneSecond),
                     dense: true,
                     value: PlayAllPauseBetweenCues.oneSecond,
                     groupValue: selected,
@@ -235,10 +237,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: const Text('1× cue length'),
-                    subtitle: const Text(
-                      'Pause as long as the cue that just played',
-                    ),
+                    title: Text(l10n.practicePlayAllPauseOneCueTitle),
+                    subtitle: Text(l10n.practicePlayAllPauseOneCueSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.oneCueDuration,
                     groupValue: selected,
@@ -249,10 +249,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: const Text('2× cue length'),
-                    subtitle: const Text(
-                      'Pause twice as long as the cue that just played',
-                    ),
+                    title: Text(l10n.practicePlayAllPauseTwoCuesTitle),
+                    subtitle: Text(l10n.practicePlayAllPauseTwoCuesSubtitle),
                     dense: true,
                     value: PlayAllPauseBetweenCues.twoCueDurations,
                     groupValue: selected,
@@ -268,11 +266,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(ctx).pop(selected),
-                child: const Text('Start'),
+                child: Text(l10n.startLabel),
               ),
             ],
           );
@@ -681,7 +679,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.mediaItem.cues.isEmpty) {
-      return const Scaffold(body: Center(child: Text('No cues')));
+      return Scaffold(
+        body: Center(child: Text(_l10n.practiceNoCues)),
+      );
     }
 
     final cue = widget.mediaItem.cues[_currentCueIndex];
@@ -807,12 +807,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                           ),
                     label: Text(
                       _isTranslating
-                          ? 'Translating...'
+                          ? _l10n.practiceTranslating
                           : _subtitleState == SubtitleState.hidden
-                          ? 'Show Transcript'
+                          ? _l10n.practiceShowTranscript
                           : _subtitleState == SubtitleState.original
-                          ? 'Translate'
-                          : 'Hide Text',
+                          ? _l10n.practiceTranslate
+                          : _l10n.practiceHideText,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -892,7 +892,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             _isPlayingAll
                                 ? CupertinoIcons.stop_fill
                                 : CupertinoIcons.play_rectangle,
-                            _isPlayingAll ? 'Stop' : 'Play All',
+                            _isPlayingAll
+                                ? _l10n.practiceStop
+                                : _l10n.practicePlayAll,
                             () => _isPlayingAll
                                 ? unawaited(_stopPlayAll())
                                 : unawaited(_promptPlayAll()),
@@ -904,7 +906,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         child: Center(
                           child: _buildActionBtn(
                             CupertinoIcons.mic_solid,
-                            'Compare',
+                            _l10n.practiceCompare,
                             _openCompareSheet,
                             colorScheme,
                             isHighlight: true,
@@ -915,7 +917,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         child: Center(
                           child: _buildActionBtn(
                             CupertinoIcons.gobackward,
-                            'Start Over',
+                            _l10n.practiceStartOver,
                             _isPlayingAll ? null : _confirmStartOver,
                             colorScheme,
                           ),
@@ -1048,9 +1050,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               color: Colors.black.withValues(alpha: 0.52),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
-              'Transcript hidden',
-              style: TextStyle(
+            child: Text(
+              _l10n.practiceTranscriptHidden,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
@@ -1069,7 +1071,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Listen carefully...',
+            _l10n.practiceListenCarefully,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: colorScheme.primary.withValues(alpha: 0.6),
             ),
@@ -1091,7 +1093,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return _buildTranslatedSubtitlePanel(
       cue: cue,
       translatedText: translatedText.isEmpty
-          ? 'Translation unavailable for this cue right now.'
+          ? _l10n.practiceTranslationUnavailableForCue
           : translatedText,
       colorScheme: colorScheme,
       hasPlayableMedia: hasPlayableMedia,
@@ -1566,7 +1568,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (mounted) {
         setState(() {
           _translationErrorMessage =
-              'Bantera could not find any translation languages for this transcript.';
+              _l10n.practiceNoTranslationLanguagesFound;
         });
       }
       return null;
@@ -1594,9 +1596,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final selectedLocale = await _showTranslationLanguageSheet(
       locales: locales,
       selected: _bestMatchingTranslationLocale(locales) ?? locales.first,
-      title: 'Choose Translation Language',
-      description:
-          'Bantera will translate listening practice into this language and save it to your profile for future sessions.',
+      title: _l10n.practiceChooseTranslationLanguageTitle,
+      description: _l10n.practiceChooseTranslationLanguageDescription,
     );
     if (!mounted || selectedLocale == null) {
       return null;
@@ -1633,7 +1634,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       setState(() {
         _translationErrorMessage =
             UserProfileNotifier.instance.errorMessage ??
-            'Bantera could not save your translation language.';
+            _l10n.practiceCouldNotSaveTranslationLanguage;
       });
       return null;
     }
@@ -1685,9 +1686,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final selectedLocale = await _showTranslationLanguageSheet(
       locales: locales,
       selected: current ?? _bestMatchingTranslationLocale(locales),
-      title: 'Change Translation Language',
-      description:
-          'Choose the language Bantera should translate into. The new choice will be saved to your profile.',
+      title: _l10n.practiceChangeTranslationLanguageTitle,
+      description: _l10n.practiceChangeTranslationLanguageDescription,
     );
     if (!mounted || selectedLocale == null) {
       return;
@@ -1729,7 +1729,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       setState(() {
         _translationErrorMessage =
             UserProfileNotifier.instance.errorMessage ??
-            'Bantera could not save your translation language.';
+            _l10n.practiceCouldNotSaveTranslationLanguage;
       });
       return;
     }
@@ -1916,10 +1916,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final confirmed =
         await showDialog<bool>(
           context: context,
-          builder: (context) {
-            final theme = Theme.of(context);
+          builder: (dialogContext) {
+            final theme = Theme.of(dialogContext);
+            final l10n = AppLocalizations.of(dialogContext)!;
             return AlertDialog(
-              title: const Text('Confirm Translation Language'),
+              title: Text(l10n.practiceConfirmTranslationLanguageTitle),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1945,19 +1946,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   Text(locale.identifier, style: theme.textTheme.bodySmall),
                   const SizedBox(height: 14),
                   Text(
-                    'Bantera will save this language to your profile and use it as the default translation language in future listening practice.',
+                    l10n.practiceConfirmTranslationLanguageBody,
                     style: theme.textTheme.bodyMedium,
                   ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(l10n.cancel),
                 ),
                 FilledButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Confirm'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(l10n.confirmLabel),
                 ),
               ],
             );
@@ -2125,7 +2126,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _lastKnownAudioPositionMs = widget.mediaItem.cues[0].startTimeMs;
         if (mounted) setState(() => _audioPlayerReady = true);
       } catch (e) {
-        _mediaError = 'Audio error: $e';
+        _mediaError = _l10n.practiceAudioError(e.toString());
       } finally {
         if (mounted) setState(() => _isInitializingMedia = false);
       }
@@ -2174,7 +2175,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _lastKnownVideoPositionMs =
           widget.mediaItem.cues[_currentCueIndex].startTimeMs;
     } catch (_) {
-      _mediaError = 'The selected video could not be opened for practice.';
+      _mediaError = _l10n.practiceVideoOpenError;
     } finally {
       if (mounted) {
         setState(() {
@@ -2310,20 +2311,23 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Start over?'),
-        content: const Text('Go back to the first cue?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Start Over'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(l10n.practiceStartOverTitle),
+          content: Text(l10n.practiceStartOverBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.practiceStartOver),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true && mounted) {
       await _selectCue(0);
@@ -2375,6 +2379,7 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final results = widget.locales.where((locale) {
       final haystack = '${locale.displayName} ${locale.identifier}'
           .toLowerCase();
@@ -2408,9 +2413,9 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
                     _query = value;
                   });
                 },
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search languages',
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: l10n.practiceSearchLanguagesHint,
                 ),
               ),
               const SizedBox(height: 12),
@@ -2450,8 +2455,8 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
                                   ],
                                   Text(
                                     locale.isInstalled
-                                        ? 'Installed'
-                                        : 'Download',
+                                        ? l10n.practiceTranslationInstalled
+                                        : l10n.practiceTranslationDownload,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: locale.isInstalled
