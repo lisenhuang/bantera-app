@@ -96,8 +96,9 @@ class AppRoot extends StatelessWidget {
       ]),
       builder: (context, child) {
         if (!ApiConfigNotifier.instance.isInitialized) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -107,8 +108,9 @@ class AppRoot extends StatelessWidget {
 
         final profile = UserProfileNotifier.instance;
         if (profile.isLoading && profile.profile == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
