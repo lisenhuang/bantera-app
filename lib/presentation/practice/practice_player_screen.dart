@@ -172,15 +172,29 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
   }
 
+  /// Where single-cue playback should stop: next cue's start when present
+  /// (so audio through the gap is not cut off by an early [Cue.endTimeMs]),
+  /// otherwise this cue's end. If data overlaps, never stop earlier than [Cue.endTimeMs].
+  int _playbackStopMsForCueIndex(int cueIndex) {
+    final cues = widget.mediaItem.cues;
+    if (cueIndex < 0 || cueIndex >= cues.length) return 0;
+    final cue = cues[cueIndex];
+    if (cueIndex + 1 < cues.length) {
+      final nextStart = cues[cueIndex + 1].startTimeMs;
+      return nextStart > cue.endTimeMs ? nextStart : cue.endTimeMs;
+    }
+    return cue.endTimeMs;
+  }
+
   /// Resume from the paused time if it is still inside the current cue;
   /// otherwise seek to the cue start (e.g. position past cue end).
   int _seekMsResumeWithinCurrentCue({
     required int cueStartMs,
-    required int cueEndMs,
+    required int cuePlaybackStopMs,
     required int? mediaPositionMs,
   }) {
     if (mediaPositionMs == null) return cueStartMs;
-    if (mediaPositionMs >= cueStartMs && mediaPositionMs < cueEndMs) {
+    if (mediaPositionMs >= cueStartMs && mediaPositionMs < cuePlaybackStopMs) {
       return mediaPositionMs;
     }
     return cueStartMs;
@@ -403,7 +417,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final current = await audioPlayer.getCurrentPosition();
       final seekMs = _seekMsResumeWithinCurrentCue(
         cueStartMs: cue.startTimeMs,
-        cueEndMs: cue.endTimeMs,
+        cuePlaybackStopMs: _playbackStopMsForCueIndex(_currentCueIndex),
         mediaPositionMs: current?.inMilliseconds,
       );
       await audioPlayer.seek(Duration(milliseconds: seekMs));
@@ -425,11 +439,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final cues = widget.mediaItem.cues;
         final posMs = pos.inMilliseconds;
         final i = _currentCueIndex;
-        final cue = cues[i];
 
         if (pauseMode != PlayAllPauseBetweenCues.none &&
             i < cues.length - 1 &&
-            posMs >= cue.endTimeMs) {
+            posMs >= _playbackStopMsForCueIndex(i)) {
           _playAllInBetweenCueGap = true;
           final snapshot = _playAllSessionId;
           unawaited(
@@ -487,7 +500,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final vCue = widget.mediaItem.cues[_currentCueIndex];
     final vSeekMs = _seekMsResumeWithinCurrentCue(
       cueStartMs: vCue.startTimeMs,
-      cueEndMs: vCue.endTimeMs,
+      cuePlaybackStopMs: _playbackStopMsForCueIndex(_currentCueIndex),
       mediaPositionMs: controller.value.position.inMilliseconds,
     );
     await controller.seekTo(Duration(milliseconds: vSeekMs));
@@ -514,11 +527,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _lastKnownVideoPositionMs = posMs;
       final cues = widget.mediaItem.cues;
       final i = _currentCueIndex;
-      final activeCue = cues[i];
 
       if (pauseMode != PlayAllPauseBetweenCues.none &&
           i < cues.length - 1 &&
-          posMs >= activeCue.endTimeMs) {
+          posMs >= _playbackStopMsForCueIndex(i)) {
         _playAllInBetweenCueGap = true;
         final snapshot = _playAllSessionId;
         unawaited(
@@ -580,8 +592,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _audioPositionSub = ap.onPositionChanged.listen((pos) {
         if (!mounted) return;
         _lastKnownAudioPositionMs = pos.inMilliseconds;
-        final cue = widget.mediaItem.cues[_currentCueIndex];
-        if (_isPlaying && pos.inMilliseconds >= cue.endTimeMs) {
+        if (_isPlaying &&
+            pos.inMilliseconds >=
+                _playbackStopMsForCueIndex(_currentCueIndex)) {
           unawaited(ap.pause());
           if (mounted) setState(() => _isPlaying = false);
         }
@@ -598,9 +611,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _videoListener = () {
         if (!mounted) return;
         _lastKnownVideoPositionMs = controller.value.position.inMilliseconds;
-        final cue = widget.mediaItem.cues[_currentCueIndex];
         if (_isPlaying &&
-            controller.value.position.inMilliseconds >= cue.endTimeMs) {
+            controller.value.position.inMilliseconds >=
+                _playbackStopMsForCueIndex(_currentCueIndex)) {
           controller.pause();
           if (mounted) setState(() => _isPlaying = false);
         }
@@ -2112,8 +2125,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _audioPositionSub = player.onPositionChanged.listen((pos) {
           if (!mounted) return;
           _lastKnownAudioPositionMs = pos.inMilliseconds;
-          final cue = widget.mediaItem.cues[_currentCueIndex];
-          final cueEnd = Duration(milliseconds: cue.endTimeMs);
+          final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
+          final cueEnd = Duration(milliseconds: stopMs);
           if (_isPlaying && pos >= cueEnd) {
             unawaited(player.pause());
             if (mounted) setState(() => _isPlaying = false);
@@ -2152,8 +2165,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         }
 
         _lastKnownVideoPositionMs = controller.value.position.inMilliseconds;
-        final cue = widget.mediaItem.cues[_currentCueIndex];
-        final cueEnd = Duration(milliseconds: cue.endTimeMs);
+        final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
+        final cueEnd = Duration(milliseconds: stopMs);
         if (_isPlaying && controller.value.position >= cueEnd) {
           controller.pause();
           if (mounted) {
@@ -2198,19 +2211,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         if (mounted) setState(() => _isPlaying = false);
       } else {
         final cue = widget.mediaItem.cues[_currentCueIndex];
+        final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
         final apiMs = (await audioPlayer.getCurrentPosition())?.inMilliseconds;
         final lastMs = _lastKnownAudioPositionMs;
         int? rawMs;
         if (lastMs != null &&
             lastMs >= cue.startTimeMs &&
-            lastMs < cue.endTimeMs) {
+            lastMs < stopMs) {
           rawMs = lastMs;
         } else {
           rawMs = apiMs;
         }
         final seekMs = _seekMsResumeWithinCurrentCue(
           cueStartMs: cue.startTimeMs,
-          cueEndMs: cue.endTimeMs,
+          cuePlaybackStopMs: stopMs,
           mediaPositionMs: rawMs,
         );
         await audioPlayer.seek(Duration(milliseconds: seekMs));
@@ -2242,19 +2256,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     final cue = widget.mediaItem.cues[_currentCueIndex];
+    final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
     final apiMs = controller.value.position.inMilliseconds;
     final lastMs = _lastKnownVideoPositionMs;
     int rawMs;
     if (lastMs != null &&
         lastMs >= cue.startTimeMs &&
-        lastMs < cue.endTimeMs) {
+        lastMs < stopMs) {
       rawMs = lastMs;
     } else {
       rawMs = apiMs;
     }
     final seekMs = _seekMsResumeWithinCurrentCue(
       cueStartMs: cue.startTimeMs,
-      cueEndMs: cue.endTimeMs,
+      cuePlaybackStopMs: stopMs,
       mediaPositionMs: rawMs,
     );
     await controller.seekTo(Duration(milliseconds: seekMs));
@@ -2345,7 +2360,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final totalSeconds = milliseconds ~/ 1000;
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+    final centiseconds = (milliseconds % 1000) ~/ 10;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}';
   }
 }
 
