@@ -360,6 +360,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceStartOverBody => '返回第一句？';
 
   @override
+  String get practiceNextFromLastTitle => '前往第一句？';
+
+  @override
+  String get practiceNextFromLastBody => '当前为最后一句，是否返回第一句？';
+
+  @override
+  String get practiceGoToFirstCue => '前往第一句';
+
+  @override
   String get practiceVideoOpenError => '无法打开所选视频进行练习。';
 
   @override
@@ -1125,6 +1134,15 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get practiceStartOverBody => '返回第一句？';
+
+  @override
+  String get practiceNextFromLastTitle => '前往第一句？';
+
+  @override
+  String get practiceNextFromLastBody => '当前为最后一句，是否返回第一句？';
+
+  @override
+  String get practiceGoToFirstCue => '前往第一句';
 
   @override
   String get practiceVideoOpenError => '无法打开所选视频进行练习。';

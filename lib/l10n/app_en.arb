@@ -135,6 +135,9 @@
   "practiceTranslationDownload": "Download",
   "practiceStartOverTitle": "Start over?",
   "practiceStartOverBody": "Go back to the first cue?",
+  "practiceNextFromLastTitle": "Go to first cue?",
+  "practiceNextFromLastBody": "You're on the last cue. Return to the first cue?",
+  "practiceGoToFirstCue": "Go to first cue",
   "practiceVideoOpenError": "The selected video could not be opened for practice.",
   "practiceAudioError": "Audio error: {message}",
   "@practiceAudioError": {

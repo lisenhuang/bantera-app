@@ -787,6 +787,24 @@ abstract class AppLocalizations {
   /// **'Go back to the first cue?'**
   String get practiceStartOverBody;
 
+  /// No description provided for @practiceNextFromLastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to first cue?'**
+  String get practiceNextFromLastTitle;
+
+  /// No description provided for @practiceNextFromLastBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on the last cue. Return to the first cue?'**
+  String get practiceNextFromLastBody;
+
+  /// No description provided for @practiceGoToFirstCue.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to first cue'**
+  String get practiceGoToFirstCue;
+
   /// No description provided for @practiceVideoOpenError.
   ///
   /// In en, this message translates to:

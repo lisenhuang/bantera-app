@@ -361,6 +361,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceStartOverBody => '最初のキューに戻りますか？';
 
   @override
+  String get practiceNextFromLastTitle => '最初のキューに移動しますか？';
+
+  @override
+  String get practiceNextFromLastBody => '最後のキューです。最初のキューに戻りますか？';
+
+  @override
+  String get practiceGoToFirstCue => '最初のキューへ';
+
+  @override
   String get practiceVideoOpenError => '選択した動画を開けませんでした。';
 
   @override

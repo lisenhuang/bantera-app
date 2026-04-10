@@ -363,6 +363,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceStartOverBody => '첫 번째 큐로 돌아갈까요?';
 
   @override
+  String get practiceNextFromLastTitle => '첫 큐로 이동할까요?';
+
+  @override
+  String get practiceNextFromLastBody => '마지막 큐입니다. 첫 큐로 돌아갈까요?';
+
+  @override
+  String get practiceGoToFirstCue => '첫 큐로 이동';
+
+  @override
   String get practiceVideoOpenError => '선택한 동영상을 열 수 없습니다.';
 
   @override

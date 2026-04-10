@@ -141,8 +141,38 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _nextCue() {
-    if (_currentCueIndex < widget.mediaItem.cues.length - 1) {
+    final cues = widget.mediaItem.cues;
+    if (cues.isEmpty) return;
+    if (_currentCueIndex < cues.length - 1) {
       unawaited(_selectCue(_currentCueIndex + 1));
+    } else {
+      unawaited(_confirmGoToFirstCueFromLast());
+    }
+  }
+
+  Future<void> _confirmGoToFirstCueFromLast() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(l10n.practiceNextFromLastTitle),
+          content: Text(l10n.practiceNextFromLastBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.practiceGoToFirstCue),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && mounted) {
+      await _selectCue(0);
     }
   }
 
@@ -888,8 +918,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       IconButton(
                         iconSize: 36,
                         icon: const Icon(CupertinoIcons.forward_fill),
-                        color: !_isPlayingAll &&
-                            _currentCueIndex < widget.mediaItem.cues.length - 1
+                        color: !_isPlayingAll
                             ? colorScheme.primary
                             : colorScheme.primary.withValues(alpha: 0.2),
                         onPressed: _isPlayingAll ? null : _nextCue,

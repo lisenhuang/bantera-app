@@ -380,6 +380,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceStartOverBody => 'Go back to the first cue?';
 
   @override
+  String get practiceNextFromLastTitle => 'Go to first cue?';
+
+  @override
+  String get practiceNextFromLastBody =>
+      'You\'re on the last cue. Return to the first cue?';
+
+  @override
+  String get practiceGoToFirstCue => 'Go to first cue';
+
+  @override
   String get practiceVideoOpenError =>
       'The selected video could not be opened for practice.';
 
