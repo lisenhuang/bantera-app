@@ -48,6 +48,8 @@ private final class BanteraVideoProcessingBridge {
       handleTranscribeRecordedAudio(call: call, result: result)
     case "transcribeAudioForUpload":
       handleTranscribeAudioForUpload(call: call, result: result)
+    case "ensureTranscriptionModelInstalled":
+      handleEnsureTranscriptionModelInstalled(call: call, result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -204,6 +206,50 @@ private final class BanteraVideoProcessingBridge {
           result(
             FlutterError(
               code: "transcription_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+
+  private func handleEnsureTranscriptionModelInstalled(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard #available(iOS 26.0, *) else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
+
+    guard
+      let args = call.arguments as? [String: Any],
+      let localeIdentifier = args["localeIdentifier"] as? String,
+      !localeIdentifier.isEmpty
+    else {
+      result(BanteraVideoProcessingError.invalidArguments.flutterError)
+      return
+    }
+
+    Task {
+      do {
+        try await BanteraVideoPreparationService().ensureTranscriptionModelInstalled(
+          localeIdentifier: localeIdentifier
+        )
+        DispatchQueue.main.async {
+          result(nil)
+        }
+      } catch let error as BanteraVideoProcessingError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "speech_model_prepare_failed",
               message: error.localizedDescription,
               details: nil
             )
@@ -768,6 +814,18 @@ private final class BanteraVideoPreparationService {
     }
   }
 
+  /// Downloads and installs the on-device SpeechTranscriber language assets for
+  /// [localeIdentifier] when needed, using the same path as transcription. Call
+  /// before long-running work (e.g. AI dialogue generation) so transcription
+  /// does not stall later waiting for the asset.
+  func ensureTranscriptionModelInstalled(localeIdentifier: String) async throws {
+    guard SpeechTranscriber.isAvailable else {
+      throw BanteraVideoProcessingError.speechUnavailable
+    }
+    let locale = try await resolveLocale(identifier: localeIdentifier)
+    _ = try await ensureTranscriptionAssetsDownloaded(for: locale)
+  }
+
   private struct PreparedOutput {
     let url: URL
     let shouldDeleteAfterUse: Bool
@@ -829,6 +887,24 @@ private final class BanteraVideoPreparationService {
     throw BanteraVideoProcessingError.unsupportedLocale(identifier)
   }
 
+  private func ensureTranscriptionAssetsDownloaded(for locale: Locale) async throws -> SpeechTranscriber {
+    let transcriber = SpeechTranscriber(
+      locale: locale,
+      transcriptionOptions: [],
+      reportingOptions: [],
+      attributeOptions: [.audioTimeRange]
+    )
+
+    let installed = await SpeechTranscriber.installedLocales
+    let installedIds = Set(installed.map { $0.identifier(.bcp47) })
+    if !installedIds.contains(locale.identifier(.bcp47)) {
+      if let installRequest = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
+        try await installRequest.downloadAndInstall()
+      }
+    }
+    return transcriber
+  }
+
   private func transcribe(asset: AVAsset, locale: Locale) async throws -> PreparedTranscript {
     let rawAudioURL = try await extractAudioAsLinearPcmFile(from: asset)
     defer { try? FileManager.default.removeItem(at: rawAudioURL) }
@@ -844,20 +920,7 @@ private final class BanteraVideoPreparationService {
       throw BanteraVideoProcessingError.speechUnavailable
     }
 
-    let transcriber = SpeechTranscriber(
-      locale: locale,
-      transcriptionOptions: [],
-      reportingOptions: [],
-      attributeOptions: [.audioTimeRange]
-    )
-
-    let installed = await SpeechTranscriber.installedLocales
-    let installedIds = Set(installed.map { $0.identifier(.bcp47) })
-    if !installedIds.contains(locale.identifier(.bcp47)) {
-      if let installRequest = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-        try await installRequest.downloadAndInstall()
-      }
-    }
+    let transcriber = try await ensureTranscriptionAssetsDownloaded(for: locale)
 
     let readableInputURL: URL
     var shouldDeleteReadableInput = false

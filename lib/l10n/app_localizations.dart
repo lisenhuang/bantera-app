@@ -1363,6 +1363,12 @@ abstract class AppLocalizations {
   /// **'This may take up to a minute.\nPlease stay on this page while generating.'**
   String get aiGenLoadingSubtitle;
 
+  /// No description provided for @aiGenStepPreparingSpeechModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing on-device speech model'**
+  String get aiGenStepPreparingSpeechModel;
+
   /// No description provided for @aiGenStepWritingDialogue.
   ///
   /// In en, this message translates to:

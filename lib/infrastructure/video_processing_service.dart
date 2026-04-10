@@ -81,6 +81,40 @@ class VideoProcessingService {
     'bantera/video_processing',
   );
 
+  /// Ensures on-device SpeechTranscriber assets for [localeIdentifier] are
+  /// downloaded (iOS 26+). Call before long-running work that will transcribe
+  /// later (e.g. AI audio generation) so the user isn’t stuck after dialogue
+  /// generation waiting for the model.
+  Future<void> ensureTranscriptionModelInstalled({
+    required String localeIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const VideoProcessingException(
+        code: 'unsupported_platform',
+        message: 'Video transcription is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      await _channel.invokeMethod<void>(
+        'ensureTranscriptionModelInstalled',
+        <String, Object?>{'localeIdentifier': localeIdentifier},
+      );
+    } on PlatformException catch (error) {
+      throw VideoProcessingException(
+        code: error.code,
+        message:
+            error.message ??
+            'The speech recognition model could not be prepared.',
+      );
+    } on MissingPluginException {
+      throw const VideoProcessingException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS video bridge is not available in this build.',
+      );
+    }
+  }
+
   Future<List<TranscriptionLocaleOption>> fetchSupportedLocales() async {
     if (!Platform.isIOS) {
       throw const VideoProcessingException(

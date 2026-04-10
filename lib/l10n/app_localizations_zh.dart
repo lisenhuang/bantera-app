@@ -674,6 +674,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiGenLoadingSubtitle => '这可能需要约一分钟。\n生成期间请保持在此页面。';
 
   @override
+  String get aiGenStepPreparingSpeechModel => '正在准备设备端语音模型';
+
+  @override
   String get aiGenStepWritingDialogue => '撰写对白';
 
   @override
@@ -1436,6 +1439,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get aiGenLoadingSubtitle => '这可能需要约一分钟。\n生成期间请保持在此页面。';
+
+  @override
+  String get aiGenStepPreparingSpeechModel => '正在准备设备端语音模型';
 
   @override
   String get aiGenStepWritingDialogue => '撰写对白';

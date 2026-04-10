@@ -308,6 +308,7 @@
   "aiGenLeave": "Leave",
   "aiGenLoadingTitle": "Creating your audio…",
   "aiGenLoadingSubtitle": "This may take up to a minute.\nPlease stay on this page while generating.",
+  "aiGenStepPreparingSpeechModel": "Preparing on-device speech model",
   "aiGenStepWritingDialogue": "Writing dialogue",
   "aiGenStepGeneratingAudio": "Generating audio",
   "aiGenStepTranscribing": "Transcribing",

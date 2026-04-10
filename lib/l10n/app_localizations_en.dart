@@ -717,6 +717,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This may take up to a minute.\nPlease stay on this page while generating.';
 
   @override
+  String get aiGenStepPreparingSpeechModel =>
+      'Preparing on-device speech model';
+
+  @override
   String get aiGenStepWritingDialogue => 'Writing dialogue';
 
   @override

@@ -217,6 +217,7 @@
   "aiGenLeave": "離れる",
   "aiGenLoadingTitle": "音声を作成しています…",
   "aiGenLoadingSubtitle": "最大で1分ほどかかることがあります。\n生成中はこのページを開いたままにしてください。",
+  "aiGenStepPreparingSpeechModel": "端末内音声モデルを準備中",
   "aiGenStepWritingDialogue": "台本を作成中",
   "aiGenStepGeneratingAudio": "音声を生成中",
   "aiGenStepTranscribing": "書き起こし中",

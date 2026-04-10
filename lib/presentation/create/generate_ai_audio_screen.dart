@@ -200,7 +200,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             : _selectedScenario!.scenarioText ?? _selectedScenario!.label;
 
     setState(() {
-      _step = _GenerationStep.writingDialogue;
+      _step = _GenerationStep.preparingSpeechModel;
       _errorMessage = null;
     });
 
@@ -208,6 +208,15 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     UploadedVideo? video;
     List<String> dialogueLines = [];
     try {
+      if (Platform.isIOS) {
+        await VideoProcessingService.instance.ensureTranscriptionModelInstalled(
+          localeIdentifier: locale.identifier,
+        );
+      }
+      if (!mounted) return;
+
+      setState(() => _step = _GenerationStep.writingDialogue);
+
       await AuthApiClient.instance.generateAiAudioStreaming(
         accessToken: session.accessToken,
         language: locale.displayName,
@@ -250,6 +259,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       );
     } on SessionExpiredException {
       // User is being signed out — do nothing.
+    } on VideoProcessingException catch (e) {
+      if (mounted) setState(() => _errorMessage = e.message);
     } on AuthApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } catch (e) {
@@ -367,6 +378,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   Widget _buildLoadingState(AppLocalizations l10n) {
     final steps = [
+      (
+        step: _GenerationStep.preparingSpeechModel,
+        label: l10n.aiGenStepPreparingSpeechModel,
+      ),
       (step: _GenerationStep.writingDialogue, label: l10n.aiGenStepWritingDialogue),
       (step: _GenerationStep.generatingAudio, label: l10n.aiGenStepGeneratingAudio),
       (step: _GenerationStep.transcribing, label: l10n.aiGenStepTranscribing),
@@ -635,4 +650,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 }
 
-enum _GenerationStep { idle, writingDialogue, generatingAudio, transcribing, correctingTranscript }
+enum _GenerationStep {
+  idle,
+  preparingSpeechModel,
+  writingDialogue,
+  generatingAudio,
+  transcribing,
+  correctingTranscript,
+}

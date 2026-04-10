@@ -217,6 +217,7 @@
   "aiGenLeave": "나가기",
   "aiGenLoadingTitle": "오디오를 만드는 중…",
   "aiGenLoadingSubtitle": "최대 1분 정도 걸릴 수 있습니다.\n생성 중에는 이 페이지에 머물러 주세요.",
+  "aiGenStepPreparingSpeechModel": "온디바이스 음성 모델 준비 중",
   "aiGenStepWritingDialogue": "대화 작성 중",
   "aiGenStepGeneratingAudio": "오디오 생성 중",
   "aiGenStepTranscribing": "전사 중",

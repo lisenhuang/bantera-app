@@ -684,6 +684,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '최대 1분 정도 걸릴 수 있습니다.\n생성 중에는 이 페이지에 머물러 주세요.';
 
   @override
+  String get aiGenStepPreparingSpeechModel => '온디바이스 음성 모델 준비 중';
+
+  @override
   String get aiGenStepWritingDialogue => '대화 작성 중';
 
   @override

@@ -681,6 +681,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '最大で1分ほどかかることがあります。\n生成中はこのページを開いたままにしてください。';
 
   @override
+  String get aiGenStepPreparingSpeechModel => '端末内音声モデルを準備中';
+
+  @override
   String get aiGenStepWritingDialogue => '台本を作成中';
 
   @override
