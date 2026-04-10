@@ -5,17 +5,17 @@ import 'package:path_provider/path_provider.dart';
 
 /// Extra silence after each cue during Play all (for shadowing / repeating aloud).
 enum PlayAllPauseBetweenCues {
-  /// Play the media continuously (no inserted pause; gaps in the file are unchanged).
+  /// No inserted pause (0 s).
   none,
 
-  /// Fixed 1 second between cues.
+  /// 1 second (scaled by playback speed for wall-clock shadowing).
   oneSecond,
 
-  /// Pause as long as the cue that just finished (same duration as that cue).
-  oneCueDuration,
+  /// One cue length + 1 s (timeline ms), scaled for playback speed.
+  oneCuePlusOneSecond,
 
-  /// Pause twice the duration of the cue that just finished.
-  twoCueDurations,
+  /// One cue length + 2 s (timeline ms), scaled for playback speed.
+  oneCuePlusTwoSeconds,
 }
 
 /// Pause style and how many times each cue plays before advancing (Play all).

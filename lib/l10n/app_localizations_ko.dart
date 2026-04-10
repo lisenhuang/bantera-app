@@ -345,25 +345,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practicePlayAllDescription => '큐 사이에 멈춤(따라 말하기):';
 
   @override
-  String get practicePlayAllPauseNoneTitle => '추가 멈춤 없음 (0초)';
+  String get practicePlayAllPauseZeroSeconds => '0초';
 
   @override
-  String get practicePlayAllPauseNoneSubtitle => '끊김 없이 재생';
+  String get practicePlayAllPauseOneSecondLabel => '1초';
 
   @override
-  String get practicePlayAllPauseOneSecond => '1초';
+  String get practicePlayAllPauseOneCuePlusOneSecond => '1 큐 + 1초';
 
   @override
-  String get practicePlayAllPauseOneCueTitle => '1× 큐 길이';
-
-  @override
-  String get practicePlayAllPauseOneCueSubtitle => '방금 재생한 큐만큼 멈춤';
-
-  @override
-  String get practicePlayAllPauseTwoCuesTitle => '2× 큐 길이';
-
-  @override
-  String get practicePlayAllPauseTwoCuesSubtitle => '방금 재생한 큐의 두 배만큼 멈춤';
+  String get practicePlayAllPauseOneCuePlusTwoSeconds => '1 큐 + 2초';
 
   @override
   String get practicePlayAllTimesPerCueTitle => '큐당 재생 횟수';

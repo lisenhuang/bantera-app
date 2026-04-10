@@ -306,8 +306,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   ),
                   const SizedBox(height: 12),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: Text(l10n.practicePlayAllPauseNoneTitle),
-                    subtitle: Text(l10n.practicePlayAllPauseNoneSubtitle),
+                    title: Text(l10n.practicePlayAllPauseZeroSeconds),
                     dense: true,
                     value: PlayAllPauseBetweenCues.none,
                     groupValue: selectedPause,
@@ -318,7 +317,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: Text(l10n.practicePlayAllPauseOneSecond),
+                    title: Text(l10n.practicePlayAllPauseOneSecondLabel),
                     dense: true,
                     value: PlayAllPauseBetweenCues.oneSecond,
                     groupValue: selectedPause,
@@ -329,10 +328,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: Text(l10n.practicePlayAllPauseOneCueTitle),
-                    subtitle: Text(l10n.practicePlayAllPauseOneCueSubtitle),
+                    title: Text(l10n.practicePlayAllPauseOneCuePlusOneSecond),
                     dense: true,
-                    value: PlayAllPauseBetweenCues.oneCueDuration,
+                    value: PlayAllPauseBetweenCues.oneCuePlusOneSecond,
                     groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
@@ -341,10 +339,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     },
                   ),
                   RadioListTile<PlayAllPauseBetweenCues>(
-                    title: Text(l10n.practicePlayAllPauseTwoCuesTitle),
-                    subtitle: Text(l10n.practicePlayAllPauseTwoCuesSubtitle),
+                    title: Text(l10n.practicePlayAllPauseOneCuePlusTwoSeconds),
                     dense: true,
-                    value: PlayAllPauseBetweenCues.twoCueDurations,
+                    value: PlayAllPauseBetweenCues.oneCuePlusTwoSeconds,
                     groupValue: selectedPause,
                     onChanged: (v) {
                       if (v != null) {
@@ -425,8 +422,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return switch (mode) {
       PlayAllPauseBetweenCues.none => 0,
       PlayAllPauseBetweenCues.oneSecond => scaledWallMs(1000),
-      PlayAllPauseBetweenCues.oneCueDuration => scaledWallMs(cueLen),
-      PlayAllPauseBetweenCues.twoCueDurations => scaledWallMs(cueLen * 2),
+      PlayAllPauseBetweenCues.oneCuePlusOneSecond =>
+        scaledWallMs(cueLen + 1000),
+      PlayAllPauseBetweenCues.oneCuePlusTwoSeconds =>
+        scaledWallMs(cueLen + 2000),
     };
   }
 

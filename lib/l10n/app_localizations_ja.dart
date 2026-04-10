@@ -343,25 +343,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practicePlayAllDescription => 'キュー間に一時停止（シャドーイング）：';
 
   @override
-  String get practicePlayAllPauseNoneTitle => '追加の一時停止なし（0秒）';
+  String get practicePlayAllPauseZeroSeconds => '0秒';
 
   @override
-  String get practicePlayAllPauseNoneSubtitle => 'トラックを連続再生';
+  String get practicePlayAllPauseOneSecondLabel => '1秒';
 
   @override
-  String get practicePlayAllPauseOneSecond => '1秒';
+  String get practicePlayAllPauseOneCuePlusOneSecond => '1キュー + 1秒';
 
   @override
-  String get practicePlayAllPauseOneCueTitle => '1×キューの長さ';
-
-  @override
-  String get practicePlayAllPauseOneCueSubtitle => '直前に再生したキューと同じ長さ一時停止';
-
-  @override
-  String get practicePlayAllPauseTwoCuesTitle => '2×キューの長さ';
-
-  @override
-  String get practicePlayAllPauseTwoCuesSubtitle => '直前のキューの2倍の長さ一時停止';
+  String get practicePlayAllPauseOneCuePlusTwoSeconds => '1キュー + 2秒';
 
   @override
   String get practicePlayAllTimesPerCueTitle => '各キューの再生回数';

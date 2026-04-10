@@ -751,47 +751,29 @@ abstract class AppLocalizations {
   /// **'Pause between cues for shadowing:'**
   String get practicePlayAllDescription;
 
-  /// No description provided for @practicePlayAllPauseNoneTitle.
+  /// No description provided for @practicePlayAllPauseZeroSeconds.
   ///
   /// In en, this message translates to:
-  /// **'No extra pause (0 s)'**
-  String get practicePlayAllPauseNoneTitle;
+  /// **'0 s'**
+  String get practicePlayAllPauseZeroSeconds;
 
-  /// No description provided for @practicePlayAllPauseNoneSubtitle.
+  /// No description provided for @practicePlayAllPauseOneSecondLabel.
   ///
   /// In en, this message translates to:
-  /// **'Play through the track continuously'**
-  String get practicePlayAllPauseNoneSubtitle;
+  /// **'1 s'**
+  String get practicePlayAllPauseOneSecondLabel;
 
-  /// No description provided for @practicePlayAllPauseOneSecond.
+  /// No description provided for @practicePlayAllPauseOneCuePlusOneSecond.
   ///
   /// In en, this message translates to:
-  /// **'1 second'**
-  String get practicePlayAllPauseOneSecond;
+  /// **'1 cue + 1 s'**
+  String get practicePlayAllPauseOneCuePlusOneSecond;
 
-  /// No description provided for @practicePlayAllPauseOneCueTitle.
+  /// No description provided for @practicePlayAllPauseOneCuePlusTwoSeconds.
   ///
   /// In en, this message translates to:
-  /// **'1× cue length'**
-  String get practicePlayAllPauseOneCueTitle;
-
-  /// No description provided for @practicePlayAllPauseOneCueSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause as long as the cue that just played'**
-  String get practicePlayAllPauseOneCueSubtitle;
-
-  /// No description provided for @practicePlayAllPauseTwoCuesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'2× cue length'**
-  String get practicePlayAllPauseTwoCuesTitle;
-
-  /// No description provided for @practicePlayAllPauseTwoCuesSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause twice as long as the cue that just played'**
-  String get practicePlayAllPauseTwoCuesSubtitle;
+  /// **'1 cue + 2 s'**
+  String get practicePlayAllPauseOneCuePlusTwoSeconds;
 
   /// No description provided for @practicePlayAllTimesPerCueTitle.
   ///

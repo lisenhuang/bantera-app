@@ -360,28 +360,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practicePlayAllDescription => 'Pause between cues for shadowing:';
 
   @override
-  String get practicePlayAllPauseNoneTitle => 'No extra pause (0 s)';
+  String get practicePlayAllPauseZeroSeconds => '0 s';
 
   @override
-  String get practicePlayAllPauseNoneSubtitle =>
-      'Play through the track continuously';
+  String get practicePlayAllPauseOneSecondLabel => '1 s';
 
   @override
-  String get practicePlayAllPauseOneSecond => '1 second';
+  String get practicePlayAllPauseOneCuePlusOneSecond => '1 cue + 1 s';
 
   @override
-  String get practicePlayAllPauseOneCueTitle => '1× cue length';
-
-  @override
-  String get practicePlayAllPauseOneCueSubtitle =>
-      'Pause as long as the cue that just played';
-
-  @override
-  String get practicePlayAllPauseTwoCuesTitle => '2× cue length';
-
-  @override
-  String get practicePlayAllPauseTwoCuesSubtitle =>
-      'Pause twice as long as the cue that just played';
+  String get practicePlayAllPauseOneCuePlusTwoSeconds => '1 cue + 2 s';
 
   @override
   String get practicePlayAllTimesPerCueTitle => 'Times per cue';

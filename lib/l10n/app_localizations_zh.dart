@@ -342,25 +342,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practicePlayAllDescription => '分句之间暂停，便于跟读：';
 
   @override
-  String get practicePlayAllPauseNoneTitle => '无额外暂停（0 秒）';
+  String get practicePlayAllPauseZeroSeconds => '0 秒';
 
   @override
-  String get practicePlayAllPauseNoneSubtitle => '连续播放整段音频';
+  String get practicePlayAllPauseOneSecondLabel => '1 秒';
 
   @override
-  String get practicePlayAllPauseOneSecond => '1 秒';
+  String get practicePlayAllPauseOneCuePlusOneSecond => '1 句 + 1 秒';
 
   @override
-  String get practicePlayAllPauseOneCueTitle => '1× 分句时长';
-
-  @override
-  String get practicePlayAllPauseOneCueSubtitle => '暂停时长与刚播放的分句相同';
-
-  @override
-  String get practicePlayAllPauseTwoCuesTitle => '2× 分句时长';
-
-  @override
-  String get practicePlayAllPauseTwoCuesSubtitle => '暂停时长为刚播放分句的两倍';
+  String get practicePlayAllPauseOneCuePlusTwoSeconds => '1 句 + 2 秒';
 
   @override
   String get practicePlayAllTimesPerCueTitle => '每条播放次数';
@@ -1148,25 +1139,16 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get practicePlayAllDescription => '分句之间暂停，便于跟读：';
 
   @override
-  String get practicePlayAllPauseNoneTitle => '无额外暂停（0 秒）';
+  String get practicePlayAllPauseZeroSeconds => '0 秒';
 
   @override
-  String get practicePlayAllPauseNoneSubtitle => '连续播放整段音频';
+  String get practicePlayAllPauseOneSecondLabel => '1 秒';
 
   @override
-  String get practicePlayAllPauseOneSecond => '1 秒';
+  String get practicePlayAllPauseOneCuePlusOneSecond => '1 句 + 1 秒';
 
   @override
-  String get practicePlayAllPauseOneCueTitle => '1× 分句时长';
-
-  @override
-  String get practicePlayAllPauseOneCueSubtitle => '暂停时长与刚播放的分句相同';
-
-  @override
-  String get practicePlayAllPauseTwoCuesTitle => '2× 分句时长';
-
-  @override
-  String get practicePlayAllPauseTwoCuesSubtitle => '暂停时长为刚播放分句的两倍';
+  String get practicePlayAllPauseOneCuePlusTwoSeconds => '1 句 + 2 秒';
 
   @override
   String get practicePlayAllTimesPerCueTitle => '每条播放次数';
