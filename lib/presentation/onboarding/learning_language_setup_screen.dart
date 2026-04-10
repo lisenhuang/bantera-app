@@ -30,7 +30,9 @@ class _LearningLanguageSetupScreenState
   Future<void> _loadLocales() async {
     try {
       final locales =
-          await VideoProcessingService.instance.fetchSupportedLocales();
+          await VideoProcessingService.instance.fetchSupportedLocales(
+        excludeZhTwForLearning: true,
+      );
       if (!mounted) return;
       setState(() {
         _locales = locales;

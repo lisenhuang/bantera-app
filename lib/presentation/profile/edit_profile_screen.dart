@@ -172,6 +172,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? null
                       : () => _showLanguagePicker(
                             title: l10n.editProfileMyNativeLanguage,
+                            excludeZhTwForLearning: false,
                             currentIdentifier: _profile.nativeLanguage,
                             onSelected: _saveNativeLanguage,
                           ),
@@ -187,6 +188,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? null
                       : () => _showLanguagePicker(
                             title: l10n.editProfileLearningLanguage,
+                            excludeZhTwForLearning: true,
                             currentIdentifier: _profile.learningLanguage,
                             onSelected: _saveLearningLanguage,
                             showClearOption: false,
@@ -286,6 +288,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _showLanguagePicker({
     required String title,
+    required bool excludeZhTwForLearning,
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
@@ -300,6 +303,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    final filteredOptions = excludeZhTwForLearning
+        ? options.where((o) => o.identifier != 'zh-TW').toList()
+        : options;
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -310,7 +317,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context) {
         return _LanguagePickerSheet(
           title: title,
-          options: options,
+          options: filteredOptions,
           currentIdentifier: currentIdentifier,
           showClearOption: showClearOption,
           onSelected: (option) {
