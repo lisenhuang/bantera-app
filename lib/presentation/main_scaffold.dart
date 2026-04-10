@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'discover/discover_screen.dart';
+import 'package:flutter/material.dart';
+
+import '../l10n/app_localizations.dart';
 import 'create/create_hub_screen.dart';
+import 'discover/discover_screen.dart';
 import 'profile/profile_screen.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -22,6 +24,8 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -34,18 +38,18 @@ class _MainScaffoldState extends State<MainScaffold> {
             _currentIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.compass),
-            label: 'Discover',
+            icon: const Icon(CupertinoIcons.compass),
+            label: l10n.navDiscover,
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.add_circled_solid),
-            label: 'Create',
+            icon: const Icon(CupertinoIcons.add_circled_solid),
+            label: l10n.navCreate,
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.person_solid),
-            label: 'Profile',
+            icon: const Icon(CupertinoIcons.person_solid),
+            label: l10n.navProfile,
           ),
         ],
       ),

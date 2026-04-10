@@ -4,17 +4,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'app_locale.dart';
+
 class SettingsNotifier extends ChangeNotifier {
   SettingsNotifier._();
 
   ThemeMode _themeMode = ThemeMode.light;
   bool _notificationsEnabled = true;
   String? _lastTranscriptionLocale;
+  AppLocalePreference _appLocalePreference = AppLocalePreference.system;
   bool _isInitialized = false;
 
   ThemeMode get themeMode => _themeMode;
   bool get notificationsEnabled => _notificationsEnabled;
   String? get lastTranscriptionLocale => _lastTranscriptionLocale;
+  AppLocalePreference get appLocalePreference => _appLocalePreference;
   bool get isInitialized => _isInitialized;
 
   Future<void> initialize() async {
@@ -37,6 +41,9 @@ class SettingsNotifier extends ChangeNotifier {
                 .trim();
             _lastTranscriptionLocale =
                 savedLocale == null || savedLocale.isEmpty ? null : savedLocale;
+            _appLocalePreference = AppLocalePreference.fromStorage(
+              decoded['appLocale']?.toString(),
+            );
           }
         }
       }
@@ -44,6 +51,7 @@ class SettingsNotifier extends ChangeNotifier {
       _themeMode = ThemeMode.light;
       _notificationsEnabled = true;
       _lastTranscriptionLocale = null;
+      _appLocalePreference = AppLocalePreference.system;
     } finally {
       _isInitialized = true;
     }
@@ -63,6 +71,20 @@ class SettingsNotifier extends ChangeNotifier {
       notifyListeners();
       _persist();
     }
+  }
+
+  void setAppLocalePreference(AppLocalePreference value) {
+    if (_appLocalePreference == value) {
+      return;
+    }
+    _appLocalePreference = value;
+    notifyListeners();
+    _persist();
+  }
+
+  /// Call when the device locale changes and [appLocalePreference] is [system].
+  void notifyLocaleChanged() {
+    notifyListeners();
   }
 
   void setLastTranscriptionLocale(String? identifier) {
@@ -91,6 +113,7 @@ class SettingsNotifier extends ChangeNotifier {
           'themeMode': _themeMode.name,
           'notificationsEnabled': _notificationsEnabled,
           'lastTranscriptionLocale': _lastTranscriptionLocale,
+          'appLocale': _appLocalePreference.storageValue,
         }),
       );
     } catch (_) {

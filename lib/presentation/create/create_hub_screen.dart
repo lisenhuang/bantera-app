@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
@@ -46,7 +47,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Create'),
+        title: Text(AppLocalizations.of(context)!.navCreate),
         centerTitle: false,
       ),
       body: SingleChildScrollView(

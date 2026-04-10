@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/user_profile_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../shared/locale_flag.dart';
 
@@ -51,10 +52,12 @@ class _LearningLanguageSetupScreenState
         await UserProfileNotifier.instance.updateLearningLanguage(locale.identifier);
     if (mounted) setState(() => _isSaving = false);
     if (!ok && mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            UserProfileNotifier.instance.errorMessage ?? 'Failed to save.',
+            UserProfileNotifier.instance.errorMessage ??
+                l10n.onboardingFailedSave,
           ),
         ),
       );
@@ -76,6 +79,7 @@ class _LearningLanguageSetupScreenState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -86,14 +90,14 @@ class _LearningLanguageSetupScreenState
             children: [
               const SizedBox(height: 48),
               Text(
-                'What language are\nyou learning?',
+                l10n.onboardingTitle,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                "We'll use this to show you the right content.",
+                l10n.onboardingSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.grey,
                 ),
@@ -102,7 +106,7 @@ class _LearningLanguageSetupScreenState
               TextField(
                 onChanged: (v) => setState(() => _searchText = v),
                 decoration: InputDecoration(
-                  hintText: 'Search languages…',
+                  hintText: l10n.onboardingSearchHint,
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: colorScheme.surfaceContainerHighest,
@@ -123,6 +127,8 @@ class _LearningLanguageSetupScreenState
   }
 
   Widget _buildBody(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading || _isSaving) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -141,7 +147,7 @@ class _LearningLanguageSetupScreenState
                 });
                 _loadLocales();
               },
-              child: const Text('Retry'),
+              child: Text(l10n.onboardingRetry),
             ),
           ],
         ),
@@ -150,7 +156,7 @@ class _LearningLanguageSetupScreenState
 
     final items = _filtered;
     if (items.isEmpty) {
-      return const Center(child: Text('No matching languages.'));
+      return Center(child: Text(l10n.onboardingNoMatching));
     }
 
     return ListView.separated(

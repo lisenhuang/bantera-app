@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/theme.dart';
 import '../../domain/models/models.dart';
@@ -78,7 +79,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Lesson Details'),
+        title: Text(AppLocalizations.of(context)!.lessonDetailsTitle),
         actions: [
           if (_savePending)
             const Padding(

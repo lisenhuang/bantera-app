@@ -6,6 +6,7 @@ import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/user_profile_cache_store.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Secondary settings page for account actions (e.g. delete account).
 class AccountMoreScreen extends StatefulWidget {
@@ -32,24 +33,23 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm deletion'),
-        content: const Text(
-          'Your account will be deleted immediately. You will need to create a new account to use Bantera again.',
-        ),
+        title: Text(l10n.confirmDeletionTitle),
+        content: Text(l10n.deleteAccountImmediateBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('Delete account'),
+            child: Text(l10n.deleteAccountConfirm),
           ),
         ],
       ),
@@ -89,10 +89,9 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
       }
     } catch (_) {
       if (mounted) {
+        final loc = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not delete account. Please try again.'),
-          ),
+          SnackBar(content: Text(loc.couldNotDeleteAccount)),
         );
       }
     } finally {
@@ -104,9 +103,11 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('More'),
+        title: Text(l10n.accountMoreTitle),
       ),
       body: Stack(
         children: [
@@ -127,14 +128,12 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
                         color: Theme.of(context).colorScheme.error,
                       ),
                       title: Text(
-                        'Delete account',
+                        l10n.deleteAccount,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),
                       ),
-                      subtitle: const Text(
-                        'Permanently remove your account and server data',
-                      ),
+                      subtitle: Text(l10n.deleteAccountSubtitle),
                       onTap: auth.session == null || busy
                           ? null
                           : _confirmDeleteAccount,
@@ -182,26 +181,26 @@ class _DeleteAccountAcknowledgeDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final canContinue = _controller.text == _requiredPhrase;
 
     return AlertDialog(
-      title: const Text('Delete account?'),
+      title: Text(l10n.deleteAccountQuestionTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'All of your personal information and any data you’ve generated will be '
-              'permanently removed from our servers and can’t be recovered.',
+              l10n.deleteAccountQuestionBody,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
-              decoration: const InputDecoration(
-                labelText: 'Type "DELETE" to continue',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.typeDeleteLabel,
+                border: const OutlineInputBorder(),
               ),
               autocorrect: false,
               enableSuggestions: false,
@@ -214,11 +213,11 @@ class _DeleteAccountAcknowledgeDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: canContinue ? () => Navigator.pop(context, true) : null,
-          child: const Text('Continue'),
+          child: Text(l10n.continueLabel),
         ),
       ],
     );

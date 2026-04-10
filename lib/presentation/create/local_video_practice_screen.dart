@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/settings_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
@@ -47,7 +48,9 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice Local Video')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.practiceLocalVideoTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

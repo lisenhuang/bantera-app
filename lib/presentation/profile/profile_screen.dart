@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/theme.dart';
 import '../../core/user_profile_notifier.dart';
@@ -40,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(
-            title: const Text('Profile'),
+            title: Text(AppLocalizations.of(context)!.navProfile),
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined),

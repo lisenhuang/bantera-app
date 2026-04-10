@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../l10n/app_localizations.dart';
 import '../../infrastructure/mock_data.dart';
 import 'chat_conversation_screen.dart';
 
@@ -12,7 +14,7 @@ class ChatsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
+        title: Text(AppLocalizations.of(context)!.chatsTitle),
         actions: [
           IconButton(
              icon: const Icon(Icons.person_add_alt_1), 

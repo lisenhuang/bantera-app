@@ -7,6 +7,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../core/theme.dart';
+import '../../l10n/app_localizations.dart';
 import 'api_base_url_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -78,6 +79,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -119,7 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 }
                               },
                               child: Text(
-                                'Bantera',
+                                l10n.appName,
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.displayLarge?.copyWith(
                                   color: BanteraTheme.primaryColor,
@@ -128,7 +130,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Language practice, cue by cue.',
+                              l10n.appTagline,
                               textAlign: TextAlign.center,
                               style: theme.textTheme.bodyLarge,
                             ),
@@ -151,7 +153,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 }
                                 if (snapshot.data != true) {
                                   return Text(
-                                    'Sign in with Apple is unavailable on this device.',
+                                    l10n.authAppleUnavailable,
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium,
                                   );
@@ -160,7 +162,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                   onPressed: _auth.isBusy
                                       ? null
                                       : () => _auth.continueWithApple(),
-                                  text: 'Continue with Apple',
+                                  text: l10n.authContinueWithApple,
                                   borderRadius: const BorderRadius.all(
                                     Radius.circular(12),
                                   ),
@@ -179,7 +181,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                       horizontal: 12,
                                     ),
                                     child: Text(
-                                      'or sign in with email',
+                                      l10n.authOrSignInEmail,
                                       style: theme.textTheme.bodySmall,
                                     ),
                                   ),
@@ -199,9 +201,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       autofillHints: const [
                                         AutofillHints.email,
                                       ],
-                                      decoration: const InputDecoration(
-                                        labelText: 'Email',
-                                        prefixIcon: Icon(Icons.mail_outline),
+                                      decoration: InputDecoration(
+                                        labelText: l10n.authEmail,
+                                        prefixIcon: const Icon(Icons.mail_outline),
                                       ),
                                       validator: _validateEmail,
                                     ),
@@ -213,9 +215,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       autofillHints: const [
                                         AutofillHints.password,
                                       ],
-                                      decoration: const InputDecoration(
-                                        labelText: 'Password',
-                                        prefixIcon: Icon(Icons.lock_outline),
+                                      decoration: InputDecoration(
+                                        labelText: l10n.authPassword,
+                                        prefixIcon: const Icon(Icons.lock_outline),
                                       ),
                                       validator: _validatePassword,
                                       onFieldSubmitted: (_) => _submit(),
@@ -228,8 +230,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                             _auth.isBusy ? null : _submit,
                                         child: Text(
                                           _auth.isBusy
-                                              ? 'Signing in...'
-                                              : 'Sign In',
+                                              ? l10n.authSigningIn
+                                              : l10n.authSignIn,
                                         ),
                                       ),
                                     ),
@@ -245,7 +247,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                         setState(() => _showEmailForm = true);
                                         _auth.clearError();
                                       },
-                                child: const Text('Sign in with email'),
+                                child: Text(l10n.authSignInWithEmail),
                               ),
                             ],
 
@@ -285,14 +287,16 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   String? _validateEmail(String? value) {
+    final l10n = AppLocalizations.of(context)!;
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return 'Enter your email.';
-    if (!trimmed.contains('@')) return 'Enter a valid email.';
+    if (trimmed.isEmpty) return l10n.validationEnterEmail;
+    if (!trimmed.contains('@')) return l10n.validationValidEmail;
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if ((value ?? '').isEmpty) return 'Enter your password.';
+    final l10n = AppLocalizations.of(context)!;
+    if ((value ?? '').isEmpty) return l10n.validationEnterPassword;
     return null;
   }
 

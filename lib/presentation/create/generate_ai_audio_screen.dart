@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
 import '../../domain/models/models.dart';
@@ -331,7 +332,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         });
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Generate with AI')),
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.generateWithAiTitle),
+        ),
         body: _isGenerating ? _buildLoadingState() : _buildForm(theme, colorScheme),
       ),
     );

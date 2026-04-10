@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/auth_session_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/settings_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
@@ -53,7 +54,9 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
     final prepared = _preparedUpload;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Video')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.uploadVideoTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

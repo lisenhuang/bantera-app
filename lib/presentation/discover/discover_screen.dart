@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
@@ -157,7 +158,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Discover'),
+            title: Text(AppLocalizations.of(context)!.navDiscover),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(60.0),
               child: Padding(

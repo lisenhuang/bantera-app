@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -42,7 +43,9 @@ class _SavedScreenState extends State<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.savedTitle),
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: _isLoading
