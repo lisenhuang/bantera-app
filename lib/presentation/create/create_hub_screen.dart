@@ -272,21 +272,16 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSecondary
-              ? colorScheme.surfaceContainerHighest
+              ? colorScheme.surfaceContainerHigh
               : colorScheme.primary,
           borderRadius: BorderRadius.circular(20),
-          border: isSecondary
-              ? Border.all(
-                  color: colorScheme.outline,
-                  width: 1.5,
-                )
-              : null,
           boxShadow: isSecondary
               ? [
                   BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.12),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 14,
+                    offset: const Offset(0, 3),
+                    spreadRadius: -1,
                   ),
                 ]
               : [
