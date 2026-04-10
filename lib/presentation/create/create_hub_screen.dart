@@ -75,7 +75,14 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const GenerateAiAudioScreen(),
+                          builder: (_) => GenerateAiAudioScreen(
+                            onYourMediaChanged: () {
+                              if (!mounted) return;
+                              unawaited(
+                                _loadMyVideos(showLoadingState: false),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

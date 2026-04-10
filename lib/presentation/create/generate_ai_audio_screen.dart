@@ -39,7 +39,11 @@ String _localizedScenarioLabel(AppLocalizations l10n, AiScenario scenario) {
 }
 
 class GenerateAiAudioScreen extends StatefulWidget {
-  const GenerateAiAudioScreen({super.key});
+  const GenerateAiAudioScreen({super.key, this.onYourMediaChanged});
+
+  /// Called when a new upload exists on the server (before opening detail).
+  /// Used so the Create hub "Your Media" list can refetch.
+  final VoidCallback? onYourMediaChanged;
 
   @override
   State<GenerateAiAudioScreen> createState() => _GenerateAiAudioScreenState();
@@ -251,6 +255,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       );
 
       if (!mounted) return;
+      widget.onYourMediaChanged?.call();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
