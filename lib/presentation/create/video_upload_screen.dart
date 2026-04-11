@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/settings_notifier.dart';
@@ -502,8 +503,9 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
       if (!mounted) {
         return;
       }
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
-        _errorMessage = error.message;
+        _errorMessage = localizeAuthApiError(l10n, error);
       });
     } finally {
       if (mounted) {

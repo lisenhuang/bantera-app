@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/user_profile_cache_store.dart';
+import '../l10n/app_localizations.dart';
+import 'auth_api_error_localizations.dart';
 import 'auth_session_notifier.dart';
 
 class UserProfileNotifier extends ChangeNotifier {
@@ -30,7 +32,8 @@ class UserProfileNotifier extends ChangeNotifier {
   bool _isLoading = false;
   bool _isSavingProfile = false;
   bool _isUploadingImage = false;
-  String? _errorMessage;
+  String? _plainErrorMessage;
+  AuthApiException? _authApiError;
 
   UserProfile? get profile => _profile;
   bool get isLoading => _isLoading;
@@ -38,7 +41,18 @@ class UserProfileNotifier extends ChangeNotifier {
   bool get isSavingProfile => _isSavingProfile;
   bool get isUploadingImage => _isUploadingImage;
   bool get isBusy => _isLoading || _isSavingProfile || _isUploadingImage;
-  String? get errorMessage => _errorMessage;
+
+  String? get plainErrorMessage => _plainErrorMessage;
+
+  AuthApiException? get authApiError => _authApiError;
+
+  String? localizedError(AppLocalizations l10n) {
+    if (_authApiError != null) {
+      return localizeAuthApiError(l10n, _authApiError!);
+    }
+    return _plainErrorMessage;
+  }
+
   String? get avatarImagePath => _avatarImagePath;
   String? get avatarUrl => _profile?.avatarUrl;
   String? get translationLanguage => _profile?.translationLanguage;
@@ -75,7 +89,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isLoading = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     if (showLoadingState) {
       notifyListeners();
     }
@@ -95,7 +110,8 @@ class UserProfileNotifier extends ChangeNotifier {
       if (!_isCurrentCacheKey(requestCacheKey)) {
         return;
       }
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       notifyListeners();
     } finally {
       if (_isCurrentCacheKey(requestCacheKey)) {
@@ -121,7 +137,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isSavingProfile = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -132,7 +149,8 @@ class UserProfileNotifier extends ChangeNotifier {
       await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       return false;
     } finally {
       _isSavingProfile = false;
@@ -154,7 +172,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isSavingProfile = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -165,7 +184,8 @@ class UserProfileNotifier extends ChangeNotifier {
       await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       return false;
     } finally {
       _isSavingProfile = false;
@@ -187,7 +207,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isSavingProfile = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -198,7 +219,8 @@ class UserProfileNotifier extends ChangeNotifier {
       await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       return false;
     } finally {
       _isSavingProfile = false;
@@ -220,7 +242,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isSavingProfile = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -231,7 +254,8 @@ class UserProfileNotifier extends ChangeNotifier {
       await _applyRemoteProfile(session.cacheKey, updatedProfile);
       return true;
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       return false;
     } finally {
       _isSavingProfile = false;
@@ -247,7 +271,8 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     _isUploadingImage = true;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -262,7 +287,8 @@ class UserProfileNotifier extends ChangeNotifier {
       );
       return true;
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
       return false;
     } finally {
       _isUploadingImage = false;
@@ -271,11 +297,12 @@ class UserProfileNotifier extends ChangeNotifier {
   }
 
   void clearError() {
-    if (_errorMessage == null) {
+    if (_plainErrorMessage == null && _authApiError == null) {
       return;
     }
 
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
   }
 
@@ -301,7 +328,8 @@ class UserProfileNotifier extends ChangeNotifier {
   void _clearState({bool notify = true}) {
     _profile = null;
     _avatarImagePath = null;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     _isLoading = false;
     _isSavingProfile = false;
     _isUploadingImage = false;
@@ -311,7 +339,8 @@ class UserProfileNotifier extends ChangeNotifier {
   }
 
   void _setError(String message) {
-    _errorMessage = message;
+    _plainErrorMessage = message;
+    _authApiError = null;
     notifyListeners();
   }
 
@@ -325,7 +354,8 @@ class UserProfileNotifier extends ChangeNotifier {
     if (cached != null) {
       _profile = cached.profile;
       _avatarImagePath = cached.avatarPath;
-      _errorMessage = null;
+      _plainErrorMessage = null;
+      _authApiError = null;
       notifyListeners();
     }
 
@@ -343,7 +373,8 @@ class UserProfileNotifier extends ChangeNotifier {
 
     final previousAvatarUrl = _profile?.avatarUrl;
     _profile = profile;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     await _cacheStore.write(cacheKey, profile, avatarPath: _avatarImagePath);
     notifyListeners();
 

@@ -257,5 +257,8 @@
   "aiScenarioBookRecommendation": "本のおすすめ",
   "aiScenarioBusDelay": "バスの遅延",
   "aiScenarioMovieDebate": "映画の議論",
-  "aiScenarioCustom": "カスタム…"
+  "aiScenarioCustom": "カスタム…",
+  "errorNetworkUnreachable": "Bantera に接続できません。インターネット接続を確認してください。",
+  "errorNetworkCellularBlocked": "Bantera のモバイルデータ通信がオフです。「設定」で Bantera を開き「モバイルデータ通信」をオンにするか、Wi-Fi に接続してください。",
+  "errorTlsConnection": "安全な接続を確立できませんでした。"
 }

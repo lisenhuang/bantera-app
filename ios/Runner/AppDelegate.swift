@@ -1,5 +1,7 @@
 import AVFoundation
+import CoreTelephony
 import Flutter
+import Network
 import Speech
 @preconcurrency import Translation
 import UIKit
@@ -24,6 +26,179 @@ import UIKit
     translationBridge = BanteraTranslationBridge(
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
+    _ = BanteraNetworkReachabilityBridge(
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+  }
+}
+
+/// Per-app cellular policy (`CTCellularData`) + `Network` path snapshot for Dart.
+///
+/// - `CTCellularData` must be driven on the **main** thread; reading or assigning
+///   `cellularDataRestrictionDidUpdateNotifier` from a background queue often
+///   leaves `restrictedState` stuck at `.restrictedStateUnknown` on recent iOS
+///   (including iOS 26), so the notifier never resolves.
+/// - When CT stays unknown, we combine a short main-thread poll with an
+///   `NWPathMonitor` snapshot (Apple’s recommended reachability API) as a
+///   fallback hint when classifying errors.
+private final class BanteraNetworkReachabilityBridge {
+  private let channel: FlutterMethodChannel
+
+  private let cellularData = CTCellularData()
+
+  init(binaryMessenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(
+      name: "bantera/network_reachability",
+      binaryMessenger: binaryMessenger
+    )
+    channel.setMethodCallHandler(handle)
+  }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "getNetworkHints":
+      getNetworkHints(result: result)
+    case "getCellularRestrictedState":
+      getNetworkHints { payload in
+        if let dict = payload as? [String: Any],
+           let ct = dict["ctState"] as? String {
+          result(ct)
+        } else {
+          result("unknown")
+        }
+      }
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
+
+  /// Full diagnostic payload for Dart (`ctState` + NWPathMonitor booleans).
+  private func getNetworkHints(result: @escaping FlutterResult) {
+    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+      guard let self = self else {
+        DispatchQueue.main.async { result(nil) }
+        return
+      }
+
+      let nw = Self.snapshotNWPaths()
+      BanteraNetworkReachabilityBridge.log(
+        "NWPath snapshot: default=\(nw.defaultSatisfied) wifi=\(nw.wifiSatisfied) cellular=\(nw.cellularSatisfied)"
+      )
+
+      let sem = DispatchSemaphore(value: 0)
+      var ctFinal = "unknown"
+
+      DispatchQueue.main.async {
+        self.resolveCTCellularPolicyOnMain { value in
+          ctFinal = value
+          sem.signal()
+        }
+      }
+
+      _ = sem.wait(timeout: .now() + 2.8)
+
+      BanteraNetworkReachabilityBridge.log("CTCellular final ctState=\(ctFinal)")
+
+      DispatchQueue.main.async {
+        result([
+          "ctState": ctFinal,
+          "nwDefaultSatisfied": nw.defaultSatisfied,
+          "nwWifiSatisfied": nw.wifiSatisfied,
+          "nwCellularSatisfied": nw.cellularSatisfied,
+        ])
+      }
+    }
+  }
+
+  /// Runs on the main queue only. Polls `restrictedState` after assigning the notifier.
+  private func resolveCTCellularPolicyOnMain(completion: @escaping (String) -> Void) {
+    assert(Thread.isMainThread, "CTCellularData policy must be resolved on main")
+
+    var finished = false
+    let done: (String) -> Void = { value in
+      guard !finished else { return }
+      finished = true
+      completion(value)
+    }
+
+    cellularData.cellularDataRestrictionDidUpdateNotifier = { state in
+      let mapped = Self.mapRestrictedState(state)
+      BanteraNetworkReachabilityBridge.log("cellularDataRestrictionDidUpdateNotifier mapped=\(mapped)")
+      if mapped != "unknown" {
+        done(mapped)
+      }
+    }
+
+    let immediate = Self.mapRestrictedState(cellularData.restrictedState)
+    BanteraNetworkReachabilityBridge.log("CTCellular immediate restrictedState=\(immediate)")
+
+    if immediate != "unknown" {
+      done(immediate)
+      return
+    }
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+      guard let self = self, !finished else { return }
+      let v = Self.mapRestrictedState(self.cellularData.restrictedState)
+      BanteraNetworkReachabilityBridge.log("CTCellular t+0.2s restrictedState=\(v)")
+      if v != "unknown" {
+        done(v)
+      }
+    }
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) { [weak self] in
+      guard let self = self, !finished else { return }
+      let v = Self.mapRestrictedState(self.cellularData.restrictedState)
+      BanteraNetworkReachabilityBridge.log("CTCellular t+1.7s final restrictedState=\(v)")
+      done(v)
+    }
+  }
+
+  private struct NWSnapshot {
+    let defaultSatisfied: Bool
+    let wifiSatisfied: Bool
+    let cellularSatisfied: Bool
+  }
+
+  /// Uses `NWPathMonitor` (Network framework) — Apple’s supported reachability surface on modern iOS.
+  private static func snapshotNWPaths() -> NWSnapshot {
+    let queue = DispatchQueue(label: "bantera.nw.path.snapshot")
+    let defaultMon = NWPathMonitor()
+    let wifiMon = NWPathMonitor(requiredInterfaceType: .wifi)
+    let cellularMon = NWPathMonitor(requiredInterfaceType: .cellular)
+
+    defaultMon.start(queue: queue)
+    wifiMon.start(queue: queue)
+    cellularMon.start(queue: queue)
+
+    Thread.sleep(forTimeInterval: 0.04)
+
+    let d = defaultMon.currentPath.status == .satisfied
+    let w = wifiMon.currentPath.status == .satisfied
+    let c = cellularMon.currentPath.status == .satisfied
+
+    defaultMon.cancel()
+    wifiMon.cancel()
+    cellularMon.cancel()
+
+    return NWSnapshot(defaultSatisfied: d, wifiSatisfied: w, cellularSatisfied: c)
+  }
+
+  private static func mapRestrictedState(_ state: CTCellularDataRestrictedState) -> String {
+    switch state {
+    case .restricted:
+      return "restricted"
+    case .notRestricted:
+      return "notRestricted"
+    case .restrictedStateUnknown:
+      return "unknown"
+    @unknown default:
+      return "unknown"
+    }
+  }
+
+  private static func log(_ message: String) {
+    print("[BanteraNetwork] \(message)")
   }
 }
 

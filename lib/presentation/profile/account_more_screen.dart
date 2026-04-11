@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -85,8 +86,9 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on AuthApiException catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(localizeAuthApiError(l10n, e))),
         );
       }
     } catch (_) {

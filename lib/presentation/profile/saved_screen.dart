@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
+import '../../core/auth_api_error_localizations.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../domain/models/models.dart';
@@ -36,7 +37,12 @@ class _SavedScreenState extends State<SavedScreen> {
       final videos = await AuthApiClient.instance.fetchSavedVideos(accessToken: token);
       if (mounted) setState(() { _videos = videos; _isLoading = false; });
     } on AuthApiException catch (e) {
-      if (mounted) setState(() { _isLoading = false; _error = e.message; });
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        _isLoading = false;
+        _error = localizeAuthApiError(l10n, e);
+      });
     }
   }
 

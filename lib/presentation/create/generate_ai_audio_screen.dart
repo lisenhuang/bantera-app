@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/user_profile_notifier.dart';
@@ -251,7 +252,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } on VideoProcessingException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } on AuthApiException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.message);
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _errorMessage = localizeAuthApiError(l10n, e));
+      }
     } catch (e) {
       if (mounted) setState(() => _errorMessage = e.toString());
     } finally {

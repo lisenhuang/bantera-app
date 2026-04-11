@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
@@ -259,9 +260,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       if (!mounted) {
         return;
       }
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isLoadingVideos = false;
-        _loadError = error.message;
+        _loadError = localizeAuthApiError(l10n, error);
       });
     }
   }
@@ -850,9 +852,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       unawaited(ProfileStatsNotifier.instance.refresh());
     } on AuthApiException catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
+        ).showSnackBar(
+          SnackBar(content: Text(localizeAuthApiError(l10n, e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _deletingUploadedVideoId = null);

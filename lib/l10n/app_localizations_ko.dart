@@ -810,4 +810,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiScenarioCustom => '사용자 지정…';
+
+  @override
+  String get errorNetworkUnreachable => 'Bantera에 연결할 수 없습니다. 인터넷 연결을 확인하세요.';
+
+  @override
+  String get errorNetworkCellularBlocked =>
+      'Bantera의 모바일 데이터가 꺼져 있습니다. 설정에서 Bantera를 열고 모바일 데이터를 켜거나 Wi-Fi에 연결하세요.';
+
+  @override
+  String get errorTlsConnection => '보안 연결을 만들 수 없습니다.';
 }

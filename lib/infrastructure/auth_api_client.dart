@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' show log;
 import 'dart:io';
 
 import '../core/api_config_notifier.dart';
 import '../domain/models/models.dart';
 import 'learning_language_catalog.dart';
+import 'network_reachability.dart';
 
 class AuthApiClient {
   AuthApiClient._();
@@ -73,6 +75,27 @@ class AuthApiClient {
       if (decoded is Map<String, dynamic>) return decoded;
     } catch (_) {}
     return null;
+  }
+
+  /// Classifies low-level network failures for localized UI (`network_unreachable`,
+  /// `network_cellular_blocked`).
+  Future<Never> _throwNetworkFailure() async {
+    final kind = await NetworkReachability.classifyLocalConnectivity();
+    log('AuthApiClient _throwNetworkFailure -> $kind', name: 'BanteraNetwork');
+    switch (kind) {
+      case NetworkIssueKind.cellularBlockedNoWifi:
+        throw const AuthApiException(
+          code: 'network_cellular_blocked',
+          message:
+              'Mobile data is turned off for Bantera. Enable it in Settings, or connect to Wi-Fi.',
+        );
+      case NetworkIssueKind.offlineGeneric:
+        throw const AuthApiException(
+          code: 'network_unreachable',
+          message:
+              'Could not connect to Bantera. Check your internet connection.',
+        );
+    }
   }
 
   Future<AuthTokenResponse> refreshAuthToken({
@@ -205,16 +228,12 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
     });
@@ -294,16 +313,12 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
     });
@@ -385,16 +400,12 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
     });
@@ -491,16 +502,12 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
     });
@@ -590,14 +597,11 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message: 'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
-        message: 'The app could not establish a secure connection to the Bantera API.',
+        message: 'The app could not establish a secure connection.',
       );
     }
   }
@@ -624,10 +628,7 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message: 'Cannot reach the Bantera API.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
@@ -666,10 +667,7 @@ class AuthApiClient {
       } on AuthApiException {
         rethrow;
       } on SocketException {
-        throw const AuthApiException(
-          code: 'network_error',
-          message: 'Cannot reach the Bantera API.',
-        );
+        await _throwNetworkFailure();
       } on HandshakeException {
         throw const AuthApiException(
           code: 'tls_error',
@@ -736,7 +734,7 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
@@ -767,7 +765,7 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
@@ -797,7 +795,7 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on SocketException {
-      throw const AuthApiException(code: 'network_error', message: 'Cannot reach the Bantera API.');
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
     }
@@ -851,10 +849,7 @@ class AuthApiClient {
       );
       return _uploadedVideoFromJson(json);
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message: 'Cannot reach the Bantera API.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
@@ -881,16 +876,12 @@ class AuthApiClient {
       );
       return _uploadedVideoFromJson(json);
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
   }
@@ -907,16 +898,12 @@ class AuthApiClient {
       );
       return AuthTokenResponse.fromJson(json);
     } on SocketException {
-      throw const AuthApiException(
-        code: 'network_error',
-        message:
-            'Cannot reach the Bantera API. Check API_BASE_URL and make sure the backend is running.',
-      );
+      await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
         code: 'tls_error',
         message:
-            'The app could not establish a secure connection to the Bantera API.',
+            'The app could not establish a secure connection.',
       );
     }
   }

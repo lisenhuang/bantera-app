@@ -2224,7 +2224,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (!saved) {
       setState(() {
         _translationErrorMessage =
-            UserProfileNotifier.instance.errorMessage ??
+            UserProfileNotifier.instance.localizedError(_l10n) ??
             _l10n.practiceCouldNotSaveTranslationLanguage;
       });
       return null;
@@ -2319,7 +2319,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (!saved) {
       setState(() {
         _translationErrorMessage =
-            UserProfileNotifier.instance.errorMessage ??
+            UserProfileNotifier.instance.localizedError(_l10n) ??
             _l10n.practiceCouldNotSaveTranslationLanguage;
       });
       return;

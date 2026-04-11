@@ -257,5 +257,8 @@
   "aiScenarioBookRecommendation": "图书推荐",
   "aiScenarioBusDelay": "公交延误",
   "aiScenarioMovieDebate": "电影争论",
-  "aiScenarioCustom": "自定义…"
+  "aiScenarioCustom": "自定义…",
+  "errorNetworkUnreachable": "无法连接到 Bantera。请检查网络连接。",
+  "errorNetworkCellularBlocked": "已为 Bantera 关闭蜂窝数据。请在「设置」中打开 Bantera 并开启「蜂窝数据」，或连接 Wi-Fi。",
+  "errorTlsConnection": "无法建立安全连接。"
 }

@@ -7,7 +7,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_config_notifier.dart';
+import 'auth_api_error_localizations.dart';
 import '../infrastructure/auth_api_client.dart';
+import '../l10n/app_localizations.dart';
 
 enum AuthProviderType { email, apple }
 
@@ -103,7 +105,8 @@ class AuthSessionNotifier extends ChangeNotifier {
 
   AuthSession? _session;
   bool _isBusy = false;
-  String? _errorMessage;
+  String? _plainErrorMessage;
+  AuthApiException? _authApiError;
   bool _isInitialized = false;
   Timer? _refreshTimer;
 
@@ -124,7 +127,20 @@ class AuthSessionNotifier extends ChangeNotifier {
   bool get isBusy => _isBusy;
   bool get isAuthenticated => _session != null;
   bool get isInitialized => _isInitialized;
-  String? get errorMessage => _errorMessage;
+
+  /// Plain string errors (e.g. Apple unavailable). Prefer [localizedError] in UI.
+  String? get plainErrorMessage => _plainErrorMessage;
+
+  AuthApiException? get authApiError => _authApiError;
+
+  /// Localized banner text for the sign-in card.
+  String? localizedError(AppLocalizations l10n) {
+    if (_authApiError != null) {
+      return localizeAuthApiError(l10n, _authApiError!);
+    }
+    return _plainErrorMessage;
+  }
+
   String get apiBaseUrl => ApiConfigNotifier.instance.baseUrl;
 
   Future<void> initialize() async {
@@ -195,7 +211,8 @@ class AuthSessionNotifier extends ChangeNotifier {
     }
 
     _setBusy(true);
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -235,10 +252,12 @@ class AuthSessionNotifier extends ChangeNotifier {
       _scheduleRefresh();
     } on SignInWithAppleAuthorizationException catch (error) {
       if (error.code != AuthorizationErrorCode.canceled) {
-        _errorMessage = 'Apple sign-in could not be completed.';
+        _plainErrorMessage = 'Apple sign-in could not be completed.';
+        _authApiError = null;
       }
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
     } finally {
       _setBusy(false);
     }
@@ -248,7 +267,8 @@ class AuthSessionNotifier extends ChangeNotifier {
     _refreshTimer?.cancel();
     _refreshTimer = null;
     _session = null;
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
     _persistSession();
   }
@@ -310,11 +330,12 @@ class AuthSessionNotifier extends ChangeNotifier {
   }
 
   void clearError() {
-    if (_errorMessage == null) {
+    if (_plainErrorMessage == null && _authApiError == null) {
       return;
     }
 
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
   }
 
@@ -324,7 +345,8 @@ class AuthSessionNotifier extends ChangeNotifier {
     required String accountLabel,
   }) async {
     _setBusy(true);
-    _errorMessage = null;
+    _plainErrorMessage = null;
+    _authApiError = null;
     notifyListeners();
 
     try {
@@ -341,7 +363,8 @@ class AuthSessionNotifier extends ChangeNotifier {
       _persistSession();
       _scheduleRefresh();
     } on AuthApiException catch (error) {
-      _errorMessage = error.message;
+      _authApiError = error;
+      _plainErrorMessage = null;
     } finally {
       _setBusy(false);
     }
@@ -353,7 +376,8 @@ class AuthSessionNotifier extends ChangeNotifier {
   }
 
   void _setError(String message) {
-    _errorMessage = message;
+    _plainErrorMessage = message;
+    _authApiError = null;
     notifyListeners();
   }
 

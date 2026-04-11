@@ -1608,6 +1608,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom…'**
   String get aiScenarioCustom;
+
+  /// No description provided for @errorNetworkUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to Bantera. Check your internet connection.'**
+  String get errorNetworkUnreachable;
+
+  /// No description provided for @errorNetworkCellularBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile data is turned off for Bantera. In Settings, open Bantera and turn on Mobile Data, or connect to Wi-Fi.'**
+  String get errorNetworkCellularBlocked;
+
+  /// No description provided for @errorTlsConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not establish a secure connection.'**
+  String get errorTlsConnection;
 }
 
 class _AppLocalizationsDelegate

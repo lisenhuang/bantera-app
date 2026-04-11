@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../core/theme.dart';
+import '../../infrastructure/network_reachability.dart';
 import '../../l10n/app_localizations.dart';
 import 'api_base_url_screen.dart';
 
@@ -17,7 +20,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,19 +29,55 @@ class _AuthScreenState extends State<AuthScreen> {
   int _logoTapCount = 0;
   DateTime? _lastLogoTap;
 
+  /// iOS: true when local Wi‑Fi/cellular policy suggests Bantera cannot reach the network.
+  bool _proactiveCellularBlocked = false;
+
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+
   AuthSessionNotifier get _auth => AuthSessionNotifier.instance;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _restoreCredentials();
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((_) {
+      _refreshProactiveNetworkHint();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshProactiveNetworkHint();
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _connectivitySub?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshProactiveNetworkHint();
+    }
+  }
+
+  Future<void> _refreshProactiveNetworkHint() async {
+    if (!Platform.isIOS) {
+      if (_proactiveCellularBlocked && mounted) {
+        setState(() => _proactiveCellularBlocked = false);
+      }
+      return;
+    }
+    final kind = await NetworkReachability.classifyLocalConnectivity();
+    if (!mounted) return;
+    final blocked = kind == NetworkIssueKind.cellularBlockedNoWifi;
+    if (blocked != _proactiveCellularBlocked) {
+      setState(() => _proactiveCellularBlocked = blocked);
+    }
   }
 
   static Future<File> get _credentialsFile async {
@@ -135,6 +174,43 @@ class _AuthScreenState extends State<AuthScreen> {
                               style: theme.textTheme.bodyLarge,
                             ),
                             const SizedBox(height: 32),
+
+                            // ── Proactive network hint (iOS, local only; no API call) ──
+                            if (_proactiveCellularBlocked &&
+                                _auth.authApiError?.code !=
+                                    'network_cellular_blocked') ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.orange.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      color: Colors.orange.shade800,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.errorNetworkCellularBlocked,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                          color: Colors.orange.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
 
                             // ── Apple button (always visible) ──────────────
                             FutureBuilder<bool>(
@@ -252,19 +328,19 @@ class _AuthScreenState extends State<AuthScreen> {
                             ],
 
                             // ── Error message ──────────────────────────────
-                            if (_auth.errorMessage != null) ...[
+                            if (_auth.localizedError(l10n) != null) ...[
                               const SizedBox(height: 16),
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.08),
+                                  color: Colors.red.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.red.withOpacity(0.2),
+                                    color: Colors.red.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Text(
-                                  _auth.errorMessage!,
+                                  _auth.localizedError(l10n)!,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: Colors.red.shade700,
                                   ),

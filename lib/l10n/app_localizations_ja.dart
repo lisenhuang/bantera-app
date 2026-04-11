@@ -807,4 +807,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiScenarioCustom => 'カスタム…';
+
+  @override
+  String get errorNetworkUnreachable => 'Bantera に接続できません。インターネット接続を確認してください。';
+
+  @override
+  String get errorNetworkCellularBlocked =>
+      'Bantera のモバイルデータ通信がオフです。「設定」で Bantera を開き「モバイルデータ通信」をオンにするか、Wi-Fi に接続してください。';
+
+  @override
+  String get errorTlsConnection => '安全な接続を確立できませんでした。';
 }

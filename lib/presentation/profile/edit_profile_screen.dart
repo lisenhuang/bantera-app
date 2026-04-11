@@ -194,7 +194,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             showClearOption: false,
                           ),
                 ),
-                if (_profile.errorMessage != null) ...[
+                if (_profile.localizedError(l10n) != null) ...[
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -206,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
                     child: Text(
-                      _profile.errorMessage!,
+                      _profile.localizedError(l10n)!,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.red.shade700,
                       ),

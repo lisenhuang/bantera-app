@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
@@ -90,8 +91,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       if (mounted) Navigator.of(context).pop();
     } on AuthApiException catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
+        SnackBar(content: Text(localizeAuthApiError(l10n, e))),
       );
     }
   }

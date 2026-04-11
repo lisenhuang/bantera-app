@@ -362,5 +362,8 @@
   "aiScenarioBookRecommendation": "Book recommendation",
   "aiScenarioBusDelay": "Bus delay",
   "aiScenarioMovieDebate": "Movie debate",
-  "aiScenarioCustom": "Custom…"
+  "aiScenarioCustom": "Custom…",
+  "errorNetworkUnreachable": "Could not connect to Bantera. Check your internet connection.",
+  "errorNetworkCellularBlocked": "Mobile data is turned off for Bantera. In Settings, open Bantera and turn on Mobile Data, or connect to Wi-Fi.",
+  "errorTlsConnection": "Could not establish a secure connection."
 }

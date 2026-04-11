@@ -799,6 +799,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiScenarioCustom => '自定义…';
+
+  @override
+  String get errorNetworkUnreachable => '无法连接到 Bantera。请检查网络连接。';
+
+  @override
+  String get errorNetworkCellularBlocked =>
+      '已为 Bantera 关闭蜂窝数据。请在「设置」中打开 Bantera 并开启「蜂窝数据」，或连接 Wi-Fi。';
+
+  @override
+  String get errorTlsConnection => '无法建立安全连接。';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1596,4 +1606,14 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get aiScenarioCustom => '自定义…';
+
+  @override
+  String get errorNetworkUnreachable => '无法连接到 Bantera。请检查网络连接。';
+
+  @override
+  String get errorNetworkCellularBlocked =>
+      '已为 Bantera 关闭蜂窝数据。请在「设置」中打开 Bantera 并开启「蜂窝数据」，或连接 Wi-Fi。';
+
+  @override
+  String get errorTlsConnection => '无法建立安全连接。';
 }

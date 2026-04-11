@@ -845,4 +845,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiScenarioCustom => 'Custom…';
+
+  @override
+  String get errorNetworkUnreachable =>
+      'Could not connect to Bantera. Check your internet connection.';
+
+  @override
+  String get errorNetworkCellularBlocked =>
+      'Mobile data is turned off for Bantera. In Settings, open Bantera and turn on Mobile Data, or connect to Wi-Fi.';
+
+  @override
+  String get errorTlsConnection => 'Could not establish a secure connection.';
 }

@@ -58,7 +58,7 @@ class _LearningLanguageSetupScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            UserProfileNotifier.instance.errorMessage ??
+            UserProfileNotifier.instance.localizedError(l10n) ??
                 l10n.onboardingFailedSave,
           ),
         ),
