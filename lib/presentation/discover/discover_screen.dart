@@ -31,8 +31,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   int _currentOffset = 0;
-  String _lastSearch = '';
   String? _lastLanguage;
+  bool _showAllEnglishVariants = false;
 
   Timer? _debounce;
 
@@ -56,6 +56,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   void _onProfileChanged() {
     final lang = UserProfileNotifier.instance.learningLanguage;
     if (lang != _lastLanguage) {
+      _showAllEnglishVariants = false;
       _load(reset: true);
     }
   }
@@ -110,15 +111,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     final search = _searchController.text.trim();
+    final effectiveLanguageCode = _effectiveLanguageCode(lang);
     _lastLanguage = lang;
-    _lastSearch = search;
-
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
 
     try {
       final results = await AuthApiClient.instance.fetchPublicVideos(
         accessToken: accessToken,
-        languageCode: lang.trim(),
+        languageCode: effectiveLanguageCode,
         limit: _kPageSize,
         offset: reset ? 0 : _currentOffset,
         search: search.isNotEmpty ? search : null,
@@ -154,6 +154,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
         final learningLang = profile.learningLanguage;
+        final displayLanguageLabel = _displayLanguageLabel(learningLang);
         final colorScheme = Theme.of(context).colorScheme;
         final l10n = AppLocalizations.of(context)!;
 
@@ -220,7 +221,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   )
                 else if (_videos.isEmpty)
                   SliverFillRemaining(
-                    child: _buildEmptyState(context, learningLang),
+                    child: _buildEmptyState(context, displayLanguageLabel),
                   )
                 else ...[
                   SliverPadding(
@@ -310,32 +311,96 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     final flag = flagEmojiForLocale(learningLang);
-    return Row(
+    final canShowAllEnglishVariants = _canShowAllEnglishVariants(learningLang);
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(24),
+        _buildLanguageFilterButton(
+          context: context,
+          label: learningLang,
+          leading: Text(flag, style: const TextStyle(fontSize: 18)),
+          selected: !_showAllEnglishVariants,
+          onTap: canShowAllEnglishVariants
+              ? () {
+                  if (_showAllEnglishVariants) {
+                    setState(() => _showAllEnglishVariants = false);
+                  }
+                }
+              : null,
+        ),
+        if (canShowAllEnglishVariants)
+          _buildLanguageFilterButton(
+            context: context,
+            label: 'All English',
+            leading: const Text('🌐', style: TextStyle(fontSize: 18)),
+            selected: _showAllEnglishVariants,
+            onTap: () {
+              if (!_showAllEnglishVariants) {
+                setState(() => _showAllEnglishVariants = true);
+              }
+            },
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(flag, style: const TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Text(
-                learningLang,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.primary,
+      ],
+    );
+  }
+
+  Widget _buildLanguageFilterButton({
+    required BuildContext context,
+    required String label,
+    required bool selected,
+    required Widget leading,
+    VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    final foregroundColor = selected
+        ? primaryColor
+        : theme.colorScheme.onSurfaceVariant;
+    final backgroundColor = selected
+        ? primaryColor.withValues(alpha: 0.10)
+        : theme.colorScheme.surfaceContainerHighest;
+    final borderColor = selected
+        ? primaryColor.withValues(alpha: 0.25)
+        : theme.colorScheme.outlineVariant;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap == null
+            ? null
+            : () {
+                onTap();
+                _load(reset: true);
+              },
+        child: Ink(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                leading,
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: foregroundColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -383,6 +448,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _buildVideoTile(BuildContext context, UploadedVideo video) {
     final isAudio = video.videoContentType.startsWith('audio/');
     final title = _titleFromFileName(video.originalFileName);
+    final showEnglishVariantFlag =
+        _showAllEnglishVariants &&
+        video.transcriptLanguageCode.toLowerCase().startsWith('en');
+    final transcriptLanguageLabel = showEnglishVariantFlag
+        ? '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage}'
+        : video.transcriptLanguage;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -407,8 +478,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ? Image.network(
                         video.coverImageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _coverPlaceholder(isAudio),
+                        errorBuilder: (_, _, _) => _coverPlaceholder(isAudio),
                       )
                     : _coverPlaceholder(isAudio),
               ),
@@ -450,7 +520,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      video.transcriptLanguage,
+                      transcriptLanguageLabel,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                       ),
@@ -525,5 +595,32 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final mins = total ~/ 60;
     final secs = total % 60;
     return '$mins:${secs.toString().padLeft(2, '0')}';
+  }
+
+  String _effectiveLanguageCode(String? learningLang) {
+    final normalized = learningLang?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return '';
+    }
+    if (_showAllEnglishVariants && _canShowAllEnglishVariants(normalized)) {
+      return 'en';
+    }
+    return normalized;
+  }
+
+  String? _displayLanguageLabel(String? learningLang) {
+    final normalized = learningLang?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return normalized;
+    }
+    if (_showAllEnglishVariants && _canShowAllEnglishVariants(normalized)) {
+      return 'English';
+    }
+    return normalized;
+  }
+
+  bool _canShowAllEnglishVariants(String? learningLang) {
+    final normalized = learningLang?.trim().toLowerCase() ?? '';
+    return normalized == 'en' || normalized.startsWith('en-');
   }
 }
