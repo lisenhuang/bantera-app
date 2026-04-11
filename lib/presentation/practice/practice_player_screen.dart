@@ -1212,6 +1212,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final cue = widget.mediaItem.cues[_currentCueIndex];
     final colorScheme = Theme.of(context).colorScheme;
     final legacyApple = isLegacyAppleOsPre26;
+    /// iOS/iPadOS major &lt; 26 only — Play all left of Show Transcript; macOS legacy unchanged.
+    final iosLegacyPre26 = Platform.isIOS && legacyApple;
 
     if (legacyApple && _subtitleState == SubtitleState.translated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1317,10 +1319,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  OutlinedButton.icon(
+              child: Builder(
+                builder: (context) {
+                  final transcriptButton = OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -1364,8 +1365,36 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                                       : _l10n.practiceHideText),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                  );
+
+                  if (iosLegacyPre26) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildActionBtn(
+                          _isPlayingAll
+                              ? CupertinoIcons.stop_fill
+                              : CupertinoIcons.play_rectangle,
+                          _isPlayingAll
+                              ? _l10n.practiceStop
+                              : _l10n.practicePlayAll,
+                          () => _isPlayingAll
+                              ? unawaited(_stopPlayAll())
+                              : unawaited(_promptPlayAll()),
+                          colorScheme,
+                        ),
+                        const SizedBox(width: 16),
+                        Flexible(child: transcriptButton),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [transcriptButton],
+                  );
+                },
               ),
             ),
             if (_translationErrorMessage != null && !legacyApple)
@@ -1434,7 +1463,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      if (legacyApple)
+                      // iOS pre-26: Play all is beside Show Transcript above — not here.
+                      if (legacyApple && !iosLegacyPre26)
                         Expanded(
                           child: Center(
                             child: _buildActionBtn(
@@ -1451,7 +1481,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             ),
                           ),
                         )
-                      else ...[
+                      else if (!legacyApple) ...[
                         Expanded(
                           child: Center(
                             child: _buildActionBtn(
