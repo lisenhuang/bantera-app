@@ -144,6 +144,74 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
+              if (!_isLoadingHistory &&
+                  _selectedAttempt != null &&
+                  (_playbackPath ?? '').isNotEmpty) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _toggleAttemptPlayback,
+                        icon: Icon(
+                          _isPlayingAttempt
+                              ? CupertinoIcons.pause_fill
+                              : CupertinoIcons.play_fill,
+                        ),
+                        label: Text(
+                          _isPlayingAttempt
+                              ? l10n.comparePauseAttempt
+                              : l10n.comparePlayAttempt,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (_result != null && _selectedAttempt != null) ...[
+                _SummaryChipsRow(l10n: l10n, result: _result!),
+                const SizedBox(height: 18),
+                Text(
+                  l10n.compareYourTranscribedAttempt,
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: _AttemptTranscriptRichText(result: _result!),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange[800],
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        l10n.compareHighlightHint,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -201,72 +269,6 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                     ),
                   );
                 }),
-              ],
-              if (_result != null && _selectedAttempt != null) ...[
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _toggleAttemptPlayback,
-                        icon: Icon(
-                          _isPlayingAttempt
-                              ? CupertinoIcons.pause_fill
-                              : CupertinoIcons.play_fill,
-                        ),
-                        label: Text(
-                          _isPlayingAttempt
-                              ? l10n.comparePauseAttempt
-                              : l10n.comparePlayAttempt,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _SummaryChipsRow(l10n: l10n, result: _result!),
-                const SizedBox(height: 18),
-                Text(
-                  l10n.compareYourTranscribedAttempt,
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: _AttemptTranscriptRichText(result: _result!),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: Colors.orange[800],
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        l10n.compareHighlightHint,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.orange[800],
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
               const SizedBox(height: 28),
               Text(
