@@ -1627,6 +1627,18 @@ abstract class AppLocalizations {
   /// **'Could not establish a secure connection.'**
   String get errorTlsConnection;
 
+  /// No description provided for @settingsRateAppPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying Bantera? A quick rating on the App Store means a lot to us.'**
+  String get settingsRateAppPrompt;
+
+  /// No description provided for @settingsRateAppButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate on the App Store'**
+  String get settingsRateAppButton;
+
   /// No description provided for @localVideoDescription.
   ///
   /// In en, this message translates to:

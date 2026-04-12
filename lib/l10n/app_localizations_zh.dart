@@ -811,6 +811,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorTlsConnection => '无法建立安全连接。';
 
   @override
+  String get settingsRateAppPrompt =>
+      '喜欢 Bantera 吗？在 App Store 给我们评个分吧，对我们意义重大。';
+
+  @override
+  String get settingsRateAppButton => '去 App Store 评分';
+
+  @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';
 
   @override
@@ -1678,6 +1685,13 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get errorTlsConnection => '无法建立安全连接。';
+
+  @override
+  String get settingsRateAppPrompt =>
+      '喜欢 Bantera 吗？在 App Store 给我们评个分吧，对我们意义重大。';
+
+  @override
+  String get settingsRateAppButton => '去 App Store 评分';
 
   @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';

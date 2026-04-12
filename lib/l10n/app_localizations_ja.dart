@@ -819,6 +819,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get errorTlsConnection => '安全な接続を確立できませんでした。';
 
   @override
+  String get settingsRateAppPrompt =>
+      'Bantera を気に入っていただけましたか？App Store でご評価いただけると、大変励みになります。';
+
+  @override
+  String get settingsRateAppButton => 'App Store で評価する';
+
+  @override
   String get localVideoDescription =>
       '写真から動画を選択し、言語を選んだ後、iPhone がバックグラウンドで文字起こしをして、キューごとの練習が始まります。';
 

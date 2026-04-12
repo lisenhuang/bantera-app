@@ -858,6 +858,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorTlsConnection => 'Could not establish a secure connection.';
 
   @override
+  String get settingsRateAppPrompt =>
+      'Enjoying Bantera? A quick rating on the App Store means a lot to us.';
+
+  @override
+  String get settingsRateAppButton => 'Rate on the App Store';
+
+  @override
   String get localVideoDescription =>
       'Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.';
 

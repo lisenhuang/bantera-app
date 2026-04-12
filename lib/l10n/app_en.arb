@@ -366,6 +366,8 @@
   "errorNetworkUnreachable": "Could not connect to Bantera. Check your internet connection.",
   "errorNetworkCellularBlocked": "Mobile data is turned off for Bantera. In Settings, open Bantera and turn on Mobile Data, or connect to Wi-Fi.",
   "errorTlsConnection": "Could not establish a secure connection.",
+  "settingsRateAppPrompt": "Enjoying Bantera? A quick rating on the App Store means a lot to us.",
+  "settingsRateAppButton": "Rate on the App Store",
   "localVideoDescription": "Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.",
   "localVideoStep1Title": "1. Choose video",
   "localVideoChooseFromPhotos": "Choose from Photos",

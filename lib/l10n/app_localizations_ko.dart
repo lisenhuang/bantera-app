@@ -822,6 +822,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get errorTlsConnection => '보안 연결을 만들 수 없습니다.';
 
   @override
+  String get settingsRateAppPrompt =>
+      'Bantera가 마음에 드시나요? App Store에서 평점을 남겨 주시면 저희에게 큰 힘이 됩니다.';
+
+  @override
+  String get settingsRateAppButton => 'App Store에서 평가하기';
+
+  @override
   String get localVideoDescription =>
       '사진 보관함에서 동영상을 선택하고 언어를 고른 다음, iPhone이 백그라운드에서 전사하면 단서별 연습을 시작하세요.';
 
