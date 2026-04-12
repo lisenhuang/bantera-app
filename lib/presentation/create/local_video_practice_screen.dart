@@ -47,16 +47,17 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.practiceLocalVideoTitle),
+        title: Text(l10n.practiceLocalVideoTitle),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.',
+            l10n.localVideoDescription,
             style: theme.textTheme.bodyLarge,
           ),
           const SizedBox(height: 20),
@@ -65,28 +66,28 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('1. Choose video', style: theme.textTheme.titleMedium),
+                Text(l10n.localVideoStep1Title, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _isPreparing ? null : _pickVideo,
                   icon: const Icon(Icons.video_library_outlined),
                   label: Text(
                     _selectedVideo == null
-                        ? 'Choose from Photos'
-                        : 'Choose a Different Video',
+                        ? l10n.localVideoChooseFromPhotos
+                        : l10n.localVideoChooseDifferent,
                   ),
                 ),
                 if (_selectedVideo != null) ...[
                   const SizedBox(height: 16),
-                  _InfoRow(label: 'Selected file', value: _selectedVideo!.name),
+                  _InfoRow(label: l10n.localVideoSelectedFileLabel, value: _selectedVideo!.name),
                   if (_selectedVideoBytes != null)
                     _InfoRow(
-                      label: 'Size',
+                      label: l10n.localVideoSizeLabel,
                       value: _formatBytes(_selectedVideoBytes!),
                     ),
                   if (_selectedVideoDurationMs != null)
                     _InfoRow(
-                      label: 'Duration',
+                      label: l10n.localVideoDurationLabel,
                       value: _formatDuration(_selectedVideoDurationMs!),
                     ),
                   if (_isLongVideo) ...[
@@ -102,7 +103,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
                         ),
                       ),
                       child: Text(
-                        'This video is longer than 3 minutes, so Bantera may need longer to prepare the transcript and translation.',
+                        l10n.localVideoLongVideoWarning,
                         style: theme.textTheme.bodyMedium,
                       ),
                     ),
@@ -118,7 +119,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '2. Transcription language',
+                  l10n.localVideoStep2Title,
                   style: theme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
@@ -154,7 +155,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
                           Expanded(
                             child: Text(
                               _selectedLocale == null
-                                  ? 'Choose the spoken language'
+                                  ? l10n.localVideoChooseLanguagePlaceholder
                                   : _languageLabel(_selectedLocale!),
                               style: theme.textTheme.bodyLarge,
                             ),
@@ -167,7 +168,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
                 if (!_isLoadingLocales && _supportedLocales.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Text(
-                    'Bantera remembers your last language choice and keeps transcription hidden by default once practice starts.',
+                    l10n.localVideoLanguageHint,
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
@@ -180,16 +181,16 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('3. Practice', style: theme.textTheme.titleMedium),
+                Text(l10n.localVideoStep3Title, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: _canPractice ? _startPractice : null,
                   icon: const Icon(Icons.headphones_rounded),
-                  label: Text(_isPreparing ? 'Preparing...' : 'Start Practice'),
+                  label: Text(_isPreparing ? l10n.localVideoPreparing : l10n.mediaStartPractice),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Bantera transcribes on device first, then opens the cue-by-cue listening page without uploading anything.',
+                  l10n.localVideoPracticeHint,
                   style: theme.textTheme.bodySmall,
                 ),
                 if (_isPreparing && _prepareStatus != null) ...[
@@ -310,12 +311,13 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     _clearError();
     setState(() {
       _isPreparing = true;
       _prepareStatus = _isLongVideo
-          ? 'This is a longer video, so Bantera may need extra time to transcribe and prepare it.'
-          : 'Transcribing on device and preparing practice cues...';
+          ? l10n.localVideoStatusLongVideo
+          : l10n.localVideoStatusTranscribing;
     });
 
     try {
@@ -332,13 +334,14 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
       final translatedCueTexts = await _prepareTranslationIfNeeded(
         prepared,
         localPracticeId: localPracticeId,
+        l10n: l10n,
       );
       if (!mounted) {
         return;
       }
 
       setState(() {
-        _prepareStatus = 'Saving this video to your on-device practice library...';
+        _prepareStatus = l10n.localVideoStatusSaving;
       });
 
       final savedVideo = await LocalPracticeRepository.instance
@@ -407,6 +410,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
   Future<Map<String, String>> _prepareTranslationIfNeeded(
     PreparedVideoUpload prepared, {
     required String localPracticeId,
+    required AppLocalizations l10n,
   }) async {
     final translationLanguage = UserProfileNotifier.instance.translationLanguage
         ?.trim();
@@ -433,8 +437,8 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     if (mounted) {
       setState(() {
         _prepareStatus = _isLongVideo
-            ? 'Transcription finished. Bantera is also preparing translation for your saved language, so this longer video may take a bit more time.'
-            : 'Transcription finished. Preparing translation for your saved language...';
+            ? l10n.localVideoStatusTranslationLong
+            : l10n.localVideoStatusTranslation;
       });
     }
 
@@ -666,7 +670,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Choose Audio Language',
+                AppLocalizations.of(context)!.localVideoPickerTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
@@ -677,9 +681,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                     _query = value;
                   });
                 },
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search languages',
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: AppLocalizations.of(context)!.practiceSearchLanguagesHint,
                 ),
               ),
               const SizedBox(height: 12),
@@ -721,8 +725,8 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                                   ],
                                   Text(
                                     locale.isInstalled
-                                        ? 'Installed'
-                                        : 'Download',
+                                        ? AppLocalizations.of(context)!.practiceTranslationInstalled
+                                        : AppLocalizations.of(context)!.practiceTranslationDownload,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: locale.isInstalled

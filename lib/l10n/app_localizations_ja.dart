@@ -817,4 +817,70 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get errorTlsConnection => '安全な接続を確立できませんでした。';
+
+  @override
+  String get localVideoDescription =>
+      '写真から動画を選択し、言語を選んだ後、iPhone がバックグラウンドで文字起こしをして、キューごとの練習が始まります。';
+
+  @override
+  String get localVideoStep1Title => '1. 動画を選択';
+
+  @override
+  String get localVideoChooseFromPhotos => '写真から選択';
+
+  @override
+  String get localVideoChooseDifferent => '別の動画を選択';
+
+  @override
+  String get localVideoSelectedFileLabel => '選択したファイル';
+
+  @override
+  String get localVideoSizeLabel => 'サイズ';
+
+  @override
+  String get localVideoDurationLabel => '再生時間';
+
+  @override
+  String get localVideoLongVideoWarning =>
+      'この動画は3分以上あるため、Bantera が文字起こしと翻訳を準備するのに時間がかかる場合があります。';
+
+  @override
+  String get localVideoStep2Title => '2. 文字起こし言語';
+
+  @override
+  String get localVideoChooseLanguagePlaceholder => '音声言語を選択';
+
+  @override
+  String get localVideoLanguageHint =>
+      'Bantera は最後に選択した言語を記憶し、練習開始時はデフォルトで文字起こしを非表示にします。';
+
+  @override
+  String get localVideoStep3Title => '3. 練習';
+
+  @override
+  String get localVideoPreparing => '準備中...';
+
+  @override
+  String get localVideoPracticeHint =>
+      'Bantera はまずデバイスで文字起こしを行い、アップロードなしでキューごとのリスニングページを開きます。';
+
+  @override
+  String get localVideoStatusLongVideo =>
+      '動画が長いため、Bantera が文字起こしと準備に時間がかかる場合があります。';
+
+  @override
+  String get localVideoStatusTranscribing => 'デバイスで文字起こしし、練習キューを準備しています...';
+
+  @override
+  String get localVideoStatusSaving => '動画をデバイスの練習ライブラリに保存しています...';
+
+  @override
+  String get localVideoStatusTranslationLong =>
+      '文字起こし完了。長い動画のため、保存した言語の翻訳準備にもう少し時間がかかる場合があります。';
+
+  @override
+  String get localVideoStatusTranslation => '文字起こし完了。保存した言語の翻訳を準備しています...';
+
+  @override
+  String get localVideoPickerTitle => '音声言語を選択';
 }

@@ -856,4 +856,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorTlsConnection => 'Could not establish a secure connection.';
+
+  @override
+  String get localVideoDescription =>
+      'Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.';
+
+  @override
+  String get localVideoStep1Title => '1. Choose video';
+
+  @override
+  String get localVideoChooseFromPhotos => 'Choose from Photos';
+
+  @override
+  String get localVideoChooseDifferent => 'Choose a Different Video';
+
+  @override
+  String get localVideoSelectedFileLabel => 'Selected file';
+
+  @override
+  String get localVideoSizeLabel => 'Size';
+
+  @override
+  String get localVideoDurationLabel => 'Duration';
+
+  @override
+  String get localVideoLongVideoWarning =>
+      'This video is longer than 3 minutes, so Bantera may need longer to prepare the transcript and translation.';
+
+  @override
+  String get localVideoStep2Title => '2. Transcription language';
+
+  @override
+  String get localVideoChooseLanguagePlaceholder =>
+      'Choose the spoken language';
+
+  @override
+  String get localVideoLanguageHint =>
+      'Bantera remembers your last language choice and keeps transcription hidden by default once practice starts.';
+
+  @override
+  String get localVideoStep3Title => '3. Practice';
+
+  @override
+  String get localVideoPreparing => 'Preparing...';
+
+  @override
+  String get localVideoPracticeHint =>
+      'Bantera transcribes on device first, then opens the cue-by-cue listening page without uploading anything.';
+
+  @override
+  String get localVideoStatusLongVideo =>
+      'This is a longer video, so Bantera may need extra time to transcribe and prepare it.';
+
+  @override
+  String get localVideoStatusTranscribing =>
+      'Transcribing on device and preparing practice cues...';
+
+  @override
+  String get localVideoStatusSaving =>
+      'Saving this video to your on-device practice library...';
+
+  @override
+  String get localVideoStatusTranslationLong =>
+      'Transcription finished. Bantera is also preparing translation for your saved language, so this longer video may take a bit more time.';
+
+  @override
+  String get localVideoStatusTranslation =>
+      'Transcription finished. Preparing translation for your saved language...';
+
+  @override
+  String get localVideoPickerTitle => 'Choose Audio Language';
 }

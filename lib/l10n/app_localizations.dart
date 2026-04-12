@@ -1626,6 +1626,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not establish a secure connection.'**
   String get errorTlsConnection;
+
+  /// No description provided for @localVideoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.'**
+  String get localVideoDescription;
+
+  /// No description provided for @localVideoStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Choose video'**
+  String get localVideoStep1Title;
+
+  /// No description provided for @localVideoChooseFromPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Photos'**
+  String get localVideoChooseFromPhotos;
+
+  /// No description provided for @localVideoChooseDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a Different Video'**
+  String get localVideoChooseDifferent;
+
+  /// No description provided for @localVideoSelectedFileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected file'**
+  String get localVideoSelectedFileLabel;
+
+  /// No description provided for @localVideoSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get localVideoSizeLabel;
+
+  /// No description provided for @localVideoDurationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get localVideoDurationLabel;
+
+  /// No description provided for @localVideoLongVideoWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This video is longer than 3 minutes, so Bantera may need longer to prepare the transcript and translation.'**
+  String get localVideoLongVideoWarning;
+
+  /// No description provided for @localVideoStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Transcription language'**
+  String get localVideoStep2Title;
+
+  /// No description provided for @localVideoChooseLanguagePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the spoken language'**
+  String get localVideoChooseLanguagePlaceholder;
+
+  /// No description provided for @localVideoLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera remembers your last language choice and keeps transcription hidden by default once practice starts.'**
+  String get localVideoLanguageHint;
+
+  /// No description provided for @localVideoStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Practice'**
+  String get localVideoStep3Title;
+
+  /// No description provided for @localVideoPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing...'**
+  String get localVideoPreparing;
+
+  /// No description provided for @localVideoPracticeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera transcribes on device first, then opens the cue-by-cue listening page without uploading anything.'**
+  String get localVideoPracticeHint;
+
+  /// No description provided for @localVideoStatusLongVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a longer video, so Bantera may need extra time to transcribe and prepare it.'**
+  String get localVideoStatusLongVideo;
+
+  /// No description provided for @localVideoStatusTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing on device and preparing practice cues...'**
+  String get localVideoStatusTranscribing;
+
+  /// No description provided for @localVideoStatusSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving this video to your on-device practice library...'**
+  String get localVideoStatusSaving;
+
+  /// No description provided for @localVideoStatusTranslationLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription finished. Bantera is also preparing translation for your saved language, so this longer video may take a bit more time.'**
+  String get localVideoStatusTranslationLong;
+
+  /// No description provided for @localVideoStatusTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription finished. Preparing translation for your saved language...'**
+  String get localVideoStatusTranslation;
+
+  /// No description provided for @localVideoPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Audio Language'**
+  String get localVideoPickerTitle;
 }
 
 class _AppLocalizationsDelegate

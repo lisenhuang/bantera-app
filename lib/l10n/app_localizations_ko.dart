@@ -820,4 +820,71 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get errorTlsConnection => '보안 연결을 만들 수 없습니다.';
+
+  @override
+  String get localVideoDescription =>
+      '사진 보관함에서 동영상을 선택하고 언어를 고른 다음, iPhone이 백그라운드에서 전사하면 단서별 연습을 시작하세요.';
+
+  @override
+  String get localVideoStep1Title => '1. 동영상 선택';
+
+  @override
+  String get localVideoChooseFromPhotos => '사진 보관함에서 선택';
+
+  @override
+  String get localVideoChooseDifferent => '다른 동영상 선택';
+
+  @override
+  String get localVideoSelectedFileLabel => '선택한 파일';
+
+  @override
+  String get localVideoSizeLabel => '크기';
+
+  @override
+  String get localVideoDurationLabel => '길이';
+
+  @override
+  String get localVideoLongVideoWarning =>
+      '이 동영상은 3분 이상이므로 Bantera가 자막과 번역을 준비하는 데 더 많은 시간이 필요할 수 있습니다.';
+
+  @override
+  String get localVideoStep2Title => '2. 전사 언어';
+
+  @override
+  String get localVideoChooseLanguagePlaceholder => '음성 언어 선택';
+
+  @override
+  String get localVideoLanguageHint =>
+      'Bantera는 마지막으로 선택한 언어를 기억하며, 연습 시작 시 기본적으로 전사 내용을 숨깁니다.';
+
+  @override
+  String get localVideoStep3Title => '3. 연습';
+
+  @override
+  String get localVideoPreparing => '준비 중...';
+
+  @override
+  String get localVideoPracticeHint =>
+      'Bantera는 먼저 기기에서 전사한 후 업로드 없이 단서별 듣기 페이지를 엽니다.';
+
+  @override
+  String get localVideoStatusLongVideo =>
+      '동영상이 길어 Bantera가 전사하고 준비하는 데 더 많은 시간이 필요할 수 있습니다.';
+
+  @override
+  String get localVideoStatusTranscribing => '기기에서 전사하고 연습 단서를 준비하는 중...';
+
+  @override
+  String get localVideoStatusSaving => '기기 연습 라이브러리에 동영상을 저장하는 중...';
+
+  @override
+  String get localVideoStatusTranslationLong =>
+      '전사가 완료되었습니다. 저장된 언어로 번역도 준비 중이므로 긴 동영상은 시간이 더 걸릴 수 있습니다.';
+
+  @override
+  String get localVideoStatusTranslation =>
+      '전사가 완료되었습니다. 저장된 언어로 번역을 준비하는 중...';
+
+  @override
+  String get localVideoPickerTitle => '음성 언어 선택';
 }

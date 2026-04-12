@@ -809,6 +809,68 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorTlsConnection => '无法建立安全连接。';
+
+  @override
+  String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';
+
+  @override
+  String get localVideoStep1Title => '1. 选择视频';
+
+  @override
+  String get localVideoChooseFromPhotos => '从照片库选择';
+
+  @override
+  String get localVideoChooseDifferent => '选择其他视频';
+
+  @override
+  String get localVideoSelectedFileLabel => '已选文件';
+
+  @override
+  String get localVideoSizeLabel => '大小';
+
+  @override
+  String get localVideoDurationLabel => '时长';
+
+  @override
+  String get localVideoLongVideoWarning =>
+      '此视频超过 3 分钟，Bantera 可能需要更多时间准备转录和翻译。';
+
+  @override
+  String get localVideoStep2Title => '2. 转录语言';
+
+  @override
+  String get localVideoChooseLanguagePlaceholder => '选择音频语言';
+
+  @override
+  String get localVideoLanguageHint => 'Bantera 会记住你上次的语言选择，练习开始后默认隐藏转录文字。';
+
+  @override
+  String get localVideoStep3Title => '3. 练习';
+
+  @override
+  String get localVideoPreparing => '准备中…';
+
+  @override
+  String get localVideoPracticeHint => 'Bantera 先在设备上转录，无需上传，然后打开逐句听力练习页。';
+
+  @override
+  String get localVideoStatusLongVideo => '视频较长，Bantera 可能需要更多时间进行转录和准备。';
+
+  @override
+  String get localVideoStatusTranscribing => '正在设备上转录并准备练习提示…';
+
+  @override
+  String get localVideoStatusSaving => '正在将视频保存到设备练习库…';
+
+  @override
+  String get localVideoStatusTranslationLong =>
+      '转录完成。Bantera 还在为你保存的语言准备翻译，此较长视频可能需要更多时间。';
+
+  @override
+  String get localVideoStatusTranslation => '转录完成。正在为你保存的语言准备翻译…';
+
+  @override
+  String get localVideoPickerTitle => '选择音频语言';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1616,4 +1678,66 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get errorTlsConnection => '无法建立安全连接。';
+
+  @override
+  String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';
+
+  @override
+  String get localVideoStep1Title => '1. 选择视频';
+
+  @override
+  String get localVideoChooseFromPhotos => '从照片库选择';
+
+  @override
+  String get localVideoChooseDifferent => '选择其他视频';
+
+  @override
+  String get localVideoSelectedFileLabel => '已选文件';
+
+  @override
+  String get localVideoSizeLabel => '大小';
+
+  @override
+  String get localVideoDurationLabel => '时长';
+
+  @override
+  String get localVideoLongVideoWarning =>
+      '此视频超过 3 分钟，Bantera 可能需要更多时间准备转录和翻译。';
+
+  @override
+  String get localVideoStep2Title => '2. 转录语言';
+
+  @override
+  String get localVideoChooseLanguagePlaceholder => '选择音频语言';
+
+  @override
+  String get localVideoLanguageHint => 'Bantera 会记住你上次的语言选择，练习开始后默认隐藏转录文字。';
+
+  @override
+  String get localVideoStep3Title => '3. 练习';
+
+  @override
+  String get localVideoPreparing => '准备中…';
+
+  @override
+  String get localVideoPracticeHint => 'Bantera 先在设备上转录，无需上传，然后打开逐句听力练习页。';
+
+  @override
+  String get localVideoStatusLongVideo => '视频较长，Bantera 可能需要更多时间进行转录和准备。';
+
+  @override
+  String get localVideoStatusTranscribing => '正在设备上转录并准备练习提示…';
+
+  @override
+  String get localVideoStatusSaving => '正在将视频保存到设备练习库…';
+
+  @override
+  String get localVideoStatusTranslationLong =>
+      '转录完成。Bantera 还在为你保存的语言准备翻译，此较长视频可能需要更多时间。';
+
+  @override
+  String get localVideoStatusTranslation => '转录完成。正在为你保存的语言准备翻译…';
+
+  @override
+  String get localVideoPickerTitle => '选择音频语言';
 }
