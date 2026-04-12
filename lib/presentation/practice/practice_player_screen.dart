@@ -56,6 +56,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _audioPlayerReady = false;
   bool _isTimelineCueSelectionInFlight = false;
   int? _queuedTimelineCueIndex;
+  int? _loadedMediaDurationMs;
 
   /// Last tick from [AudioPlayer.onPositionChanged] — [getCurrentPosition] can be
   /// wrong right after pause; single-cue resume prefers this when in-range for the cue.
@@ -263,6 +264,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (cueIndex + 1 < cues.length) {
       final nextStart = cues[cueIndex + 1].startTimeMs;
       return nextStart > cue.endTimeMs ? nextStart : cue.endTimeMs;
+    }
+    final mediaDurationMs = _loadedMediaDurationMs;
+    if (mediaDurationMs != null && mediaDurationMs > cue.endTimeMs) {
+      return mediaDurationMs;
     }
     return cue.endTimeMs;
   }
@@ -2831,6 +2836,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           }
         });
         await player.setSourceDeviceFile(tempFile.path);
+        final audioDuration = await player.getDuration();
+        _loadedMediaDurationMs = audioDuration?.inMilliseconds;
         await player.seek(
           Duration(milliseconds: widget.mediaItem.cues[0].startTimeMs),
         );
@@ -2877,6 +2884,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       controller.addListener(_videoListener!);
 
       await controller.initialize();
+      _loadedMediaDurationMs = controller.value.duration.inMilliseconds;
       await controller.pause();
       await controller.seekTo(
         Duration(
