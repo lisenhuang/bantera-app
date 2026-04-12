@@ -364,6 +364,8 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
           builder: (_) => PracticePlayerScreen(mediaItem: mediaItem),
         ),
       );
+      // Return to Create page instead of staying on Practice Local Video
+      if (mounted) Navigator.of(context).pop();
     } on VideoProcessingException catch (error) {
       if (!mounted) {
         return;

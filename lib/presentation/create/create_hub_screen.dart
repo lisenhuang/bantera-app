@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
@@ -446,17 +449,9 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                CupertinoIcons.device_phone_portrait,
-                color: colorScheme.primary,
-              ),
+            _VideoThumbnailIcon(
+              videoPath: video.localVideoPath,
+              colorScheme: colorScheme,
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -874,6 +869,122 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       firstLanguage: '',
       learningLanguage: '',
       level: '',
+    );
+  }
+}
+
+class _VideoThumbnailIcon extends StatefulWidget {
+  const _VideoThumbnailIcon({
+    required this.videoPath,
+    required this.colorScheme,
+  });
+
+  final String videoPath;
+  final ColorScheme colorScheme;
+
+  @override
+  State<_VideoThumbnailIcon> createState() => _VideoThumbnailIconState();
+}
+
+class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
+  Uint8List? _thumbnail;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  @override
+  void didUpdateWidget(_VideoThumbnailIcon old) {
+    super.didUpdateWidget(old);
+    if (old.videoPath != widget.videoPath) {
+      setState(() {
+        _thumbnail = null;
+        _loaded = false;
+      });
+      _loadThumbnail();
+    }
+  }
+
+  // Try these offsets in order; use the first frame whose brightness
+  // is above the threshold (15/255). Falls back to the last attempt.
+  static const _candidateMs = [0, 1000, 3000, 7000];
+  static const _brightnessThreshold = 15.0;
+
+  Future<void> _loadThumbnail() async {
+    try {
+      Uint8List? best;
+      for (final ms in _candidateMs) {
+        final bytes = await VideoThumbnail.thumbnailData(
+          video: widget.videoPath,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 104,
+          quality: 75,
+          timeMs: ms,
+        );
+        if (bytes == null) continue;
+        best = bytes;
+        if (await _averageBrightness(bytes) >= _brightnessThreshold) break;
+      }
+      if (mounted) {
+        setState(() {
+          _thumbnail = best;
+          _loaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  /// Decodes the JPEG and returns the average luminance (0–255).
+  static Future<double> _averageBrightness(Uint8List jpeg) async {
+    try {
+      final codec = await ui.instantiateImageCodec(jpeg);
+      final frame = await codec.getNextFrame();
+      final byteData =
+          await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      frame.image.dispose();
+      if (byteData == null) return 0;
+      final pixels = byteData.buffer.asUint8List();
+      double sum = 0;
+      int count = 0;
+      // Sample every 50th pixel (4 bytes per pixel: R, G, B, A).
+      for (int i = 0; i < pixels.length - 3; i += 200) {
+        sum += 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        count++;
+      }
+      return count > 0 ? sum / count : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = widget.colorScheme;
+    final thumb = _thumbnail;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: thumb != null
+            ? Image.memory(thumb, fit: BoxFit.cover)
+            : Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  CupertinoIcons.video_camera,
+                  color: colorScheme.primary,
+                ),
+              ),
+      ),
     );
   }
 }
