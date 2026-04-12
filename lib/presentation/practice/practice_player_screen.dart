@@ -54,6 +54,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   AudioPlayer? _audioPlayer;
   StreamSubscription<Duration>? _audioPositionSub;
   bool _audioPlayerReady = false;
+  bool _isTimelineCueSelectionInFlight = false;
+  int? _queuedTimelineCueIndex;
 
   /// Last tick from [AudioPlayer.onPositionChanged] — [getCurrentPosition] can be
   /// wrong right after pause; single-cue resume prefers this when in-range for the cue.
@@ -80,7 +82,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isCueTranscribing = false;
   String? _cueRecordingTempPath;
 
-
   bool get _hasPlayableMedia =>
       (widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false) ||
       (widget.mediaItem.videoUrl?.trim().isNotEmpty ?? false);
@@ -97,7 +98,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final hasVideoUrl = widget.mediaItem.videoUrl?.trim().isNotEmpty ?? false;
     final hasLocalPath =
         widget.mediaItem.localVideoPath?.trim().isNotEmpty ?? false;
-    if (hasVideoUrl && !hasLocalPath && !widget.mediaItem.deleteLocalMediaOnDispose) {
+    if (hasVideoUrl &&
+        !hasLocalPath &&
+        !widget.mediaItem.deleteLocalMediaOnDispose) {
       return widget.mediaItem.id;
     }
     return null;
@@ -151,11 +154,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _restoreProgress() async {
-    final saved = await PracticeProgressStore.instance
-        .getCueIndex(widget.mediaItem.id);
-    if (saved > 0 &&
-        saved < widget.mediaItem.cues.length &&
-        mounted) {
+    final saved = await PracticeProgressStore.instance.getCueIndex(
+      widget.mediaItem.id,
+    );
+    if (saved > 0 && saved < widget.mediaItem.cues.length && mounted) {
       setState(() => _currentCueIndex = saved);
     }
   }
@@ -277,6 +279,52 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return mediaPositionMs;
     }
     return cueStartMs;
+  }
+
+  int _cueIndexForTimelineDx(double localDx, double width) {
+    final cueCount = widget.mediaItem.cues.length;
+    if (cueCount <= 1 || width <= 0) {
+      return 0;
+    }
+
+    final normalizedDx = localDx.clamp(0.0, width);
+    final progress = (normalizedDx / width).clamp(0.0, 1.0);
+    final index = (progress * cueCount).floor();
+    return index.clamp(0, cueCount - 1);
+  }
+
+  void _handleTimelineDrag(double localDx, double width) {
+    if (_isPlayingAll) {
+      return;
+    }
+
+    final nextIndex = _cueIndexForTimelineDx(localDx, width);
+    if (nextIndex == _currentCueIndex) {
+      return;
+    }
+    unawaited(_selectCueFromTimeline(nextIndex));
+  }
+
+  Future<void> _selectCueFromTimeline(int nextIndex) async {
+    if (nextIndex < 0 || nextIndex >= widget.mediaItem.cues.length) {
+      return;
+    }
+    if (_isTimelineCueSelectionInFlight) {
+      _queuedTimelineCueIndex = nextIndex;
+      return;
+    }
+
+    _isTimelineCueSelectionInFlight = true;
+    try {
+      await _selectCue(nextIndex);
+    } finally {
+      _isTimelineCueSelectionInFlight = false;
+      final queuedIndex = _queuedTimelineCueIndex;
+      _queuedTimelineCueIndex = null;
+      if (queuedIndex != null && queuedIndex != _currentCueIndex) {
+        unawaited(_selectCueFromTimeline(queuedIndex));
+      }
+    }
   }
 
   Future<void> _promptPlayAll() async {
@@ -419,14 +467,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final scale = 1.0 / s;
     int scaledWallMs(int baseMs) => (baseMs * scale).round();
 
-    final cueLen = (endedCue.endTimeMs - endedCue.startTimeMs).clamp(0, 1 << 30);
+    final cueLen = (endedCue.endTimeMs - endedCue.startTimeMs).clamp(
+      0,
+      1 << 30,
+    );
     return switch (mode) {
       PlayAllPauseBetweenCues.none => 0,
       PlayAllPauseBetweenCues.oneSecond => scaledWallMs(1000),
-      PlayAllPauseBetweenCues.oneCuePlusOneSecond =>
-        scaledWallMs(cueLen + 1000),
-      PlayAllPauseBetweenCues.oneCuePlusTwoSeconds =>
-        scaledWallMs(cueLen + 2000),
+      PlayAllPauseBetweenCues.oneCuePlusOneSecond => scaledWallMs(
+        cueLen + 1000,
+      ),
+      PlayAllPauseBetweenCues.oneCuePlusTwoSeconds => scaledWallMs(
+        cueLen + 2000,
+      ),
     };
   }
 
@@ -462,10 +515,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _playAllInBetweenCueGap = false;
       });
       unawaited(
-        PracticeProgressStore.instance.setCueIndex(
-          widget.mediaItem.id,
-          next,
-        ),
+        PracticeProgressStore.instance.setCueIndex(widget.mediaItem.id, next),
       );
       await audioPlayer.resume();
     } finally {
@@ -507,10 +557,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _playAllInBetweenCueGap = false;
       });
       unawaited(
-        PracticeProgressStore.instance.setCueIndex(
-          widget.mediaItem.id,
-          next,
-        ),
+        PracticeProgressStore.instance.setCueIndex(widget.mediaItem.id, next),
       );
       await controller.play();
     } finally {
@@ -541,7 +588,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      await audioPlayer.seek(Duration(milliseconds: cues[cueIndex].startTimeMs));
+      await audioPlayer.seek(
+        Duration(milliseconds: cues[cueIndex].startTimeMs),
+      );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
@@ -578,7 +627,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      await controller.seekTo(Duration(milliseconds: cues[cueIndex].startTimeMs));
+      await controller.seekTo(
+        Duration(milliseconds: cues[cueIndex].startTimeMs),
+      );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
@@ -638,15 +689,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final posMs = pos.inMilliseconds;
         final i = _currentCueIndex;
 
-        final continuous = pauseMode == PlayAllPauseBetweenCues.none &&
-            playsPerCue == 1;
+        final continuous =
+            pauseMode == PlayAllPauseBetweenCues.none && playsPerCue == 1;
 
         if (continuous) {
           var newIndex = _currentCueIndex;
           for (var j = 0; j < cues.length; j++) {
             if (posMs >= cues[j].startTimeMs &&
-                (j == cues.length - 1 ||
-                    posMs < cues[j + 1].startTimeMs)) {
+                (j == cues.length - 1 || posMs < cues[j + 1].startTimeMs)) {
               newIndex = j;
               break;
             }
@@ -744,8 +794,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final cues = widget.mediaItem.cues;
       final i = _currentCueIndex;
 
-      final continuous = pauseMode == PlayAllPauseBetweenCues.none &&
-          playsPerCue == 1;
+      final continuous =
+          pauseMode == PlayAllPauseBetweenCues.none && playsPerCue == 1;
 
       if (continuous) {
         var newIndex = _currentCueIndex;
@@ -1001,7 +1051,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     final message = switch (status) {
-      PermissionStatus.permanentlyDenied => l10n.compareMicrophoneDeniedPermanent,
+      PermissionStatus.permanentlyDenied =>
+        l10n.compareMicrophoneDeniedPermanent,
       PermissionStatus.restricted => l10n.compareMicrophoneDeniedRestricted,
       _ => l10n.compareMicrophoneDeniedDefault,
     };
@@ -1164,9 +1215,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         'empty_transcript' => l10n.compareNoTranscriptGenerated,
         _ => error.message,
       };
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(displayMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(displayMessage)));
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -1204,14 +1255,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.mediaItem.cues.isEmpty) {
-      return Scaffold(
-        body: Center(child: Text(_l10n.practiceNoCues)),
-      );
+      return Scaffold(body: Center(child: Text(_l10n.practiceNoCues)));
     }
 
     final cue = widget.mediaItem.cues[_currentCueIndex];
     final colorScheme = Theme.of(context).colorScheme;
     final legacyApple = isLegacyAppleOsPre26;
+
     /// iOS/iPadOS major &lt; 26 only — Play all left of Show Transcript; macOS legacy unchanged.
     final iosLegacyPre26 = Platform.isIOS && legacyApple;
 
@@ -1239,7 +1289,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             Expanded(
               child: Text(
                 widget.mediaItem.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 14),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1251,8 +1303,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           TextButton(
             onPressed: () async {
               final speed = nearestPracticePlaybackSpeed(_playbackSpeed);
-              final currentIndex =
-                  kPracticePlaybackSpeedOptions.indexOf(speed);
+              final currentIndex = kPracticePlaybackSpeedOptions.indexOf(speed);
               final idx = currentIndex >= 0
                   ? currentIndex
                   : kPracticePlaybackSpeedOptions.indexOf(1.0);
@@ -1263,7 +1314,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             child: Text(
               _playbackSpeed == _playbackSpeed.truncateToDouble()
                   ? '${_playbackSpeed.toInt()}×'
-                  : '${_playbackSpeed}×',
+                  : '$_playbackSpeed×',
               style: Theme.of(context).textTheme.labelLarge,
             ),
           ),
@@ -1343,26 +1394,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         : Icon(
                             legacyApple
                                 ? (_subtitleState == SubtitleState.hidden
-                                    ? CupertinoIcons.eye
-                                    : CupertinoIcons.eye_slash)
+                                      ? CupertinoIcons.eye
+                                      : CupertinoIcons.eye_slash)
                                 : (_subtitleState == SubtitleState.hidden
-                                    ? CupertinoIcons.eye
-                                    : _subtitleState == SubtitleState.original
-                                        ? CupertinoIcons.globe
-                                        : CupertinoIcons.eye_slash),
+                                      ? CupertinoIcons.eye
+                                      : _subtitleState == SubtitleState.original
+                                      ? CupertinoIcons.globe
+                                      : CupertinoIcons.eye_slash),
                           ),
                     label: Text(
                       _isTranslating
                           ? _l10n.practiceTranslating
                           : legacyApple
-                              ? (_subtitleState == SubtitleState.hidden
-                                  ? _l10n.practiceShowTranscript
-                                  : _l10n.practiceHideText)
-                              : (_subtitleState == SubtitleState.hidden
-                                  ? _l10n.practiceShowTranscript
-                                  : _subtitleState == SubtitleState.original
-                                      ? _l10n.practiceTranslate
-                                      : _l10n.practiceHideText),
+                          ? (_subtitleState == SubtitleState.hidden
+                                ? _l10n.practiceShowTranscript
+                                : _l10n.practiceHideText)
+                          : (_subtitleState == SubtitleState.hidden
+                                ? _l10n.practiceShowTranscript
+                                : _subtitleState == SubtitleState.original
+                                ? _l10n.practiceTranslate
+                                : _l10n.practiceHideText),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   );
@@ -1708,24 +1759,43 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
-          Container(
-            width: 92,
-            height: 8,
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor:
-                  ((_currentCueIndex + 1) / widget.mediaItem.cues.length).clamp(
-                    0.0,
-                    1.0,
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTapDown: _isPlayingAll
+                ? null
+                : (details) =>
+                      _handleTimelineDrag(details.localPosition.dx, 92),
+            onHorizontalDragStart: _isPlayingAll
+                ? null
+                : (details) =>
+                      _handleTimelineDrag(details.localPosition.dx, 92),
+            onHorizontalDragUpdate: _isPlayingAll
+                ? null
+                : (details) =>
+                      _handleTimelineDrag(details.localPosition.dx, 92),
+            child: SizedBox(
+              width: 92,
+              height: 24,
+              child: Center(
+                child: Container(
+                  width: 92,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(999),
                   ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(999),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor:
+                        ((_currentCueIndex + 1) / widget.mediaItem.cues.length)
+                            .clamp(0.0, 1.0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -2158,8 +2228,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (locales.isEmpty) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage =
-              _l10n.practiceNoTranslationLanguagesFound;
+          _translationErrorMessage = _l10n.practiceNoTranslationLanguagesFound;
         });
       }
       return null;
@@ -2445,8 +2514,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (videoId == null || translations.isEmpty) return;
     try {
       final dir = await _getTranslationCacheDir();
-      final cacheFile =
-          File('${dir.path}/${videoId}__$targetLocaleIdentifier.json');
+      final cacheFile = File(
+        '${dir.path}/${videoId}__$targetLocaleIdentifier.json',
+      );
       Map<String, String> existing = {};
       if (await cacheFile.exists()) {
         final decoded = jsonDecode(await cacheFile.readAsString());
@@ -2665,7 +2735,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Widget _buildRecordActionColumn(ColorScheme colorScheme) {
     final disabled =
-        _isPlayingAll || _isCueTranscribing || (_isInitializingMedia && _hasPlayableMedia);
+        _isPlayingAll ||
+        _isCueTranscribing ||
+        (_isInitializingMedia && _hasPlayableMedia);
     final onTap = disabled ? null : () => unawaited(_onRecordTap());
     final isRecording = _isCueRecording;
 
@@ -2676,10 +2748,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor:
-                isRecording ? Colors.redAccent : colorScheme.primary,
-            foregroundColor:
-                isRecording ? Colors.white : colorScheme.onPrimary,
+            backgroundColor: isRecording
+                ? Colors.redAccent
+                : colorScheme.primary,
+            foregroundColor: isRecording ? Colors.white : colorScheme.onPrimary,
             child: _isCueTranscribing
                 ? const SizedBox(
                     width: 28,
@@ -2702,9 +2774,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 ? _formatRecordingDuration(_practiceRecordingElapsed)
                 : _l10n.practiceRecord,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isRecording ? Colors.redAccent : colorScheme.primary,
-                ),
+              fontWeight: FontWeight.bold,
+              color: isRecording ? Colors.redAccent : colorScheme.primary,
+            ),
           ),
         ],
       ),
@@ -2841,9 +2913,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final apiMs = (await audioPlayer.getCurrentPosition())?.inMilliseconds;
         final lastMs = _lastKnownAudioPositionMs;
         int? rawMs;
-        if (lastMs != null &&
-            lastMs >= cue.startTimeMs &&
-            lastMs < stopMs) {
+        if (lastMs != null && lastMs >= cue.startTimeMs && lastMs < stopMs) {
           rawMs = lastMs;
         } else {
           rawMs = apiMs;
@@ -2886,9 +2956,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final apiMs = controller.value.position.inMilliseconds;
     final lastMs = _lastKnownVideoPositionMs;
     int rawMs;
-    if (lastMs != null &&
-        lastMs >= cue.startTimeMs &&
-        lastMs < stopMs) {
+    if (lastMs != null && lastMs >= cue.startTimeMs && lastMs < stopMs) {
       rawMs = lastMs;
     } else {
       rawMs = apiMs;
@@ -2939,8 +3007,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _isPlaying = false;
     });
 
-    unawaited(PracticeProgressStore.instance
-        .setCueIndex(widget.mediaItem.id, nextIndex));
+    unawaited(
+      PracticeProgressStore.instance.setCueIndex(
+        widget.mediaItem.id,
+        nextIndex,
+      ),
+    );
 
     // Auto-play the new cue.
     await _togglePlayback();
@@ -3047,39 +3119,41 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
                       title: Text(_translationLanguageLabel(locale)),
                       subtitle: Text(locale.identifier),
                       trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: locale.isInstalled
+                              ? Colors.green.withValues(alpha: 0.08)
+                              : Colors.orange.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!locale.isInstalled) ...[
+                              Icon(
+                                Icons.download_rounded,
+                                size: 13,
+                                color: Colors.orange.shade700,
                               ),
-                              decoration: BoxDecoration(
-                                color: locale.isInstalled
-                                    ? Colors.green.withValues(alpha: 0.08)
-                                    : Colors.orange.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (!locale.isInstalled) ...[
-                                    Icon(Icons.download_rounded,
-                                        size: 13,
-                                        color: Colors.orange.shade700),
-                                    const SizedBox(width: 4),
-                                  ],
-                                  Text(
-                                    locale.isInstalled
-                                        ? l10n.practiceTranslationInstalled
-                                        : l10n.practiceTranslationDownload,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: locale.isInstalled
-                                              ? Colors.green.shade700
-                                              : Colors.orange.shade700,
-                                        ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              locale.isInstalled
+                                  ? l10n.practiceTranslationInstalled
+                                  : l10n.practiceTranslationDownload,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: locale.isInstalled
+                                        ? Colors.green.shade700
+                                        : Colors.orange.shade700,
                                   ),
-                                ],
-                              ),
                             ),
+                          ],
+                        ),
+                      ),
                       onTap: () => Navigator.of(context).pop(locale),
                     );
                   },
