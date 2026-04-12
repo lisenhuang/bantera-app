@@ -146,7 +146,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatsTitle => 'チャット';
 
   @override
-  String get savedTitle => '保存済み';
+  String get savedTitle => '保存済みメディア';
 
   @override
   String get generateWithAiTitle => 'AIで生成';
@@ -890,4 +890,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get localVideoPickerTitle => '音声言語を選択';
+
+  @override
+  String get savedCuesTitle => '保存したキュー';
+
+  @override
+  String get savedCuesEmpty => 'まだ保存したキューはありません。練習中にブックマークアイコンをタップして保存できます。';
+
+  @override
+  String get savedCuesDeleteTooltip => '保存したキューを削除';
+
+  @override
+  String get savedCuesDeleteConfirmTitle => 'このキューを削除しますか？';
+
+  @override
+  String get savedCuesDeleteConfirmBody => 'このキューが保存リストから削除されます。';
+
+  @override
+  String get savedCuesDeleteAllTooltip => '保存したキューをすべて削除';
+
+  @override
+  String get savedCuesDeleteAllConfirmTitle => 'すべての保存したキューを削除しますか？';
+
+  @override
+  String get savedCuesDeleteAllConfirmBody => '保存したキューがすべて完全に削除されます。';
 }

@@ -16,6 +16,7 @@ import '../../core/apple_system_version.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
+import '../../infrastructure/saved_cue_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_playback_speed_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
@@ -29,9 +30,14 @@ import 'session_compare_result_sheet.dart';
 enum SubtitleState { hidden, original, translated }
 
 class PracticePlayerScreen extends StatefulWidget {
-  const PracticePlayerScreen({super.key, required this.mediaItem});
+  const PracticePlayerScreen({
+    super.key,
+    required this.mediaItem,
+    this.initialCueIndex,
+  });
 
   final MediaItem mediaItem;
+  final int? initialCueIndex;
 
   @override
   State<PracticePlayerScreen> createState() => _PracticePlayerScreenState();
@@ -123,6 +129,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
+    unawaited(SavedCueRepository.instance.load());
   }
 
   Future<void> _startupPracticeSession() async {
@@ -155,6 +162,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _restoreProgress() async {
+    final initial = widget.initialCueIndex;
+    if (initial != null && initial >= 0 && initial < widget.mediaItem.cues.length) {
+      if (mounted) setState(() => _currentCueIndex = initial);
+      return;
+    }
     final saved = await PracticeProgressStore.instance.getCueIndex(
       widget.mediaItem.id,
     );
@@ -1599,7 +1611,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (widget.mediaItem.isAudioOnly) {
       final coverUrl = widget.mediaItem.coverUrl.trim();
       if (coverUrl.isNotEmpty && _audioPlayerReady) {
-        return ClipRRect(
+        return GestureDetector(
+          onTap: () {}, // absorb tap so cover doesn't trigger play/pause
+          child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
           child: Stack(
             fit: StackFit.expand,
@@ -1627,6 +1641,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 ),
               ),
             ],
+          ),
           ),
         );
       }
@@ -1813,6 +1828,38 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               color: colorScheme.primary,
             ),
           ),
+          const SizedBox(width: 4),
+          Builder(builder: (context) {
+            final isSaved = SavedCueRepository.instance.isSaved(
+              widget.mediaItem.id,
+              cue.id,
+            );
+            return GestureDetector(
+              onTap: () {
+                unawaited(
+                  SavedCueRepository.instance.toggleSaveCue(
+                    mediaItem: widget.mediaItem,
+                    cue: cue,
+                    cueIndex: _currentCueIndex,
+                  ).then((_) {
+                    if (mounted) setState(() {});
+                  }),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Icon(
+                  isSaved
+                      ? CupertinoIcons.bookmark_fill
+                      : CupertinoIcons.bookmark,
+                  size: 18,
+                  color: isSaved
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -3037,8 +3084,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final totalSeconds = milliseconds ~/ 1000;
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
-    final centiseconds = (milliseconds % 1000) ~/ 10;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}';
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
 

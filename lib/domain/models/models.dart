@@ -214,6 +214,30 @@ class User {
     this.bio = '',
     this.openToExchange = false,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id']?.toString() ?? '',
+      displayName: json['displayName']?.toString() ?? '',
+      avatarUrl: json['avatarUrl']?.toString() ?? '',
+      firstLanguage: json['firstLanguage']?.toString() ?? '',
+      learningLanguage: json['learningLanguage']?.toString() ?? '',
+      level: json['level']?.toString() ?? '',
+      bio: json['bio']?.toString() ?? '',
+      openToExchange: json['openToExchange'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'displayName': displayName,
+    'avatarUrl': avatarUrl,
+    'firstLanguage': firstLanguage,
+    'learningLanguage': learningLanguage,
+    'level': level,
+    'bio': bio,
+    'openToExchange': openToExchange,
+  };
 }
 
 class Cue {
@@ -234,6 +258,28 @@ class Cue {
     this.isBookmarked = false,
     this.notes = const [],
   });
+
+  factory Cue.fromJson(Map<String, dynamic> json) {
+    return Cue(
+      id: json['id']?.toString() ?? '',
+      startTimeMs: (json['startTimeMs'] as num?)?.toInt() ?? 0,
+      endTimeMs: (json['endTimeMs'] as num?)?.toInt() ?? 0,
+      originalText: json['originalText']?.toString() ?? '',
+      translatedText: json['translatedText']?.toString() ?? '',
+      isBookmarked: json['isBookmarked'] as bool? ?? false,
+      notes: (json['notes'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'startTimeMs': startTimeMs,
+    'endTimeMs': endTimeMs,
+    'originalText': originalText,
+    'translatedText': translatedText,
+    'isBookmarked': isBookmarked,
+    'notes': notes,
+  };
 }
 
 class MediaItem {
@@ -274,6 +320,45 @@ class MediaItem {
     this.translatedLanguage,
     this.isAudioOnly = false,
   });
+
+  factory MediaItem.fromJson(Map<String, dynamic> json) {
+    return MediaItem(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      creator: User.fromJson(json['creator'] as Map<String, dynamic>? ?? {}),
+      coverUrl: json['coverUrl']?.toString() ?? '',
+      videoUrl: json['videoUrl']?.toString(),
+      localVideoPath: json['localVideoPath']?.toString(),
+      spokenLanguage: json['spokenLanguage']?.toString() ?? '',
+      accent: json['accent']?.toString() ?? '',
+      durationMs: (json['durationMs'] as num?)?.toInt() ?? 0,
+      cues: (json['cues'] as List<dynamic>?)
+              ?.map((e) => Cue.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      transcriptionSource: json['transcriptionSource']?.toString() ?? '',
+      translatedLanguage: json['translatedLanguage']?.toString(),
+      isAudioOnly: json['isAudioOnly'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'description': description,
+    'creator': creator.toJson(),
+    'coverUrl': coverUrl,
+    'videoUrl': videoUrl,
+    'localVideoPath': localVideoPath,
+    'spokenLanguage': spokenLanguage,
+    'accent': accent,
+    'durationMs': durationMs,
+    'cues': cues.map((c) => c.toJson()).toList(),
+    'transcriptionSource': transcriptionSource,
+    'translatedLanguage': translatedLanguage,
+    'isAudioOnly': isAudioOnly,
+  };
 }
 
 class ChatMessage {

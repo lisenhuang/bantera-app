@@ -52,7 +52,7 @@
   "navCreate": "创作",
   "navProfile": "我的",
   "chatsTitle": "聊天",
-  "savedTitle": "已保存",
+  "savedTitle": "已保存媒体",
   "generateWithAiTitle": "AI 生成",
   "practiceLocalVideoTitle": "本地视频练习",
   "uploadVideoTitle": "上传视频",
@@ -282,5 +282,13 @@
   "localVideoStatusSaving": "正在将视频保存到设备练习库…",
   "localVideoStatusTranslationLong": "转录完成。Bantera 还在为你保存的语言准备翻译，此较长视频可能需要更多时间。",
   "localVideoStatusTranslation": "转录完成。正在为你保存的语言准备翻译…",
-  "localVideoPickerTitle": "选择音频语言"
+  "localVideoPickerTitle": "选择音频语言",
+  "savedCuesTitle": "已保存的片段",
+  "savedCuesEmpty": "还没有保存的片段。在练习时点击书签图标即可保存。",
+  "savedCuesDeleteTooltip": "移除已保存片段",
+  "savedCuesDeleteConfirmTitle": "移除此片段？",
+  "savedCuesDeleteConfirmBody": "此片段将从你的保存列表中移除。",
+  "savedCuesDeleteAllTooltip": "删除所有已保存片段",
+  "savedCuesDeleteAllConfirmTitle": "删除所有已保存片段？",
+  "savedCuesDeleteAllConfirmBody": "所有已保存的片段将被永久删除。"
 }

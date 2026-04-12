@@ -150,7 +150,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatsTitle => 'Chats';
 
   @override
-  String get savedTitle => 'Saved';
+  String get savedTitle => 'Saved Media';
 
   @override
   String get generateWithAiTitle => 'Generate with AI';
@@ -933,4 +933,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localVideoPickerTitle => 'Choose Audio Language';
+
+  @override
+  String get savedCuesTitle => 'Saved Cues';
+
+  @override
+  String get savedCuesEmpty =>
+      'No saved cues yet. Tap the bookmark icon while practicing to save a cue.';
+
+  @override
+  String get savedCuesDeleteTooltip => 'Remove saved cue';
+
+  @override
+  String get savedCuesDeleteConfirmTitle => 'Remove this cue?';
+
+  @override
+  String get savedCuesDeleteConfirmBody =>
+      'This cue will be removed from your saved list.';
+
+  @override
+  String get savedCuesDeleteAllTooltip => 'Delete all saved cues';
+
+  @override
+  String get savedCuesDeleteAllConfirmTitle => 'Delete all saved cues?';
+
+  @override
+  String get savedCuesDeleteAllConfirmBody =>
+      'All saved cues will be permanently removed.';
 }

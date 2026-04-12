@@ -376,7 +376,7 @@ abstract class AppLocalizations {
   /// No description provided for @savedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Saved'**
+  /// **'Saved Media'**
   String get savedTitle;
 
   /// No description provided for @generateWithAiTitle.
@@ -1758,6 +1758,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose Audio Language'**
   String get localVideoPickerTitle;
+
+  /// No description provided for @savedCuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Cues'**
+  String get savedCuesTitle;
+
+  /// No description provided for @savedCuesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved cues yet. Tap the bookmark icon while practicing to save a cue.'**
+  String get savedCuesEmpty;
+
+  /// No description provided for @savedCuesDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved cue'**
+  String get savedCuesDeleteTooltip;
+
+  /// No description provided for @savedCuesDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this cue?'**
+  String get savedCuesDeleteConfirmTitle;
+
+  /// No description provided for @savedCuesDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cue will be removed from your saved list.'**
+  String get savedCuesDeleteConfirmBody;
+
+  /// No description provided for @savedCuesDeleteAllTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all saved cues'**
+  String get savedCuesDeleteAllTooltip;
+
+  /// No description provided for @savedCuesDeleteAllConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all saved cues?'**
+  String get savedCuesDeleteAllConfirmTitle;
+
+  /// No description provided for @savedCuesDeleteAllConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All saved cues will be permanently removed.'**
+  String get savedCuesDeleteAllConfirmBody;
 }
 
 class _AppLocalizationsDelegate

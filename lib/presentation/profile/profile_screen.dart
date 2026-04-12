@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../infrastructure/saved_cue_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/theme.dart';
@@ -9,6 +10,7 @@ import '../../core/user_profile_notifier.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
+import 'saved_cues_screen.dart';
 import 'saved_screen.dart';
 import 'settings_screen.dart';
 
@@ -24,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     unawaited(ProfileStatsNotifier.instance.refresh());
+    unawaited(SavedCueRepository.instance.load());
   }
 
   @override
@@ -32,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       listenable: Listenable.merge([
         UserProfileNotifier.instance,
         ProfileStatsNotifier.instance,
+        SavedCueRepository.instance,
       ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
@@ -97,19 +101,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: Text(l10n.editProfile),
                 ),
                 const SizedBox(height: 24),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SavedScreen(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SavedScreen(),
+                        ),
+                      ),
+                      child: _buildStatColumn(
+                        context,
+                        l10n.savedTitle,
+                        stats.savedCount != null ? '${stats.savedCount}' : '–',
+                        tappable: true,
+                      ),
                     ),
-                  ),
-                  child: _buildStatColumn(
-                    context,
-                    l10n.savedTitle,
-                    stats.savedCount != null ? '${stats.savedCount}' : '–',
-                    tappable: true,
-                  ),
+                    const SizedBox(width: 32),
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SavedCuesScreen(),
+                        ),
+                      ),
+                      child: _buildStatColumn(
+                        context,
+                        l10n.savedCuesTitle,
+                        '${SavedCueRepository.instance.entries.length}',
+                        tappable: true,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
                 Padding(

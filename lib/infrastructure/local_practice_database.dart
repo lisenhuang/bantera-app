@@ -52,6 +52,23 @@ class LocalPracticeCueEntries extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class SavedCueEntries extends Table {
+  @override
+  String get tableName => 'saved_cue_entries';
+
+  TextColumn get id => text()();
+  TextColumn get ownerCacheKey => text()();
+  TextColumn get mediaItemId => text()();
+  TextColumn get cueId => text()();
+  IntColumn get cueIndex => integer()();
+  TextColumn get cueText => text()();
+  TextColumn get mediaItemJson => text()();
+  IntColumn get savedAtMillis => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class LocalCueAttemptEntries extends Table {
   @override
   String get tableName => 'local_cue_attempt_entries';
@@ -82,7 +99,7 @@ LazyDatabase _openConnection() {
 }
 
 @DriftDatabase(
-  tables: [LocalPracticeEntries, LocalPracticeCueEntries, LocalCueAttemptEntries],
+  tables: [LocalPracticeEntries, LocalPracticeCueEntries, LocalCueAttemptEntries, SavedCueEntries],
 )
 class LocalPracticeDatabase extends _$LocalPracticeDatabase {
   LocalPracticeDatabase._internal() : super(_openConnection());
@@ -91,7 +108,7 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
       LocalPracticeDatabase._internal();
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -101,6 +118,9 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
         await migrator.createTable(localCueAttemptEntries);
+      }
+      if (from < 3) {
+        await migrator.createTable(savedCueEntries);
       }
     },
     beforeOpen: (details) async {

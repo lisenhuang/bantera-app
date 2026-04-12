@@ -146,7 +146,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatsTitle => '聊天';
 
   @override
-  String get savedTitle => '已保存';
+  String get savedTitle => '已保存媒体';
 
   @override
   String get generateWithAiTitle => 'AI 生成';
@@ -878,6 +878,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localVideoPickerTitle => '选择音频语言';
+
+  @override
+  String get savedCuesTitle => '已保存的片段';
+
+  @override
+  String get savedCuesEmpty => '还没有保存的片段。在练习时点击书签图标即可保存。';
+
+  @override
+  String get savedCuesDeleteTooltip => '移除已保存片段';
+
+  @override
+  String get savedCuesDeleteConfirmTitle => '移除此片段？';
+
+  @override
+  String get savedCuesDeleteConfirmBody => '此片段将从你的保存列表中移除。';
+
+  @override
+  String get savedCuesDeleteAllTooltip => '删除所有已保存片段';
+
+  @override
+  String get savedCuesDeleteAllConfirmTitle => '删除所有已保存片段？';
+
+  @override
+  String get savedCuesDeleteAllConfirmBody => '所有已保存的片段将被永久删除。';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1022,7 +1046,7 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get chatsTitle => '聊天';
 
   @override
-  String get savedTitle => '已保存';
+  String get savedTitle => '已保存媒体';
 
   @override
   String get generateWithAiTitle => 'AI 生成';
@@ -1754,4 +1778,28 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get localVideoPickerTitle => '选择音频语言';
+
+  @override
+  String get savedCuesTitle => '已保存的片段';
+
+  @override
+  String get savedCuesEmpty => '还没有保存的片段。在练习时点击书签图标即可保存。';
+
+  @override
+  String get savedCuesDeleteTooltip => '移除已保存片段';
+
+  @override
+  String get savedCuesDeleteConfirmTitle => '移除此片段？';
+
+  @override
+  String get savedCuesDeleteConfirmBody => '此片段将从你的保存列表中移除。';
+
+  @override
+  String get savedCuesDeleteAllTooltip => '删除所有已保存片段';
+
+  @override
+  String get savedCuesDeleteAllConfirmTitle => '删除所有已保存片段？';
+
+  @override
+  String get savedCuesDeleteAllConfirmBody => '所有已保存的片段将被永久删除。';
 }

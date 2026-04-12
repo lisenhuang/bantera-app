@@ -772,6 +772,110 @@ class AuthApiClient {
     });
   }
 
+  Future<String?> saveCue({
+    required String accessToken,
+    required String videoId,
+    required String cueId,
+    required int cueIndex,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+    try {
+      final request = await _httpClient.openUrl(
+        'POST',
+        _resolve('/api/me/saved-cues'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.write(jsonEncode({'videoId': videoId, 'cueId': cueId, 'cueIndex': cueIndex}));
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode == 401) {
+        final json = _tryDecodeJson(body);
+        if (json != null && json['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+        return null;
+      }
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final decoded = _tryDecodeJson(body);
+        return decoded?['id']?.toString();
+      }
+      return null;
+    } on AuthApiException {
+      rethrow;
+    } on SocketException {
+      await _throwNetworkFailure();
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+    });
+  }
+
+  Future<void> unsaveCue({
+    required String accessToken,
+    required String entryId,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+    try {
+      final request = await _httpClient.openUrl(
+        'DELETE',
+        _resolve('/api/me/saved-cues/$entryId'),
+      );
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      final response = await request.close();
+      if (response.statusCode == 401) {
+        final body = await response.transform(utf8.decoder).join();
+        final json = _tryDecodeJson(body);
+        if (json != null && json['code']?.toString() == 'token_expired') {
+          throw const AuthApiException(code: 'token_expired', message: '');
+        }
+        return;
+      }
+      await response.drain<void>();
+    } on AuthApiException {
+      rethrow;
+    } on SocketException {
+      await _throwNetworkFailure();
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+    });
+  }
+
+  Future<List<SavedCueApiEntry>> fetchSavedCues({
+    required String accessToken,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+    try {
+      final request = await _httpClient.getUrl(_resolve('/api/me/saved-cues'));
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      final decoded = jsonDecode(responseText);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map((item) {
+              final m = item.map((k, v) => MapEntry(k.toString(), v));
+              return SavedCueApiEntry.fromJson(m);
+            })
+            .toList();
+      }
+      if (decoded is Map<String, dynamic>) _throwApiException(decoded, response.statusCode);
+      return [];
+    } on AuthApiException {
+      rethrow;
+    } on SocketException {
+      await _throwNetworkFailure();
+    } on HandshakeException {
+      throw const AuthApiException(code: 'tls_error', message: 'The app could not establish a secure connection.');
+    }
+    });
+  }
+
   Future<List<UploadedVideo>> fetchSavedVideos({
     required String accessToken,
   }) async {
@@ -999,7 +1103,10 @@ class AuthApiClient {
     );
   }
 
-  UploadedVideo _uploadedVideoFromJson(Map<String, dynamic> json) {
+  UploadedVideo _uploadedVideoFromJson(Map<String, dynamic> json) =>
+      uploadedVideoFromJsonPublic(json);
+
+  static UploadedVideo uploadedVideoFromJsonPublic(Map<String, dynamic> json) {
     return UploadedVideo(
       id: json['id'] as String,
       userId: json['userId'] as String,
@@ -1108,4 +1215,36 @@ class AuthApiException implements Exception {
 /// error dialog appears while the app navigates back to the login screen.
 class SessionExpiredException implements Exception {
   const SessionExpiredException();
+}
+
+class SavedCueApiEntry {
+  final String id;
+  final String cueId;
+  final int cueIndex;
+  final DateTime savedAt;
+  final UploadedVideo video;
+
+  const SavedCueApiEntry({
+    required this.id,
+    required this.cueId,
+    required this.cueIndex,
+    required this.savedAt,
+    required this.video,
+  });
+
+  factory SavedCueApiEntry.fromJson(Map<String, dynamic> json) {
+    final videoMap = (json['video'] as Map?)?.map(
+          (k, v) => MapEntry(k.toString(), v),
+        ) ??
+        const <String, dynamic>{};
+    return SavedCueApiEntry(
+      id: json['id']?.toString() ?? '',
+      cueId: json['cueId']?.toString() ?? '',
+      cueIndex: (json['cueIndex'] as num?)?.toInt() ?? 0,
+      savedAt: json['savedAt'] != null
+          ? DateTime.tryParse(json['savedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      video: AuthApiClient.uploadedVideoFromJsonPublic(videoMap),
+    );
+  }
 }

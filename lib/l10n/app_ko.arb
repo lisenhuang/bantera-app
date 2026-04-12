@@ -52,7 +52,7 @@
   "navCreate": "만들기",
   "navProfile": "프로필",
   "chatsTitle": "채팅",
-  "savedTitle": "저장됨",
+  "savedTitle": "저장된 미디어",
   "generateWithAiTitle": "AI로 생성",
   "practiceLocalVideoTitle": "로컬 동영상 연습",
   "uploadVideoTitle": "동영상 업로드",
@@ -282,5 +282,13 @@
   "localVideoStatusSaving": "기기 연습 라이브러리에 동영상을 저장하는 중...",
   "localVideoStatusTranslationLong": "전사가 완료되었습니다. 저장된 언어로 번역도 준비 중이므로 긴 동영상은 시간이 더 걸릴 수 있습니다.",
   "localVideoStatusTranslation": "전사가 완료되었습니다. 저장된 언어로 번역을 준비하는 중...",
-  "localVideoPickerTitle": "음성 언어 선택"
+  "localVideoPickerTitle": "음성 언어 선택",
+  "savedCuesTitle": "저장된 구간",
+  "savedCuesEmpty": "아직 저장된 구간이 없습니다. 연습 중 북마크 아이콘을 탭하여 구간을 저장하세요.",
+  "savedCuesDeleteTooltip": "저장된 구간 삭제",
+  "savedCuesDeleteConfirmTitle": "이 구간을 삭제할까요?",
+  "savedCuesDeleteConfirmBody": "이 구간이 저장 목록에서 삭제됩니다.",
+  "savedCuesDeleteAllTooltip": "저장된 구간 모두 삭제",
+  "savedCuesDeleteAllConfirmTitle": "모든 저장된 구간을 삭제할까요?",
+  "savedCuesDeleteAllConfirmBody": "저장된 구간이 모두 영구적으로 삭제됩니다."
 }

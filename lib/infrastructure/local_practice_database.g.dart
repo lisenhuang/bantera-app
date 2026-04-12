@@ -2208,6 +2208,536 @@ class LocalCueAttemptEntriesCompanion
   }
 }
 
+class $SavedCueEntriesTable extends SavedCueEntries
+    with TableInfo<$SavedCueEntriesTable, SavedCueEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SavedCueEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerCacheKeyMeta = const VerificationMeta(
+    'ownerCacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> ownerCacheKey = GeneratedColumn<String>(
+    'owner_cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mediaItemIdMeta = const VerificationMeta(
+    'mediaItemId',
+  );
+  @override
+  late final GeneratedColumn<String> mediaItemId = GeneratedColumn<String>(
+    'media_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueIdMeta = const VerificationMeta('cueId');
+  @override
+  late final GeneratedColumn<String> cueId = GeneratedColumn<String>(
+    'cue_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueIndexMeta = const VerificationMeta(
+    'cueIndex',
+  );
+  @override
+  late final GeneratedColumn<int> cueIndex = GeneratedColumn<int>(
+    'cue_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueTextMeta = const VerificationMeta(
+    'cueText',
+  );
+  @override
+  late final GeneratedColumn<String> cueText = GeneratedColumn<String>(
+    'cue_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mediaItemJsonMeta = const VerificationMeta(
+    'mediaItemJson',
+  );
+  @override
+  late final GeneratedColumn<String> mediaItemJson = GeneratedColumn<String>(
+    'media_item_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _savedAtMillisMeta = const VerificationMeta(
+    'savedAtMillis',
+  );
+  @override
+  late final GeneratedColumn<int> savedAtMillis = GeneratedColumn<int>(
+    'saved_at_millis',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ownerCacheKey,
+    mediaItemId,
+    cueId,
+    cueIndex,
+    cueText,
+    mediaItemJson,
+    savedAtMillis,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'saved_cue_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SavedCueEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_cache_key')) {
+      context.handle(
+        _ownerCacheKeyMeta,
+        ownerCacheKey.isAcceptableOrUnknown(
+          data['owner_cache_key']!,
+          _ownerCacheKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerCacheKeyMeta);
+    }
+    if (data.containsKey('media_item_id')) {
+      context.handle(
+        _mediaItemIdMeta,
+        mediaItemId.isAcceptableOrUnknown(
+          data['media_item_id']!,
+          _mediaItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mediaItemIdMeta);
+    }
+    if (data.containsKey('cue_id')) {
+      context.handle(
+        _cueIdMeta,
+        cueId.isAcceptableOrUnknown(data['cue_id']!, _cueIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueIdMeta);
+    }
+    if (data.containsKey('cue_index')) {
+      context.handle(
+        _cueIndexMeta,
+        cueIndex.isAcceptableOrUnknown(data['cue_index']!, _cueIndexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueIndexMeta);
+    }
+    if (data.containsKey('cue_text')) {
+      context.handle(
+        _cueTextMeta,
+        cueText.isAcceptableOrUnknown(data['cue_text']!, _cueTextMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueTextMeta);
+    }
+    if (data.containsKey('media_item_json')) {
+      context.handle(
+        _mediaItemJsonMeta,
+        mediaItemJson.isAcceptableOrUnknown(
+          data['media_item_json']!,
+          _mediaItemJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mediaItemJsonMeta);
+    }
+    if (data.containsKey('saved_at_millis')) {
+      context.handle(
+        _savedAtMillisMeta,
+        savedAtMillis.isAcceptableOrUnknown(
+          data['saved_at_millis']!,
+          _savedAtMillisMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_savedAtMillisMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SavedCueEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SavedCueEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      ownerCacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_cache_key'],
+      )!,
+      mediaItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}media_item_id'],
+      )!,
+      cueId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_id'],
+      )!,
+      cueIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cue_index'],
+      )!,
+      cueText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_text'],
+      )!,
+      mediaItemJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}media_item_json'],
+      )!,
+      savedAtMillis: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}saved_at_millis'],
+      )!,
+    );
+  }
+
+  @override
+  $SavedCueEntriesTable createAlias(String alias) {
+    return $SavedCueEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
+  final String id;
+  final String ownerCacheKey;
+  final String mediaItemId;
+  final String cueId;
+  final int cueIndex;
+  final String cueText;
+  final String mediaItemJson;
+  final int savedAtMillis;
+  const SavedCueEntry({
+    required this.id,
+    required this.ownerCacheKey,
+    required this.mediaItemId,
+    required this.cueId,
+    required this.cueIndex,
+    required this.cueText,
+    required this.mediaItemJson,
+    required this.savedAtMillis,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_cache_key'] = Variable<String>(ownerCacheKey);
+    map['media_item_id'] = Variable<String>(mediaItemId);
+    map['cue_id'] = Variable<String>(cueId);
+    map['cue_index'] = Variable<int>(cueIndex);
+    map['cue_text'] = Variable<String>(cueText);
+    map['media_item_json'] = Variable<String>(mediaItemJson);
+    map['saved_at_millis'] = Variable<int>(savedAtMillis);
+    return map;
+  }
+
+  SavedCueEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SavedCueEntriesCompanion(
+      id: Value(id),
+      ownerCacheKey: Value(ownerCacheKey),
+      mediaItemId: Value(mediaItemId),
+      cueId: Value(cueId),
+      cueIndex: Value(cueIndex),
+      cueText: Value(cueText),
+      mediaItemJson: Value(mediaItemJson),
+      savedAtMillis: Value(savedAtMillis),
+    );
+  }
+
+  factory SavedCueEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SavedCueEntry(
+      id: serializer.fromJson<String>(json['id']),
+      ownerCacheKey: serializer.fromJson<String>(json['ownerCacheKey']),
+      mediaItemId: serializer.fromJson<String>(json['mediaItemId']),
+      cueId: serializer.fromJson<String>(json['cueId']),
+      cueIndex: serializer.fromJson<int>(json['cueIndex']),
+      cueText: serializer.fromJson<String>(json['cueText']),
+      mediaItemJson: serializer.fromJson<String>(json['mediaItemJson']),
+      savedAtMillis: serializer.fromJson<int>(json['savedAtMillis']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerCacheKey': serializer.toJson<String>(ownerCacheKey),
+      'mediaItemId': serializer.toJson<String>(mediaItemId),
+      'cueId': serializer.toJson<String>(cueId),
+      'cueIndex': serializer.toJson<int>(cueIndex),
+      'cueText': serializer.toJson<String>(cueText),
+      'mediaItemJson': serializer.toJson<String>(mediaItemJson),
+      'savedAtMillis': serializer.toJson<int>(savedAtMillis),
+    };
+  }
+
+  SavedCueEntry copyWith({
+    String? id,
+    String? ownerCacheKey,
+    String? mediaItemId,
+    String? cueId,
+    int? cueIndex,
+    String? cueText,
+    String? mediaItemJson,
+    int? savedAtMillis,
+  }) => SavedCueEntry(
+    id: id ?? this.id,
+    ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+    mediaItemId: mediaItemId ?? this.mediaItemId,
+    cueId: cueId ?? this.cueId,
+    cueIndex: cueIndex ?? this.cueIndex,
+    cueText: cueText ?? this.cueText,
+    mediaItemJson: mediaItemJson ?? this.mediaItemJson,
+    savedAtMillis: savedAtMillis ?? this.savedAtMillis,
+  );
+  SavedCueEntry copyWithCompanion(SavedCueEntriesCompanion data) {
+    return SavedCueEntry(
+      id: data.id.present ? data.id.value : this.id,
+      ownerCacheKey: data.ownerCacheKey.present
+          ? data.ownerCacheKey.value
+          : this.ownerCacheKey,
+      mediaItemId: data.mediaItemId.present
+          ? data.mediaItemId.value
+          : this.mediaItemId,
+      cueId: data.cueId.present ? data.cueId.value : this.cueId,
+      cueIndex: data.cueIndex.present ? data.cueIndex.value : this.cueIndex,
+      cueText: data.cueText.present ? data.cueText.value : this.cueText,
+      mediaItemJson: data.mediaItemJson.present
+          ? data.mediaItemJson.value
+          : this.mediaItemJson,
+      savedAtMillis: data.savedAtMillis.present
+          ? data.savedAtMillis.value
+          : this.savedAtMillis,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedCueEntry(')
+          ..write('id: $id, ')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('mediaItemId: $mediaItemId, ')
+          ..write('cueId: $cueId, ')
+          ..write('cueIndex: $cueIndex, ')
+          ..write('cueText: $cueText, ')
+          ..write('mediaItemJson: $mediaItemJson, ')
+          ..write('savedAtMillis: $savedAtMillis')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    ownerCacheKey,
+    mediaItemId,
+    cueId,
+    cueIndex,
+    cueText,
+    mediaItemJson,
+    savedAtMillis,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SavedCueEntry &&
+          other.id == this.id &&
+          other.ownerCacheKey == this.ownerCacheKey &&
+          other.mediaItemId == this.mediaItemId &&
+          other.cueId == this.cueId &&
+          other.cueIndex == this.cueIndex &&
+          other.cueText == this.cueText &&
+          other.mediaItemJson == this.mediaItemJson &&
+          other.savedAtMillis == this.savedAtMillis);
+}
+
+class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
+  final Value<String> id;
+  final Value<String> ownerCacheKey;
+  final Value<String> mediaItemId;
+  final Value<String> cueId;
+  final Value<int> cueIndex;
+  final Value<String> cueText;
+  final Value<String> mediaItemJson;
+  final Value<int> savedAtMillis;
+  final Value<int> rowid;
+  const SavedCueEntriesCompanion({
+    this.id = const Value.absent(),
+    this.ownerCacheKey = const Value.absent(),
+    this.mediaItemId = const Value.absent(),
+    this.cueId = const Value.absent(),
+    this.cueIndex = const Value.absent(),
+    this.cueText = const Value.absent(),
+    this.mediaItemJson = const Value.absent(),
+    this.savedAtMillis = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SavedCueEntriesCompanion.insert({
+    required String id,
+    required String ownerCacheKey,
+    required String mediaItemId,
+    required String cueId,
+    required int cueIndex,
+    required String cueText,
+    required String mediaItemJson,
+    required int savedAtMillis,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       ownerCacheKey = Value(ownerCacheKey),
+       mediaItemId = Value(mediaItemId),
+       cueId = Value(cueId),
+       cueIndex = Value(cueIndex),
+       cueText = Value(cueText),
+       mediaItemJson = Value(mediaItemJson),
+       savedAtMillis = Value(savedAtMillis);
+  static Insertable<SavedCueEntry> custom({
+    Expression<String>? id,
+    Expression<String>? ownerCacheKey,
+    Expression<String>? mediaItemId,
+    Expression<String>? cueId,
+    Expression<int>? cueIndex,
+    Expression<String>? cueText,
+    Expression<String>? mediaItemJson,
+    Expression<int>? savedAtMillis,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerCacheKey != null) 'owner_cache_key': ownerCacheKey,
+      if (mediaItemId != null) 'media_item_id': mediaItemId,
+      if (cueId != null) 'cue_id': cueId,
+      if (cueIndex != null) 'cue_index': cueIndex,
+      if (cueText != null) 'cue_text': cueText,
+      if (mediaItemJson != null) 'media_item_json': mediaItemJson,
+      if (savedAtMillis != null) 'saved_at_millis': savedAtMillis,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SavedCueEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? ownerCacheKey,
+    Value<String>? mediaItemId,
+    Value<String>? cueId,
+    Value<int>? cueIndex,
+    Value<String>? cueText,
+    Value<String>? mediaItemJson,
+    Value<int>? savedAtMillis,
+    Value<int>? rowid,
+  }) {
+    return SavedCueEntriesCompanion(
+      id: id ?? this.id,
+      ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+      mediaItemId: mediaItemId ?? this.mediaItemId,
+      cueId: cueId ?? this.cueId,
+      cueIndex: cueIndex ?? this.cueIndex,
+      cueText: cueText ?? this.cueText,
+      mediaItemJson: mediaItemJson ?? this.mediaItemJson,
+      savedAtMillis: savedAtMillis ?? this.savedAtMillis,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerCacheKey.present) {
+      map['owner_cache_key'] = Variable<String>(ownerCacheKey.value);
+    }
+    if (mediaItemId.present) {
+      map['media_item_id'] = Variable<String>(mediaItemId.value);
+    }
+    if (cueId.present) {
+      map['cue_id'] = Variable<String>(cueId.value);
+    }
+    if (cueIndex.present) {
+      map['cue_index'] = Variable<int>(cueIndex.value);
+    }
+    if (cueText.present) {
+      map['cue_text'] = Variable<String>(cueText.value);
+    }
+    if (mediaItemJson.present) {
+      map['media_item_json'] = Variable<String>(mediaItemJson.value);
+    }
+    if (savedAtMillis.present) {
+      map['saved_at_millis'] = Variable<int>(savedAtMillis.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedCueEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('mediaItemId: $mediaItemId, ')
+          ..write('cueId: $cueId, ')
+          ..write('cueIndex: $cueIndex, ')
+          ..write('cueText: $cueText, ')
+          ..write('mediaItemJson: $mediaItemJson, ')
+          ..write('savedAtMillis: $savedAtMillis, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
   _$LocalPracticeDatabase(QueryExecutor e) : super(e);
   $LocalPracticeDatabaseManager get managers =>
@@ -2218,6 +2748,9 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
       $LocalPracticeCueEntriesTable(this);
   late final $LocalCueAttemptEntriesTable localCueAttemptEntries =
       $LocalCueAttemptEntriesTable(this);
+  late final $SavedCueEntriesTable savedCueEntries = $SavedCueEntriesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2226,6 +2759,7 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
     localPracticeEntries,
     localPracticeCueEntries,
     localCueAttemptEntries,
+    savedCueEntries,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3567,6 +4101,281 @@ typedef $$LocalCueAttemptEntriesTableProcessedTableManager =
       LocalCueAttemptEntry,
       PrefetchHooks Function()
     >;
+typedef $$SavedCueEntriesTableCreateCompanionBuilder =
+    SavedCueEntriesCompanion Function({
+      required String id,
+      required String ownerCacheKey,
+      required String mediaItemId,
+      required String cueId,
+      required int cueIndex,
+      required String cueText,
+      required String mediaItemJson,
+      required int savedAtMillis,
+      Value<int> rowid,
+    });
+typedef $$SavedCueEntriesTableUpdateCompanionBuilder =
+    SavedCueEntriesCompanion Function({
+      Value<String> id,
+      Value<String> ownerCacheKey,
+      Value<String> mediaItemId,
+      Value<String> cueId,
+      Value<int> cueIndex,
+      Value<String> cueText,
+      Value<String> mediaItemJson,
+      Value<int> savedAtMillis,
+      Value<int> rowid,
+    });
+
+class $$SavedCueEntriesTableFilterComposer
+    extends Composer<_$LocalPracticeDatabase, $SavedCueEntriesTable> {
+  $$SavedCueEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cueIndex => $composableBuilder(
+    column: $table.cueIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueText => $composableBuilder(
+    column: $table.cueText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mediaItemJson => $composableBuilder(
+    column: $table.mediaItemJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get savedAtMillis => $composableBuilder(
+    column: $table.savedAtMillis,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SavedCueEntriesTableOrderingComposer
+    extends Composer<_$LocalPracticeDatabase, $SavedCueEntriesTable> {
+  $$SavedCueEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cueIndex => $composableBuilder(
+    column: $table.cueIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueText => $composableBuilder(
+    column: $table.cueText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mediaItemJson => $composableBuilder(
+    column: $table.mediaItemJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get savedAtMillis => $composableBuilder(
+    column: $table.savedAtMillis,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SavedCueEntriesTableAnnotationComposer
+    extends Composer<_$LocalPracticeDatabase, $SavedCueEntriesTable> {
+  $$SavedCueEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mediaItemId => $composableBuilder(
+    column: $table.mediaItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cueId =>
+      $composableBuilder(column: $table.cueId, builder: (column) => column);
+
+  GeneratedColumn<int> get cueIndex =>
+      $composableBuilder(column: $table.cueIndex, builder: (column) => column);
+
+  GeneratedColumn<String> get cueText =>
+      $composableBuilder(column: $table.cueText, builder: (column) => column);
+
+  GeneratedColumn<String> get mediaItemJson => $composableBuilder(
+    column: $table.mediaItemJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get savedAtMillis => $composableBuilder(
+    column: $table.savedAtMillis,
+    builder: (column) => column,
+  );
+}
+
+class $$SavedCueEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$LocalPracticeDatabase,
+          $SavedCueEntriesTable,
+          SavedCueEntry,
+          $$SavedCueEntriesTableFilterComposer,
+          $$SavedCueEntriesTableOrderingComposer,
+          $$SavedCueEntriesTableAnnotationComposer,
+          $$SavedCueEntriesTableCreateCompanionBuilder,
+          $$SavedCueEntriesTableUpdateCompanionBuilder,
+          (
+            SavedCueEntry,
+            BaseReferences<
+              _$LocalPracticeDatabase,
+              $SavedCueEntriesTable,
+              SavedCueEntry
+            >,
+          ),
+          SavedCueEntry,
+          PrefetchHooks Function()
+        > {
+  $$SavedCueEntriesTableTableManager(
+    _$LocalPracticeDatabase db,
+    $SavedCueEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SavedCueEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SavedCueEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SavedCueEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> ownerCacheKey = const Value.absent(),
+                Value<String> mediaItemId = const Value.absent(),
+                Value<String> cueId = const Value.absent(),
+                Value<int> cueIndex = const Value.absent(),
+                Value<String> cueText = const Value.absent(),
+                Value<String> mediaItemJson = const Value.absent(),
+                Value<int> savedAtMillis = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedCueEntriesCompanion(
+                id: id,
+                ownerCacheKey: ownerCacheKey,
+                mediaItemId: mediaItemId,
+                cueId: cueId,
+                cueIndex: cueIndex,
+                cueText: cueText,
+                mediaItemJson: mediaItemJson,
+                savedAtMillis: savedAtMillis,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String ownerCacheKey,
+                required String mediaItemId,
+                required String cueId,
+                required int cueIndex,
+                required String cueText,
+                required String mediaItemJson,
+                required int savedAtMillis,
+                Value<int> rowid = const Value.absent(),
+              }) => SavedCueEntriesCompanion.insert(
+                id: id,
+                ownerCacheKey: ownerCacheKey,
+                mediaItemId: mediaItemId,
+                cueId: cueId,
+                cueIndex: cueIndex,
+                cueText: cueText,
+                mediaItemJson: mediaItemJson,
+                savedAtMillis: savedAtMillis,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SavedCueEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalPracticeDatabase,
+      $SavedCueEntriesTable,
+      SavedCueEntry,
+      $$SavedCueEntriesTableFilterComposer,
+      $$SavedCueEntriesTableOrderingComposer,
+      $$SavedCueEntriesTableAnnotationComposer,
+      $$SavedCueEntriesTableCreateCompanionBuilder,
+      $$SavedCueEntriesTableUpdateCompanionBuilder,
+      (
+        SavedCueEntry,
+        BaseReferences<
+          _$LocalPracticeDatabase,
+          $SavedCueEntriesTable,
+          SavedCueEntry
+        >,
+      ),
+      SavedCueEntry,
+      PrefetchHooks Function()
+    >;
 
 class $LocalPracticeDatabaseManager {
   final _$LocalPracticeDatabase _db;
@@ -3583,4 +4392,6 @@ class $LocalPracticeDatabaseManager {
         _db,
         _db.localCueAttemptEntries,
       );
+  $$SavedCueEntriesTableTableManager get savedCueEntries =>
+      $$SavedCueEntriesTableTableManager(_db, _db.savedCueEntries);
 }

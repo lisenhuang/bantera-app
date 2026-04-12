@@ -146,7 +146,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatsTitle => '채팅';
 
   @override
-  String get savedTitle => '저장됨';
+  String get savedTitle => '저장된 미디어';
 
   @override
   String get generateWithAiTitle => 'AI로 생성';
@@ -894,4 +894,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get localVideoPickerTitle => '음성 언어 선택';
+
+  @override
+  String get savedCuesTitle => '저장된 구간';
+
+  @override
+  String get savedCuesEmpty => '아직 저장된 구간이 없습니다. 연습 중 북마크 아이콘을 탭하여 구간을 저장하세요.';
+
+  @override
+  String get savedCuesDeleteTooltip => '저장된 구간 삭제';
+
+  @override
+  String get savedCuesDeleteConfirmTitle => '이 구간을 삭제할까요?';
+
+  @override
+  String get savedCuesDeleteConfirmBody => '이 구간이 저장 목록에서 삭제됩니다.';
+
+  @override
+  String get savedCuesDeleteAllTooltip => '저장된 구간 모두 삭제';
+
+  @override
+  String get savedCuesDeleteAllConfirmTitle => '모든 저장된 구간을 삭제할까요?';
+
+  @override
+  String get savedCuesDeleteAllConfirmBody => '저장된 구간이 모두 영구적으로 삭제됩니다.';
 }

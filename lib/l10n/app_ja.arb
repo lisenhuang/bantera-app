@@ -52,7 +52,7 @@
   "navCreate": "作成",
   "navProfile": "プロフィール",
   "chatsTitle": "チャット",
-  "savedTitle": "保存済み",
+  "savedTitle": "保存済みメディア",
   "generateWithAiTitle": "AIで生成",
   "practiceLocalVideoTitle": "ローカル動画の練習",
   "uploadVideoTitle": "動画をアップロード",
@@ -282,5 +282,13 @@
   "localVideoStatusSaving": "動画をデバイスの練習ライブラリに保存しています...",
   "localVideoStatusTranslationLong": "文字起こし完了。長い動画のため、保存した言語の翻訳準備にもう少し時間がかかる場合があります。",
   "localVideoStatusTranslation": "文字起こし完了。保存した言語の翻訳を準備しています...",
-  "localVideoPickerTitle": "音声言語を選択"
+  "localVideoPickerTitle": "音声言語を選択",
+  "savedCuesTitle": "保存したキュー",
+  "savedCuesEmpty": "まだ保存したキューはありません。練習中にブックマークアイコンをタップして保存できます。",
+  "savedCuesDeleteTooltip": "保存したキューを削除",
+  "savedCuesDeleteConfirmTitle": "このキューを削除しますか？",
+  "savedCuesDeleteConfirmBody": "このキューが保存リストから削除されます。",
+  "savedCuesDeleteAllTooltip": "保存したキューをすべて削除",
+  "savedCuesDeleteAllConfirmTitle": "すべての保存したキューを削除しますか？",
+  "savedCuesDeleteAllConfirmBody": "保存したキューがすべて完全に削除されます。"
 }

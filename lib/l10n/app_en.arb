@@ -52,7 +52,7 @@
   "navCreate": "Create",
   "navProfile": "Profile",
   "chatsTitle": "Chats",
-  "savedTitle": "Saved",
+  "savedTitle": "Saved Media",
   "generateWithAiTitle": "Generate with AI",
   "practiceLocalVideoTitle": "Practice Local Video",
   "uploadVideoTitle": "Upload Video",
@@ -387,5 +387,13 @@
   "localVideoStatusSaving": "Saving this video to your on-device practice library...",
   "localVideoStatusTranslationLong": "Transcription finished. Bantera is also preparing translation for your saved language, so this longer video may take a bit more time.",
   "localVideoStatusTranslation": "Transcription finished. Preparing translation for your saved language...",
-  "localVideoPickerTitle": "Choose Audio Language"
+  "localVideoPickerTitle": "Choose Audio Language",
+  "savedCuesTitle": "Saved Cues",
+  "savedCuesEmpty": "No saved cues yet. Tap the bookmark icon while practicing to save a cue.",
+  "savedCuesDeleteTooltip": "Remove saved cue",
+  "savedCuesDeleteConfirmTitle": "Remove this cue?",
+  "savedCuesDeleteConfirmBody": "This cue will be removed from your saved list.",
+  "savedCuesDeleteAllTooltip": "Delete all saved cues",
+  "savedCuesDeleteAllConfirmTitle": "Delete all saved cues?",
+  "savedCuesDeleteAllConfirmBody": "All saved cues will be permanently removed."
 }
