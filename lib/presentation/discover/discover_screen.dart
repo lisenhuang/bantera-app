@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../core/apple_system_version.dart';
 import '../../core/api_config_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/auth_session_notifier.dart';
@@ -35,6 +37,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   bool _showAllEnglishVariants = false;
 
   Timer? _debounce;
+
+  bool get _canShowGenerateWithAiButton =>
+      !(Platform.isIOS && isLegacyAppleOsPre26);
 
   @override
   void initState() {
@@ -243,17 +248,36 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       child: _isLoadingMore
                           ? const Center(child: CircularProgressIndicator())
                           : _hasMore
-                              ? const SizedBox.shrink()
-                              : Center(
-                                  child: Text(
+                          ? const SizedBox.shrink()
+                          : Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
                                     l10n.discoverNoMoreResults,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey,
-                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: Colors.grey),
                                   ),
-                                ),
+                                  if (_canShowGenerateWithAiButton) ...[
+                                    const SizedBox(height: 14),
+                                    ElevatedButton.icon(
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const GenerateAiAudioScreen(),
+                                        ),
+                                      ),
+                                      icon: const Icon(
+                                        Icons.auto_awesome,
+                                        size: 18,
+                                      ),
+                                      label: Text(l10n.generateWithAiTitle),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -426,7 +450,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
             ),
-            if (hasLang) ...[
+            if (hasLang && _canShowGenerateWithAiButton) ...[
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () => Navigator.push(
@@ -492,9 +516,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 15,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(fontSize: 15),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
