@@ -9,7 +9,7 @@ import 'app_locale.dart';
 class SettingsNotifier extends ChangeNotifier {
   SettingsNotifier._();
 
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.system;
   bool _notificationsEnabled = true;
   String? _lastTranscriptionLocale;
   AppLocalePreference _appLocalePreference = AppLocalePreference.system;
@@ -48,7 +48,7 @@ class SettingsNotifier extends ChangeNotifier {
         }
       }
     } catch (_) {
-      _themeMode = ThemeMode.light;
+      _themeMode = ThemeMode.system;
       _notificationsEnabled = true;
       _lastTranscriptionLocale = null;
       _appLocalePreference = AppLocalePreference.system;
@@ -131,7 +131,7 @@ class SettingsNotifier extends ChangeNotifier {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
       'system' => ThemeMode.system,
-      _ => ThemeMode.light,
+      _ => ThemeMode.system,
     };
   }
 }
