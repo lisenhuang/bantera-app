@@ -339,7 +339,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     final flag = flagEmojiForLocale(learningLang);
-    final canShowAllEnglishVariants = _canShowAllEnglishVariants(learningLang);
+    final canShowAllVariants = _canShowAllVariants(learningLang);
+    final allVariantsLabel = canShowAllVariants
+        ? _allVariantsLabel(_primaryCode(learningLang)!)
+        : null;
 
     return Wrap(
       spacing: 8,
@@ -351,7 +354,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           label: learningLang,
           leading: Text(flag, style: const TextStyle(fontSize: 18)),
           selected: !_showAllEnglishVariants,
-          onTap: canShowAllEnglishVariants
+          onTap: canShowAllVariants
               ? () {
                   if (_showAllEnglishVariants) {
                     setState(() => _showAllEnglishVariants = false);
@@ -359,10 +362,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 }
               : null,
         ),
-        if (canShowAllEnglishVariants)
+        if (canShowAllVariants)
           _buildLanguageFilterButton(
             context: context,
-            label: 'All English',
+            label: allVariantsLabel!,
             leading: const Text('🌐', style: TextStyle(fontSize: 18)),
             selected: _showAllEnglishVariants,
             onTap: () {
@@ -625,30 +628,48 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     return '$mins:${secs.toString().padLeft(2, '0')}';
   }
 
+  static const _multiVariantPrefixes = {'en', 'fr', 'de', 'it', 'pt', 'es'};
+
+  String? _primaryCode(String? learningLang) {
+    final normalized = learningLang?.trim().toLowerCase() ?? '';
+    if (normalized.isEmpty) return null;
+    final primary =
+        normalized.contains('-') ? normalized.split('-').first : normalized;
+    return _multiVariantPrefixes.contains(primary) ? primary : null;
+  }
+
+  bool _canShowAllVariants(String? learningLang) =>
+      _primaryCode(learningLang) != null;
+
+  String _allVariantsLabel(String primaryCode) {
+    const names = {
+      'en': 'English',
+      'fr': 'French',
+      'de': 'German',
+      'it': 'Italian',
+      'pt': 'Portuguese',
+      'es': 'Spanish',
+    };
+    return 'All ${names[primaryCode] ?? primaryCode.toUpperCase()}';
+  }
+
   String _effectiveLanguageCode(String? learningLang) {
     final normalized = learningLang?.trim() ?? '';
-    if (normalized.isEmpty) {
-      return '';
-    }
-    if (_showAllEnglishVariants && _canShowAllEnglishVariants(normalized)) {
-      return 'en';
+    if (normalized.isEmpty) return '';
+    if (_showAllEnglishVariants) {
+      final primary = _primaryCode(normalized);
+      if (primary != null) return primary;
     }
     return normalized;
   }
 
   String? _displayLanguageLabel(String? learningLang) {
     final normalized = learningLang?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return normalized;
-    }
-    if (_showAllEnglishVariants && _canShowAllEnglishVariants(normalized)) {
-      return 'English';
+    if (normalized == null || normalized.isEmpty) return normalized;
+    if (_showAllEnglishVariants) {
+      final primary = _primaryCode(normalized);
+      if (primary != null) return _allVariantsLabel(primary);
     }
     return normalized;
-  }
-
-  bool _canShowAllEnglishVariants(String? learningLang) {
-    final normalized = learningLang?.trim().toLowerCase() ?? '';
-    return normalized == 'en' || normalized.startsWith('en-');
   }
 }
