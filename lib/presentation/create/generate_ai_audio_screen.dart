@@ -21,6 +21,7 @@ import 'uploaded_video_detail_screen.dart';
 
 String _localizedScenarioLabel(AppLocalizations l10n, AiScenario scenario) {
   return switch (scenario.id) {
+    'latest_news' => l10n.aiScenarioLatestNews,
     'coffee_shop' => l10n.aiScenarioCoffeeShop,
     'airport_reunion' => l10n.aiScenarioAirportReunion,
     'grocery_store' => l10n.aiScenarioGroceryStore,
@@ -52,13 +53,12 @@ class GenerateAiAudioScreen extends StatefulWidget {
 }
 
 class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
-  List<TranscriptionLocaleOption> _locales = const [];
   bool _isLoadingLocales = true;
-  String? _localesError;
 
   TranscriptionLocaleOption? _selectedLocale;
   AiScenario? _selectedScenario;
-  final TextEditingController _customScenarioController = TextEditingController();
+  final TextEditingController _customScenarioController =
+      TextEditingController();
   int _durationSeconds = 60;
 
   _GenerationStep _step = _GenerationStep.idle;
@@ -74,7 +74,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     if (learningLang.isEmpty) return false;
     if (_selectedLocale == null) return false;
     if ((_selectedScenario?.isCustom ?? false) &&
-        _customScenarioController.text.trim().isEmpty) return false;
+        _customScenarioController.text.trim().isEmpty) {
+      return false;
+    }
     return true;
   }
 
@@ -97,7 +99,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   Future<void> _loadLocales() async {
     try {
-      final locales = await VideoProcessingService.instance.fetchSupportedLocales();
+      final locales = await VideoProcessingService.instance
+          .fetchSupportedLocales();
       if (!mounted) return;
 
       // Determine default locale: learning language takes priority over saved pref.
@@ -107,8 +110,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       TranscriptionLocaleOption? defaultLocale;
       if (learningLang.isNotEmpty) {
         // Exact match first (e.g. "en-US" → "en-US").
-        defaultLocale =
-            locales.where((l) => l.identifier == learningLang).firstOrNull;
+        defaultLocale = locales
+            .where((l) => l.identifier == learningLang)
+            .firstOrNull;
         // Prefix match fallback (e.g. "en" → first "en-*" locale).
         defaultLocale ??= locales
             .where((l) => l.identifier.startsWith('$learningLang-'))
@@ -128,20 +132,22 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           if (defaultLocale == null && learningLang.isNotEmpty) {
             final lastId = prefs['lastLanguageIdentifier'] as String?;
             if (lastId != null) {
-              defaultLocale =
-                  locales.where((l) => l.identifier == lastId).firstOrNull;
+              defaultLocale = locales
+                  .where((l) => l.identifier == lastId)
+                  .firstOrNull;
             }
           }
           final lastScenarioId = prefs['lastScenarioId'] as String?;
           if (lastScenarioId != null) {
-            restoredScenario =
-                kAiScenarios.where((s) => s.id == lastScenarioId).firstOrNull;
+            restoredScenario = kAiScenarios
+                .where((s) => s.id == lastScenarioId)
+                .firstOrNull;
           }
         }
       } catch (_) {}
 
       setState(() {
-        _locales = locales;
+        _errorMessage = null;
         _isLoadingLocales = false;
         if (defaultLocale != null) _selectedLocale = defaultLocale;
         if (restoredScenario != null) _selectedScenario = restoredScenario;
@@ -149,29 +155,57 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } on VideoProcessingException catch (e) {
       if (mounted) {
         setState(() {
-          _localesError = e.message;
+          _errorMessage = e.message;
           _isLoadingLocales = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _localesError = e.toString();
+          _errorMessage = e.toString();
           _isLoadingLocales = false;
         });
       }
     }
   }
 
+  Future<void> _confirmLeaveWhileGenerating(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final d = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(d.aiGenLeaveTitle),
+          content: Text(d.aiGenLeaveBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(d.aiGenStay),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(d.aiGenLeave),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && context.mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _savePrefs() async {
     try {
       final file = await _prefsFile();
-      await file.writeAsString(jsonEncode({
-        if (_selectedLocale != null)
-          'lastLanguageIdentifier': _selectedLocale!.identifier,
-        if (_selectedScenario != null)
-          'lastScenarioId': _selectedScenario!.id,
-      }));
+      await file.writeAsString(
+        jsonEncode({
+          if (_selectedLocale != null)
+            'lastLanguageIdentifier': _selectedLocale!.identifier,
+          if (_selectedScenario != null)
+            'lastScenarioId': _selectedScenario!.id,
+        }),
+      );
     } catch (_) {}
   }
 
@@ -185,8 +219,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     final scenarioText = _selectedScenario == null
         ? ''
         : _selectedScenario!.isCustom
-            ? _customScenarioController.text.trim()
-            : _selectedScenario!.scenarioText ?? _selectedScenario!.label;
+        ? _customScenarioController.text.trim()
+        : _selectedScenario!.scenarioText ?? _selectedScenario!.label;
 
     setState(() {
       _step = _GenerationStep.preparingSpeechModel;
@@ -210,6 +244,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         accessToken: session.accessToken,
         language: locale.displayName,
         languageCode: locale.identifier,
+        scenarioId: _selectedScenario?.id,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
         onDialogueDone: () {
@@ -304,10 +339,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       tempFile = File('${tempDir.path}/bantera_gen_transcribe_${video.id}.wav');
       await response.pipe(tempFile.openWrite());
 
-      final result = await VideoProcessingService.instance.transcribeAudioForUpload(
-        inputFile: tempFile,
-        localeIdentifier: localeIdentifier,
-      );
+      final result = await VideoProcessingService.instance
+          .transcribeAudioForUpload(
+            inputFile: tempFile,
+            localeIdentifier: localeIdentifier,
+          );
       if (result.transcriptCues.isEmpty) return video;
 
       final updated = await AuthApiClient.instance.updateVideoTranscript(
@@ -321,7 +357,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       // Transcription is best-effort; fall back to estimated cues.
       return video;
     } finally {
-      try { await tempFile?.delete(); } catch (_) {}
+      try {
+        await tempFile?.delete();
+      } catch (_) {}
     }
   }
 
@@ -335,33 +373,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       canPop: !_isGenerating,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop || !_isGenerating) return;
-        showDialog<bool>(
-          context: context,
-          builder: (ctx) {
-            final d = AppLocalizations.of(ctx)!;
-            return AlertDialog(
-              title: Text(d.aiGenLeaveTitle),
-              content: Text(d.aiGenLeaveBody),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: Text(d.aiGenStay),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: Text(d.aiGenLeave),
-                ),
-              ],
-            );
-          },
-        ).then((confirmed) {
-          if (confirmed == true && mounted) Navigator.of(context).pop();
-        });
+        unawaited(_confirmLeaveWhileGenerating(context));
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.generateWithAiTitle),
-        ),
+        appBar: AppBar(title: Text(l10n.generateWithAiTitle)),
         body: _isGenerating
             ? _buildLoadingState(l10n)
             : _buildForm(theme, colorScheme, l10n),
@@ -375,8 +390,14 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         step: _GenerationStep.preparingSpeechModel,
         label: l10n.aiGenStepPreparingSpeechModel,
       ),
-      (step: _GenerationStep.writingDialogue, label: l10n.aiGenStepWritingDialogue),
-      (step: _GenerationStep.generatingAudio, label: l10n.aiGenStepGeneratingAudio),
+      (
+        step: _GenerationStep.writingDialogue,
+        label: l10n.aiGenStepWritingDialogue,
+      ),
+      (
+        step: _GenerationStep.generatingAudio,
+        label: l10n.aiGenStepGeneratingAudio,
+      ),
       (step: _GenerationStep.transcribing, label: l10n.aiGenStepTranscribing),
       (
         step: _GenerationStep.correctingTranscript,
@@ -407,12 +428,18 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                       width: 24,
                       height: 24,
                       child: isDone
-                          ? const Icon(Icons.check_circle_rounded,
-                              color: Colors.green, size: 24)
+                          ? const Icon(
+                              Icons.check_circle_rounded,
+                              color: Colors.green,
+                              size: 24,
+                            )
                           : isActive
-                              ? const CircularProgressIndicator(strokeWidth: 2.5)
-                              : const Icon(Icons.radio_button_unchecked,
-                                  color: Colors.grey, size: 24),
+                          ? const CircularProgressIndicator(strokeWidth: 2.5)
+                          : const Icon(
+                              Icons.radio_button_unchecked,
+                              color: Colors.grey,
+                              size: 24,
+                            ),
                     ),
                     const SizedBox(width: 14),
                     Text(
@@ -422,10 +449,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                         color: isDone
                             ? Colors.green
                             : isActive
-                                ? null
-                                : Colors.grey,
-                        fontWeight:
-                            isActive ? FontWeight.w600 : FontWeight.normal,
+                            ? null
+                            : Colors.grey,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -443,7 +471,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     );
   }
 
-  Widget _buildForm(ThemeData theme, ColorScheme colorScheme, AppLocalizations l10n) {
+  Widget _buildForm(
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
     final learningLang =
         UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
     final hasLearningLang = learningLang.isNotEmpty;
@@ -452,192 +484,198 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
       child: ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        // Language indicator / prompt
-        Text(l10n.aiGenLanguageSection, style: theme.textTheme.titleSmall),
-        const SizedBox(height: 8),
-        if (!hasLearningLang)
-          // No learning language set — show prompt to go to settings.
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.35),
-                ),
-                color: colorScheme.primary.withValues(alpha: 0.05),
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Language indicator / prompt
+          Text(l10n.aiGenLanguageSection, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          if (!hasLearningLang)
+            // No learning language set — show prompt to go to settings.
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
               ),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: colorScheme.primary.withValues(alpha: 0.35),
+                  ),
+                  color: colorScheme.primary.withValues(alpha: 0.05),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.school_outlined,
+                      size: 20,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.aiGenSetLearningLanguagePrompt,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: colorScheme.primary),
+                  ],
+                ),
+              ),
+            )
+          else if (_isLoadingLocales)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.school_outlined,
-                    size: 20,
-                    color: colorScheme.primary,
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      l10n.aiGenSetLearningLanguagePrompt,
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                  Text(
+                    l10n.aiGenLoadingLanguage,
+                    style: const TextStyle(fontSize: 14),
                   ),
-                  Icon(Icons.chevron_right, color: colorScheme.primary),
                 ],
               ),
-            ),
-          )
-        else if (_isLoadingLocales)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  l10n.aiGenLoadingLanguage,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          )
-        else if (_selectedLocale != null)
-          // Show the matched locale as a read-only chip.
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _selectedLocale!.effectiveFlagEmoji,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  _selectedLocale!.displayName,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          // Language set but no matching locale found in the list.
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              l10n.aiGenLanguageUnsupported(learningLang),
-              style: TextStyle(color: colorScheme.error, fontSize: 13),
-            ),
-          ),
-
-        const SizedBox(height: 24),
-
-        // Scenario picker
-        Text(l10n.aiGenScenarioSection, style: theme.textTheme.titleSmall),
-        const SizedBox(height: 4),
-        Text(
-          l10n.aiGenScenarioOptionalHint,
-          style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: kAiScenarios.map((scenario) {
-            final isSelected = _selectedScenario?.id == scenario.id;
-            return ChoiceChip(
-              label: Text(
-                '${scenario.emoji} ${_localizedScenarioLabel(l10n, scenario)}',
+            )
+          else if (_selectedLocale != null)
+            // Show the matched locale as a read-only chip.
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
               ),
-              selected: isSelected,
-              onSelected: (_) {
-                setState(() => _selectedScenario = isSelected ? null : scenario);
-                _savePrefs();
-              },
-            );
-          }).toList(),
-        ),
-
-        // Custom scenario text field
-        if (_selectedScenario?.isCustom == true) ...[
-          const SizedBox(height: 12),
-          TextField(
-            controller: _customScenarioController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: l10n.aiGenCustomScenarioHint,
-              border: const OutlineInputBorder(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _selectedLocale!.effectiveFlagEmoji,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _selectedLocale!.displayName,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // Language set but no matching locale found in the list.
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                l10n.aiGenLanguageUnsupported(learningLang),
+                style: TextStyle(color: colorScheme.error, fontSize: 13),
+              ),
             ),
-            onChanged: (_) => setState(() {}),
+
+          const SizedBox(height: 24),
+
+          // Scenario picker
+          Text(l10n.aiGenScenarioSection, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 4),
+          Text(
+            l10n.aiGenScenarioOptionalHint,
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
           ),
-        ],
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: kAiScenarios.map((scenario) {
+              final isSelected = _selectedScenario?.id == scenario.id;
+              return ChoiceChip(
+                label: Text(
+                  '${scenario.emoji} ${_localizedScenarioLabel(l10n, scenario)}',
+                ),
+                selected: isSelected,
+                onSelected: (_) {
+                  setState(
+                    () => _selectedScenario = isSelected ? null : scenario,
+                  );
+                  _savePrefs();
+                },
+              );
+            }).toList(),
+          ),
 
-        const SizedBox(height: 24),
-
-        // Duration picker
-        Text(l10n.aiGenDurationSection, style: theme.textTheme.titleSmall),
-        const SizedBox(height: 8),
-        SegmentedButton<int>(
-          segments: _durationOptions.map((s) {
-            return ButtonSegment<int>(
-              value: s,
-              label: Text(l10n.aiGenDurationMinutes(s ~/ 60)),
-            );
-          }).toList(),
-          selected: {_durationSeconds},
-          onSelectionChanged: (val) => setState(() => _durationSeconds = val.first),
-        ),
-
-        const SizedBox(height: 32),
-
-        // Error message
-        if (_errorMessage != null) ...[
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(8),
+          // Custom scenario text field
+          if (_selectedScenario?.isCustom == true) ...[
+            const SizedBox(height: 12),
+            TextField(
+              controller: _customScenarioController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: l10n.aiGenCustomScenarioHint,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) => setState(() {}),
             ),
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Duration picker
+          Text(l10n.aiGenDurationSection, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          SegmentedButton<int>(
+            segments: _durationOptions.map((s) {
+              return ButtonSegment<int>(
+                value: s,
+                label: Text(l10n.aiGenDurationMinutes(s ~/ 60)),
+              );
+            }).toList(),
+            selected: {_durationSeconds},
+            onSelectionChanged: (val) =>
+                setState(() => _durationSeconds = val.first),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Error message
+          if (_errorMessage != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _errorMessage!,
+                style: TextStyle(
+                  color: colorScheme.onErrorContainer,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Generate button
+          FilledButton.icon(
+            onPressed: _canGenerate ? _generate : null,
+            icon: const Icon(Icons.auto_awesome),
+            label: Text(l10n.aiGenGenerateButton),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
             ),
           ),
+
           const SizedBox(height: 16),
-        ],
-
-        // Generate button
-        FilledButton.icon(
-          onPressed: _canGenerate ? _generate : null,
-          icon: const Icon(Icons.auto_awesome),
-          label: Text(l10n.aiGenGenerateButton),
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
+          Text(
+            l10n.aiGenFooterNotice,
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            textAlign: TextAlign.center,
           ),
-        ),
-
-        const SizedBox(height: 16),
-        Text(
-          l10n.aiGenFooterNotice,
-          style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
       ),
     );
   }

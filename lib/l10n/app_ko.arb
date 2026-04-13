@@ -245,6 +245,7 @@
   "aiGenGenerateButton": "생성",
   "aiGenFooterNotice": "AI가 두 명의 대화를 쓰고 오디오로 합성합니다. 결과는 공개 연습 오디오로 저장됩니다.",
   "aiScenarioCoffeeShop": "카페",
+  "aiScenarioLatestNews": "최신 뉴스",
   "aiScenarioAirportReunion": "공항에서 재회",
   "aiScenarioGroceryStore": "마트",
   "aiScenarioDoctorVisit": "병원 진료",

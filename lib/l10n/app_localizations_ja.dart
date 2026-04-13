@@ -770,6 +770,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiScenarioCoffeeShop => 'コーヒーショップ';
 
   @override
+  String get aiScenarioLatestNews => '最新ニュース';
+
+  @override
   String get aiScenarioAirportReunion => '空港の再会';
 
   @override

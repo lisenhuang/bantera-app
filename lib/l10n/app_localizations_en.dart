@@ -808,6 +808,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiScenarioCoffeeShop => 'Coffee shop';
 
   @override
+  String get aiScenarioLatestNews => 'Latest News';
+
+  @override
   String get aiScenarioAirportReunion => 'Airport reunion';
 
   @override

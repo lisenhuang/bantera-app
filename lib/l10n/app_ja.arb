@@ -245,6 +245,7 @@
   "aiGenGenerateButton": "生成",
   "aiGenFooterNotice": "AIが2人の会話を書き起こし、音声に合成します。結果は公開の練習用音声として保存されます。",
   "aiScenarioCoffeeShop": "コーヒーショップ",
+  "aiScenarioLatestNews": "最新ニュース",
   "aiScenarioAirportReunion": "空港の再会",
   "aiScenarioGroceryStore": "スーパー",
   "aiScenarioDoctorVisit": "診察",

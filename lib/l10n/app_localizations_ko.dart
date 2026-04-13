@@ -773,6 +773,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiScenarioCoffeeShop => '카페';
 
   @override
+  String get aiScenarioLatestNews => '최신 뉴스';
+
+  @override
   String get aiScenarioAirportReunion => '공항에서 재회';
 
   @override

@@ -350,6 +350,7 @@
   "aiGenGenerateButton": "Generate",
   "aiGenFooterNotice": "AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.",
   "aiScenarioCoffeeShop": "Coffee shop",
+  "aiScenarioLatestNews": "Latest News",
   "aiScenarioAirportReunion": "Airport reunion",
   "aiScenarioGroceryStore": "Grocery store",
   "aiScenarioDoctorVisit": "Doctor visit",

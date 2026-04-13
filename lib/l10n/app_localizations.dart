@@ -1531,6 +1531,12 @@ abstract class AppLocalizations {
   /// **'Coffee shop'**
   String get aiScenarioCoffeeShop;
 
+  /// No description provided for @aiScenarioLatestNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest News'**
+  String get aiScenarioLatestNews;
+
   /// No description provided for @aiScenarioAirportReunion.
   ///
   /// In en, this message translates to:

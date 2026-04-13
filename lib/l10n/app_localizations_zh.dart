@@ -762,6 +762,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiScenarioCoffeeShop => '咖啡店';
 
   @override
+  String get aiScenarioLatestNews => '最新新闻';
+
+  @override
   String get aiScenarioAirportReunion => '机场重逢';
 
   @override
@@ -1669,6 +1672,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get aiScenarioCoffeeShop => '咖啡店';
+
+  @override
+  String get aiScenarioLatestNews => '最新新闻';
 
   @override
   String get aiScenarioAirportReunion => '机场重逢';
