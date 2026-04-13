@@ -33,6 +33,8 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
   String? _transcriptionError;
   bool _transcriptExpanded = false;
 
+  bool get _showsBanteraAiBranding => _video.isAiGenerated;
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +84,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
 
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
     if (accessToken == null) return;
+    final navigator = Navigator.of(this.context);
+    final messenger = ScaffoldMessenger.of(this.context);
+    final l10n = AppLocalizations.of(this.context)!;
 
     try {
       await AuthApiClient.instance.deleteVideo(
@@ -89,11 +94,10 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
         videoId: _video.id,
       );
       unawaited(ProfileStatsNotifier.instance.refresh());
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) navigator.pop();
     } on AuthApiException catch (e) {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(localizeAuthApiError(l10n, e))),
       );
     }
@@ -132,10 +136,11 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       await response.pipe(sink);
 
       // Transcribe with SFSpeechRecognizer
-      final result = await VideoProcessingService.instance.transcribeAudioForUpload(
-        inputFile: tempFile,
-        localeIdentifier: localeIdentifier,
-      );
+      final result = await VideoProcessingService.instance
+          .transcribeAudioForUpload(
+            inputFile: tempFile,
+            localeIdentifier: localeIdentifier,
+          );
 
       if (result.transcriptCues.isEmpty) {
         throw const VideoProcessingException(
@@ -171,8 +176,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       if (!mounted) return;
       setState(() {
         _isTranscribing = false;
-        _transcriptionError = AppLocalizations.of(context)!
-            .uploadedDetailTranscriptionFailedFallback;
+        _transcriptionError = AppLocalizations.of(
+          context,
+        )!.uploadedDetailTranscriptionFailedFallback;
       });
     } finally {
       try {
@@ -205,7 +211,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
                   tooltip: l10n.deleteLabel,
-                  onPressed: _isTranscribing ? null : () => _confirmDelete(context),
+                  onPressed: _isTranscribing
+                      ? null
+                      : () => _confirmDelete(context),
                 ),
             ],
           ),
@@ -241,7 +249,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                             : null,
                         image: video.coverImageUrl != null
                             ? DecorationImage(
-                                image: CachedNetworkImageProvider(video.coverImageUrl!),
+                                image: CachedNetworkImageProvider(
+                                  video.coverImageUrl!,
+                                ),
                                 fit: BoxFit.cover,
                                 colorFilter: ColorFilter.mode(
                                   Colors.black.withValues(alpha: 0.45),
@@ -265,7 +275,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                           Text(
                             _displayTitle(video.originalFileName),
                             style: theme.textTheme.headlineSmall?.copyWith(
-                              color: video.coverImageUrl != null ? Colors.white : null,
+                              color: video.coverImageUrl != null
+                                  ? Colors.white
+                                  : null,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -309,15 +321,23 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                     const SizedBox(height: 18),
                     Row(
                       children: [
-                        ProfileAvatar(
-                          radius: 18,
-                          imageUrl: profile.avatarUrl,
-                          imagePath: profile.avatarImagePath,
-                        ),
+                        _showsBanteraAiBranding
+                            ? const CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage: AssetImage('assets/icon.png'),
+                              )
+                            : ProfileAvatar(
+                                radius: 18,
+                                imageUrl: profile.avatarUrl,
+                                imagePath: profile.avatarImagePath,
+                              ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            profile.displayName,
+                            _showsBanteraAiBranding
+                                ? 'Bantera AI'
+                                : profile.displayName,
                             style: theme.textTheme.titleMedium,
                           ),
                         ),
@@ -428,9 +448,8 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
               // Transcript section – collapsed by default
               InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => setState(
-                  () => _transcriptExpanded = !_transcriptExpanded,
-                ),
+                onTap: () =>
+                    setState(() => _transcriptExpanded = !_transcriptExpanded),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
@@ -525,8 +544,10 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       ),
       creator: User(
         id: _video.userId,
-        displayName: profile.displayName,
-        avatarUrl: profile.avatarUrl ?? '',
+        displayName: _showsBanteraAiBranding
+            ? 'Bantera AI'
+            : profile.displayName,
+        avatarUrl: _showsBanteraAiBranding ? '' : (profile.avatarUrl ?? ''),
         firstLanguage: '',
         learningLanguage: '',
         level: '',
@@ -583,11 +604,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     return '$bytes B';
   }
 
-  String _formatResolutionLabel(
-    BuildContext context,
-    int? width,
-    int? height,
-  ) {
+  String _formatResolutionLabel(BuildContext context, int? width, int? height) {
     if (width == null || height == null) {
       return AppLocalizations.of(context)!.uploadedDetailResolutionUnknown;
     }
@@ -610,7 +627,6 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
-
 }
 
 class _MetaChip extends StatelessWidget {
