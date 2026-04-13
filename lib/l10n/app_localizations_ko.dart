@@ -205,6 +205,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get deleteLabel => '삭제';
 
   @override
+  String get removeFromListLabel => '목록에서 제거';
+
+  @override
   String get startLabel => '시작';
 
   @override
@@ -566,6 +569,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '\"$title\"과(와) 대본이 영구 삭제됩니다. 되돌릴 수 없습니다.';
   }
+
+  @override
+  String get removeFromListTitle => '목록에서 제거할까요?';
+
+  @override
+  String get removeFromListBody => '이 항목은 목록에서 제거되며 되돌릴 수 없습니다.';
 
   @override
   String get editProfileChangeImage => '프로필 사진 변경';

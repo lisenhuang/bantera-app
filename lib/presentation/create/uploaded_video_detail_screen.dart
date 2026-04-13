@@ -44,26 +44,22 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
     }
   }
 
-  bool get _isAudioOnlyUpload =>
-      _video.videoWidth == null && _video.videoHeight == null;
+  bool get _supportsRemoveFromList {
+    final contentType = _video.videoContentType.trim().toLowerCase();
+    return _video.isAiGenerated && contentType.startsWith('audio/');
+  }
 
-  Future<void> _confirmDelete(BuildContext context) async {
+  Future<void> _confirmDelete() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final errorColor = Theme.of(context).colorScheme.error;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final l10n = AppLocalizations.of(ctx)!;
-        final isAudio = _isAudioOnlyUpload;
         return AlertDialog(
-          title: Text(
-            isAudio
-                ? l10n.uploadedDetailDeleteAudioTitle
-                : l10n.uploadedDetailDeleteVideoTitle,
-          ),
-          content: Text(
-            isAudio
-                ? l10n.uploadedDetailDeleteAudioBody
-                : l10n.uploadedDetailDeleteVideoBody,
-          ),
+          title: Text(l10n.removeFromListTitle),
+          content: Text(l10n.removeFromListBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
@@ -71,10 +67,8 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(ctx).colorScheme.error,
-              ),
-              child: Text(l10n.deleteLabel),
+              style: TextButton.styleFrom(foregroundColor: errorColor),
+              child: Text(l10n.removeFromListLabel),
             ),
           ],
         );
@@ -84,17 +78,14 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
 
     final accessToken = AuthSessionNotifier.instance.session?.accessToken;
     if (accessToken == null) return;
-    final navigator = Navigator.of(this.context);
-    final messenger = ScaffoldMessenger.of(this.context);
-    final l10n = AppLocalizations.of(this.context)!;
 
     try {
-      await AuthApiClient.instance.deleteVideo(
+      await AuthApiClient.instance.removeVideoFromList(
         accessToken: accessToken,
         videoId: _video.id,
       );
       unawaited(ProfileStatsNotifier.instance.refresh());
-      if (mounted) navigator.pop();
+      if (mounted) navigator.pop(true);
     } on AuthApiException catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(
@@ -207,13 +198,11 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                   : l10n.uploadedDetailYourVideo,
             ),
             actions: [
-              if (video.isAiGenerated)
+              if (_supportsRemoveFromList)
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: l10n.deleteLabel,
-                  onPressed: _isTranscribing
-                      ? null
-                      : () => _confirmDelete(context),
+                  tooltip: l10n.removeFromListLabel,
+                  onPressed: _isTranscribing ? null : _confirmDelete,
                 ),
             ],
           ),

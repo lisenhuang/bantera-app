@@ -203,6 +203,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteLabel => '删除';
 
   @override
+  String get removeFromListLabel => '从列表中移除';
+
+  @override
   String get startLabel => '开始';
 
   @override
@@ -558,6 +561,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '将永久删除「$title」及其字幕稿，此操作无法撤销。';
   }
+
+  @override
+  String get removeFromListTitle => '从列表中移除？';
+
+  @override
+  String get removeFromListBody => '此项目将从列表中移除，且无法撤销。';
 
   @override
   String get editProfileChangeImage => '更换头像';
@@ -1118,6 +1127,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get deleteLabel => '删除';
 
   @override
+  String get removeFromListLabel => '从列表中移除';
+
+  @override
   String get startLabel => '开始';
 
   @override
@@ -1473,6 +1485,12 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String createDeleteMediaBody(String title) {
     return '将永久删除「$title」及其字幕稿，此操作无法撤销。';
   }
+
+  @override
+  String get removeFromListTitle => '从列表中移除？';
+
+  @override
+  String get removeFromListBody => '此项目将从列表中移除，且无法撤销。';
 
   @override
   String get editProfileChangeImage => '更换头像';

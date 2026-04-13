@@ -19,6 +19,7 @@ import '../practice/practice_player_screen.dart';
 import 'generate_ai_audio_screen.dart';
 import 'local_video_practice_screen.dart';
 import 'uploaded_video_detail_screen.dart';
+
 class CreateHubScreen extends StatefulWidget {
   const CreateHubScreen({super.key});
 
@@ -83,9 +84,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                           builder: (_) => GenerateAiAudioScreen(
                             onYourMediaChanged: () {
                               if (!mounted) return;
-                              unawaited(
-                                _loadMyVideos(showLoadingState: false),
-                              );
+                              unawaited(_loadMyVideos(showLoadingState: false));
                             },
                           ),
                         ),
@@ -181,7 +180,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               ..._myVideos.map((video) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildUploadedVideoItem(context, video, colorScheme, l10n),
+                  child: _buildUploadedVideoItem(
+                    context,
+                    video,
+                    colorScheme,
+                    l10n,
+                  ),
                 );
               }),
 
@@ -390,8 +394,8 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton(
-                      onPressed: () => _localPracticeRepository
-                          .refreshForCurrentUser(),
+                      onPressed: () =>
+                          _localPracticeRepository.refreshForCurrentUser(),
                       child: Text(l10n.createTryAgain),
                     ),
                   ],
@@ -416,7 +420,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               ...localVideos.map((video) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildLocalPracticeItem(context, video, colorScheme, l10n),
+                  child: _buildLocalPracticeItem(
+                    context,
+                    video,
+                    colorScheme,
+                    l10n,
+                  ),
                 );
               }),
           ],
@@ -544,17 +553,22 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   ) {
     final theme = Theme.of(context);
     final isDeleting = _deletingUploadedVideoId == video.id;
+    final usesRemoveFromList = _usesRemoveFromList(video);
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: isDeleting
           ? null
-          : () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
+          : () async {
+              final changed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute<bool>(
                   builder: (_) => UploadedVideoDetailScreen(video: video),
                 ),
               );
+
+              if (changed == true && mounted) {
+                unawaited(_loadMyVideos(showLoadingState: false));
+              }
             },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -572,7 +586,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                       width: 52,
                       height: 52,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
+                      errorWidget: (context, url, error) =>
                           _fallbackMediaIcon(colorScheme),
                     )
                   : _fallbackMediaIcon(colorScheme),
@@ -619,7 +633,9 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    video.isPublic ? l10n.createPublicBadge : l10n.createPrivateBadge,
+                    video.isPublic
+                        ? l10n.createPublicBadge
+                        : l10n.createPrivateBadge,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: video.isPublic ? colorScheme.primary : null,
                       fontWeight: FontWeight.w700,
@@ -677,7 +693,11 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                     itemBuilder: (context) => [
                       PopupMenuItem<String>(
                         value: 'delete',
-                        child: Text(l10n.deleteLabel),
+                        child: Text(
+                          usesRemoveFromList
+                              ? l10n.removeFromListLabel
+                              : l10n.deleteLabel,
+                        ),
                       ),
                     ],
                     icon: Icon(
@@ -701,7 +721,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         color: colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Icon(CupertinoIcons.video_camera_solid, color: colorScheme.primary),
+      child: Icon(
+        CupertinoIcons.video_camera_solid,
+        color: colorScheme.primary,
+      ),
     );
   }
 
@@ -718,6 +741,11 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  static bool _usesRemoveFromList(UploadedVideo video) {
+    final contentType = video.videoContentType.trim().toLowerCase();
+    return video.isAiGenerated && contentType.startsWith('audio/');
   }
 
   Future<void> _openLocalPracticeVideo(String id) async {
@@ -798,17 +826,24 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   }
 
   Future<void> _confirmDeleteUploadedVideo(UploadedVideo video) async {
+    final removeFromList = _usesRemoveFromList(video);
     final confirmed =
         await showDialog<bool>(
           context: context,
           builder: (ctx) {
             final l10n = AppLocalizations.of(ctx)!;
             return AlertDialog(
-              title: Text(l10n.createDeleteMediaTitle),
+              title: Text(
+                removeFromList
+                    ? l10n.removeFromListTitle
+                    : l10n.createDeleteMediaTitle,
+              ),
               content: Text(
-                l10n.createDeleteMediaBody(
-                  _displayTitle(video.originalFileName),
-                ),
+                removeFromList
+                    ? l10n.removeFromListBody
+                    : l10n.createDeleteMediaBody(
+                        _displayTitle(video.originalFileName),
+                      ),
               ),
               actions: [
                 TextButton(
@@ -820,7 +855,11 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   style: TextButton.styleFrom(
                     foregroundColor: Theme.of(ctx).colorScheme.error,
                   ),
-                  child: Text(l10n.deleteLabel),
+                  child: Text(
+                    removeFromList
+                        ? l10n.removeFromListLabel
+                        : l10n.deleteLabel,
+                  ),
                 ),
               ],
             );
@@ -836,14 +875,24 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     setState(() => _deletingUploadedVideoId = video.id);
 
     try {
-      await _apiClient.deleteVideo(
-        accessToken: session.accessToken,
-        videoId: video.id,
-      );
+      if (removeFromList) {
+        await _apiClient.removeVideoFromList(
+          accessToken: session.accessToken,
+          videoId: video.id,
+        );
+      } else {
+        await _apiClient.deleteVideo(
+          accessToken: session.accessToken,
+          videoId: video.id,
+        );
+      }
       if (mounted) {
         setState(() {
           _myVideos = _myVideos.where((v) => v.id != video.id).toList();
         });
+      }
+      if (removeFromList) {
+        unawaited(_loadMyVideos(showLoadingState: false));
       }
       unawaited(ProfileStatsNotifier.instance.refresh());
     } on AuthApiException catch (e) {
@@ -851,9 +900,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(
-          SnackBar(content: Text(localizeAuthApiError(l10n, e))),
-        );
+        ).showSnackBar(SnackBar(content: Text(localizeAuthApiError(l10n, e))));
       }
     } finally {
       if (mounted) setState(() => _deletingUploadedVideoId = null);
@@ -889,7 +936,6 @@ class _VideoThumbnailIcon extends StatefulWidget {
 
 class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
   Uint8List? _thumbnail;
-  bool _loaded = false;
 
   @override
   void initState() {
@@ -903,7 +949,6 @@ class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
     if (old.videoPath != widget.videoPath) {
       setState(() {
         _thumbnail = null;
-        _loaded = false;
       });
       _loadThumbnail();
     }
@@ -932,12 +977,9 @@ class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
       if (mounted) {
         setState(() {
           _thumbnail = best;
-          _loaded = true;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _loaded = true);
-    }
+    } catch (_) {}
   }
 
   /// Decodes the JPEG and returns the average luminance (0–255).
@@ -945,8 +987,9 @@ class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
     try {
       final codec = await ui.instantiateImageCodec(jpeg);
       final frame = await codec.getNextFrame();
-      final byteData =
-          await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await frame.image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       frame.image.dispose();
       if (byteData == null) return 0;
       final pixels = byteData.buffer.asUint8List();
@@ -954,7 +997,8 @@ class _VideoThumbnailIconState extends State<_VideoThumbnailIcon> {
       int count = 0;
       // Sample every 50th pixel (4 bytes per pixel: R, G, B, A).
       for (int i = 0; i < pixels.length - 3; i += 200) {
-        sum += 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        sum +=
+            0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
         count++;
       }
       return count > 0 ? sum / count : 0;

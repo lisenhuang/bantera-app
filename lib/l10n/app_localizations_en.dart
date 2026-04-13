@@ -211,6 +211,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteLabel => 'Delete';
 
   @override
+  String get removeFromListLabel => 'Remove from list';
+
+  @override
   String get startLabel => 'Start';
 
   @override
@@ -590,6 +593,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return 'This will permanently delete \"$title\" and its transcript. This cannot be undone.';
   }
+
+  @override
+  String get removeFromListTitle => 'Remove from list?';
+
+  @override
+  String get removeFromListBody =>
+      'This will be removed from the list and cannot be undone.';
 
   @override
   String get editProfileChangeImage => 'Change Profile Image';

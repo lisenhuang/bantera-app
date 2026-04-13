@@ -487,6 +487,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get deleteLabel;
 
+  /// No description provided for @removeFromListLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from list'**
+  String get removeFromListLabel;
+
   /// No description provided for @startLabel.
   ///
   /// In en, this message translates to:
@@ -1146,6 +1152,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This will permanently delete \"{title}\" and its transcript. This cannot be undone.'**
   String createDeleteMediaBody(String title);
+
+  /// No description provided for @removeFromListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from list?'**
+  String get removeFromListTitle;
+
+  /// No description provided for @removeFromListBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will be removed from the list and cannot be undone.'**
+  String get removeFromListBody;
 
   /// No description provided for @editProfileChangeImage.
   ///

@@ -636,6 +636,38 @@ class AuthApiClient {
     });
   }
 
+  Future<void> removeVideoFromList({
+    required String accessToken,
+    required String videoId,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+      try {
+        final request = await _httpClient.openUrl(
+          'POST',
+          _resolve('/api/me/videos/$videoId/remove-from-list'),
+        );
+        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+        request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+        final response = await request.close();
+        if (response.statusCode == 204) {
+          await response.drain<void>();
+          return;
+        }
+        final json = await _parseJsonResponse(response);
+        _throwApiException(json, response.statusCode);
+      } on AuthApiException {
+        rethrow;
+      } on SocketException {
+        await _throwNetworkFailure();
+      } on HandshakeException {
+        throw const AuthApiException(
+          code: 'tls_error',
+          message: 'The app could not establish a secure connection.',
+        );
+      }
+    });
+  }
+
   /// Permanently deletes the authenticated user's account on the server.
   Future<void> deleteAccount({required String accessToken}) async {
     return _retryWithRefresh(accessToken, (token) async {

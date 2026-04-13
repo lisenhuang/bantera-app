@@ -71,6 +71,7 @@
   "continueLabel": "Continue",
   "confirmLabel": "Confirm",
   "deleteLabel": "Delete",
+  "removeFromListLabel": "Remove from list",
   "startLabel": "Start",
   "doneLabel": "Done",
   "discoverSearchHint": "Search title or transcript…",
@@ -251,6 +252,8 @@
       }
     }
   },
+  "removeFromListTitle": "Remove from list?",
+  "removeFromListBody": "This will be removed from the list and cannot be undone.",
   "editProfileChangeImage": "Change Profile Image",
   "editProfileUploading": "Uploading…",
   "editProfileNameLabel": "Name",

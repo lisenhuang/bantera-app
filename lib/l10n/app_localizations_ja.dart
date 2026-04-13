@@ -204,6 +204,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteLabel => '削除';
 
   @override
+  String get removeFromListLabel => 'リストから削除';
+
+  @override
   String get startLabel => '開始';
 
   @override
@@ -563,6 +566,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String createDeleteMediaBody(String title) {
     return '「$title」と書き起こしが完全に削除されます。元に戻せません。';
   }
+
+  @override
+  String get removeFromListTitle => 'リストから削除しますか？';
+
+  @override
+  String get removeFromListBody => 'この項目はリストから削除され、元に戻せません。';
 
   @override
   String get editProfileChangeImage => 'プロフィール写真を変更';
