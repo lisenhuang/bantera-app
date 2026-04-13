@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -566,12 +567,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: video.coverImageUrl != null
-                  ? Image.network(
-                      video.coverImageUrl!,
+                  ? CachedNetworkImage(
+                      imageUrl: video.coverImageUrl!,
                       width: 52,
                       height: 52,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorWidget: (_, __, ___) =>
                           _fallbackMediaIcon(colorScheme),
                     )
                   : _fallbackMediaIcon(colorScheme),

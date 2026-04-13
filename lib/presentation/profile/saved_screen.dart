@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
@@ -119,10 +120,10 @@ class _SavedScreenState extends State<SavedScreen> {
                 width: 96,
                 height: 96,
                 child: video.coverImageUrl != null
-                    ? Image.network(
-                        video.coverImageUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: video.coverImageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(isAudio),
+                        errorWidget: (_, __, ___) => _placeholder(isAudio),
                       )
                     : _placeholder(isAudio),
               ),

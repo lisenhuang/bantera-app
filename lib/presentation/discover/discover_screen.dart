@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/apple_system_version.dart';
@@ -506,10 +507,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 width: 96,
                 height: 96,
                 child: video.coverImageUrl != null
-                    ? Image.network(
-                        video.coverImageUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: video.coverImageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _coverPlaceholder(isAudio),
+                        errorWidget: (_, __, ___) => _coverPlaceholder(isAudio),
                       )
                     : _coverPlaceholder(isAudio),
               ),

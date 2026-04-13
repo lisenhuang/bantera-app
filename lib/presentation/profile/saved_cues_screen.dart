@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -160,10 +161,10 @@ class _SavedCuesScreenState extends State<SavedCuesScreen> {
                             width: 56,
                             height: 56,
                             child: coverUrl.isNotEmpty
-                                ? Image.network(
-                                    coverUrl,
+                                ? CachedNetworkImage(
+                                    imageUrl: coverUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
+                                    errorWidget: (_, __, ___) =>
                                         _coverPlaceholder(isAudioOnly),
                                   )
                                 : _coverPlaceholder(isAudioOnly),

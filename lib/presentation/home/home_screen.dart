@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/api_config_notifier.dart';
@@ -340,10 +341,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   fit: StackFit.expand,
                   children: [
                     if (video.coverImageUrl != null)
-                      Image.network(
-                        video.coverImageUrl!,
+                      CachedNetworkImage(
+                        imageUrl: video.coverImageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorWidget: (_, __, ___) =>
                             _buildCoverPlaceholder(isAudio),
                       )
                     else

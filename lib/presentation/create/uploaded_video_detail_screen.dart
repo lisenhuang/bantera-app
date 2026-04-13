@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -240,7 +241,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                             : null,
                         image: video.coverImageUrl != null
                             ? DecorationImage(
-                                image: NetworkImage(video.coverImageUrl!),
+                                image: CachedNetworkImageProvider(video.coverImageUrl!),
                                 fit: BoxFit.cover,
                                 colorFilter: ColorFilter.mode(
                                   Colors.black.withValues(alpha: 0.45),

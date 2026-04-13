@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/auth_session_notifier.dart';
@@ -115,12 +116,12 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
               height: 250,
               width: double.infinity,
               child: hasCover
-                  ? Image.network(
-                      widget.mediaItem.coverUrl,
+                  ? CachedNetworkImage(
+                      imageUrl: widget.mediaItem.coverUrl,
                       height: 250,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _CoverPlaceholder(
+                      errorWidget: (_, __, ___) => _CoverPlaceholder(
                         isAudio: widget.mediaItem.isAudioOnly,
                       ),
                     )
