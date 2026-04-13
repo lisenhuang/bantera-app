@@ -897,6 +897,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             pos.inMilliseconds >=
                 _playbackStopMsForCueIndex(_currentCueIndex)) {
           unawaited(ap.pause());
+          unawaited(WakelockPlus.disable());
           if (mounted) setState(() => _isPlaying = false);
         }
       });
@@ -916,6 +917,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             controller.value.position.inMilliseconds >=
                 _playbackStopMsForCueIndex(_currentCueIndex)) {
           controller.pause();
+          unawaited(WakelockPlus.disable());
           if (mounted) setState(() => _isPlaying = false);
         }
       };
@@ -2879,6 +2881,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           final cueEnd = Duration(milliseconds: stopMs);
           if (_isPlaying && pos >= cueEnd) {
             unawaited(player.pause());
+            unawaited(WakelockPlus.disable());
             if (mounted) setState(() => _isPlaying = false);
           }
         });
@@ -2921,6 +2924,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final cueEnd = Duration(milliseconds: stopMs);
         if (_isPlaying && controller.value.position >= cueEnd) {
           controller.pause();
+          unawaited(WakelockPlus.disable());
           if (mounted) {
             setState(() {
               _isPlaying = false;
