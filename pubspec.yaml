@@ -54,6 +54,7 @@ dependencies:
   connectivity_plus: ^6.1.4
   video_thumbnail: ^0.5.3
   in_app_review: ^2.0.9
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

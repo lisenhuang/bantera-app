@@ -75,6 +75,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sectionAccount => 'アカウント';
 
   @override
+  String get sectionRateAndShare => '評価とシェア';
+
+  @override
   String get sectionLanguage => '言語';
 
   @override
@@ -824,6 +827,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsRateAppButton => 'App Store で評価する';
+
+  @override
+  String get settingsSharePrompt => '語学学習中の友人はいますか？Bantera をシェアしてみましょう。';
+
+  @override
+  String get settingsShareButton => 'Bantera をシェア';
 
   @override
   String get localVideoDescription =>

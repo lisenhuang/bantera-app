@@ -235,6 +235,12 @@ abstract class AppLocalizations {
   /// **'Account'**
   String get sectionAccount;
 
+  /// No description provided for @sectionRateAndShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate & Share'**
+  String get sectionRateAndShare;
+
   /// No description provided for @sectionLanguage.
   ///
   /// In en, this message translates to:
@@ -1638,6 +1644,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rate on the App Store'**
   String get settingsRateAppButton;
+
+  /// No description provided for @settingsSharePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Know someone learning a language? Share Bantera with them.'**
+  String get settingsSharePrompt;
+
+  /// No description provided for @settingsShareButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Bantera'**
+  String get settingsShareButton;
 
   /// No description provided for @localVideoDescription.
   ///

@@ -77,6 +77,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionAccount => 'Account';
 
   @override
+  String get sectionRateAndShare => 'Rate & Share';
+
+  @override
   String get sectionLanguage => 'Language';
 
   @override
@@ -863,6 +866,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRateAppButton => 'Rate on the App Store';
+
+  @override
+  String get settingsSharePrompt =>
+      'Know someone learning a language? Share Bantera with them.';
+
+  @override
+  String get settingsShareButton => 'Share Bantera';
 
   @override
   String get localVideoDescription =>

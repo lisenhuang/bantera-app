@@ -75,6 +75,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sectionAccount => '계정';
 
   @override
+  String get sectionRateAndShare => '평가 및 공유';
+
+  @override
   String get sectionLanguage => '언어';
 
   @override
@@ -827,6 +830,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsRateAppButton => 'App Store에서 평가하기';
+
+  @override
+  String get settingsSharePrompt => '언어를 배우는 친구가 있나요? Bantera를 공유해 보세요.';
+
+  @override
+  String get settingsShareButton => 'Bantera 공유하기';
 
   @override
   String get localVideoDescription =>

@@ -75,6 +75,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sectionAccount => '账户';
 
   @override
+  String get sectionRateAndShare => '评分与分享';
+
+  @override
   String get sectionLanguage => '语言';
 
   @override
@@ -816,6 +819,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsRateAppButton => '去 App Store 评分';
+
+  @override
+  String get settingsSharePrompt => '有朋友在学语言？把 Bantera 分享给他们吧。';
+
+  @override
+  String get settingsShareButton => '分享 Bantera';
 
   @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';
@@ -975,6 +984,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get sectionAccount => '账户';
 
   @override
+  String get sectionRateAndShare => '评分与分享';
+
+  @override
   String get sectionLanguage => '语言';
 
   @override
@@ -1716,6 +1728,12 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get settingsRateAppButton => '去 App Store 评分';
+
+  @override
+  String get settingsSharePrompt => '有朋友在学语言？把 Bantera 分享给他们吧。';
+
+  @override
+  String get settingsShareButton => '分享 Bantera';
 
   @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';

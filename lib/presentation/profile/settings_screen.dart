@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/app_locale.dart';
 import '../../core/auth_session_notifier.dart';
@@ -285,46 +286,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: Theme.of(context).colorScheme.outlineVariant,
                     ),
                     ListTile(
-                      leading: const Icon(Icons.logout, color: Colors.red),
-                      title: Text(
-                        l10n.signOut,
-                        style: const TextStyle(color: Colors.red),
-                      ),
+                      leading: const Icon(Icons.logout),
+                      title: Text(l10n.signOut),
                       onTap: auth.session == null ? null : _confirmSignOut,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, l10n.sectionRateAndShare),
               Card(
                 margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.star_rounded,
-                        size: 36,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        l10n.settingsRateAppPrompt,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 14),
-                      FilledButton(
-                        onPressed: () async {
-                          final review = InAppReview.instance;
-                          if (await review.isAvailable()) {
-                            await review.requestReview();
-                          }
-                        },
-                        child: Text(l10n.settingsRateAppButton),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.star_rounded),
+                      title: Text(l10n.settingsRateAppButton),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        final review = InAppReview.instance;
+                        if (await review.isAvailable()) {
+                          await review.requestReview();
+                        }
+                      },
+                    ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.ios_share_rounded),
+                      title: Text(l10n.settingsShareButton),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        SharePlus.instance.share(
+                          ShareParams(
+                            uri: Uri.parse('https://bantera.app?from=iOS'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
