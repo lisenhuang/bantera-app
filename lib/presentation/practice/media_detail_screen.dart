@@ -26,6 +26,11 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
   bool? _isSaved;
   bool _savePending = false;
 
+  bool get _showsBanteraAiBranding =>
+      widget.mediaItem.isAudioOnly &&
+      widget.mediaItem.transcriptionSource.trim().toLowerCase() ==
+          'ai generated';
+
   @override
   void initState() {
     super.initState();
@@ -121,9 +126,10 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                       height: 250,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => _CoverPlaceholder(
-                        isAudio: widget.mediaItem.isAudioOnly,
-                      ),
+                      errorWidget: (context, imageUrl, error) =>
+                          _CoverPlaceholder(
+                            isAudio: widget.mediaItem.isAudioOnly,
+                          ),
                     )
                   : _CoverPlaceholder(isAudio: widget.mediaItem.isAudioOnly),
             ),
@@ -171,7 +177,8 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                           ],
                         ),
                       ),
-                      if (flag.isNotEmpty || widget.mediaItem.spokenLanguage.isNotEmpty) ...[
+                      if (flag.isNotEmpty ||
+                          widget.mediaItem.spokenLanguage.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -207,10 +214,13 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     children: [
                       _CreatorAvatar(
                         avatarUrl: widget.mediaItem.creator.avatarUrl,
+                        showBanteraLogo: _showsBanteraAiBranding,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        widget.mediaItem.creator.displayName,
+                        _showsBanteraAiBranding
+                            ? 'Bantera AI'
+                            : widget.mediaItem.creator.displayName,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
@@ -345,12 +355,21 @@ class _CoverPlaceholder extends StatelessWidget {
 }
 
 class _CreatorAvatar extends StatelessWidget {
-  const _CreatorAvatar({required this.avatarUrl});
+  const _CreatorAvatar({required this.avatarUrl, this.showBanteraLogo = false});
 
   final String avatarUrl;
+  final bool showBanteraLogo;
 
   @override
   Widget build(BuildContext context) {
+    if (showBanteraLogo) {
+      return const CircleAvatar(
+        radius: 16,
+        backgroundColor: Colors.transparent,
+        backgroundImage: AssetImage('assets/icon.png'),
+      );
+    }
+
     final hasAvatar = avatarUrl.trim().isNotEmpty;
     return CircleAvatar(
       radius: 16,

@@ -76,10 +76,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   int _translationGeneration = 0;
   double _playbackSpeed = 1.0;
 
-  /// One [NetworkImage] for the creator avatar so play/state rebuilds do not
-  /// create new providers and fan out duplicate HTTP GETs to `/api/users/.../avatar`.
-  ImageProvider<Object>? _creatorAvatarProvider;
-
   final AudioRecorder _cueRecorder = AudioRecorder();
   Timer? _practiceRecordingTimer;
   Timer? _practiceAutoStopTimer;
@@ -116,17 +112,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   void initState() {
     super.initState();
-    final avatarUrl = widget.mediaItem.creator.avatarUrl.trim();
-    if (avatarUrl.isNotEmpty) {
-      _creatorAvatarProvider = NetworkImage(avatarUrl);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final p = _creatorAvatarProvider;
-        if (p != null) {
-          precacheImage(p, context);
-        }
-      });
-    }
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
     unawaited(SavedCueRepository.instance.load());
@@ -163,7 +148,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Future<void> _restoreProgress() async {
     final initial = widget.initialCueIndex;
-    if (initial != null && initial >= 0 && initial < widget.mediaItem.cues.length) {
+    if (initial != null &&
+        initial >= 0 &&
+        initial < widget.mediaItem.cues.length) {
       if (mounted) setState(() => _currentCueIndex = initial);
       return;
     }
@@ -1295,27 +1282,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 14,
-              foregroundImage: _creatorAvatarProvider,
-              child: _creatorAvatarProvider == null
-                  ? const Icon(CupertinoIcons.person, size: 14)
-                  : null,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                widget.mediaItem.title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 14),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        title: Text(
+          widget.mediaItem.title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontSize: 14),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
           // Speed button
@@ -1631,34 +1604,34 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return GestureDetector(
           onTap: () {}, // absorb tap so cover doesn't trigger play/pause
           child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(coverUrl, fit: BoxFit.cover),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.14),
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.6),
-                    ],
+            borderRadius: BorderRadius.circular(28),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(coverUrl, fit: BoxFit.cover),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.14),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.6),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(18),
-                child: _buildSubtitleContent(
-                  cue,
-                  colorScheme,
-                  hasPlayableMedia: true,
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: _buildSubtitleContent(
+                    cue,
+                    colorScheme,
+                    hasPlayableMedia: true,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         );
       }
@@ -1846,37 +1819,44 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             ),
           ),
           const SizedBox(width: 4),
-          Builder(builder: (context) {
-            final isSaved = SavedCueRepository.instance.isSaved(
-              widget.mediaItem.id,
-              cue.id,
-            );
-            return GestureDetector(
-              onTap: () {
-                unawaited(
-                  SavedCueRepository.instance.toggleSaveCue(
-                    mediaItem: widget.mediaItem,
-                    cue: cue,
-                    cueIndex: _currentCueIndex,
-                  ).then((_) {
-                    if (mounted) setState(() {});
-                  }),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                child: Icon(
-                  isSaved
-                      ? CupertinoIcons.bookmark_fill
-                      : CupertinoIcons.bookmark,
-                  size: 18,
-                  color: isSaved
-                      ? colorScheme.primary
-                      : colorScheme.onSurface.withValues(alpha: 0.4),
+          Builder(
+            builder: (context) {
+              final isSaved = SavedCueRepository.instance.isSaved(
+                widget.mediaItem.id,
+                cue.id,
+              );
+              return GestureDetector(
+                onTap: () {
+                  unawaited(
+                    SavedCueRepository.instance
+                        .toggleSaveCue(
+                          mediaItem: widget.mediaItem,
+                          cue: cue,
+                          cueIndex: _currentCueIndex,
+                        )
+                        .then((_) {
+                          if (mounted) setState(() {});
+                        }),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
+                  ),
+                  child: Icon(
+                    isSaved
+                        ? CupertinoIcons.bookmark_fill
+                        : CupertinoIcons.bookmark,
+                    size: 18,
+                    color: isSaved
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
