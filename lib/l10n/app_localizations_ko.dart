@@ -78,7 +78,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sectionRateAndShare => '평가 및 공유';
 
   @override
-  String get sectionLanguage => '언어';
+  String get sectionLanguage => '표시 언어';
 
   @override
   String get languageSectionSubtitle => '앱 표시 언어를 선택하세요. 시스템은 기기 설정을 따릅니다.';

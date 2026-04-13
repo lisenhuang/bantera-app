@@ -136,49 +136,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(
-                    height: 1,
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.profileLanguageSettings,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.language,
-                          color: BanteraTheme.primaryColor,
-                        ),
-                        title: Text(l10n.editProfileMyNativeLanguage),
-                        trailing: _LanguageChip(
-                          identifier: profile.nativeLanguage,
-                          bold: false,
-                        ),
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.school,
-                          color: BanteraTheme.primaryColor,
-                        ),
-                        title: Text(l10n.profileLearningLabel),
-                        trailing: _LanguageChip(
-                          identifier: profile.learningLanguage,
-                          bold: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),

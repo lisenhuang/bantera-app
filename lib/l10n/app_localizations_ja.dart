@@ -78,7 +78,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sectionRateAndShare => '評価とシェア';
 
   @override
-  String get sectionLanguage => '言語';
+  String get sectionLanguage => '表示言語';
 
   @override
   String get languageSectionSubtitle => 'アプリの表示言語を選びます。「システムに合わせる」は端末の設定に従います。';

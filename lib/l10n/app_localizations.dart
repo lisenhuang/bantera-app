@@ -244,7 +244,7 @@ abstract class AppLocalizations {
   /// No description provided for @sectionLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
+  /// **'Display Language'**
   String get sectionLanguage;
 
   /// No description provided for @languageSectionSubtitle.

@@ -80,7 +80,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionRateAndShare => 'Rate & Share';
 
   @override
-  String get sectionLanguage => 'Language';
+  String get sectionLanguage => 'Display Language';
 
   @override
   String get languageSectionSubtitle =>

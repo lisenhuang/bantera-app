@@ -23,7 +23,7 @@
   "sectionAppearance": "外観",
   "sectionAccount": "アカウント",
   "sectionRateAndShare": "評価とシェア",
-  "sectionLanguage": "言語",
+  "sectionLanguage": "表示言語",
   "languageSectionSubtitle": "アプリの表示言語を選びます。「システムに合わせる」は端末の設定に従います。",
   "themeLabel": "テーマ",
   "themeLight": "ライト",

@@ -23,7 +23,7 @@
   "sectionAppearance": "Appearance",
   "sectionAccount": "Account",
   "sectionRateAndShare": "Rate & Share",
-  "sectionLanguage": "Language",
+  "sectionLanguage": "Display Language",
   "languageSectionSubtitle": "Choose app display language. System follows your device settings.",
   "themeLabel": "Theme",
   "themeLight": "Light",

@@ -78,7 +78,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sectionRateAndShare => '评分与分享';
 
   @override
-  String get sectionLanguage => '语言';
+  String get sectionLanguage => '显示语言';
 
   @override
   String get languageSectionSubtitle => '选择应用显示语言。“跟随系统”将使用设备的语言设置。';
@@ -993,7 +993,7 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get sectionRateAndShare => '评分与分享';
 
   @override
-  String get sectionLanguage => '语言';
+  String get sectionLanguage => '显示语言';
 
   @override
   String get languageSectionSubtitle => '选择应用显示语言。“跟随系统”将使用设备的语言设置。';
