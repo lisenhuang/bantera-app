@@ -206,7 +206,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
             ),
           ),
-          body: RefreshIndicator(
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.translucent,
+            child: RefreshIndicator(
             onRefresh: () => _load(reset: true),
             child: CustomScrollView(
               controller: _scrollController,
@@ -283,6 +286,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ],
               ],
             ),
+          ),
           ),
         );
       },
