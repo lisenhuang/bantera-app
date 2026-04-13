@@ -273,6 +273,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceHideText => '隐藏文字';
 
   @override
+  String get practiceTextLabel => '文字';
+
+  @override
   String get practiceStop => '停止';
 
   @override
@@ -1183,6 +1186,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get practiceHideText => '隐藏文字';
+
+  @override
+  String get practiceTextLabel => '文字';
 
   @override
   String get practiceStop => '停止';

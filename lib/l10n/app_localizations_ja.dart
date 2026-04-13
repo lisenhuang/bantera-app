@@ -274,6 +274,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceHideText => 'テキストを隠す';
 
   @override
+  String get practiceTextLabel => 'テキスト';
+
+  @override
   String get practiceStop => '停止';
 
   @override

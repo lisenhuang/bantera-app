@@ -283,6 +283,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceHideText => 'Hide Text';
 
   @override
+  String get practiceTextLabel => 'Text';
+
+  @override
   String get practiceStop => 'Stop';
 
   @override

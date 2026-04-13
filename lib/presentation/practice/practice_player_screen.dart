@@ -1424,6 +1424,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     label: Text(
                       _isTranslating
                           ? _l10n.practiceTranslating
+                          : iosLegacyPre26
+                          ? _l10n.practiceTextLabel
                           : legacyApple
                           ? (_subtitleState == SubtitleState.hidden
                                 ? _l10n.practiceShowTranscript
@@ -1438,22 +1440,35 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   );
 
                   if (iosLegacyPre26) {
+                    final playAllButton = OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      onPressed: () => _isPlayingAll
+                          ? unawaited(_stopPlayAll())
+                          : unawaited(_promptPlayAll()),
+                      icon: Icon(
+                        _isPlayingAll
+                            ? CupertinoIcons.stop_fill
+                            : CupertinoIcons.play_fill,
+                      ),
+                      label: Text(
+                        _isPlayingAll
+                            ? _l10n.practiceStop
+                            : _l10n.practicePlayAll,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    );
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildActionBtn(
-                          _isPlayingAll
-                              ? CupertinoIcons.stop_fill
-                              : CupertinoIcons.play_rectangle,
-                          _isPlayingAll
-                              ? _l10n.practiceStop
-                              : _l10n.practicePlayAll,
-                          () => _isPlayingAll
-                              ? unawaited(_stopPlayAll())
-                              : unawaited(_promptPlayAll()),
-                          colorScheme,
-                        ),
+                        playAllButton,
                         const SizedBox(width: 16),
                         Flexible(child: transcriptButton),
                       ],

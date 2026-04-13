@@ -275,6 +275,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceHideText => '글 숨기기';
 
   @override
+  String get practiceTextLabel => '텍스트';
+
+  @override
   String get practiceStop => '정지';
 
   @override

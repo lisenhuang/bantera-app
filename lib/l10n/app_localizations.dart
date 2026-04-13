@@ -619,6 +619,12 @@ abstract class AppLocalizations {
   /// **'Hide Text'**
   String get practiceHideText;
 
+  /// No description provided for @practiceTextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get practiceTextLabel;
+
   /// No description provided for @practiceStop.
   ///
   /// In en, this message translates to:
