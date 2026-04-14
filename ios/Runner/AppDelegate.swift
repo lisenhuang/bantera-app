@@ -238,12 +238,13 @@ private final class BanteraVideoProcessingBridge {
 
     Task {
       let payload = await BanteraVideoPreparationService.supportedLocalePayload()
-      print("[Bantera] Supported transcription locales (\(payload.count)):")
+      print("[Bantera:Transcription] Supported transcription locales (\(payload.count)):")
       for locale in payload {
         let id = locale["identifier"] as? String ?? "?"
         let name = locale["displayName"] as? String ?? "?"
-        print("[Bantera]   \(id) — \(name)")
+        print("[Bantera:Transcription]   \(id) — \(name)")
       }
+      await BanteraTranslationService.logAllSupportedLanguages()
       DispatchQueue.main.async {
         result(payload)
       }
@@ -482,6 +483,12 @@ private final class BanteraTranslationBridge {
         let payload = try await BanteraTranslationService.supportedTargetLocalePayload(
           sourceLocaleIdentifier: sourceLocaleIdentifier
         )
+        print("[Bantera:Translation] Supported translation locales from '\(sourceLocaleIdentifier)' (\(payload.count)):")
+        for locale in payload {
+          let id = locale["identifier"] as? String ?? "?"
+          let name = locale["displayName"] as? String ?? "?"
+          print("[Bantera:Translation]   \(id) — \(name)")
+        }
         DispatchQueue.main.async {
           result(payload)
         }
@@ -638,6 +645,24 @@ private final class BanteraTranslationService {
 
   private let maxCuesPerChunk = 8
   private let maxCharactersPerChunk = 1200
+
+  static func logAllSupportedLanguages() async {
+    guard #available(iOS 26.0, *) else { return }
+    let availability = LanguageAvailability()
+    let languages = await availability.supportedLanguages
+    let displayLocale = Locale.current
+    let sorted = languages.sorted {
+      let l = displayLocale.localizedString(forIdentifier: $0.minimalIdentifier) ?? $0.minimalIdentifier
+      let r = displayLocale.localizedString(forIdentifier: $1.minimalIdentifier) ?? $1.minimalIdentifier
+      return l.localizedCaseInsensitiveCompare(r) == .orderedAscending
+    }
+    print("[Bantera:Translation] iOS built-in translation supported languages (\(sorted.count)):")
+    for lang in sorted {
+      let id = lang.minimalIdentifier
+      let name = displayLocale.localizedString(forIdentifier: id) ?? id
+      print("[Bantera:Translation]   \(id) — \(name)")
+    }
+  }
 
   static func supportedTargetLocalePayload(
     sourceLocaleIdentifier: String
