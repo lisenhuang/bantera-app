@@ -714,7 +714,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               ),
             );
           }
-          if (posMs >= cues.last.endTimeMs) {
+          if (posMs >= _playbackStopMsForCueIndex(cues.length - 1)) {
             unawaited(_stopPlayAll());
           }
           return;
@@ -819,7 +819,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             ),
           );
         }
-        if (posMs >= cues.last.endTimeMs) {
+        if (posMs >= _playbackStopMsForCueIndex(cues.length - 1)) {
           unawaited(_stopPlayAll());
         }
         return;
