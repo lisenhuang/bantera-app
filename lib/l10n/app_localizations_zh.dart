@@ -81,6 +81,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sectionLanguage => '显示语言';
 
   @override
+  String get sectionPermissions => '权限';
+
+  @override
   String get languageSectionSubtitle => '选择应用显示语言。“跟随系统”将使用设备的语言设置。';
 
   @override
@@ -123,6 +126,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get more => '更多';
+
+  @override
+  String get appPermissionsTitle => '应用权限';
+
+  @override
+  String get appPermissionsSubtitle => '查看 Bantera 在此设备上使用的访问权限。';
+
+  @override
+  String get permissionsIntro => 'Bantera 会使用这些设备设置来录音、比较语音并访问网络。';
+
+  @override
+  String get permissionsOpenSettings => '打开 iPhone 设置';
+
+  @override
+  String get permissionsRefresh => '刷新';
+
+  @override
+  String get permissionMicrophoneTitle => '麦克风';
+
+  @override
+  String get permissionMicrophoneDescription => '用于录制练习尝试和语音消息。';
+
+  @override
+  String get permissionSpeechTitle => '语音识别';
+
+  @override
+  String get permissionSpeechDescription => '用于转写练习录音和上传的音频。';
+
+  @override
+  String get permissionMobileDataTitle => '移动数据';
+
+  @override
+  String get permissionMobileDataDescription =>
+      '用于在此 iPhone 未连接 Wi‑Fi 时使用 Bantera。';
+
+  @override
+  String get permissionStatusAllowed => '已允许';
+
+  @override
+  String get permissionStatusLimited => '受限';
+
+  @override
+  String get permissionStatusNotAllowed => '未允许';
+
+  @override
+  String get permissionStatusUnknown => '未知';
 
   @override
   String get signOut => '退出登录';
@@ -1040,6 +1089,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get sectionLanguage => '显示语言';
 
   @override
+  String get sectionPermissions => '权限';
+
+  @override
   String get languageSectionSubtitle => '选择应用显示语言。“跟随系统”将使用设备的语言设置。';
 
   @override
@@ -1082,6 +1134,52 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get more => '更多';
+
+  @override
+  String get appPermissionsTitle => '应用权限';
+
+  @override
+  String get appPermissionsSubtitle => '查看 Bantera 在此设备上使用的访问权限。';
+
+  @override
+  String get permissionsIntro => 'Bantera 会使用这些设备设置来录音、比较语音并访问网络。';
+
+  @override
+  String get permissionsOpenSettings => '打开 iPhone 设置';
+
+  @override
+  String get permissionsRefresh => '刷新';
+
+  @override
+  String get permissionMicrophoneTitle => '麦克风';
+
+  @override
+  String get permissionMicrophoneDescription => '用于录制练习尝试和语音消息。';
+
+  @override
+  String get permissionSpeechTitle => '语音识别';
+
+  @override
+  String get permissionSpeechDescription => '用于转写练习录音和上传的音频。';
+
+  @override
+  String get permissionMobileDataTitle => '移动数据';
+
+  @override
+  String get permissionMobileDataDescription =>
+      '用于在此 iPhone 未连接 Wi‑Fi 时使用 Bantera。';
+
+  @override
+  String get permissionStatusAllowed => '已允许';
+
+  @override
+  String get permissionStatusLimited => '受限';
+
+  @override
+  String get permissionStatusNotAllowed => '未允许';
+
+  @override
+  String get permissionStatusUnknown => '未知';
 
   @override
   String get signOut => '退出登录';

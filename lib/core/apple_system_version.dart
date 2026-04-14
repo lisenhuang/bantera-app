@@ -15,9 +15,16 @@ bool get isLegacyAppleOsPre26 {
   if (!Platform.isIOS && !Platform.isMacOS) {
     return false;
   }
-  final major = _majorVersionFromPlatformString(Platform.operatingSystemVersion);
+  final major = appleOperatingSystemMajorVersion;
   if (major == null) {
     return false;
   }
   return major < 26;
+}
+
+int? get appleOperatingSystemMajorVersion {
+  if (!Platform.isIOS && !Platform.isMacOS) {
+    return null;
+  }
+  return _majorVersionFromPlatformString(Platform.operatingSystemVersion);
 }

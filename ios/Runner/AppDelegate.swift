@@ -58,6 +58,8 @@ private final class BanteraNetworkReachabilityBridge {
     switch call.method {
     case "getNetworkHints":
       getNetworkHints(result: result)
+    case "getDeviceInfo":
+      result(Self.deviceInfo())
     case "getCellularRestrictedState":
       getNetworkHints { payload in
         if let dict = payload as? [String: Any],
@@ -70,6 +72,33 @@ private final class BanteraNetworkReachabilityBridge {
     default:
       result(FlutterMethodNotImplemented)
     }
+  }
+
+  private static func deviceInfo() -> [String: Any] {
+    let device = UIDevice.current
+    let idiom: String
+    switch device.userInterfaceIdiom {
+    case .phone:
+      idiom = "phone"
+    case .pad:
+      idiom = "pad"
+    case .tv:
+      idiom = "tv"
+    case .carPlay:
+      idiom = "carPlay"
+    case .mac:
+      idiom = "mac"
+    case .unspecified:
+      idiom = "unspecified"
+    @unknown default:
+      idiom = "unknown"
+    }
+
+    return [
+      "model": device.model,
+      "localizedModel": device.localizedModel,
+      "userInterfaceIdiom": idiom,
+    ]
   }
 
   /// Full diagnostic payload for Dart (`ctState` + NWPathMonitor booleans).

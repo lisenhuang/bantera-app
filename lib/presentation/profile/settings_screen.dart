@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/api_base_url_screen.dart';
 import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
+import 'permissions_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -109,9 +110,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           SegmentedButton<ThemeMode>(
                             style: SegmentedButton.styleFrom(
                               side: BorderSide(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
                               ),
                             ),
                             segments: [
@@ -128,7 +129,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ButtonSegment<ThemeMode>(
                                 value: ThemeMode.system,
                                 label: Text(l10n.themeSystem),
-                                icon: const Icon(Icons.brightness_auto_outlined),
+                                icon: const Icon(
+                                  Icons.brightness_auto_outlined,
+                                ),
                               ),
                             ],
                             selected: {settings.themeMode},
@@ -192,7 +195,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     ),
                                     DropdownMenuItem(
                                       value: AppLocalePreference.en,
-                                      child: const Text(AppLocaleAutonyms.english),
+                                      child: const Text(
+                                        AppLocaleAutonyms.english,
+                                      ),
                                     ),
                                     DropdownMenuItem(
                                       value: AppLocalePreference.zhCn,
@@ -202,11 +207,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     ),
                                     DropdownMenuItem(
                                       value: AppLocalePreference.ko,
-                                      child: const Text(AppLocaleAutonyms.korean),
+                                      child: const Text(
+                                        AppLocaleAutonyms.korean,
+                                      ),
                                     ),
                                     DropdownMenuItem(
                                       value: AppLocalePreference.ja,
-                                      child: const Text(AppLocaleAutonyms.japanese),
+                                      child: const Text(
+                                        AppLocaleAutonyms.japanese,
+                                      ),
                                     ),
                                   ],
                                   onChanged: (v) {
@@ -226,6 +235,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              _buildSectionHeader(context, l10n.sectionPermissions),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(l10n.appPermissionsTitle),
+                  subtitle: Text(l10n.appPermissionsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const PermissionsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
               _buildSectionHeader(context, l10n.sectionAccount),
               Card(
                 margin: EdgeInsets.zero,
@@ -233,7 +260,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.verified_user_outlined),
-                      title: Text(auth.session?.accountLabel ?? l10n.signedOutLabel),
+                      title: Text(
+                        auth.session?.accountLabel ?? l10n.signedOutLabel,
+                      ),
                       subtitle: Text(
                         auth.session == null
                             ? l10n.noActiveSession
@@ -344,8 +373,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

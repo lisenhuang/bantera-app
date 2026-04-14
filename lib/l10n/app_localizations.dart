@@ -247,6 +247,12 @@ abstract class AppLocalizations {
   /// **'Display Language'**
   String get sectionLanguage;
 
+  /// No description provided for @sectionPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get sectionPermissions;
+
   /// No description provided for @languageSectionSubtitle.
   ///
   /// In en, this message translates to:
@@ -330,6 +336,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get more;
+
+  /// No description provided for @appPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Permissions'**
+  String get appPermissionsTitle;
+
+  /// No description provided for @appPermissionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review access Bantera uses on this device.'**
+  String get appPermissionsSubtitle;
+
+  /// No description provided for @permissionsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera uses these device settings for recording, speech comparison, and network access.'**
+  String get permissionsIntro;
+
+  /// No description provided for @permissionsOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open iPhone Settings'**
+  String get permissionsOpenSettings;
+
+  /// No description provided for @permissionsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get permissionsRefresh;
+
+  /// No description provided for @permissionMicrophoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone'**
+  String get permissionMicrophoneTitle;
+
+  /// No description provided for @permissionMicrophoneDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Record practice attempts and voice messages.'**
+  String get permissionMicrophoneDescription;
+
+  /// No description provided for @permissionSpeechTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech Recognition'**
+  String get permissionSpeechTitle;
+
+  /// No description provided for @permissionSpeechDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe practice recordings and uploaded audio.'**
+  String get permissionSpeechDescription;
+
+  /// No description provided for @permissionMobileDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Data'**
+  String get permissionMobileDataTitle;
+
+  /// No description provided for @permissionMobileDataDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Bantera when this iPhone is not connected to Wi-Fi.'**
+  String get permissionMobileDataDescription;
+
+  /// No description provided for @permissionStatusAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get permissionStatusAllowed;
+
+  /// No description provided for @permissionStatusLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited'**
+  String get permissionStatusLimited;
+
+  /// No description provided for @permissionStatusNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Allowed'**
+  String get permissionStatusNotAllowed;
+
+  /// No description provided for @permissionStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get permissionStatusUnknown;
 
   /// No description provided for @signOut.
   ///

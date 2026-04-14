@@ -81,6 +81,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sectionLanguage => '표시 언어';
 
   @override
+  String get sectionPermissions => '권한';
+
+  @override
   String get languageSectionSubtitle => '앱 표시 언어를 선택하세요. 시스템은 기기 설정을 따릅니다.';
 
   @override
@@ -123,6 +126,53 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get more => '더보기';
+
+  @override
+  String get appPermissionsTitle => '앱 권한';
+
+  @override
+  String get appPermissionsSubtitle => '이 기기에서 Bantera가 사용하는 접근을 확인합니다.';
+
+  @override
+  String get permissionsIntro =>
+      'Bantera는 녹음, 음성 비교, 네트워크 접근을 위해 이 기기 설정을 사용합니다.';
+
+  @override
+  String get permissionsOpenSettings => 'iPhone 설정 열기';
+
+  @override
+  String get permissionsRefresh => '새로고침';
+
+  @override
+  String get permissionMicrophoneTitle => '마이크';
+
+  @override
+  String get permissionMicrophoneDescription => '연습 시도와 음성 메시지를 녹음합니다.';
+
+  @override
+  String get permissionSpeechTitle => '음성 인식';
+
+  @override
+  String get permissionSpeechDescription => '연습 녹음과 업로드한 오디오를 전사합니다.';
+
+  @override
+  String get permissionMobileDataTitle => '모바일 데이터';
+
+  @override
+  String get permissionMobileDataDescription =>
+      '이 iPhone이 Wi-Fi에 연결되어 있지 않을 때 Bantera를 사용합니다.';
+
+  @override
+  String get permissionStatusAllowed => '허용됨';
+
+  @override
+  String get permissionStatusLimited => '제한됨';
+
+  @override
+  String get permissionStatusNotAllowed => '허용 안 됨';
+
+  @override
+  String get permissionStatusUnknown => '알 수 없음';
 
   @override
   String get signOut => '로그아웃';
