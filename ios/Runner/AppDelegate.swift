@@ -451,6 +451,8 @@ private final class BanteraTranslationBridge {
     switch call.method {
     case "getSupportedTranslationLocales":
       handleGetSupportedTranslationLocales(call: call, result: result)
+    case "getAllSupportedTranslationLocales":
+      handleGetAllSupportedTranslationLocales(result: result)
     case "prepareTranslationAssets":
       handlePrepareTranslationAssets(call: call, result: result)
     case "translateTranscriptCues":
@@ -506,6 +508,19 @@ private final class BanteraTranslationBridge {
             )
           )
         }
+      }
+    }
+  }
+
+  private func handleGetAllSupportedTranslationLocales(result: @escaping FlutterResult) {
+    guard #available(iOS 26.0, *) else {
+      result([])
+      return
+    }
+    Task {
+      let payload = await BanteraTranslationService.allSupportedLanguagePayload()
+      DispatchQueue.main.async {
+        result(payload)
       }
     }
   }
@@ -661,6 +676,20 @@ private final class BanteraTranslationService {
       let id = lang.minimalIdentifier
       let name = displayLocale.localizedString(forIdentifier: id) ?? id
       print("[Bantera:Translation]   \(id) — \(name)")
+    }
+  }
+
+  /// Returns all iOS built-in translation locales as a Flutter-ready payload.
+  /// Does not require a source locale — suitable for native-language pickers.
+  @available(iOS 26.0, *)
+  static func allSupportedLanguagePayload() async -> [[String: Any]] {
+    let availability = LanguageAvailability()
+    let languages = await availability.supportedLanguages
+    let displayLocale = Locale.current
+    return languages.map { lang in
+      let id = lang.minimalIdentifier
+      let name = displayLocale.localizedString(forIdentifier: id) ?? id
+      return ["identifier": id, "displayName": name, "isInstalled": true] as [String: Any]
     }
   }
 

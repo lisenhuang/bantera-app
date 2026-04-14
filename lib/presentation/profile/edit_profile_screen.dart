@@ -23,7 +23,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _seededInitialName = false;
-  List<TranscriptionLocaleOption>? _localeOptions;
+  List<TranscriptionLocaleOption>? _localeOptions;        // native picker (transcription + translation)
+  List<TranscriptionLocaleOption>? _learningLocaleOptions; // learning picker (transcription only)
   bool _loadingLocales = false;
   String? _localeLoadError;
 
@@ -52,18 +53,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _localeLoadError = null;
     });
     try {
-      final options =
-          await VideoProcessingService.instance.fetchSupportedLocales();
+      final results = await Future.wait([
+        VideoProcessingService.instance.fetchNativeLanguageOptions(),
+        VideoProcessingService.instance.fetchSupportedLocales(
+          excludeZhTwForLearning: true,
+        ),
+      ]);
       if (mounted) {
         setState(() {
-          _localeOptions = options;
-          _loadingLocales = false;
-        });
-      }
-    } on VideoProcessingException catch (e) {
-      if (mounted) {
-        setState(() {
-          _localeLoadError = e.message;
+          _localeOptions = results[0];
+          _learningLocaleOptions = results[1];
           _loadingLocales = false;
         });
       }
@@ -293,7 +292,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
   }) async {
-    final options = _localeOptions;
+    // Learning picker uses transcription-only list; native picker uses combined list.
+    final options =
+        excludeZhTwForLearning ? _learningLocaleOptions : _localeOptions;
     if (options == null) {
       if (_localeLoadError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -303,9 +304,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    final filteredOptions = excludeZhTwForLearning
-        ? options.where((o) => o.identifier != 'zh-TW').toList()
-        : options;
+    final filteredOptions = options;
 
     await showModalBottomSheet<void>(
       context: context,

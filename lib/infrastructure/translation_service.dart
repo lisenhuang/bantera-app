@@ -74,6 +74,29 @@ class TranslationService {
     }
   }
 
+  /// Fetches all iOS built-in translation locales without source-locale filtering.
+  /// Used for native-language pickers that need the full translation language list.
+  /// Returns empty list on non-iOS or when unavailable.
+  Future<List<TranslationLocaleOption>> fetchAllTranslationLocales() async {
+    if (!Platform.isIOS) return const [];
+    try {
+      final locales =
+          await _channel.invokeListMethod<dynamic>(
+            'getAllSupportedTranslationLocales',
+          ) ??
+          const <dynamic>[];
+      return locales
+          .whereType<Map<Object?, Object?>>()
+          .map(TranslationLocaleOption.fromMap)
+          .where((option) => option.identifier.isNotEmpty)
+          .toList();
+    } on PlatformException {
+      return const [];
+    } on MissingPluginException {
+      return const [];
+    }
+  }
+
   Future<List<TranslationLocaleOption>> fetchSupportedLocales({
     required String sourceLocaleIdentifier,
   }) async {

@@ -438,6 +438,47 @@ class AuthApiClient {
     }
   }
 
+  /// Public catalog for iOS translation locale pickers (no auth).
+  /// Returns null if the request fails or the response is unusable.
+  Future<List<LearningLanguageRow>?> fetchTranslationLanguagesCatalog() async {
+    try {
+      final request = await _httpClient.getUrl(
+        _resolve('/api/public/translation-languages'),
+      );
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+
+      final response = await request.close();
+      final responseText = await response.transform(utf8.decoder).join();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return null;
+      }
+      if (responseText.isEmpty) {
+        return null;
+      }
+
+      final decoded = jsonDecode(responseText);
+      if (decoded is! List) {
+        return null;
+      }
+
+      final rows = <LearningLanguageRow>[];
+      for (final item in decoded) {
+        if (item is Map<String, dynamic>) {
+          rows.add(LearningLanguageRow.fromJson(item));
+        } else if (item is Map) {
+          rows.add(
+            LearningLanguageRow.fromJson(
+              item.map((k, v) => MapEntry(k.toString(), v)),
+            ),
+          );
+        }
+      }
+      return rows.isEmpty ? null : rows;
+    } on Object {
+      return null;
+    }
+  }
+
   Future<List<UploadedVideo>> fetchMyVideos({
     required String accessToken,
   }) async {

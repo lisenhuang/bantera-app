@@ -6,6 +6,7 @@ import '../domain/models/models.dart';
 import 'auth_api_client.dart';
 import 'learning_language_catalog.dart';
 import 'transcription_locale_option.dart';
+import 'translation_service.dart';
 
 export 'transcription_locale_option.dart';
 
@@ -104,6 +105,80 @@ class VideoProcessingService {
     List<TranscriptionLocaleOption> options,
   ) =>
       options.where((o) => o.identifier != 'zh-TW').toList();
+
+  /// Resolves locales for the native-language picker: combines iOS transcription locales
+  /// and iOS translation locales (deduped by identifier). Falls back to both API catalogs,
+  /// then to embedded lists.
+  Future<List<TranscriptionLocaleOption>> fetchNativeLanguageOptions() async {
+    if (Platform.isIOS) {
+      try {
+        // a) iOS transcription locales
+        final txRaw =
+            await _channel.invokeListMethod<dynamic>(
+              'getSupportedTranscriptionLocales',
+            ) ??
+            const <dynamic>[];
+        final txOptions = txRaw
+            .whereType<Map<Object?, Object?>>()
+            .map(TranscriptionLocaleOption.fromMap)
+            .where((o) => o.identifier.isNotEmpty)
+            .toList();
+
+        // b) iOS translation locales (all, no source filter)
+        final trOptions =
+            await TranslationService.instance.fetchAllTranslationLocales();
+
+        // c) Merge + deduplicate by identifier (transcription takes precedence)
+        final seen = <String>{};
+        final combined = <TranscriptionLocaleOption>[];
+        for (final o in txOptions) {
+          if (seen.add(o.identifier)) combined.add(o);
+        }
+        for (final t in trOptions) {
+          if (seen.add(t.identifier)) {
+            combined.add(TranscriptionLocaleOption(
+              identifier: t.identifier,
+              displayName: t.displayName,
+              isInstalled: t.isInstalled,
+            ));
+          }
+        }
+
+        if (combined.isNotEmpty) return combined;
+      } on PlatformException {
+        // Fall through to API / embedded fallback.
+      } on MissingPluginException {
+        // Fall through to API / embedded fallback.
+      } catch (_) {
+        // Fall through to API / embedded fallback.
+      }
+    }
+
+    // d) API fallback: transcription + translation catalogs
+    final txApi = await AuthApiClient.instance.fetchLearningLanguagesCatalog();
+    final trApi =
+        await AuthApiClient.instance.fetchTranslationLanguagesCatalog();
+    final allApi = [...(txApi ?? []), ...(trApi ?? [])];
+    if (allApi.isNotEmpty) {
+      final seen = <String>{};
+      return allApi
+          .where((r) => r.identifier.isNotEmpty && seen.add(r.identifier))
+          .map((r) => TranscriptionLocaleOption(
+                identifier: r.identifier,
+                displayName: r.displayName,
+                isInstalled: false,
+                flagEmoji: r.flagEmoji,
+              ))
+          .toList();
+    }
+
+    // e) Embedded fallback: both lists deduped
+    final seen = <String>{};
+    return [
+      ...kFallbackLearningLanguages,
+      ...kFallbackTranslationLanguages,
+    ].where((o) => seen.add(o.identifier)).toList();
+  }
 
   /// Resolves locales for UI: native iOS list when available, otherwise public API,
   /// then embedded [kFallbackLearningLanguages]. Listing languages is supported on

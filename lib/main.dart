@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -7,6 +9,7 @@ import 'core/auth_session_notifier.dart';
 import 'core/settings_notifier.dart';
 import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
+import 'infrastructure/video_processing_service.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
@@ -20,6 +23,13 @@ Future<void> main() async {
     AuthSessionNotifier.instance.initialize(),
   ]);
   UserProfileNotifier.instance;
+  // Preload language lists in the background so pickers are fast on first open.
+  unawaited(Future.wait([
+    VideoProcessingService.instance.fetchNativeLanguageOptions(),
+    VideoProcessingService.instance.fetchSupportedLocales(
+      excludeZhTwForLearning: true,
+    ),
+  ]));
   runApp(const MyApp());
 }
 
