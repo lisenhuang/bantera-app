@@ -1543,6 +1543,42 @@ abstract class AppLocalizations {
   /// **'Generate'**
   String get aiGenGenerateButton;
 
+  /// No description provided for @aiGenOwnershipNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio generated here is created by Bantera AI. All generated content is owned by Bantera and shared as public practice material — it is not associated with your personal account.'**
+  String get aiGenOwnershipNotice;
+
+  /// No description provided for @aiGenOwnershipCheckbox.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this audio belongs to Bantera, not me'**
+  String get aiGenOwnershipCheckbox;
+
+  /// No description provided for @aiGenOwnershipConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate as Bantera content?'**
+  String get aiGenOwnershipConfirmTitle;
+
+  /// No description provided for @aiGenOwnershipConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This audio will be owned by Bantera and shared publicly. It won\'t appear as your personal content. Do you want to continue?'**
+  String get aiGenOwnershipConfirmBody;
+
+  /// No description provided for @aiGenOwnershipConfirmCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get aiGenOwnershipConfirmCancel;
+
+  /// No description provided for @aiGenOwnershipConfirmGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate'**
+  String get aiGenOwnershipConfirmGenerate;
+
   /// No description provided for @aiGenFooterNotice.
   ///
   /// In en, this message translates to:

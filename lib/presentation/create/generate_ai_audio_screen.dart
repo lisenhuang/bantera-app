@@ -63,6 +63,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   _GenerationStep _step = _GenerationStep.idle;
   String? _errorMessage;
+  bool _ownershipAcknowledged = false;
 
   bool get _isGenerating => _step != _GenerationStep.idle;
 
@@ -207,6 +208,37 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         }),
       );
     } catch (_) {}
+  }
+
+  Future<void> _onGenerateTapped() async {
+    if (_ownershipAcknowledged) {
+      await _generate();
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final d = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(d.aiGenOwnershipConfirmTitle),
+          content: Text(d.aiGenOwnershipConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(d.aiGenOwnershipConfirmCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(d.aiGenOwnershipConfirmGenerate),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && mounted) {
+      await _generate();
+    }
   }
 
   Future<void> _generate() async {
@@ -638,7 +670,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                 setState(() => _durationSeconds = val.first),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
           // Error message
           if (_errorMessage != null) ...[
@@ -661,7 +693,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
           // Generate button
           FilledButton.icon(
-            onPressed: _canGenerate ? _generate : null,
+            onPressed: _canGenerate ? _onGenerateTapped : null,
             icon: const Icon(Icons.auto_awesome),
             label: Text(l10n.aiGenGenerateButton),
             style: FilledButton.styleFrom(
@@ -670,11 +702,57 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           ),
 
           const SizedBox(height: 16),
-          Text(
-            l10n.aiGenFooterNotice,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-            textAlign: TextAlign.center,
+
+          // Ownership notice + acknowledgement checkbox
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.aiGenOwnershipNotice,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: () => setState(
+                    () => _ownershipAcknowledged = !_ownershipAcknowledged,
+                  ),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: _ownershipAcknowledged,
+                        onChanged: (v) => setState(
+                          () => _ownershipAcknowledged = v ?? false,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          l10n.aiGenOwnershipCheckbox,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          const SizedBox(height: 16),
         ],
       ),
     );

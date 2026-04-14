@@ -190,7 +190,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get deleteAccountQuestionBody =>
-      '개인 정보와 생성한 데이터가 서버에서 영구 삭제되며 복구할 수 없습니다.';
+      '모든 개인 정보와 데이터가 서버에서 영구적으로 삭제되며 복구할 수 없습니다.';
 
   @override
   String get typeDeleteLabel => '계속하려면 \"DELETE\"를 입력하세요';
@@ -776,6 +776,26 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiGenGenerateButton => '생성';
+
+  @override
+  String get aiGenOwnershipNotice =>
+      '여기서 생성된 오디오는 Bantera AI가 제작합니다. 생성된 모든 콘텐츠는 Bantera 소유이며 공개 연습 자료로 공유됩니다. 개인 계정과는 연결되지 않습니다.';
+
+  @override
+  String get aiGenOwnershipCheckbox => '이 오디오는 저가 아닌 Bantera의 소유임을 이해합니다';
+
+  @override
+  String get aiGenOwnershipConfirmTitle => 'Bantera 콘텐츠로 생성하시겠습니까?';
+
+  @override
+  String get aiGenOwnershipConfirmBody =>
+      '이 오디오는 Bantera 소유로 공개 공유되며 개인 콘텐츠에는 표시되지 않습니다. 계속하시겠습니까?';
+
+  @override
+  String get aiGenOwnershipConfirmCancel => '취소';
+
+  @override
+  String get aiGenOwnershipConfirmGenerate => '생성';
 
   @override
   String get aiGenFooterNotice =>

@@ -188,7 +188,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteAccountQuestionTitle => '删除账户？';
 
   @override
-  String get deleteAccountQuestionBody => '你的个人信息以及你生成的所有数据将从我们的服务器永久删除且无法恢复。';
+  String get deleteAccountQuestionBody => '您的所有个人信息和数据将从我们的服务器永久删除且无法恢复。';
 
   @override
   String get typeDeleteLabel => '输入「DELETE」以继续';
@@ -766,6 +766,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiGenGenerateButton => '生成';
+
+  @override
+  String get aiGenOwnershipNotice =>
+      '此处生成的音频由 Bantera AI 创作。所有生成内容归 Bantera 所有，并作为公开练习素材共享——不与您的个人账户关联。';
+
+  @override
+  String get aiGenOwnershipCheckbox => '我了解此音频归 Bantera 所有，而非我个人';
+
+  @override
+  String get aiGenOwnershipConfirmTitle => '作为 Bantera 内容生成？';
+
+  @override
+  String get aiGenOwnershipConfirmBody =>
+      '此音频将归 Bantera 所有并公开分享，不会出现在您的个人内容中。是否继续？';
+
+  @override
+  String get aiGenOwnershipConfirmCancel => '取消';
+
+  @override
+  String get aiGenOwnershipConfirmGenerate => '生成';
 
   @override
   String get aiGenFooterNotice => 'AI 将创作双人对话并合成为音频。结果将保存为公开的练习音频。';
@@ -1112,7 +1132,7 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get deleteAccountQuestionTitle => '删除账户？';
 
   @override
-  String get deleteAccountQuestionBody => '你的个人信息以及你生成的所有数据将从我们的服务器永久删除且无法恢复。';
+  String get deleteAccountQuestionBody => '您的所有个人信息和数据将从我们的服务器永久删除且无法恢复。';
 
   @override
   String get typeDeleteLabel => '输入「DELETE」以继续';
@@ -1690,6 +1710,26 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get aiGenGenerateButton => '生成';
+
+  @override
+  String get aiGenOwnershipNotice =>
+      '此处生成的音频由 Bantera AI 创作。所有生成内容归 Bantera 所有，并作为公开练习素材共享——不与您的个人账户关联。';
+
+  @override
+  String get aiGenOwnershipCheckbox => '我了解此音频归 Bantera 所有，而非我个人';
+
+  @override
+  String get aiGenOwnershipConfirmTitle => '作为 Bantera 内容生成？';
+
+  @override
+  String get aiGenOwnershipConfirmBody =>
+      '此音频将归 Bantera 所有并公开分享，不会出现在您的个人内容中。是否继续？';
+
+  @override
+  String get aiGenOwnershipConfirmCancel => '取消';
+
+  @override
+  String get aiGenOwnershipConfirmGenerate => '生成';
 
   @override
   String get aiGenFooterNotice => 'AI 将创作双人对话并合成为音频。结果将保存为公开的练习音频。';

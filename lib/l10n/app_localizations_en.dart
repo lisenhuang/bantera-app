@@ -814,6 +814,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiGenGenerateButton => 'Generate';
 
   @override
+  String get aiGenOwnershipNotice =>
+      'Audio generated here is created by Bantera AI. All generated content is owned by Bantera and shared as public practice material — it is not associated with your personal account.';
+
+  @override
+  String get aiGenOwnershipCheckbox =>
+      'I understand this audio belongs to Bantera, not me';
+
+  @override
+  String get aiGenOwnershipConfirmTitle => 'Generate as Bantera content?';
+
+  @override
+  String get aiGenOwnershipConfirmBody =>
+      'This audio will be owned by Bantera and shared publicly. It won\'t appear as your personal content. Do you want to continue?';
+
+  @override
+  String get aiGenOwnershipConfirmCancel => 'Cancel';
+
+  @override
+  String get aiGenOwnershipConfirmGenerate => 'Generate';
+
+  @override
   String get aiGenFooterNotice =>
       'AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.';
 

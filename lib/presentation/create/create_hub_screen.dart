@@ -189,38 +189,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 );
               }),
 
-            const SizedBox(height: 48),
-            Text(
-              l10n.createUploadingTips,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: colorScheme.onSurface.withValues(alpha: 0.05),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    CupertinoIcons.lightbulb_fill,
-                    color: Colors.amber[600],
-                    size: 32,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      l10n.createUploadingTipsBody,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

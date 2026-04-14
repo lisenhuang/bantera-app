@@ -189,7 +189,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteAccountQuestionTitle => 'アカウントを削除しますか？';
 
   @override
-  String get deleteAccountQuestionBody => '個人情報と作成したデータはサーバーから完全に削除され、復元できません。';
+  String get deleteAccountQuestionBody =>
+      'お客様の個人情報とデータはすべて、当社のサーバーから永久に削除され、復元することはできません。';
 
   @override
   String get typeDeleteLabel => '続行するには「DELETE」と入力';
@@ -773,6 +774,26 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiGenGenerateButton => '生成';
+
+  @override
+  String get aiGenOwnershipNotice =>
+      'ここで生成された音声は Bantera AI によって作成されます。生成されたコンテンツはすべて Bantera が所有し、公開の練習素材として共有されます。あなたの個人アカウントとは関連付けられません。';
+
+  @override
+  String get aiGenOwnershipCheckbox => 'この音声は私ではなく Bantera に帰属することを理解しました';
+
+  @override
+  String get aiGenOwnershipConfirmTitle => 'Bantera コンテンツとして生成しますか？';
+
+  @override
+  String get aiGenOwnershipConfirmBody =>
+      'この音声は Bantera が所有し、公開されます。あなたの個人コンテンツには表示されません。続けますか？';
+
+  @override
+  String get aiGenOwnershipConfirmCancel => 'キャンセル';
+
+  @override
+  String get aiGenOwnershipConfirmGenerate => '生成';
 
   @override
   String get aiGenFooterNotice =>
