@@ -101,10 +101,39 @@ class VideoProcessingService {
     }
   }
 
+  Future<void> ensureRecordedAudioTranscriptionReady({
+    required String localeIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const VideoProcessingException(
+        code: 'unsupported_platform',
+        message: 'Audio comparison is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      await _channel.invokeMethod<void>(
+        'ensureRecordedAudioTranscriptionReady',
+        <String, Object?>{'localeIdentifier': localeIdentifier},
+      );
+    } on PlatformException catch (error) {
+      throw VideoProcessingException(
+        code: error.code,
+        message:
+            error.message ??
+            'Speech recognition could not be prepared for this recording.',
+      );
+    } on MissingPluginException {
+      throw const VideoProcessingException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS video bridge is not available in this build.',
+      );
+    }
+  }
+
   static List<TranscriptionLocaleOption> _withoutZhTw(
     List<TranscriptionLocaleOption> options,
-  ) =>
-      options.where((o) => o.identifier != 'zh-TW').toList();
+  ) => options.where((o) => o.identifier != 'zh-TW').toList();
 
   /// Resolves locales for the native-language picker: combines iOS transcription locales
   /// and iOS translation locales (deduped by identifier). Falls back to both API catalogs,
@@ -125,8 +154,8 @@ class VideoProcessingService {
             .toList();
 
         // b) iOS translation locales (all, no source filter)
-        final trOptions =
-            await TranslationService.instance.fetchAllTranslationLocales();
+        final trOptions = await TranslationService.instance
+            .fetchAllTranslationLocales();
 
         // c) Merge + deduplicate by identifier (transcription takes precedence)
         final seen = <String>{};
@@ -136,11 +165,13 @@ class VideoProcessingService {
         }
         for (final t in trOptions) {
           if (seen.add(t.identifier)) {
-            combined.add(TranscriptionLocaleOption(
-              identifier: t.identifier,
-              displayName: t.displayName,
-              isInstalled: t.isInstalled,
-            ));
+            combined.add(
+              TranscriptionLocaleOption(
+                identifier: t.identifier,
+                displayName: t.displayName,
+                isInstalled: t.isInstalled,
+              ),
+            );
           }
         }
 
@@ -156,19 +187,21 @@ class VideoProcessingService {
 
     // d) API fallback: transcription + translation catalogs
     final txApi = await AuthApiClient.instance.fetchLearningLanguagesCatalog();
-    final trApi =
-        await AuthApiClient.instance.fetchTranslationLanguagesCatalog();
+    final trApi = await AuthApiClient.instance
+        .fetchTranslationLanguagesCatalog();
     final allApi = [...(txApi ?? []), ...(trApi ?? [])];
     if (allApi.isNotEmpty) {
       final seen = <String>{};
       return allApi
           .where((r) => r.identifier.isNotEmpty && seen.add(r.identifier))
-          .map((r) => TranscriptionLocaleOption(
-                identifier: r.identifier,
-                displayName: r.displayName,
-                isInstalled: false,
-                flagEmoji: r.flagEmoji,
-              ))
+          .map(
+            (r) => TranscriptionLocaleOption(
+              identifier: r.identifier,
+              displayName: r.displayName,
+              isInstalled: false,
+              flagEmoji: r.flagEmoji,
+            ),
+          )
           .toList();
     }
 
@@ -191,8 +224,7 @@ class VideoProcessingService {
   }) async {
     List<TranscriptionLocaleOption> maybeFilter(
       List<TranscriptionLocaleOption> list,
-    ) =>
-        excludeZhTwForLearning ? _withoutZhTw(list) : list;
+    ) => excludeZhTwForLearning ? _withoutZhTw(list) : list;
 
     if (Platform.isIOS) {
       try {
@@ -219,7 +251,8 @@ class VideoProcessingService {
       }
     }
 
-    final fromApi = await AuthApiClient.instance.fetchLearningLanguagesCatalog();
+    final fromApi = await AuthApiClient.instance
+        .fetchLearningLanguagesCatalog();
     if (fromApi != null && fromApi.isNotEmpty) {
       return maybeFilter(
         fromApi
@@ -350,8 +383,7 @@ class VideoProcessingService {
       throw VideoProcessingException(
         code: error.code,
         message:
-            error.message ??
-            'The app could not transcribe this audio file.',
+            error.message ?? 'The app could not transcribe this audio file.',
       );
     } on MissingPluginException {
       throw const VideoProcessingException(

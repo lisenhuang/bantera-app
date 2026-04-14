@@ -225,6 +225,8 @@ private final class BanteraVideoProcessingBridge {
       handleTranscribeAudioForUpload(call: call, result: result)
     case "ensureTranscriptionModelInstalled":
       handleEnsureTranscriptionModelInstalled(call: call, result: result)
+    case "ensureRecordedAudioTranscriptionReady":
+      handleEnsureRecordedAudioTranscriptionReady(call: call, result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -302,11 +304,6 @@ private final class BanteraVideoProcessingBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
-    guard #available(iOS 26.0, *) else {
-      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
-      return
-    }
-
     guard
       let args = call.arguments as? [String: Any],
       let inputPath = args["inputPath"] as? String,
@@ -320,10 +317,19 @@ private final class BanteraVideoProcessingBridge {
 
     Task {
       do {
-        let response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
-          inputURL: URL(fileURLWithPath: inputPath),
-          localeIdentifier: localeIdentifier
-        )
+        let inputURL = URL(fileURLWithPath: inputPath)
+        let response: [String: Any]
+        if #available(iOS 26.0, *) {
+          response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
+            inputURL: inputURL,
+            localeIdentifier: localeIdentifier
+          )
+        } else {
+          response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
+            inputURL: inputURL,
+            localeIdentifier: localeIdentifier
+          )
+        }
         DispatchQueue.main.async {
           result(response)
         }
@@ -336,6 +342,51 @@ private final class BanteraVideoProcessingBridge {
           result(
             FlutterError(
               code: "video_processing_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+        }
+      }
+    }
+  }
+
+  private func handleEnsureRecordedAudioTranscriptionReady(
+    call: FlutterMethodCall,
+    result: @escaping FlutterResult
+  ) {
+    guard
+      let args = call.arguments as? [String: Any],
+      let localeIdentifier = args["localeIdentifier"] as? String,
+      !localeIdentifier.isEmpty
+    else {
+      result(BanteraVideoProcessingError.invalidArguments.flutterError)
+      return
+    }
+
+    Task {
+      do {
+        if #available(iOS 26.0, *) {
+          try await BanteraVideoPreparationService().ensureTranscriptionModelInstalled(
+            localeIdentifier: localeIdentifier
+          )
+        } else {
+          try await BanteraLegacySpeechRecognitionService().ensureReady(
+            localeIdentifier: localeIdentifier
+          )
+        }
+        DispatchQueue.main.async {
+          result(nil)
+        }
+      } catch let error as BanteraVideoProcessingError {
+        DispatchQueue.main.async {
+          result(error.flutterError)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "speech_unavailable",
               message: error.localizedDescription,
               details: nil
             )
@@ -914,6 +965,8 @@ private enum BanteraVideoProcessingError: LocalizedError {
   case unsupportedIosVersion
   case invalidArguments
   case speechUnavailable
+  case speechAuthorizationDenied
+  case speechAuthorizationRestricted
   case unsupportedLocale(String)
   case noAudioTrack
   case transcriptionFailed(String)
@@ -928,6 +981,10 @@ private enum BanteraVideoProcessingError: LocalizedError {
       return "The selected video could not be prepared."
     case .speechUnavailable:
       return "Speech transcription is not available on this iPhone."
+    case .speechAuthorizationDenied:
+      return "Speech Recognition access is turned off for Bantera."
+    case .speechAuthorizationRestricted:
+      return "Speech Recognition is restricted on this iPhone."
     case let .unsupportedLocale(identifier):
       return "The selected language (\(identifier)) is not available for transcription."
     case .noAudioTrack:
@@ -949,6 +1006,10 @@ private enum BanteraVideoProcessingError: LocalizedError {
       return "invalid_arguments"
     case .speechUnavailable:
       return "speech_unavailable"
+    case .speechAuthorizationDenied:
+      return "speech_authorization_denied"
+    case .speechAuthorizationRestricted:
+      return "speech_authorization_restricted"
     case .unsupportedLocale:
       return "unsupported_locale"
     case .noAudioTrack:
@@ -964,6 +1025,172 @@ private enum BanteraVideoProcessingError: LocalizedError {
 
   var flutterError: FlutterError {
     FlutterError(code: code, message: errorDescription, details: nil)
+  }
+}
+
+private final class BanteraLegacySpeechRecognitionService {
+  func ensureReady(localeIdentifier: String) async throws {
+    try await ensureSpeechAuthorization()
+    let resolved = try resolveRecognizer(localeIdentifier: localeIdentifier)
+    guard resolved.recognizer.isAvailable else {
+      throw BanteraVideoProcessingError.speechUnavailable
+    }
+  }
+
+  func transcribeRecordedAudio(
+    inputURL: URL,
+    localeIdentifier: String
+  ) async throws -> [String: Any] {
+    try await ensureSpeechAuthorization()
+    let resolved = try resolveRecognizer(localeIdentifier: localeIdentifier)
+    guard resolved.recognizer.isAvailable else {
+      throw BanteraVideoProcessingError.speechUnavailable
+    }
+
+    let transcript = try await transcribe(url: inputURL, recognizer: resolved.recognizer)
+    let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !text.isEmpty else {
+      throw BanteraVideoProcessingError.transcriptionFailed(
+        "No transcript could be generated. Check that the audio matches the chosen language."
+      )
+    }
+
+    return [
+      "transcriptText": text,
+      "transcriptLanguage": Self.bcp47Identifier(for: resolved.locale),
+      "transcriptLanguageCode": Self.languageCode(for: resolved.locale),
+    ]
+  }
+
+  private func ensureSpeechAuthorization() async throws {
+    let status = await requestSpeechAuthorization()
+    switch status {
+    case .authorized:
+      return
+    case .denied:
+      throw BanteraVideoProcessingError.speechAuthorizationDenied
+    case .restricted:
+      throw BanteraVideoProcessingError.speechAuthorizationRestricted
+    case .notDetermined:
+      throw BanteraVideoProcessingError.speechAuthorizationDenied
+    @unknown default:
+      throw BanteraVideoProcessingError.speechUnavailable
+    }
+  }
+
+  private func requestSpeechAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
+    await withCheckedContinuation { continuation in
+      SFSpeechRecognizer.requestAuthorization { status in
+        continuation.resume(returning: status)
+      }
+    }
+  }
+
+  private func resolveRecognizer(localeIdentifier: String) throws -> (
+    locale: Locale,
+    recognizer: SFSpeechRecognizer
+  ) {
+    let normalizedIdentifier = Self.normalizeIdentifier(localeIdentifier)
+    let supportedLocales = SFSpeechRecognizer.supportedLocales()
+
+    let locale = supportedLocales.first {
+      Self.normalizeIdentifier(Self.bcp47Identifier(for: $0)) == normalizedIdentifier ||
+        Self.normalizeIdentifier($0.identifier) == normalizedIdentifier
+    } ?? supportedLocales.first {
+      Self.languageCode(for: $0) == Self.languageCode(fromIdentifier: localeIdentifier)
+    }
+
+    guard let locale, let recognizer = SFSpeechRecognizer(locale: locale) else {
+      throw BanteraVideoProcessingError.unsupportedLocale(localeIdentifier)
+    }
+
+    return (locale, recognizer)
+  }
+
+  private func transcribe(url: URL, recognizer: SFSpeechRecognizer) async throws -> String {
+    do {
+      return try await transcribe(
+        url: url,
+        recognizer: recognizer,
+        requiresOnDeviceRecognition: recognizer.supportsOnDeviceRecognition
+      )
+    } catch {
+      guard recognizer.supportsOnDeviceRecognition else {
+        throw error
+      }
+
+      return try await transcribe(
+        url: url,
+        recognizer: recognizer,
+        requiresOnDeviceRecognition: false
+      )
+    }
+  }
+
+  private func transcribe(
+    url: URL,
+    recognizer: SFSpeechRecognizer,
+    requiresOnDeviceRecognition: Bool
+  ) async throws -> String {
+    try await withCheckedThrowingContinuation { continuation in
+      let request = SFSpeechURLRecognitionRequest(url: url)
+      request.shouldReportPartialResults = false
+      request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+
+      let lock = NSLock()
+      var didResume = false
+
+      func finish(_ result: Result<String, Error>) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !didResume else { return }
+        didResume = true
+        switch result {
+        case let .success(text):
+          continuation.resume(returning: text)
+        case let .failure(error):
+          continuation.resume(throwing: error)
+        }
+      }
+
+      _ = recognizer.recognitionTask(with: request) { result, error in
+        if let error {
+          finish(.failure(BanteraVideoProcessingError.transcriptionFailed(error.localizedDescription)))
+          return
+        }
+
+        guard let result else { return }
+        if result.isFinal {
+          finish(.success(result.bestTranscription.formattedString))
+        }
+      }
+    }
+  }
+
+  private static func normalizeIdentifier(_ identifier: String) -> String {
+    identifier
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .replacingOccurrences(of: "_", with: "-")
+      .lowercased()
+  }
+
+  private static func bcp47Identifier(for locale: Locale) -> String {
+    normalizeIdentifier(locale.identifier)
+  }
+
+  private static func languageCode(for locale: Locale) -> String {
+    if #available(iOS 16.0, *) {
+      return locale.language.languageCode?.identifier.lowercased() ?? "und"
+    }
+
+    return locale.languageCode?.lowercased() ?? "und"
+  }
+
+  private static func languageCode(fromIdentifier identifier: String) -> String {
+    normalizeIdentifier(identifier)
+      .split(separator: "-")
+      .first
+      .map(String.init) ?? "und"
   }
 }
 

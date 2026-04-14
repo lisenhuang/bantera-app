@@ -499,6 +499,22 @@ class AppLocalizationsKo extends AppLocalizations {
       '내 버전을 녹음하려면 마이크 권한이 필요합니다. 이전에 요청을 닫았다면 iPhone 설정 > Bantera > 마이크에서 켜 주세요.';
 
   @override
+  String get compareSpeechRecognitionDeniedPermanent =>
+      'Bantera의 음성 인식 접근이 꺼져 있습니다. iPhone 설정 > Bantera > 음성 인식에서 켜 주세요.';
+
+  @override
+  String get compareSpeechRecognitionDeniedRestricted =>
+      '이 iPhone이 Bantera의 음성 인식 사용을 제한하고 있습니다. 스크린 타임·기기 관리·시스템 설정을 확인하세요.';
+
+  @override
+  String get compareSpeechRecognitionUnavailable =>
+      '현재 이 iPhone에서 음성 인식을 사용할 수 없습니다.';
+
+  @override
+  String get compareSpeechRecognitionUnsupportedLocale =>
+      '현재 이 iPhone에서 이 연습 언어의 음성 인식을 사용할 수 없습니다.';
+
+  @override
   String get comparePlayAttemptTooltip => '시도 재생';
 
   @override

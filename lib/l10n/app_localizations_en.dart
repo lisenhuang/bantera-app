@@ -522,6 +522,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Microphone permission is required to record your own version. If you dismissed the prompt before, open iPhone Settings > Bantera > Microphone and enable it.';
 
   @override
+  String get compareSpeechRecognitionDeniedPermanent =>
+      'Speech Recognition access is turned off for Bantera. Open iPhone Settings > Bantera > Speech Recognition and enable it to compare your recording.';
+
+  @override
+  String get compareSpeechRecognitionDeniedRestricted =>
+      'This iPhone is currently restricting Speech Recognition for Bantera. Check Screen Time, device management, or system settings to enable it.';
+
+  @override
+  String get compareSpeechRecognitionUnavailable =>
+      'Speech Recognition is not available on this iPhone right now.';
+
+  @override
+  String get compareSpeechRecognitionUnsupportedLocale =>
+      'Speech Recognition is not available for this practice language on this iPhone.';
+
+  @override
   String get comparePlayAttemptTooltip => 'Play attempt';
 
   @override

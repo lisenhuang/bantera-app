@@ -7,7 +7,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Bantera needs photo library access so you can choose profile images and videos.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Bantera uses on-device speech recognition to transcribe your uploaded video audio.</string>
+	<string>Bantera uses speech recognition to transcribe practice recordings and uploaded audio.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

@@ -1027,6 +1027,30 @@ abstract class AppLocalizations {
   /// **'Microphone permission is required to record your own version. If you dismissed the prompt before, open iPhone Settings > Bantera > Microphone and enable it.'**
   String get compareMicrophoneDeniedDefault;
 
+  /// No description provided for @compareSpeechRecognitionDeniedPermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech Recognition access is turned off for Bantera. Open iPhone Settings > Bantera > Speech Recognition and enable it to compare your recording.'**
+  String get compareSpeechRecognitionDeniedPermanent;
+
+  /// No description provided for @compareSpeechRecognitionDeniedRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'This iPhone is currently restricting Speech Recognition for Bantera. Check Screen Time, device management, or system settings to enable it.'**
+  String get compareSpeechRecognitionDeniedRestricted;
+
+  /// No description provided for @compareSpeechRecognitionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech Recognition is not available on this iPhone right now.'**
+  String get compareSpeechRecognitionUnavailable;
+
+  /// No description provided for @compareSpeechRecognitionUnsupportedLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech Recognition is not available for this practice language on this iPhone.'**
+  String get compareSpeechRecognitionUnsupportedLocale;
+
   /// No description provided for @comparePlayAttemptTooltip.
   ///
   /// In en, this message translates to:

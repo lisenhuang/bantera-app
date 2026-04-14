@@ -497,6 +497,22 @@ class AppLocalizationsJa extends AppLocalizations {
       '自分のバージョンを録音するにはマイクの許可が必要です。以前に拒否した場合は、iPhoneの設定 > Bantera > マイクでオンにしてください。';
 
   @override
+  String get compareSpeechRecognitionDeniedPermanent =>
+      'Banteraの音声認識がオフです。iPhoneの設定 > Bantera > 音声認識でオンにしてください。';
+
+  @override
+  String get compareSpeechRecognitionDeniedRestricted =>
+      'このiPhoneがBanteraの音声認識を制限しています。スクリーンタイムや管理設定を確認してください。';
+
+  @override
+  String get compareSpeechRecognitionUnavailable =>
+      'このiPhoneでは現在、音声認識を利用できません。';
+
+  @override
+  String get compareSpeechRecognitionUnsupportedLocale =>
+      'このiPhoneでは、この練習言語の音声認識を利用できません。';
+
+  @override
   String get comparePlayAttemptTooltip => '試行を再生';
 
   @override

@@ -493,6 +493,21 @@ class AppLocalizationsZh extends AppLocalizations {
       '需要麦克风权限才能录制你的版本。若之前关闭了提示，请打开 iPhone 设置 > Bantera > 麦克风并开启。';
 
   @override
+  String get compareSpeechRecognitionDeniedPermanent =>
+      '已关闭 Bantera 的语音识别权限。请打开 iPhone 设置 > Bantera > 语音识别并开启，以比较你的录音。';
+
+  @override
+  String get compareSpeechRecognitionDeniedRestricted =>
+      '本机正在限制 Bantera 使用语音识别。请检查屏幕使用时间、设备管理或系统设置。';
+
+  @override
+  String get compareSpeechRecognitionUnavailable => '此 iPhone 暂时无法使用语音识别。';
+
+  @override
+  String get compareSpeechRecognitionUnsupportedLocale =>
+      '此 iPhone 暂不支持当前练习语言的语音识别。';
+
+  @override
   String get comparePlayAttemptTooltip => '播放录音';
 
   @override
@@ -1435,6 +1450,21 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   @override
   String get compareMicrophoneDeniedDefault =>
       '需要麦克风权限才能录制你的版本。若之前关闭了提示，请打开 iPhone 设置 > Bantera > 麦克风并开启。';
+
+  @override
+  String get compareSpeechRecognitionDeniedPermanent =>
+      '已关闭 Bantera 的语音识别权限。请打开 iPhone 设置 > Bantera > 语音识别并开启，以比较你的录音。';
+
+  @override
+  String get compareSpeechRecognitionDeniedRestricted =>
+      '本机正在限制 Bantera 使用语音识别。请检查屏幕使用时间、设备管理或系统设置。';
+
+  @override
+  String get compareSpeechRecognitionUnavailable => '此 iPhone 暂时无法使用语音识别。';
+
+  @override
+  String get compareSpeechRecognitionUnsupportedLocale =>
+      '此 iPhone 暂不支持当前练习语言的语音识别。';
 
   @override
   String get comparePlayAttemptTooltip => '播放录音';

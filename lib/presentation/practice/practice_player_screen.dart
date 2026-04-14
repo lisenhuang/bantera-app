@@ -1105,6 +1105,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    final speechReady = await _ensureSpeechRecognitionReadyForCue();
+    if (!speechReady || !mounted) {
+      return;
+    }
+
     await _pausePracticePlaybackForRecording();
     if (!mounted) return;
 
@@ -1148,6 +1153,43 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_l10n.compareCouldNotStartRecording)),
       );
+    }
+  }
+
+  Future<bool> _ensureSpeechRecognitionReadyForCue() async {
+    try {
+      await VideoProcessingService.instance
+          .ensureRecordedAudioTranscriptionReady(
+            localeIdentifier: _sourceLocaleIdentifier,
+          );
+      return true;
+    } on VideoProcessingException catch (error) {
+      if (!mounted) return false;
+
+      final l10n = AppLocalizations.of(context)!;
+      final displayMessage = switch (error.code) {
+        'speech_authorization_denied' =>
+          l10n.compareSpeechRecognitionDeniedPermanent,
+        'speech_authorization_restricted' =>
+          l10n.compareSpeechRecognitionDeniedRestricted,
+        'speech_unavailable' => l10n.compareSpeechRecognitionUnavailable,
+        'unsupported_locale' => l10n.compareSpeechRecognitionUnsupportedLocale,
+        _ => error.message,
+      };
+      final showSettings = error.code == 'speech_authorization_denied';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(displayMessage),
+          action: showSettings
+              ? SnackBarAction(
+                  label: l10n.compareOpenIphoneSettings,
+                  onPressed: openAppSettings,
+                )
+              : null,
+        ),
+      );
+      return false;
     }
   }
 
@@ -1521,7 +1563,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      // iOS pre-26: Play all is beside Show Transcript above — not here.
+                      // iOS pre-26: Play all is beside Show Transcript above.
                       if (legacyApple && !iosLegacyPre26)
                         Expanded(
                           child: Center(
@@ -1539,23 +1581,24 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             ),
                           ),
                         )
-                      else if (!legacyApple) ...[
-                        Expanded(
-                          child: Center(
-                            child: _buildActionBtn(
-                              _isPlayingAll
-                                  ? CupertinoIcons.stop_fill
-                                  : CupertinoIcons.play_rectangle,
-                              _isPlayingAll
-                                  ? _l10n.practiceStop
-                                  : _l10n.practicePlayAll,
-                              () => _isPlayingAll
-                                  ? unawaited(_stopPlayAll())
-                                  : unawaited(_promptPlayAll()),
-                              colorScheme,
+                      else ...[
+                        if (!legacyApple)
+                          Expanded(
+                            child: Center(
+                              child: _buildActionBtn(
+                                _isPlayingAll
+                                    ? CupertinoIcons.stop_fill
+                                    : CupertinoIcons.play_rectangle,
+                                _isPlayingAll
+                                    ? _l10n.practiceStop
+                                    : _l10n.practicePlayAll,
+                                () => _isPlayingAll
+                                    ? unawaited(_stopPlayAll())
+                                    : unawaited(_promptPlayAll()),
+                                colorScheme,
+                              ),
                             ),
                           ),
-                        ),
                         Expanded(
                           child: Center(
                             child: _buildRecordActionColumn(colorScheme),
