@@ -475,6 +475,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The selected video could not be opened for practice.';
 
   @override
+  String get practiceAudioLoading => 'Loading audio…';
+
+  @override
+  String practiceAudioLoadingPercent(int percent) {
+    return 'Loading audio $percent%';
+  }
+
+  @override
   String practiceAudioError(String message) {
     return 'Audio error: $message';
   }

@@ -151,6 +151,8 @@
   "practiceNextFromLastBody": "最後のキューです。最初のキューに戻りますか？",
   "practiceGoToFirstCue": "最初のキューへ",
   "practiceVideoOpenError": "選択した動画を開けませんでした。",
+  "practiceAudioLoading": "音声を読み込み中…",
+  "practiceAudioLoadingPercent": "音声を読み込み中 {percent}%",
   "practiceAudioError": "音声エラー: {message}",
   "compareRecordYourVersion": "自分のバージョンを録音",
   "compareTranscriptionLanguage": "書き起こし言語: {locale}",

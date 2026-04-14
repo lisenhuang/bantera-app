@@ -451,6 +451,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceVideoOpenError => '无法打开所选视频进行练习。';
 
   @override
+  String get practiceAudioLoading => '正在加载音频…';
+
+  @override
+  String practiceAudioLoadingPercent(int percent) {
+    return '正在加载音频 $percent%';
+  }
+
+  @override
   String practiceAudioError(String message) {
     return '音频错误：$message';
   }
@@ -1457,6 +1465,14 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get practiceVideoOpenError => '无法打开所选视频进行练习。';
+
+  @override
+  String get practiceAudioLoading => '正在加载音频…';
+
+  @override
+  String practiceAudioLoadingPercent(int percent) {
+    return '正在加载音频 $percent%';
+  }
 
   @override
   String practiceAudioError(String message) {

@@ -967,6 +967,18 @@ abstract class AppLocalizations {
   /// **'The selected video could not be opened for practice.'**
   String get practiceVideoOpenError;
 
+  /// No description provided for @practiceAudioLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading audio…'**
+  String get practiceAudioLoading;
+
+  /// No description provided for @practiceAudioLoadingPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading audio {percent}%'**
+  String practiceAudioLoadingPercent(int percent);
+
   /// No description provided for @practiceAudioError.
   ///
   /// In en, this message translates to:

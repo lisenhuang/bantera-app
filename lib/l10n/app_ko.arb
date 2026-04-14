@@ -151,6 +151,8 @@
   "practiceNextFromLastBody": "마지막 큐입니다. 첫 큐로 돌아갈까요?",
   "practiceGoToFirstCue": "첫 큐로 이동",
   "practiceVideoOpenError": "선택한 동영상을 열 수 없습니다.",
+  "practiceAudioLoading": "오디오 불러오는 중…",
+  "practiceAudioLoadingPercent": "오디오 불러오는 중 {percent}%",
   "practiceAudioError": "오디오 오류: {message}",
   "compareRecordYourVersion": "내 버전 녹음",
   "compareTranscriptionLanguage": "전사 언어: {locale}",

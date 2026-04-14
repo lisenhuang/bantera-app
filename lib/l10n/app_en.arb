@@ -165,6 +165,15 @@
   "practiceNextFromLastBody": "You're on the last cue. Return to the first cue?",
   "practiceGoToFirstCue": "Go to first cue",
   "practiceVideoOpenError": "The selected video could not be opened for practice.",
+  "practiceAudioLoading": "Loading audio…",
+  "practiceAudioLoadingPercent": "Loading audio {percent}%",
+  "@practiceAudioLoadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "practiceAudioError": "Audio error: {message}",
   "@practiceAudioError": {
     "placeholders": {

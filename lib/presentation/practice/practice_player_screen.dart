@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,6 +17,7 @@ import '../../core/apple_system_version.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
+import '../../infrastructure/practice_audio_cache.dart';
 import '../../infrastructure/saved_cue_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_playback_speed_store.dart';
@@ -54,6 +56,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   int _playAllSessionId = 0;
   int _playAllCompletedPlaysForCurrentCue = 0;
   bool _isInitializingMedia = false;
+  double? _mediaLoadProgress;
   String? _mediaError;
   VideoPlayerController? _videoController;
   VoidCallback? _videoListener;
@@ -1591,7 +1594,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Widget _buildMainPracticeArea(Cue cue, ColorScheme colorScheme) {
     if (_isInitializingMedia) {
-      return const Center(child: CircularProgressIndicator());
+      if (!widget.mediaItem.isAudioOnly) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(value: _mediaLoadProgress),
+            const SizedBox(height: 12),
+            Text(
+              _mediaLoadProgress == null
+                  ? _l10n.practiceAudioLoading
+                  : _l10n.practiceAudioLoadingPercent(
+                      (_mediaLoadProgress! * 100).clamp(0, 100).round(),
+                    ),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      );
     }
 
     if (_mediaError != null) {
@@ -1614,7 +1636,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(coverUrl, fit: BoxFit.cover),
+                CachedNetworkImage(
+                  imageUrl: coverUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (_, _) =>
+                      ColoredBox(color: colorScheme.surfaceContainerHighest),
+                  errorWidget: (_, _, _) => ColoredBox(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.audiotrack,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
                 DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -2838,6 +2872,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
+  void _handleAudioCacheProgress(PracticeAudioCacheProgress progress) {
+    final fraction = progress.fraction;
+    if (!mounted || fraction == _mediaLoadProgress) {
+      return;
+    }
+    setState(() => _mediaLoadProgress = fraction);
+  }
+
   Future<void> _initializeMedia() async {
     if (!_hasPlayableMedia) {
       return;
@@ -2845,6 +2887,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     setState(() {
       _isInitializingMedia = true;
+      _mediaLoadProgress = null;
       _mediaError = null;
     });
 
@@ -2856,22 +2899,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
       try {
         // Download via dart:io HttpClient to bypass iOS ATS (HTTP blocked
-        // for native AVPlayer). Save to temp file, then play locally.
-        final uri = Uri.parse(remoteUrl);
-        final httpRequest = await HttpClient().getUrl(uri);
-        widget.mediaItem.mediaHeaders.forEach(
-          (key, value) => httpRequest.headers.set(key, value),
+        // for native AVPlayer). Cache locally, then play from the cached file.
+        final cachedAudio = await PracticeAudioCache.instance.getAudioFile(
+          mediaId: widget.mediaItem.id,
+          url: remoteUrl,
+          headers: widget.mediaItem.mediaHeaders,
+          onProgress: _handleAudioCacheProgress,
         );
-        final httpResponse = await httpRequest.close();
-        if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-          throw Exception('Server returned ${httpResponse.statusCode}');
-        }
-        final tempDir = await getTemporaryDirectory();
-        final tempFile = File(
-          '${tempDir.path}/bantera_audio_${widget.mediaItem.id}.wav',
-        );
-        final sink = tempFile.openWrite();
-        await httpResponse.pipe(sink);
 
         final player = AudioPlayer();
         _audioPlayer = player;
@@ -2886,7 +2920,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             if (mounted) setState(() => _isPlaying = false);
           }
         });
-        await player.setSourceDeviceFile(tempFile.path);
+        await player.setSourceDeviceFile(cachedAudio.file.path);
         final audioDuration = await player.getDuration();
         _loadedMediaDurationMs = audioDuration?.inMilliseconds;
         await player.seek(
@@ -2897,7 +2931,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       } catch (e) {
         _mediaError = _l10n.practiceAudioError(e.toString());
       } finally {
-        if (mounted) setState(() => _isInitializingMedia = false);
+        if (mounted) {
+          setState(() {
+            _isInitializingMedia = false;
+            _mediaLoadProgress = null;
+          });
+        }
       }
       return;
     }

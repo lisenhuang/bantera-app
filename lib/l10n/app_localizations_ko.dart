@@ -455,6 +455,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceVideoOpenError => '선택한 동영상을 열 수 없습니다.';
 
   @override
+  String get practiceAudioLoading => '오디오 불러오는 중…';
+
+  @override
+  String practiceAudioLoadingPercent(int percent) {
+    return '오디오 불러오는 중 $percent%';
+  }
+
+  @override
   String practiceAudioError(String message) {
     return '오디오 오류: $message';
   }

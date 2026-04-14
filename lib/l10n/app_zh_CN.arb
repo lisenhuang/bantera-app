@@ -151,6 +151,8 @@
   "practiceNextFromLastBody": "当前为最后一句，是否返回第一句？",
   "practiceGoToFirstCue": "前往第一句",
   "practiceVideoOpenError": "无法打开所选视频进行练习。",
+  "practiceAudioLoading": "正在加载音频…",
+  "practiceAudioLoadingPercent": "正在加载音频 {percent}%",
   "practiceAudioError": "音频错误：{message}",
   "compareRecordYourVersion": "录制你的版本",
   "compareTranscriptionLanguage": "转写语言：{locale}",

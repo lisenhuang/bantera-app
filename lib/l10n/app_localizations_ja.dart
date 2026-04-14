@@ -453,6 +453,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceVideoOpenError => '選択した動画を開けませんでした。';
 
   @override
+  String get practiceAudioLoading => '音声を読み込み中…';
+
+  @override
+  String practiceAudioLoadingPercent(int percent) {
+    return '音声を読み込み中 $percent%';
+  }
+
+  @override
   String practiceAudioError(String message) {
     return '音声エラー: $message';
   }
