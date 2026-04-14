@@ -215,24 +215,49 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       await _generate();
       return;
     }
-    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         final d = AppLocalizations.of(ctx)!;
-        return AlertDialog(
-          title: Text(d.aiGenOwnershipConfirmTitle),
-          content: Text(d.aiGenOwnershipConfirmBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(d.aiGenOwnershipConfirmCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(d.aiGenOwnershipConfirmGenerate),
-            ),
-          ],
+        bool dialogAcknowledged = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: Text(d.aiGenOwnershipConfirmTitle),
+              content: InkWell(
+                borderRadius: BorderRadius.circular(6),
+                onTap: () => setDialogState(
+                  () => dialogAcknowledged = !dialogAcknowledged,
+                ),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: dialogAcknowledged,
+                      onChanged: (v) => setDialogState(
+                        () => dialogAcknowledged = v ?? false,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(d.aiGenOwnershipCheckbox)),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(d.aiGenOwnershipConfirmCancel),
+                ),
+                FilledButton(
+                  onPressed: dialogAcknowledged
+                      ? () => Navigator.pop(ctx, true)
+                      : null,
+                  child: Text(d.aiGenOwnershipConfirmGenerate),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -691,18 +716,6 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             const SizedBox(height: 16),
           ],
 
-          // Generate button
-          FilledButton.icon(
-            onPressed: _canGenerate ? _onGenerateTapped : null,
-            icon: const Icon(Icons.auto_awesome),
-            label: Text(l10n.aiGenGenerateButton),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(50),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           // Ownership notice + acknowledgement checkbox
           Container(
             padding: const EdgeInsets.all(12),
@@ -749,6 +762,18 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Generate button
+          FilledButton.icon(
+            onPressed: _canGenerate ? _onGenerateTapped : null,
+            icon: const Icon(Icons.auto_awesome),
+            label: Text(l10n.aiGenGenerateButton),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
             ),
           ),
 
