@@ -274,6 +274,100 @@ class VideoProcessingService {
     );
   }
 
+  Future<List<TranscriptionLocaleOption>>
+  fetchLocalPracticeTranscriptionLocales() async {
+    if (Platform.isIOS) {
+      try {
+        final locales =
+            await _channel.invokeListMethod<dynamic>(
+              'getSupportedLegacyTranscriptionLocales',
+            ) ??
+            const <dynamic>[];
+
+        final parsed = locales
+            .whereType<Map<Object?, Object?>>()
+            .map(TranscriptionLocaleOption.fromMap)
+            .where((option) => option.identifier.isNotEmpty)
+            .toList();
+
+        if (parsed.isNotEmpty) {
+          return parsed;
+        }
+      } on PlatformException {
+        // Fall through to API / embedded fallback.
+      } on MissingPluginException {
+        // Fall through to API / embedded fallback.
+      }
+    }
+
+    return fetchSupportedLocales();
+  }
+
+  Future<PreparedVideoUpload> prepareVideoForLocalPractice({
+    required File inputFile,
+    required String localeIdentifier,
+  }) async {
+    if (!Platform.isIOS) {
+      throw const VideoProcessingException(
+        code: 'unsupported_platform',
+        message: 'Video transcription is currently available on iPhone only.',
+      );
+    }
+
+    try {
+      final response = await _channel.invokeMapMethod<Object?, Object?>(
+        'prepareVideoForLocalPractice',
+        <String, Object?>{
+          'inputPath': inputFile.path,
+          'localeIdentifier': localeIdentifier,
+        },
+      );
+
+      final map = response ?? const <Object?, Object?>{};
+      final outputPath = map['outputPath']?.toString();
+      if (outputPath == null || outputPath.isEmpty) {
+        throw const VideoProcessingException(
+          code: 'invalid_native_response',
+          message:
+              'The prepared video could not be loaded from the iOS bridge.',
+        );
+      }
+
+      return PreparedVideoUpload(
+        file: File(outputPath),
+        fileName:
+            map['fileName']?.toString() ?? inputFile.uri.pathSegments.last,
+        transcriptText: map['transcriptText']?.toString() ?? '',
+        transcriptLanguage:
+            map['transcriptLanguage']?.toString() ?? localeIdentifier,
+        transcriptLanguageCode:
+            map['transcriptLanguageCode']?.toString() ??
+            localeIdentifier.split(RegExp(r'[-_]')).first.toLowerCase(),
+        transcriptCues: _parseTranscriptCues(map['transcriptCues']),
+        durationMs: _toInt(map['durationMs']),
+        fileSizeBytes: _toInt(map['fileSizeBytes']),
+        videoWidth: _toNullableInt(map['videoWidth']),
+        videoHeight: _toNullableInt(map['videoHeight']),
+        contentType: map['contentType']?.toString() ?? 'video/mp4',
+        shouldDeleteAfterUse: map['shouldDeleteAfterUse'] == true,
+      );
+    } on VideoProcessingException {
+      rethrow;
+    } on PlatformException catch (error) {
+      throw VideoProcessingException(
+        code: error.code,
+        message:
+            error.message ??
+            'The app could not prepare the selected video for practice.',
+      );
+    } on MissingPluginException {
+      throw const VideoProcessingException(
+        code: 'missing_native_bridge',
+        message: 'The Bantera iOS video bridge is not available in this build.',
+      );
+    }
+  }
+
   Future<PreparedVideoUpload> prepareVideoForUpload({
     required File inputFile,
     required String localeIdentifier,

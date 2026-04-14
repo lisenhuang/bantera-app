@@ -50,23 +50,21 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.practiceLocalVideoTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.practiceLocalVideoTitle)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            l10n.localVideoDescription,
-            style: theme.textTheme.bodyLarge,
-          ),
+          Text(l10n.localVideoDescription, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 20),
           _buildSectionCard(
             context,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.localVideoStep1Title, style: theme.textTheme.titleMedium),
+                Text(
+                  l10n.localVideoStep1Title,
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _isPreparing ? null : _pickVideo,
@@ -79,7 +77,10 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
                 ),
                 if (_selectedVideo != null) ...[
                   const SizedBox(height: 16),
-                  _InfoRow(label: l10n.localVideoSelectedFileLabel, value: _selectedVideo!.name),
+                  _InfoRow(
+                    label: l10n.localVideoSelectedFileLabel,
+                    value: _selectedVideo!.name,
+                  ),
                   if (_selectedVideoBytes != null)
                     _InfoRow(
                       label: l10n.localVideoSizeLabel,
@@ -181,12 +182,19 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.localVideoStep3Title, style: theme.textTheme.titleMedium),
+                Text(
+                  l10n.localVideoStep3Title,
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: _canPractice ? _startPractice : null,
                   icon: const Icon(Icons.headphones_rounded),
-                  label: Text(_isPreparing ? l10n.localVideoPreparing : l10n.mediaStartPractice),
+                  label: Text(
+                    _isPreparing
+                        ? l10n.localVideoPreparing
+                        : l10n.mediaStartPractice,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -266,7 +274,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
 
     try {
       final locales = await VideoProcessingService.instance
-          .fetchSupportedLocales();
+          .fetchLocalPracticeTranscriptionLocales();
       final selected = _preferredLocale(locales);
       if (!mounted) {
         return;
@@ -323,7 +331,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     try {
       final localPracticeId = LocalPracticeRepository.instance.createDraftId();
       final prepared = await VideoProcessingService.instance
-          .prepareVideoForUpload(
+          .prepareVideoForLocalPractice(
             inputFile: File(selectedVideo.path),
             localeIdentifier: selectedLocale.identifier,
           );
@@ -358,9 +366,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
         return;
       }
 
-      final mediaItem = savedVideo.toMediaItem(
-        creator: _currentCreator(),
-      );
+      final mediaItem = savedVideo.toMediaItem(creator: _currentCreator());
 
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -683,7 +689,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                 },
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.search),
-                  hintText: AppLocalizations.of(context)!.practiceSearchLanguagesHint,
+                  hintText: AppLocalizations.of(
+                    context,
+                  )!.practiceSearchLanguagesHint,
                 ),
               ),
               const SizedBox(height: 12),
@@ -704,39 +712,45 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       ),
                       subtitle: Text(locale.identifier),
                       trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: locale.isInstalled
+                              ? Colors.green.withValues(alpha: 0.08)
+                              : Colors.orange.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!locale.isInstalled) ...[
+                              Icon(
+                                Icons.download_rounded,
+                                size: 13,
+                                color: Colors.orange.shade700,
                               ),
-                              decoration: BoxDecoration(
-                                color: locale.isInstalled
-                                    ? Colors.green.withValues(alpha: 0.08)
-                                    : Colors.orange.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (!locale.isInstalled) ...[
-                                    Icon(Icons.download_rounded,
-                                        size: 13,
-                                        color: Colors.orange.shade700),
-                                    const SizedBox(width: 4),
-                                  ],
-                                  Text(
-                                    locale.isInstalled
-                                        ? AppLocalizations.of(context)!.practiceTranslationInstalled
-                                        : AppLocalizations.of(context)!.practiceTranslationDownload,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: locale.isInstalled
-                                              ? Colors.green.shade700
-                                              : Colors.orange.shade700,
-                                        ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              locale.isInstalled
+                                  ? AppLocalizations.of(
+                                      context,
+                                    )!.practiceTranslationInstalled
+                                  : AppLocalizations.of(
+                                      context,
+                                    )!.practiceTranslationDownload,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: locale.isInstalled
+                                        ? Colors.green.shade700
+                                        : Colors.orange.shade700,
                                   ),
-                                ],
-                              ),
                             ),
+                          ],
+                        ),
+                      ),
                       onTap: () => Navigator.of(context).pop(locale),
                     );
                   },
