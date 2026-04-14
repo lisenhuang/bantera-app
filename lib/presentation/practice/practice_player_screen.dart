@@ -1454,42 +1454,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     ),
                   );
 
-                  if (iosLegacyPre26) {
-                    final playAllButton = OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      onPressed: () => _isPlayingAll
-                          ? unawaited(_stopPlayAll())
-                          : unawaited(_promptPlayAll()),
-                      icon: Icon(
-                        _isPlayingAll
-                            ? CupertinoIcons.stop_fill
-                            : CupertinoIcons.play_fill,
-                      ),
-                      label: Text(
-                        _isPlayingAll
-                            ? _l10n.practiceStop
-                            : _l10n.practicePlayAll,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    );
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        playAllButton,
-                        const SizedBox(width: 16),
-                        Flexible(child: transcriptButton),
-                      ],
-                    );
-                  }
-
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [transcriptButton],
@@ -1563,7 +1527,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      // iOS pre-26: Play all is beside Show Transcript above.
                       if (legacyApple && !iosLegacyPre26)
                         Expanded(
                           child: Center(
@@ -1582,7 +1545,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                           ),
                         )
                       else ...[
-                        if (!legacyApple)
+                        if (!legacyApple || iosLegacyPre26)
                           Expanded(
                             child: Center(
                               child: _buildActionBtn(
