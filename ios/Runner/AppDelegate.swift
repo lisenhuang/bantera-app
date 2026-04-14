@@ -270,11 +270,11 @@ private final class BanteraVideoProcessingBridge {
 
     Task {
       let payload = await BanteraVideoPreparationService.supportedLocalePayload()
-      print("[Bantera:Transcription] Supported transcription locales (\(payload.count)):")
+      print("[SpeechTranscriber, iOS 26+] Supported transcription locales (\(payload.count)):")
       for locale in payload {
         let id = locale["identifier"] as? String ?? "?"
         let name = locale["displayName"] as? String ?? "?"
-        print("[Bantera:Transcription]   \(id) — \(name)")
+        print("[SpeechTranscriber, iOS 26+]   \(id) — \(name)")
       }
       await BanteraTranslationService.logAllSupportedLanguages()
       DispatchQueue.main.async {
@@ -561,45 +561,16 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    guard #available(iOS 26.0, *) else {
-      // iOS 18–25: return hardcoded cloud-supported language list
-      let payload = BanteraLegacyTranslationCoordinator.supportedLocalesPayload(
-        excluding: sourceLocaleIdentifier
-      )
-      result(payload)
-      return
+    let payload = BanteraLegacyTranslationCoordinator.supportedLocalesPayload(
+      excluding: sourceLocaleIdentifier
+    )
+    print("[Translation framework, iOS 18+] Supported translation locales from '\(sourceLocaleIdentifier)' (\(payload.count)):")
+    for locale in payload {
+      let id = locale["identifier"] as? String ?? "?"
+      let name = locale["displayName"] as? String ?? "?"
+      print("[Translation framework, iOS 18+]   \(id) — \(name)")
     }
-
-    Task {
-      do {
-        let payload = try await BanteraTranslationService.supportedTargetLocalePayload(
-          sourceLocaleIdentifier: sourceLocaleIdentifier
-        )
-        print("[Bantera:Translation] Supported translation locales from '\(sourceLocaleIdentifier)' (\(payload.count)):")
-        for locale in payload {
-          let id = locale["identifier"] as? String ?? "?"
-          let name = locale["displayName"] as? String ?? "?"
-          print("[Bantera:Translation]   \(id) — \(name)")
-        }
-        DispatchQueue.main.async {
-          result(payload)
-        }
-      } catch let error as BanteraTranslationError {
-        DispatchQueue.main.async {
-          result(error.flutterError)
-        }
-      } catch {
-        DispatchQueue.main.async {
-          result(
-            FlutterError(
-              code: "translation_failed",
-              message: error.localizedDescription,
-              details: nil
-            )
-          )
-        }
-      }
-    }
+    result(payload)
   }
 
   private func handleGetAllSupportedTranslationLocales(result: @escaping FlutterResult) {
@@ -608,16 +579,30 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    guard #available(iOS 26.0, *) else {
-      // iOS 18–25: return hardcoded cloud-supported language list
-      result(BanteraLegacyTranslationCoordinator.allLocalesPayload())
-      return
+    let payload = BanteraLegacyTranslationCoordinator.allLocalesPayload()
+    print("[Translation framework, iOS 18+] All supported translation locales (\(payload.count)):")
+    for locale in payload {
+      let id = locale["identifier"] as? String ?? "?"
+      let name = locale["displayName"] as? String ?? "?"
+      print("[Translation framework, iOS 18+]   \(id) — \(name)")
     }
+    result(payload)
 
-    Task {
-      let payload = await BanteraTranslationService.allSupportedLanguagePayload()
-      DispatchQueue.main.async {
-        result(payload)
+    // Log-only: print Live Translation (LanguageAvailability) language list for comparison.
+    // Not used for actual translation.
+    if #available(iOS 26.0, *) {
+      Task {
+        let availability = LanguageAvailability()
+        let languages = await availability.supportedLanguages
+        let displayLocale = Locale.current
+        let sorted = languages
+          .map { $0.minimalIdentifier }
+          .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+        print("[Live Translation, iOS 26+] Supported languages (\(sorted.count)):")
+        for id in sorted {
+          let name = displayLocale.localizedString(forIdentifier: id) ?? id
+          print("[Live Translation, iOS 26+]   \(id) — \(name)")
+        }
       }
     }
   }
@@ -642,35 +627,8 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    guard #available(iOS 26.0, *) else {
-      // iOS 18–25: cloud translation needs no preparation
-      result(nil)
-      return
-    }
-
-    BanteraTranslationPrepareCoordinator.prepareAssets(
-      sourceLocaleIdentifier: sourceLocaleIdentifier,
-      targetLocaleIdentifier: targetLocaleIdentifier
-    ) { prepareResult in
-      DispatchQueue.main.async {
-        switch prepareResult {
-        case .success:
-          result(nil)
-        case let .failure(error):
-          if let bantera = error as? BanteraTranslationError {
-            result(bantera.flutterError)
-          } else {
-            result(
-              FlutterError(
-                code: "translation_prepare_failed",
-                message: error.localizedDescription,
-                details: nil
-              )
-            )
-          }
-        }
-      }
-    }
+    // Translation framework (iOS 18+) manages model downloads automatically — no preparation needed.
+    result(nil)
   }
 
   private func handleTranslateTranscriptCues(
@@ -694,26 +652,20 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    let forceCloud = args["forceCloud"] as? Bool ?? false
-
-    if #available(iOS 26.0, *), !forceCloud {
-      let cues = rawCues.compactMap { BanteraTranslationService.TranslationCueInput(dictionary: $0) }
-      Task {
-        do {
-          let payload = try await BanteraTranslationService().translate(
-            cues: cues,
-            sourceLocaleIdentifier: sourceLocaleIdentifier,
-            targetLocaleIdentifier: targetLocaleIdentifier
-          )
-          DispatchQueue.main.async {
-            result(payload.map(\.dictionary))
-          }
-        } catch let error as BanteraTranslationError {
-          DispatchQueue.main.async {
-            result(error.flutterError)
-          }
-        } catch {
-          DispatchQueue.main.async {
+    let cues = rawCues.compactMap { BanteraLegacyTranslationCoordinator.CueInput(dictionary: $0) }
+    BanteraLegacyTranslationCoordinator.translate(
+      cues: cues,
+      sourceLocaleIdentifier: sourceLocaleIdentifier,
+      targetLocaleIdentifier: targetLocaleIdentifier
+    ) { legacyResult in
+      DispatchQueue.main.async {
+        switch legacyResult {
+        case .success(let outputs):
+          result(outputs.map(\.dictionary))
+        case .failure(let error):
+          if let bantera = error as? BanteraTranslationError {
+            result(bantera.flutterError)
+          } else {
             result(
               FlutterError(
                 code: "translation_failed",
@@ -721,33 +673,6 @@ private final class BanteraTranslationBridge {
                 details: nil
               )
             )
-          }
-        }
-      }
-    } else {
-      // iOS 18–25: cloud-based translation via BanteraLegacyTranslationCoordinator
-      let cues = rawCues.compactMap { BanteraLegacyTranslationCoordinator.CueInput(dictionary: $0) }
-      BanteraLegacyTranslationCoordinator.translate(
-        cues: cues,
-        sourceLocaleIdentifier: sourceLocaleIdentifier,
-        targetLocaleIdentifier: targetLocaleIdentifier
-      ) { legacyResult in
-        DispatchQueue.main.async {
-          switch legacyResult {
-          case .success(let outputs):
-            result(outputs.map(\.dictionary))
-          case .failure(let error):
-            if let bantera = error as? BanteraTranslationError {
-              result(bantera.flutterError)
-            } else {
-              result(
-                FlutterError(
-                  code: "translation_failed",
-                  message: error.localizedDescription,
-                  details: nil
-                )
-              )
-            }
           }
         }
       }
@@ -804,11 +729,11 @@ private final class BanteraTranslationService {
       let r = displayLocale.localizedString(forIdentifier: $1.minimalIdentifier) ?? $1.minimalIdentifier
       return l.localizedCaseInsensitiveCompare(r) == .orderedAscending
     }
-    print("[Bantera:Translation] iOS built-in translation supported languages (\(sorted.count)):")
+    print("[Translation framework, iOS 18+] iOS built-in translation supported languages (\(sorted.count)):")
     for lang in sorted {
       let id = lang.minimalIdentifier
       let name = displayLocale.localizedString(forIdentifier: id) ?? id
-      print("[Bantera:Translation]   \(id) — \(name)")
+      print("[Translation framework, iOS 18+]   \(id) — \(name)")
     }
   }
 
@@ -1116,9 +1041,9 @@ private final class BanteraLegacySpeechRecognitionService {
       localizedName(for: $0) < localizedName(for: $1)
     }
 
-    print("[Bantera:SFSpeechRecognizer] Supported locales (\(supported.count)):")
+    print("[SFSpeechRecognizer, iOS 10+] Supported locales (\(supported.count)):")
     for locale in supported {
-      print("[Bantera:SFSpeechRecognizer]   \(bcp47Identifier(for: locale)) — \(localizedName(for: locale))")
+      print("[SFSpeechRecognizer, iOS 10+]   \(bcp47Identifier(for: locale)) — \(localizedName(for: locale))")
     }
   }
 

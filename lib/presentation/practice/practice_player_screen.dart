@@ -2167,7 +2167,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocale,
           cues: [cue],
-          forceCloud: isLegacyAppleOsPre26,
         );
       }
 
@@ -2255,7 +2254,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocaleIdentifier,
           cues: remainingCues,
-          forceCloud: isLegacyAppleOsPre26,
         );
       }
 

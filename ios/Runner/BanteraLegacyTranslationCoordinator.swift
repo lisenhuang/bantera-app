@@ -3,8 +3,8 @@ import SwiftUI
 import Translation
 import UIKit
 
-/// iOS 17.4–25 translation coordinator using cloud-based `TranslationSession`.
-/// On iOS 26+, use `BanteraTranslationService` (on-device) instead.
+/// Translation coordinator using Apple's Translation framework (`TranslationSession`).
+/// Used for all iOS 18+ devices. The system manages language model downloads automatically.
 @available(iOS 18.0, *)
 enum BanteraLegacyTranslationCoordinator {
 
@@ -37,7 +37,7 @@ enum BanteraLegacyTranslationCoordinator {
 
   // MARK: - Translation
 
-  /// Translates cues using iOS 17.4 cloud-based Translation framework.
+  /// Translates cues using Apple's Translation framework (iOS 18+).
   /// Presents an invisible SwiftUI host to obtain a `TranslationSession` via
   /// `.translationTask(configuration:)`, then translates each cue individually.
   static func translate(
@@ -88,10 +88,10 @@ enum BanteraLegacyTranslationCoordinator {
     }
   }
 
-  // MARK: - Language list (hardcoded for iOS 17.4–25, no LanguageAvailability)
+  // MARK: - Language list (hardcoded — Translation framework has no public API to enumerate supported languages)
 
-  /// Returns all cloud-supported translation locales as a Flutter-ready payload.
-  /// All languages are marked `isInstalled: true` since cloud translation requires no download.
+  /// Returns all supported translation locales as a Flutter-ready payload.
+  /// All languages are marked `isInstalled: true` since the Translation framework manages downloads automatically.
   static func allLocalesPayload() -> [[String: Any]] {
     let displayLocale = Locale.current
     return cloudSupportedLanguageIdentifiers
@@ -143,7 +143,8 @@ enum BanteraLegacyTranslationCoordinator {
       .replacingOccurrences(of: "_", with: "-")
   }
 
-  /// Languages supported by Apple's cloud translation on iOS 17.4–25.
+  /// Languages supported by Apple's Translation framework.
+  /// Apple does not expose a public API to enumerate these, so the list is hardcoded.
   private static let cloudSupportedLanguageIdentifiers: [String] = [
     "ar", "zh", "nl", "en", "fr", "de", "id", "it", "ja", "ko",
     "pl", "pt", "ru", "es", "th", "tr", "uk", "vi",
