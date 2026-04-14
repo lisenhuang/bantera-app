@@ -211,6 +211,7 @@ private final class BanteraVideoProcessingBridge {
       binaryMessenger: binaryMessenger
     )
     channel.setMethodCallHandler(handle)
+    BanteraLegacySpeechRecognitionService.logSupportedLocales()
   }
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -1029,6 +1030,17 @@ private enum BanteraVideoProcessingError: LocalizedError {
 }
 
 private final class BanteraLegacySpeechRecognitionService {
+  static func logSupportedLocales() {
+    let supported = SFSpeechRecognizer.supportedLocales().sorted {
+      localizedName(for: $0) < localizedName(for: $1)
+    }
+
+    print("[Bantera:SFSpeechRecognizer] Supported locales (\(supported.count)):")
+    for locale in supported {
+      print("[Bantera:SFSpeechRecognizer]   \(bcp47Identifier(for: locale)) — \(localizedName(for: locale))")
+    }
+  }
+
   func ensureReady(localeIdentifier: String) async throws {
     try await ensureSpeechAuthorization()
     let resolved = try resolveRecognizer(localeIdentifier: localeIdentifier)
@@ -1191,6 +1203,12 @@ private final class BanteraLegacySpeechRecognitionService {
       .split(separator: "-")
       .first
       .map(String.init) ?? "und"
+  }
+
+  private static func localizedName(for locale: Locale) -> String {
+    Locale.current.localizedString(forIdentifier: bcp47Identifier(for: locale))
+      ?? locale.localizedString(forIdentifier: locale.identifier)
+      ?? bcp47Identifier(for: locale)
   }
 }
 
