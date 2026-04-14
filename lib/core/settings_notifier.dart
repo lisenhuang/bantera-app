@@ -14,12 +14,15 @@ class SettingsNotifier extends ChangeNotifier {
   String? _lastTranscriptionLocale;
   AppLocalePreference _appLocalePreference = AppLocalePreference.system;
   bool _isInitialized = false;
+  int? _devMockIosMajorVersion;
 
   ThemeMode get themeMode => _themeMode;
   bool get notificationsEnabled => _notificationsEnabled;
   String? get lastTranscriptionLocale => _lastTranscriptionLocale;
   AppLocalePreference get appLocalePreference => _appLocalePreference;
   bool get isInitialized => _isInitialized;
+  /// Dev-only: when non-null, overrides the iOS major version used for all feature checks.
+  int? get devMockIosMajorVersion => _devMockIosMajorVersion;
 
   Future<void> initialize() async {
     if (_isInitialized) {
@@ -44,6 +47,8 @@ class SettingsNotifier extends ChangeNotifier {
             _appLocalePreference = AppLocalePreference.fromStorage(
               decoded['appLocale']?.toString(),
             );
+            _devMockIosMajorVersion =
+                decoded['devMockIosMajorVersion'] as int?;
           }
         }
       }
@@ -52,6 +57,7 @@ class SettingsNotifier extends ChangeNotifier {
       _notificationsEnabled = true;
       _lastTranscriptionLocale = null;
       _appLocalePreference = AppLocalePreference.system;
+      _devMockIosMajorVersion = null;
     } finally {
       _isInitialized = true;
     }
@@ -87,6 +93,13 @@ class SettingsNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setDevMockIosMajorVersion(int? value) {
+    if (_devMockIosMajorVersion == value) return;
+    _devMockIosMajorVersion = value;
+    notifyListeners();
+    _persist();
+  }
+
   void setLastTranscriptionLocale(String? identifier) {
     final normalized = identifier?.trim();
     final nextValue = normalized == null || normalized.isEmpty
@@ -114,6 +127,7 @@ class SettingsNotifier extends ChangeNotifier {
           'notificationsEnabled': _notificationsEnabled,
           'lastTranscriptionLocale': _lastTranscriptionLocale,
           'appLocale': _appLocalePreference.storageValue,
+          'devMockIosMajorVersion': _devMockIosMajorVersion,
         }),
       );
     } catch (_) {

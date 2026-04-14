@@ -920,7 +920,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    if (isLegacyAppleOsPre26) {
+    if (!supportsBuiltInTranslation) {
       if (_subtitleState == SubtitleState.hidden) {
         setState(() {
           _subtitleState = SubtitleState.original;
@@ -1316,7 +1316,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     /// iOS/iPadOS major &lt; 26 only — Play all left of Show Transcript; macOS legacy unchanged.
     final iosLegacyPre26 = Platform.isIOS && legacyApple;
 
-    if (legacyApple && _subtitleState == SubtitleState.translated) {
+    if (!supportsBuiltInTranslation && _subtitleState == SubtitleState.translated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() => _subtitleState = SubtitleState.original);
@@ -1355,7 +1355,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               style: Theme.of(context).textTheme.labelLarge,
             ),
           ),
-          if (!legacyApple)
+          if (supportsBuiltInTranslation)
             IconButton(
               icon: const Icon(CupertinoIcons.settings),
               onPressed: _isTranslating
@@ -1429,7 +1429,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Icon(
-                            legacyApple
+                            !supportsBuiltInTranslation
                                 ? (_subtitleState == SubtitleState.hidden
                                       ? CupertinoIcons.eye
                                       : CupertinoIcons.eye_slash)
@@ -1442,9 +1442,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     label: Text(
                       _isTranslating
                           ? _l10n.practiceTranslating
-                          : iosLegacyPre26
+                          : Platform.isIOS && !supportsBuiltInTranslation
                           ? _l10n.practiceTextLabel
-                          : legacyApple
+                          : !supportsBuiltInTranslation
                           ? (_subtitleState == SubtitleState.hidden
                                 ? _l10n.practiceShowTranscript
                                 : _l10n.practiceHideText)
@@ -1464,7 +1464,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 },
               ),
             ),
-            if (_translationErrorMessage != null && !legacyApple)
+            if (_translationErrorMessage != null && supportsBuiltInTranslation)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Container(
@@ -2167,6 +2167,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocale,
           cues: [cue],
+          forceCloud: isLegacyAppleOsPre26,
         );
       }
 
@@ -2254,6 +2255,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocaleIdentifier,
           cues: remainingCues,
+          forceCloud: isLegacyAppleOsPre26,
         );
       }
 

@@ -16,7 +16,7 @@ enum BanteraTranslationError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .unsupportedIosVersion:
-      return "Cue translation requires iOS 26 or later."
+      return "Cue translation requires iOS 18 or later."
     case .invalidArguments:
       return "The translation request was missing required cue or language data."
     case let .unsupportedLanguagePair(source, target):

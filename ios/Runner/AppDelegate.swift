@@ -547,7 +547,7 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
-    guard #available(iOS 26.0, *) else {
+    guard #available(iOS 18.0, *) else {
       result(BanteraTranslationError.unsupportedIosVersion.flutterError)
       return
     }
@@ -558,6 +558,15 @@ private final class BanteraTranslationBridge {
       !sourceLocaleIdentifier.isEmpty
     else {
       result(BanteraTranslationError.invalidArguments.flutterError)
+      return
+    }
+
+    guard #available(iOS 26.0, *) else {
+      // iOS 18–25: return hardcoded cloud-supported language list
+      let payload = BanteraLegacyTranslationCoordinator.supportedLocalesPayload(
+        excluding: sourceLocaleIdentifier
+      )
+      result(payload)
       return
     }
 
@@ -594,10 +603,17 @@ private final class BanteraTranslationBridge {
   }
 
   private func handleGetAllSupportedTranslationLocales(result: @escaping FlutterResult) {
-    guard #available(iOS 26.0, *) else {
+    guard #available(iOS 18.0, *) else {
       result([])
       return
     }
+
+    guard #available(iOS 26.0, *) else {
+      // iOS 18–25: return hardcoded cloud-supported language list
+      result(BanteraLegacyTranslationCoordinator.allLocalesPayload())
+      return
+    }
+
     Task {
       let payload = await BanteraTranslationService.allSupportedLanguagePayload()
       DispatchQueue.main.async {
@@ -610,7 +626,7 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
-    guard #available(iOS 26.0, *) else {
+    guard #available(iOS 18.0, *) else {
       result(BanteraTranslationError.unsupportedIosVersion.flutterError)
       return
     }
@@ -623,6 +639,12 @@ private final class BanteraTranslationBridge {
       !targetLocaleIdentifier.isEmpty
     else {
       result(BanteraTranslationError.invalidArguments.flutterError)
+      return
+    }
+
+    guard #available(iOS 26.0, *) else {
+      // iOS 18–25: cloud translation needs no preparation
+      result(nil)
       return
     }
 
@@ -655,7 +677,7 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
-    guard #available(iOS 26.0, *) else {
+    guard #available(iOS 18.0, *) else {
       result(BanteraTranslationError.unsupportedIosVersion.flutterError)
       return
     }
@@ -672,31 +694,61 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    let cues = rawCues.compactMap { BanteraTranslationService.TranslationCueInput(dictionary: $0) }
+    let forceCloud = args["forceCloud"] as? Bool ?? false
 
-    Task {
-      do {
-        let payload = try await BanteraTranslationService().translate(
-          cues: cues,
-          sourceLocaleIdentifier: sourceLocaleIdentifier,
-          targetLocaleIdentifier: targetLocaleIdentifier
-        )
-        DispatchQueue.main.async {
-          result(payload.map(\.dictionary))
-        }
-      } catch let error as BanteraTranslationError {
-        DispatchQueue.main.async {
-          result(error.flutterError)
-        }
-      } catch {
-        DispatchQueue.main.async {
-          result(
-            FlutterError(
-              code: "translation_failed",
-              message: error.localizedDescription,
-              details: nil
-            )
+    if #available(iOS 26.0, *), !forceCloud {
+      let cues = rawCues.compactMap { BanteraTranslationService.TranslationCueInput(dictionary: $0) }
+      Task {
+        do {
+          let payload = try await BanteraTranslationService().translate(
+            cues: cues,
+            sourceLocaleIdentifier: sourceLocaleIdentifier,
+            targetLocaleIdentifier: targetLocaleIdentifier
           )
+          DispatchQueue.main.async {
+            result(payload.map(\.dictionary))
+          }
+        } catch let error as BanteraTranslationError {
+          DispatchQueue.main.async {
+            result(error.flutterError)
+          }
+        } catch {
+          DispatchQueue.main.async {
+            result(
+              FlutterError(
+                code: "translation_failed",
+                message: error.localizedDescription,
+                details: nil
+              )
+            )
+          }
+        }
+      }
+    } else {
+      // iOS 18–25: cloud-based translation via BanteraLegacyTranslationCoordinator
+      let cues = rawCues.compactMap { BanteraLegacyTranslationCoordinator.CueInput(dictionary: $0) }
+      BanteraLegacyTranslationCoordinator.translate(
+        cues: cues,
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocaleIdentifier
+      ) { legacyResult in
+        DispatchQueue.main.async {
+          switch legacyResult {
+          case .success(let outputs):
+            result(outputs.map(\.dictionary))
+          case .failure(let error):
+            if let bantera = error as? BanteraTranslationError {
+              result(bantera.flutterError)
+            } else {
+              result(
+                FlutterError(
+                  code: "translation_failed",
+                  message: error.localizedDescription,
+                  details: nil
+                )
+              )
+            }
+          }
         }
       }
     }

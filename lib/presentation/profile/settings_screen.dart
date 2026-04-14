@@ -6,7 +6,7 @@ import '../../core/app_locale.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../../l10n/app_localizations.dart';
-import '../auth/api_base_url_screen.dart';
+import '../dev/dev_screen.dart';
 import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
 import 'permissions_screen.dart';
@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final auth = AuthSessionNotifier.instance;
     final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (context) => const ApiBaseUrlScreen()),
+      MaterialPageRoute(builder: (context) => const DevScreen()),
     );
 
     if (changed == true && mounted) {

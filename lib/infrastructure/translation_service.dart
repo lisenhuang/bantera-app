@@ -139,6 +139,7 @@ class TranslationService {
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
     required List<Cue> cues,
+    bool forceCloud = false,
   }) async {
     if (!Platform.isIOS) {
       throw const TranslationException(
@@ -160,6 +161,7 @@ class TranslationService {
               'sourceLocaleIdentifier': sourceLocaleIdentifier,
               'targetLocaleIdentifier': targetLocaleIdentifier,
               'cues': inputCues,
+              'forceCloud': forceCloud,
             },
           ) ??
           const <dynamic>[];
