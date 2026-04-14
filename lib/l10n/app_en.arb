@@ -66,7 +66,7 @@
   "deleteAccountConfirm": "Delete account",
   "couldNotDeleteAccount": "Could not delete account. Please try again.",
   "deleteAccountQuestionTitle": "Delete account?",
-  "deleteAccountQuestionBody": "All of your personal information and any data you've generated will be permanently removed from our servers and can't be recovered.",
+  "deleteAccountQuestionBody": "All of your personal information and data will be permanently removed from our servers and can't be recovered.",
   "typeDeleteLabel": "Type \"DELETE\" to continue",
   "continueLabel": "Continue",
   "confirmLabel": "Confirm",

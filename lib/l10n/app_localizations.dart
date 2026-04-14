@@ -460,7 +460,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountQuestionBody.
   ///
   /// In en, this message translates to:
-  /// **'All of your personal information and any data you\'ve generated will be permanently removed from our servers and can\'t be recovered.'**
+  /// **'All of your personal information and data will be permanently removed from our servers and can\'t be recovered.'**
   String get deleteAccountQuestionBody;
 
   /// No description provided for @typeDeleteLabel.

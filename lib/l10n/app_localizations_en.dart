@@ -196,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountQuestionBody =>
-      'All of your personal information and any data you\'ve generated will be permanently removed from our servers and can\'t be recovered.';
+      'All of your personal information and data will be permanently removed from our servers and can\'t be recovered.';
 
   @override
   String get typeDeleteLabel => 'Type \"DELETE\" to continue';
