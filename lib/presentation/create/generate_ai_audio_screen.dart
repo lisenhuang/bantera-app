@@ -163,7 +163,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = 'Something went wrong. Please try again.';
           _isLoadingLocales = false;
         });
       }
@@ -349,7 +349,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         setState(() => _errorMessage = localizeAuthApiError(l10n, e));
       }
     } catch (e) {
-      if (mounted) setState(() => _errorMessage = e.toString());
+      if (mounted) setState(() => _errorMessage = 'Something went wrong. Please try again.');
     } finally {
       unawaited(WakelockPlus.disable());
       if (mounted) setState(() => _step = _GenerationStep.idle);

@@ -41,7 +41,7 @@ class _LearningLanguageSetupScreenState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = 'Something went wrong. Please try again.';
           _isLoading = false;
         });
       }

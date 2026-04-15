@@ -2929,7 +2929,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _lastKnownAudioPositionMs = widget.mediaItem.cues[0].startTimeMs;
         if (mounted) setState(() => _audioPlayerReady = true);
       } catch (e) {
-        _mediaError = _l10n.practiceAudioError(e.toString());
+        _mediaError = _l10n.practiceAudioError;
       } finally {
         if (mounted) {
           setState(() {

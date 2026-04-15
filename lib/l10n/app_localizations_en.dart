@@ -483,9 +483,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String practiceAudioError(String message) {
-    return 'Audio error: $message';
-  }
+  String get practiceAudioError => 'Could not load audio. Please try again.';
 
   @override
   String get compareRecordYourVersion => 'Record your version';

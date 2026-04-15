@@ -982,8 +982,8 @@ abstract class AppLocalizations {
   /// No description provided for @practiceAudioError.
   ///
   /// In en, this message translates to:
-  /// **'Audio error: {message}'**
-  String practiceAudioError(String message);
+  /// **'Could not load audio. Please try again.'**
+  String get practiceAudioError;
 
   /// No description provided for @compareRecordYourVersion.
   ///

@@ -461,9 +461,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String practiceAudioError(String message) {
-    return '音声エラー: $message';
-  }
+  String get practiceAudioError => '音声を読み込めませんでした。もう一度お試しください。';
 
   @override
   String get compareRecordYourVersion => '自分のバージョンを録音';

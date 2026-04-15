@@ -459,9 +459,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String practiceAudioError(String message) {
-    return '音频错误：$message';
-  }
+  String get practiceAudioError => '无法加载音频，请重试。';
 
   @override
   String get compareRecordYourVersion => '录制你的版本';
@@ -1475,9 +1473,7 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   }
 
   @override
-  String practiceAudioError(String message) {
-    return '音频错误：$message';
-  }
+  String get practiceAudioError => '无法加载音频，请重试。';
 
   @override
   String get compareRecordYourVersion => '录制你的版本';

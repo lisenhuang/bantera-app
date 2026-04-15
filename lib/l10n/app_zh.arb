@@ -153,7 +153,7 @@
   "practiceVideoOpenError": "无法打开所选视频进行练习。",
   "practiceAudioLoading": "正在加载音频…",
   "practiceAudioLoadingPercent": "正在加载音频 {percent}%",
-  "practiceAudioError": "音频错误：{message}",
+  "practiceAudioError": "无法加载音频，请重试。",
   "compareRecordYourVersion": "录制你的版本",
   "compareTranscriptionLanguage": "转写语言：{locale}",
   "compareOpenIphoneSettings": "打开 iPhone 设置",

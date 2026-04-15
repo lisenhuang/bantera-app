@@ -642,6 +642,10 @@ class AuthApiClient {
         code: 'tls_error',
         message: 'The app could not establish a secure connection.',
       );
+    } on HttpException {
+      await _throwNetworkFailure();
+    } on TimeoutException {
+      await _throwNetworkFailure();
     }
   }
 

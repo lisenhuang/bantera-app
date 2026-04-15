@@ -174,14 +174,8 @@
       }
     }
   },
-  "practiceAudioError": "Audio error: {message}",
-  "@practiceAudioError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
+  "practiceAudioError": "Could not load audio. Please try again.",
+  "@practiceAudioError": {},
   "compareRecordYourVersion": "Record your version",
   "compareTranscriptionLanguage": "Transcription language: {locale}",
   "@compareTranscriptionLanguage": {

@@ -463,9 +463,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String practiceAudioError(String message) {
-    return '오디오 오류: $message';
-  }
+  String get practiceAudioError => '오디오를 불러올 수 없습니다. 다시 시도해 주세요.';
 
   @override
   String get compareRecordYourVersion => '내 버전 녹음';

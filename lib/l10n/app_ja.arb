@@ -153,7 +153,7 @@
   "practiceVideoOpenError": "選択した動画を開けませんでした。",
   "practiceAudioLoading": "音声を読み込み中…",
   "practiceAudioLoadingPercent": "音声を読み込み中 {percent}%",
-  "practiceAudioError": "音声エラー: {message}",
+  "practiceAudioError": "音声を読み込めませんでした。もう一度お試しください。",
   "compareRecordYourVersion": "自分のバージョンを録音",
   "compareTranscriptionLanguage": "書き起こし言語: {locale}",
   "compareOpenIphoneSettings": "iPhoneの設定を開く",
