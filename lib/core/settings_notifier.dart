@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app_locale.dart';
+import 'ios_dev_version_bridge.dart';
 
 class SettingsNotifier extends ChangeNotifier {
   SettingsNotifier._();
@@ -47,8 +49,9 @@ class SettingsNotifier extends ChangeNotifier {
             _appLocalePreference = AppLocalePreference.fromStorage(
               decoded['appLocale']?.toString(),
             );
-            _devMockIosMajorVersion =
-                decoded['devMockIosMajorVersion'] as int?;
+            _devMockIosMajorVersion = _coerceDevMockIosMajorVersion(
+              decoded['devMockIosMajorVersion'],
+            );
           }
         }
       }
@@ -61,6 +64,25 @@ class SettingsNotifier extends ChangeNotifier {
     } finally {
       _isInitialized = true;
     }
+    await _syncDevMockIosToNativeAsync();
+  }
+
+  /// Only `null`, `17`, and `18` are valid; older persisted values (e.g. 15, 26) clear the mock.
+  static int? _coerceDevMockIosMajorVersion(dynamic raw) {
+    if (raw is! int) return null;
+    if (raw == 17 || raw == 18) return raw;
+    return null;
+  }
+
+  Future<void> _syncDevMockIosToNativeAsync() async {
+    if (!Platform.isIOS) return;
+    await IosDevVersionBridge.syncDevMockIosMajorVersionToNative(
+      _devMockIosMajorVersion,
+    );
+  }
+
+  void _syncDevMockIosToNative() {
+    unawaited(_syncDevMockIosToNativeAsync());
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -94,10 +116,12 @@ class SettingsNotifier extends ChangeNotifier {
   }
 
   void setDevMockIosMajorVersion(int? value) {
-    if (_devMockIosMajorVersion == value) return;
-    _devMockIosMajorVersion = value;
+    final next = value == null || value == 17 || value == 18 ? value : null;
+    if (_devMockIosMajorVersion == next) return;
+    _devMockIosMajorVersion = next;
     notifyListeners();
     _persist();
+    _syncDevMockIosToNative();
   }
 
   void setLastTranscriptionLocale(String? identifier) {

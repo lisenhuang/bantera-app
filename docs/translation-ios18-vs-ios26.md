@@ -29,6 +29,17 @@ The app always uses the best path available for the device:
 
 ## Dev mock override
 
-The Dev screen (accessible via 16 taps on the Settings title, iOS 26 devices only) lets you set a mock iOS version. Setting the mock to iOS 18 forces `isLegacyAppleOsPre26 = true` in Dart, which passes `forceCloud: true` to Swift, routing the translation call to `BanteraLegacyTranslationCoordinator` even on a real iOS 26 device. This is useful for testing the iOS 18 path without needing a separate device.
+The Dev screen (16 taps on the Settings title) includes **Mock iOS Version** on all iOS versions. Choices:
 
-Note: the mock only affects Dart-side feature gates and the `forceCloud` flag. Swift `#available` checks (e.g. for transcription) always evaluate against the real device OS.
+- **Real device** — no mock; uses the actual OS for routing.
+- **iOS 18.0** — simulates pre–iOS 26 behavior for transcription (no SpeechTranscriber / Live Translation routing) while Dart and native stay aligned.
+- **iOS 17.0** — simulates no Translation framework (`supportsBuiltInTranslation` false in Dart; native translation bridge returns empty or unsupported as appropriate).
+
+`SettingsNotifier` persists `devMockIosMajorVersion` (`null`, `17`, or `18`). On startup and when the value changes, Flutter syncs it to native via the `bantera/ios_version` channel; `BanteraIosVersionRouting` reads it from `UserDefaults`.
+
+### Two-layer rule (Dart and Swift)
+
+1. **Product routing** uses **effective** major version: mock if set, otherwise real OS (`ProcessInfo.processInfo.operatingSystemVersion` on Swift, `Platform.operatingSystemVersion` / mock in Dart).
+2. **API availability** still requires the **real** device OS: e.g. SpeechTranscriber routing runs only when both effective ≥ 26 and real ≥ 26; Translation.framework handlers require both effective ≥ 18 and real ≥ 18.
+
+So a mock cannot make APIs appear that the device does not support; it can force **legacy** paths on a newer device for testing.

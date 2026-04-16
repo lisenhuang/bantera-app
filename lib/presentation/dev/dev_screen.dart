@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../core/apple_system_version.dart';
 import '../auth/api_base_url_screen.dart';
 import 'dev_mock_version_screen.dart';
 
@@ -35,7 +34,7 @@ class DevScreen extends StatelessWidget {
                     }
                   },
                 ),
-                if (Platform.isIOS && (realAppleOperatingSystemMajorVersion ?? 0) >= 26) ...[
+                if (Platform.isIOS) ...[
                   Divider(
                     height: 1,
                     thickness: 1,

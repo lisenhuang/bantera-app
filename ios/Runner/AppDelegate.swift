@@ -10,6 +10,7 @@ import UIKit
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var videoProcessingBridge: BanteraVideoProcessingBridge?
   private var translationBridge: BanteraTranslationBridge?
+  private var iosVersionBridge: BanteraIosVersionBridge?
 
   override func application(
     _ application: UIApplication,
@@ -24,6 +25,9 @@ import UIKit
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
     translationBridge = BanteraTranslationBridge(
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    iosVersionBridge = BanteraIosVersionBridge(
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
     _ = BanteraNetworkReachabilityBridge(
@@ -240,7 +244,9 @@ private final class BanteraVideoProcessingBridge {
       binaryMessenger: binaryMessenger
     )
     channel.setMethodCallHandler(handle)
-    BanteraLegacySpeechRecognitionService.logSupportedLocales()
+    if !BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
+      BanteraLegacySpeechRecognitionService.logSupportedLocales()
+    }
   }
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -263,20 +269,28 @@ private final class BanteraVideoProcessingBridge {
   }
 
   private func handleGetSupportedTranscriptionLocales(result: @escaping FlutterResult) {
-    guard #available(iOS 26.0, *) else {
-      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
-      return
-    }
-
-    Task {
-      let payload = await BanteraVideoPreparationService.supportedLocalePayload()
-      print("[SpeechTranscriber, iOS 26+] Supported transcription locales (\(payload.count)):")
-      for locale in payload {
-        let id = locale["identifier"] as? String ?? "?"
-        let name = locale["displayName"] as? String ?? "?"
-        print("[SpeechTranscriber, iOS 26+]   \(id) — \(name)")
+    if BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
+      guard #available(iOS 26.0, *) else {
+        result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+        return
       }
-      await BanteraTranslationService.logAllSupportedLanguages()
+
+      Task {
+        let payload = await BanteraVideoPreparationService.supportedLocalePayload()
+        print("[SpeechTranscriber, iOS 26+] Supported transcription locales (\(payload.count)):")
+        for locale in payload {
+          let id = locale["identifier"] as? String ?? "?"
+          let name = locale["displayName"] as? String ?? "?"
+          print("[SpeechTranscriber, iOS 26+]   \(id) — \(name)")
+        }
+        await BanteraTranslationService.logAllSupportedLanguages()
+        DispatchQueue.main.async {
+          result(payload)
+        }
+      }
+    } else {
+      let payload = BanteraLegacySpeechRecognitionService.supportedTranscriptionLocalePayload()
+      print("[SFSpeechRecognizer] Supported transcription locales (\(payload.count)) (routing)")
       DispatchQueue.main.async {
         result(payload)
       }
@@ -287,6 +301,10 @@ private final class BanteraVideoProcessingBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useSpeechTranscriberRoutingPath else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
     guard #available(iOS 26.0, *) else {
       result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
       return
@@ -349,11 +367,18 @@ private final class BanteraVideoProcessingBridge {
       do {
         let inputURL = URL(fileURLWithPath: inputPath)
         let response: [String: Any]
-        if #available(iOS 26.0, *) {
-          response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
-            inputURL: inputURL,
-            localeIdentifier: localeIdentifier
-          )
+        if BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
+          if #available(iOS 26.0, *) {
+            response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
+              inputURL: inputURL,
+              localeIdentifier: localeIdentifier
+            )
+          } else {
+            response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
+              inputURL: inputURL,
+              localeIdentifier: localeIdentifier
+            )
+          }
         } else {
           response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
             inputURL: inputURL,
@@ -396,10 +421,16 @@ private final class BanteraVideoProcessingBridge {
 
     Task {
       do {
-        if #available(iOS 26.0, *) {
-          try await BanteraVideoPreparationService().ensureTranscriptionModelInstalled(
-            localeIdentifier: localeIdentifier
-          )
+        if BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
+          if #available(iOS 26.0, *) {
+            try await BanteraVideoPreparationService().ensureTranscriptionModelInstalled(
+              localeIdentifier: localeIdentifier
+            )
+          } else {
+            try await BanteraLegacySpeechRecognitionService().ensureReady(
+              localeIdentifier: localeIdentifier
+            )
+          }
         } else {
           try await BanteraLegacySpeechRecognitionService().ensureReady(
             localeIdentifier: localeIdentifier
@@ -429,6 +460,10 @@ private final class BanteraVideoProcessingBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useSpeechTranscriberRoutingPath else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
     guard #available(iOS 26.0, *) else {
       result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
       return
@@ -476,6 +511,10 @@ private final class BanteraVideoProcessingBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useSpeechTranscriberRoutingPath else {
+      result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
+      return
+    }
     guard #available(iOS 26.0, *) else {
       result(BanteraVideoProcessingError.unsupportedIosVersion.flutterError)
       return
@@ -547,8 +586,12 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useTranslationFrameworkRoutingPath else {
+      result([])
+      return
+    }
     guard #available(iOS 18.0, *) else {
-      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      result([])
       return
     }
 
@@ -574,6 +617,10 @@ private final class BanteraTranslationBridge {
   }
 
   private func handleGetAllSupportedTranslationLocales(result: @escaping FlutterResult) {
+    guard BanteraIosVersionRouting.useTranslationFrameworkRoutingPath else {
+      result([])
+      return
+    }
     guard #available(iOS 18.0, *) else {
       result([])
       return
@@ -590,18 +637,20 @@ private final class BanteraTranslationBridge {
 
     // Log-only: print Live Translation (LanguageAvailability) language list for comparison.
     // Not used for actual translation.
-    if #available(iOS 26.0, *) {
-      Task {
-        let availability = LanguageAvailability()
-        let languages = await availability.supportedLanguages
-        let displayLocale = Locale.current
-        let sorted = languages
-          .map { $0.minimalIdentifier }
-          .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
-        print("[Live Translation, iOS 26+] Supported languages (\(sorted.count)):")
-        for id in sorted {
-          let name = displayLocale.localizedString(forIdentifier: id) ?? id
-          print("[Live Translation, iOS 26+]   \(id) — \(name)")
+    if BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
+      if #available(iOS 26.0, *) {
+        Task {
+          let availability = LanguageAvailability()
+          let languages = await availability.supportedLanguages
+          let displayLocale = Locale.current
+          let sorted = languages
+            .map { $0.minimalIdentifier }
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+          print("[Live Translation, iOS 26+] Supported languages (\(sorted.count)):")
+          for id in sorted {
+            let name = displayLocale.localizedString(forIdentifier: id) ?? id
+            print("[Live Translation, iOS 26+]   \(id) — \(name)")
+          }
         }
       }
     }
@@ -611,6 +660,10 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useTranslationFrameworkRoutingPath else {
+      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      return
+    }
     guard #available(iOS 18.0, *) else {
       result(BanteraTranslationError.unsupportedIosVersion.flutterError)
       return
@@ -635,6 +688,10 @@ private final class BanteraTranslationBridge {
     call: FlutterMethodCall,
     result: @escaping FlutterResult
   ) {
+    guard BanteraIosVersionRouting.useTranslationFrameworkRoutingPath else {
+      result(BanteraTranslationError.unsupportedIosVersion.flutterError)
+      return
+    }
     guard #available(iOS 18.0, *) else {
       result(BanteraTranslationError.unsupportedIosVersion.flutterError)
       return
@@ -1044,6 +1101,20 @@ private final class BanteraLegacySpeechRecognitionService {
     print("[SFSpeechRecognizer, iOS 10+] Supported locales (\(supported.count)):")
     for locale in supported {
       print("[SFSpeechRecognizer, iOS 10+]   \(bcp47Identifier(for: locale)) — \(localizedName(for: locale))")
+    }
+  }
+
+  /// Flutter payload aligned with `SpeechTranscriber` locale entries (`identifier`, `displayName`, `isInstalled`).
+  static func supportedTranscriptionLocalePayload() -> [[String: Any]] {
+    let supported = SFSpeechRecognizer.supportedLocales().sorted {
+      localizedName(for: $0) < localizedName(for: $1)
+    }
+    return supported.map { locale in
+      [
+        "identifier": bcp47Identifier(for: locale),
+        "displayName": localizedName(for: locale),
+        "isInstalled": true,
+      ]
     }
   }
 
