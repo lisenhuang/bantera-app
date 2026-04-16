@@ -331,6 +331,7 @@ class AuthApiClient {
         final params = <String, String>{
           'limit': limit.toString(),
           'offset': offset.toString(),
+          'includeV2': 'true',
         };
         if (languageCode != null && languageCode.isNotEmpty) {
           params['languageCode'] = languageCode;
@@ -484,7 +485,11 @@ class AuthApiClient {
   }) async {
     return _retryWithRefresh(accessToken, (token) async {
       try {
-        final request = await _httpClient.getUrl(_resolve('/api/me/videos'));
+        final request = await _httpClient.getUrl(
+          _resolve(
+            '/api/me/videos',
+          ).replace(queryParameters: const {'includeV2': 'true'}),
+        );
         request.headers.set(HttpHeaders.acceptHeader, 'application/json');
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
 
@@ -551,6 +556,9 @@ class AuthApiClient {
     String? nativeLanguageCode,
     required void Function() onDialogueDone,
     required void Function(UploadedVideo video, List<String> lines) onAudioDone,
+    bool useV2 = false,
+    void Function()? onAudioGenerated,
+    void Function()? onAligning,
     bool retried = false,
   }) async {
     try {
@@ -567,7 +575,9 @@ class AuthApiClient {
         'durationSeconds': durationSeconds,
       });
       final request = await _httpClient.postUrl(
-        _resolve('/api/me/audio/generate'),
+        _resolve(
+          useV2 ? '/api/me/audio/generate/v2' : '/api/me/audio/generate',
+        ),
       );
       request.headers.set(
         HttpHeaders.authorizationHeader,
@@ -601,6 +611,9 @@ class AuthApiClient {
               nativeLanguageCode: nativeLanguageCode,
               onDialogueDone: onDialogueDone,
               onAudioDone: onAudioDone,
+              useV2: useV2,
+              onAudioGenerated: onAudioGenerated,
+              onAligning: onAligning,
               retried: true,
             );
           }
@@ -630,6 +643,10 @@ class AuthApiClient {
           _dialogueLines =
               (data['lines'] as List?)?.map((e) => e.toString()).toList() ?? [];
           onDialogueDone();
+        } else if (step == 'audio') {
+          onAudioGenerated?.call();
+        } else if (step == 'aligning') {
+          onAligning?.call();
         } else if (step == 'done') {
           final videoMap = data['video'] as Map<String, dynamic>;
           onAudioDone(_uploadedVideoFromJson(videoMap), _dialogueLines);
@@ -655,6 +672,37 @@ class AuthApiClient {
     } on TimeoutException {
       await _throwNetworkFailure();
     }
+  }
+
+  Future<void> generateAiAudioStreamingV2({
+    required String accessToken,
+    required String language,
+    required String languageCode,
+    required String scenario,
+    String? scenarioId,
+    required int durationSeconds,
+    String? nativeLanguage,
+    String? nativeLanguageCode,
+    required void Function() onDialogueDone,
+    required void Function() onAudioGenerated,
+    required void Function() onAligning,
+    required void Function(UploadedVideo video, List<String> lines) onDone,
+  }) {
+    return generateAiAudioStreaming(
+      accessToken: accessToken,
+      language: language,
+      languageCode: languageCode,
+      scenario: scenario,
+      scenarioId: scenarioId,
+      durationSeconds: durationSeconds,
+      nativeLanguage: nativeLanguage,
+      nativeLanguageCode: nativeLanguageCode,
+      onDialogueDone: onDialogueDone,
+      onAudioDone: onDone,
+      useV2: true,
+      onAudioGenerated: onAudioGenerated,
+      onAligning: onAligning,
+    );
   }
 
   Future<void> deleteVideo({
@@ -949,7 +997,9 @@ class AuthApiClient {
     return _retryWithRefresh(accessToken, (token) async {
       try {
         final request = await _httpClient.getUrl(
-          _resolve('/api/me/saved-cues'),
+          _resolve(
+            '/api/me/saved-cues',
+          ).replace(queryParameters: const {'includeV2': 'true'}),
         );
         request.headers.set(HttpHeaders.acceptHeader, 'application/json');
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
@@ -985,7 +1035,11 @@ class AuthApiClient {
   }) async {
     return _retryWithRefresh(accessToken, (token) async {
       try {
-        final request = await _httpClient.getUrl(_resolve('/api/me/saved'));
+        final request = await _httpClient.getUrl(
+          _resolve(
+            '/api/me/saved',
+          ).replace(queryParameters: const {'includeV2': 'true'}),
+        );
         request.headers.set(HttpHeaders.acceptHeader, 'application/json');
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
         final response = await request.close();
@@ -1252,6 +1306,24 @@ class AuthApiClient {
       coverImageUrl: json['coverImageUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       creatorDisplayName: json['creatorDisplayName'] as String?,
+      transcriptionVersion: (json['transcriptionVersion'] as num?)?.toInt(),
+      dialogueLines: (json['dialogueLines'] as List?)
+          ?.map((item) => item.toString())
+          .toList(),
+      wordTiming: (json['wordTiming'] as List?)
+          ?.map((item) {
+            if (item is Map<String, dynamic>) {
+              return WordTiming.fromJson(item);
+            }
+            if (item is Map) {
+              return WordTiming.fromJson(
+                item.map((key, value) => MapEntry(key.toString(), value)),
+              );
+            }
+            return null;
+          })
+          .whereType<WordTiming>()
+          .toList(),
     );
   }
 

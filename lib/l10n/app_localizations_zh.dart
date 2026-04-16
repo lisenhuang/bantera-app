@@ -798,6 +798,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiGenStepGeneratingAudio => '生成音频';
 
   @override
+  String get aiGenStepAligningAudio => '对齐音频';
+
+  @override
   String get aiGenStepTranscribing => '转写';
 
   @override
@@ -1810,6 +1813,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get aiGenStepGeneratingAudio => '生成音频';
+
+  @override
+  String get aiGenStepAligningAudio => '对齐音频';
 
   @override
   String get aiGenStepTranscribing => '转写';

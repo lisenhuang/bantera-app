@@ -1603,6 +1603,12 @@ abstract class AppLocalizations {
   /// **'Generating audio'**
   String get aiGenStepGeneratingAudio;
 
+  /// No description provided for @aiGenStepAligningAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Aligning audio'**
+  String get aiGenStepAligningAudio;
+
   /// No description provided for @aiGenStepTranscribing.
   ///
   /// In en, this message translates to:

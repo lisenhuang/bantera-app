@@ -257,6 +257,7 @@
   "aiGenStepPreparingSpeechModel": "온디바이스 음성 모델 준비 중",
   "aiGenStepWritingDialogue": "대화 작성 중",
   "aiGenStepGeneratingAudio": "오디오 생성 중",
+  "aiGenStepAligningAudio": "오디오 정렬 중",
   "aiGenStepTranscribing": "전사 중",
   "aiGenStepCorrectingTranscript": "대본 교정 중",
   "aiGenLanguageSection": "언어",

@@ -257,6 +257,7 @@
   "aiGenStepPreparingSpeechModel": "正在准备设备端语音模型",
   "aiGenStepWritingDialogue": "撰写对白",
   "aiGenStepGeneratingAudio": "生成音频",
+  "aiGenStepAligningAudio": "对齐音频",
   "aiGenStepTranscribing": "转写",
   "aiGenStepCorrectingTranscript": "校正字幕",
   "aiGenLanguageSection": "语言",

@@ -847,6 +847,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiGenStepGeneratingAudio => 'Generating audio';
 
   @override
+  String get aiGenStepAligningAudio => 'Aligning audio';
+
+  @override
   String get aiGenStepTranscribing => 'Transcribing';
 
   @override

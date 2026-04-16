@@ -349,6 +349,7 @@
   "aiGenStepPreparingSpeechModel": "Preparing on-device speech model",
   "aiGenStepWritingDialogue": "Writing dialogue",
   "aiGenStepGeneratingAudio": "Generating audio",
+  "aiGenStepAligningAudio": "Aligning audio",
   "aiGenStepTranscribing": "Transcribing",
   "aiGenStepCorrectingTranscript": "Correcting transcript",
   "aiGenLanguageSection": "Language",

@@ -30,13 +30,27 @@ class _SavedScreenState extends State<SavedScreen> {
   Future<void> _load() async {
     final token = AuthSessionNotifier.instance.session?.accessToken;
     if (token == null) {
-      if (mounted) setState(() { _isLoading = false; _error = 'Sign in to view saved content.'; });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+          _error = 'Sign in to view saved content.';
+        });
       return;
     }
-    if (mounted) setState(() { _isLoading = true; _error = null; });
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     try {
-      final videos = await AuthApiClient.instance.fetchSavedVideos(accessToken: token);
-      if (mounted) setState(() { _videos = videos; _isLoading = false; });
+      final videos = await AuthApiClient.instance.fetchSavedVideos(
+        accessToken: token,
+      );
+      if (mounted)
+        setState(() {
+          _videos = videos;
+          _isLoading = false;
+        });
     } on AuthApiException catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -50,26 +64,28 @@ class _SavedScreenState extends State<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.savedTitle),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.savedTitle)),
       body: RefreshIndicator(
         onRefresh: _load,
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)))
-                : _videos.isEmpty
-                    ? _buildEmpty(context)
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _videos.length,
-                        itemBuilder: (context, index) =>
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _buildTile(context, _videos[index]),
-                            ),
-                      ),
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_error!),
+                ),
+              )
+            : _videos.isEmpty
+            ? _buildEmpty(context)
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _videos.length,
+                itemBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildTile(context, _videos[index]),
+                ),
+              ),
       ),
     );
   }
@@ -84,11 +100,17 @@ class _SavedScreenState extends State<SavedScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.bookmark_border, size: 48, color: Colors.grey.shade400),
+                Icon(
+                  Icons.bookmark_border,
+                  size: 48,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'No saved lessons yet',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
@@ -115,7 +137,9 @@ class _SavedScreenState extends State<SavedScreen> {
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(14),
+              ),
               child: SizedBox(
                 width: 96,
                 height: 96,
@@ -137,7 +161,9 @@ class _SavedScreenState extends State<SavedScreen> {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 15),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(fontSize: 15),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -225,6 +251,9 @@ class _SavedScreenState extends State<SavedScreen> {
           .toList(),
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      transcriptionVersion: video.transcriptionVersion,
+      dialogueLines: video.dialogueLines,
+      wordTiming: video.wordTiming,
     );
   }
 

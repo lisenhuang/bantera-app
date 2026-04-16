@@ -48,6 +48,38 @@ class VideoTranscriptCue {
   }
 }
 
+class WordTiming {
+  final String word;
+  final int startMs;
+  final int endMs;
+  final double? confidence;
+
+  const WordTiming({
+    required this.word,
+    required this.startMs,
+    required this.endMs,
+    this.confidence,
+  });
+
+  factory WordTiming.fromJson(Map<String, dynamic> json) {
+    return WordTiming(
+      word: json['word']?.toString() ?? '',
+      startMs: (json['startMs'] as num?)?.toInt() ?? 0,
+      endMs: (json['endMs'] as num?)?.toInt() ?? 0,
+      confidence: (json['confidence'] as num?)?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'word': word,
+      'startMs': startMs,
+      'endMs': endMs,
+      if (confidence != null) 'confidence': confidence,
+    };
+  }
+}
+
 class UploadedVideo {
   final String id;
   final String userId;
@@ -68,6 +100,9 @@ class UploadedVideo {
   final String? coverImageUrl;
   final DateTime createdAt;
   final String? creatorDisplayName;
+  final int? transcriptionVersion;
+  final List<String>? dialogueLines;
+  final List<WordTiming>? wordTiming;
 
   UploadedVideo({
     required this.id,
@@ -89,7 +124,45 @@ class UploadedVideo {
     this.coverImageUrl,
     required this.createdAt,
     this.creatorDisplayName,
+    this.transcriptionVersion,
+    this.dialogueLines,
+    this.wordTiming,
   });
+
+  MediaItem toMediaItem({required User creator}) {
+    return MediaItem(
+      id: id,
+      title: _titleFromFileName(originalFileName),
+      description: transcriptText,
+      creator: creator,
+      coverUrl: coverImageUrl ?? '',
+      videoUrl: videoUrl,
+      spokenLanguage: transcriptLanguage,
+      accent: transcriptLanguageCode,
+      durationMs: durationMs,
+      cues: transcriptCues
+          .map(
+            (cue) => Cue(
+              id: '$id-${cue.index}',
+              startTimeMs: cue.startMs,
+              endTimeMs: cue.endMs,
+              originalText: cue.text,
+              translatedText: '',
+            ),
+          )
+          .toList(),
+      transcriptionSource: isAiGenerated ? 'AI Generated' : 'User Upload',
+      isAudioOnly: videoWidth == null && videoHeight == null,
+      transcriptionVersion: transcriptionVersion,
+      dialogueLines: dialogueLines,
+      wordTiming: wordTiming,
+    );
+  }
+
+  static String _titleFromFileName(String fileName) {
+    final dot = fileName.lastIndexOf('.');
+    return dot > 0 ? fileName.substring(0, dot) : fileName;
+  }
 }
 
 class LocalPracticeVideoSummary {
@@ -267,7 +340,11 @@ class Cue {
       originalText: json['originalText']?.toString() ?? '',
       translatedText: json['translatedText']?.toString() ?? '',
       isBookmarked: json['isBookmarked'] as bool? ?? false,
-      notes: (json['notes'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+      notes:
+          (json['notes'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -300,6 +377,9 @@ class MediaItem {
   final String transcriptionSource;
   final String? translatedLanguage;
   final bool isAudioOnly;
+  final int? transcriptionVersion;
+  final List<String>? dialogueLines;
+  final List<WordTiming>? wordTiming;
 
   MediaItem({
     required this.id,
@@ -319,6 +399,9 @@ class MediaItem {
     required this.transcriptionSource,
     this.translatedLanguage,
     this.isAudioOnly = false,
+    this.transcriptionVersion,
+    this.dialogueLines,
+    this.wordTiming,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) {
@@ -333,13 +416,30 @@ class MediaItem {
       spokenLanguage: json['spokenLanguage']?.toString() ?? '',
       accent: json['accent']?.toString() ?? '',
       durationMs: (json['durationMs'] as num?)?.toInt() ?? 0,
-      cues: (json['cues'] as List<dynamic>?)
+      cues:
+          (json['cues'] as List<dynamic>?)
               ?.map((e) => Cue.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       transcriptionSource: json['transcriptionSource']?.toString() ?? '',
       translatedLanguage: json['translatedLanguage']?.toString(),
       isAudioOnly: json['isAudioOnly'] as bool? ?? false,
+      transcriptionVersion: (json['transcriptionVersion'] as num?)?.toInt(),
+      dialogueLines: (json['dialogueLines'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
+      wordTiming: (json['wordTiming'] as List<dynamic>?)
+          ?.map((e) {
+            if (e is Map<String, dynamic>) return WordTiming.fromJson(e);
+            if (e is Map) {
+              return WordTiming.fromJson(
+                e.map((key, value) => MapEntry(key.toString(), value)),
+              );
+            }
+            return null;
+          })
+          .whereType<WordTiming>()
+          .toList(),
     );
   }
 
@@ -358,6 +458,9 @@ class MediaItem {
     'transcriptionSource': transcriptionSource,
     'translatedLanguage': translatedLanguage,
     'isAudioOnly': isAudioOnly,
+    'transcriptionVersion': transcriptionVersion,
+    'dialogueLines': dialogueLines,
+    'wordTiming': wordTiming?.map((w) => w.toJson()).toList(),
   };
 }
 

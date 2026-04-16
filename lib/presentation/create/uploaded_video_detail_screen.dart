@@ -564,6 +564,9 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       }).toList(),
       transcriptionSource: l10n.uploadedDetailTranscriptionSourceYourUpload,
       isAudioOnly: _video.videoWidth == null && _video.videoHeight == null,
+      transcriptionVersion: _video.transcriptionVersion,
+      dialogueLines: _video.dialogueLines,
+      wordTiming: _video.wordTiming,
     );
   }
 

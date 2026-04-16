@@ -810,6 +810,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiGenStepGeneratingAudio => '오디오 생성 중';
 
   @override
+  String get aiGenStepAligningAudio => '오디오 정렬 중';
+
+  @override
   String get aiGenStepTranscribing => '전사 중';
 
   @override

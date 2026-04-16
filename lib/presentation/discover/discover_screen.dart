@@ -211,83 +211,85 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             onTap: () => FocusScope.of(context).unfocus(),
             behavior: HitTestBehavior.translucent,
             child: RefreshIndicator(
-            onRefresh: () => _load(reset: true),
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                // Learning language chip
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: _buildLanguageHeader(context, learningLang),
-                  ),
-                ),
-
-                if (_isLoading)
-                  const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_videos.isEmpty)
-                  SliverFillRemaining(
-                    child: _buildEmptyState(context, displayLanguageLabel),
-                  )
-                else ...[
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildVideoTile(context, _videos[index]),
-                        ),
-                        childCount: _videos.length,
-                      ),
-                    ),
-                  ),
-                  // Footer: spinner or end indicator
+              onRefresh: () => _load(reset: true),
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // Learning language chip
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: _isLoadingMore
-                          ? const Center(child: CircularProgressIndicator())
-                          : _hasMore
-                          ? const SizedBox.shrink()
-                          : Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    l10n.discoverNoMoreResults,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.grey),
-                                  ),
-                                  if (_canShowGenerateWithAiButton) ...[
-                                    const SizedBox(height: 14),
-                                    ElevatedButton.icon(
-                                      onPressed: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const GenerateAiAudioScreen(),
-                                        ),
-                                      ),
-                                      icon: const Icon(
-                                        Icons.auto_awesome,
-                                        size: 18,
-                                      ),
-                                      label: Text(l10n.generateWithAiTitle),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: _buildLanguageHeader(context, learningLang),
                     ),
                   ),
+
+                  if (_isLoading)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_videos.isEmpty)
+                    SliverFillRemaining(
+                      child: _buildEmptyState(context, displayLanguageLabel),
+                    )
+                  else ...[
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildVideoTile(context, _videos[index]),
+                          ),
+                          childCount: _videos.length,
+                        ),
+                      ),
+                    ),
+                    // Footer: spinner or end indicator
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: _isLoadingMore
+                            ? const Center(child: CircularProgressIndicator())
+                            : _hasMore
+                            ? const SizedBox.shrink()
+                            : Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      l10n.discoverNoMoreResults,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                    if (_canShowGenerateWithAiButton) ...[
+                                      const SizedBox(height: 14),
+                                      ElevatedButton.icon(
+                                        onPressed: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const GenerateAiAudioScreen(),
+                                          ),
+                                        ),
+                                        icon: const Icon(
+                                          Icons.auto_awesome,
+                                          size: 18,
+                                        ),
+                                        label: Text(l10n.generateWithAiTitle),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
           ),
         );
       },
@@ -614,6 +616,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           .toList(),
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      transcriptionVersion: video.transcriptionVersion,
+      dialogueLines: video.dialogueLines,
+      wordTiming: video.wordTiming,
     );
   }
 
@@ -634,8 +639,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   String? _primaryCode(String? learningLang) {
     final normalized = learningLang?.trim().toLowerCase() ?? '';
     if (normalized.isEmpty) return null;
-    final primary =
-        normalized.contains('-') ? normalized.split('-').first : normalized;
+    final primary = normalized.contains('-')
+        ? normalized.split('-').first
+        : normalized;
     return _multiVariantPrefixes.contains(primary) ? primary : null;
   }
 

@@ -48,8 +48,7 @@ class SavedCueRepository extends ChangeNotifier {
     return (key != null && key.isNotEmpty) ? key : 'local-device-user';
   }
 
-  String? get _accessToken =>
-      AuthSessionNotifier.instance.session?.accessToken;
+  String? get _accessToken => AuthSessionNotifier.instance.session?.accessToken;
 
   bool get _isAuthenticated => _accessToken != null;
 
@@ -124,16 +123,21 @@ class SavedCueRepository extends ChangeNotifier {
       accent: video.transcriptLanguageCode,
       durationMs: video.durationMs,
       cues: video.transcriptCues
-          .map((c) => Cue(
-                id: '${video.id}-${c.index}',
-                startTimeMs: c.startMs,
-                endTimeMs: c.endMs,
-                originalText: c.text,
-                translatedText: '',
-              ))
+          .map(
+            (c) => Cue(
+              id: '${video.id}-${c.index}',
+              startTimeMs: c.startMs,
+              endTimeMs: c.endMs,
+              originalText: c.text,
+              translatedText: '',
+            ),
+          )
           .toList(),
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      transcriptionVersion: video.transcriptionVersion,
+      dialogueLines: video.dialogueLines,
+      wordTiming: video.wordTiming,
     );
   }
 
@@ -144,10 +148,11 @@ class SavedCueRepository extends ChangeNotifier {
 
   Future<List<SavedCueRecord>> _loadFromLocal() async {
     final db = LocalPracticeDatabase.instance;
-    final rows = await (db.select(db.savedCueEntries)
-          ..where((t) => t.ownerCacheKey.equals(_ownerKey))
-          ..orderBy([(t) => drift.OrderingTerm.desc(t.savedAtMillis)]))
-        .get();
+    final rows =
+        await (db.select(db.savedCueEntries)
+              ..where((t) => t.ownerCacheKey.equals(_ownerKey))
+              ..orderBy([(t) => drift.OrderingTerm.desc(t.savedAtMillis)]))
+            .get();
 
     final result = <SavedCueRecord>[];
     for (final row in rows) {
@@ -155,16 +160,18 @@ class SavedCueRepository extends ChangeNotifier {
         final mediaItem = MediaItem.fromJson(
           jsonDecode(row.mediaItemJson) as Map<String, dynamic>,
         );
-        result.add(SavedCueRecord(
-          id: row.id,
-          mediaItemId: row.mediaItemId,
-          cueId: row.cueId,
-          cueIndex: row.cueIndex,
-          cueText: row.cueText,
-          mediaItem: mediaItem,
-          savedAt: DateTime.fromMillisecondsSinceEpoch(row.savedAtMillis),
-          isLocal: true,
-        ));
+        result.add(
+          SavedCueRecord(
+            id: row.id,
+            mediaItemId: row.mediaItemId,
+            cueId: row.cueId,
+            cueIndex: row.cueIndex,
+            cueText: row.cueText,
+            mediaItem: mediaItem,
+            savedAt: DateTime.fromMillisecondsSinceEpoch(row.savedAtMillis),
+            isLocal: true,
+          ),
+        );
       } catch (_) {
         // Skip malformed rows
       }
@@ -190,8 +197,6 @@ class SavedCueRepository extends ChangeNotifier {
     final existing = _entries
         .where((e) => e.mediaItemId == mediaItem.id && e.cueId == cue.id)
         .firstOrNull;
-    final alreadySaved = existing != null;
-
     if (_isServerVideo(mediaItem) && _isAuthenticated) {
       await _toggleServer(
         mediaItem: mediaItem,
@@ -240,22 +245,24 @@ class SavedCueRepository extends ChangeNotifier {
   }) async {
     final db = LocalPracticeDatabase.instance;
     if (existing != null) {
-      await (db.delete(db.savedCueEntries)
-            ..where((t) => t.id.equals(existing.id)))
-          .go();
+      await (db.delete(
+        db.savedCueEntries,
+      )..where((t) => t.id.equals(existing.id))).go();
     } else {
-      await db.into(db.savedCueEntries).insert(
-        SavedCueEntriesCompanion.insert(
-          id: 'saved-cue-${DateTime.now().microsecondsSinceEpoch}',
-          ownerCacheKey: _ownerKey,
-          mediaItemId: mediaItem.id,
-          cueId: cue.id,
-          cueIndex: cueIndex,
-          cueText: cue.originalText,
-          mediaItemJson: jsonEncode(mediaItem.toJson()),
-          savedAtMillis: DateTime.now().millisecondsSinceEpoch,
-        ),
-      );
+      await db
+          .into(db.savedCueEntries)
+          .insert(
+            SavedCueEntriesCompanion.insert(
+              id: 'saved-cue-${DateTime.now().microsecondsSinceEpoch}',
+              ownerCacheKey: _ownerKey,
+              mediaItemId: mediaItem.id,
+              cueId: cue.id,
+              cueIndex: cueIndex,
+              cueText: cue.originalText,
+              mediaItemJson: jsonEncode(mediaItem.toJson()),
+              savedAtMillis: DateTime.now().millisecondsSinceEpoch,
+            ),
+          );
     }
     await load();
   }
@@ -267,23 +274,29 @@ class SavedCueRepository extends ChangeNotifier {
     // Delete server entries
     if (token != null) {
       final serverEntries = _entries.where((e) => !e.isLocal).toList();
-      await Future.wait(serverEntries.map((e) =>
-          AuthApiClient.instance.unsaveCue(accessToken: token, entryId: e.id)));
+      await Future.wait(
+        serverEntries.map(
+          (e) => AuthApiClient.instance.unsaveCue(
+            accessToken: token,
+            entryId: e.id,
+          ),
+        ),
+      );
     }
     // Delete local entries
     final db = LocalPracticeDatabase.instance;
-    await (db.delete(db.savedCueEntries)
-          ..where((t) => t.ownerCacheKey.equals(_ownerKey)))
-        .go();
+    await (db.delete(
+      db.savedCueEntries,
+    )..where((t) => t.ownerCacheKey.equals(_ownerKey))).go();
     await load();
   }
 
   Future<void> deleteSavedCue(SavedCueRecord entry) async {
     if (entry.isLocal) {
       final db = LocalPracticeDatabase.instance;
-      await (db.delete(db.savedCueEntries)
-            ..where((t) => t.id.equals(entry.id)))
-          .go();
+      await (db.delete(
+        db.savedCueEntries,
+      )..where((t) => t.id.equals(entry.id))).go();
     } else {
       final token = _accessToken;
       if (token != null) {
@@ -296,4 +309,3 @@ class SavedCueRepository extends ChangeNotifier {
     await load();
   }
 }
-

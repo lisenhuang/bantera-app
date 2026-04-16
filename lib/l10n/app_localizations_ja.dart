@@ -807,6 +807,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiGenStepGeneratingAudio => '音声を生成中';
 
   @override
+  String get aiGenStepAligningAudio => '音声を調整中';
+
+  @override
   String get aiGenStepTranscribing => '書き起こし中';
 
   @override

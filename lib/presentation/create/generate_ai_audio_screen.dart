@@ -233,9 +233,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                   children: [
                     Checkbox(
                       value: dialogAcknowledged,
-                      onChanged: (v) => setDialogState(
-                        () => dialogAcknowledged = v ?? false,
-                      ),
+                      onChanged: (v) =>
+                          setDialogState(() => dialogAcknowledged = v ?? false),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -280,24 +279,14 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         : _selectedScenario!.scenarioText ?? _selectedScenario!.label;
 
     setState(() {
-      _step = _GenerationStep.preparingSpeechModel;
+      _step = _GenerationStep.writingDialogue;
       _errorMessage = null;
     });
 
     unawaited(WakelockPlus.enable());
     UploadedVideo? video;
-    List<String> dialogueLines = [];
     try {
-      if (Platform.isIOS) {
-        await VideoProcessingService.instance.ensureTranscriptionModelInstalled(
-          localeIdentifier: locale.identifier,
-        );
-      }
-      if (!mounted) return;
-
-      setState(() => _step = _GenerationStep.writingDialogue);
-
-      await AuthApiClient.instance.generateAiAudioStreaming(
+      await AuthApiClient.instance.generateAiAudioStreamingV2(
         accessToken: session.accessToken,
         language: locale.displayName,
         languageCode: locale.identifier,
@@ -307,36 +296,23 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         onDialogueDone: () {
           if (mounted) setState(() => _step = _GenerationStep.generatingAudio);
         },
-        onAudioDone: (v, lines) {
+        onAudioGenerated: () {
+          if (mounted) setState(() => _step = _GenerationStep.aligningAudio);
+        },
+        onAligning: () {
+          if (mounted) setState(() => _step = _GenerationStep.aligningAudio);
+        },
+        onDone: (v, _) {
           video = v;
-          dialogueLines = lines;
         },
       );
 
       if (!mounted || video == null) return;
-      setState(() => _step = _GenerationStep.transcribing);
-
-      final transcribedVideo = await _transcribeVideo(
-        video: video!,
-        accessToken: session.accessToken,
-        localeIdentifier: locale.identifier,
-      );
-
-      if (!mounted) return;
-      setState(() => _step = _GenerationStep.correctingTranscript);
-
-      final updatedVideo = await _correctTranscript(
-        video: transcribedVideo,
-        accessToken: session.accessToken,
-        originalLines: dialogueLines,
-      );
-
-      if (!mounted) return;
       widget.onYourMediaChanged?.call();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => UploadedVideoDetailScreen(video: updatedVideo),
+          builder: (_) => UploadedVideoDetailScreen(video: video!),
         ),
       );
     } on SessionExpiredException {
@@ -349,74 +325,14 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         setState(() => _errorMessage = localizeAuthApiError(l10n, e));
       }
     } catch (e) {
-      if (mounted) setState(() => _errorMessage = 'Something went wrong. Please try again.');
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'Something went wrong. Please try again.',
+        );
+      }
     } finally {
       unawaited(WakelockPlus.disable());
       if (mounted) setState(() => _step = _GenerationStep.idle);
-    }
-  }
-
-  Future<UploadedVideo> _correctTranscript({
-    required UploadedVideo video,
-    required String accessToken,
-    required List<String> originalLines,
-  }) async {
-    if (originalLines.isEmpty || video.transcriptCues.isEmpty) return video;
-    try {
-      return await AuthApiClient.instance.correctVideoTranscript(
-        accessToken: accessToken,
-        videoId: video.id,
-        originalLines: originalLines,
-        transcribedCues: video.transcriptCues,
-      );
-    } catch (_) {
-      return video;
-    }
-  }
-
-  /// Downloads the generated WAV, transcribes it on-device, and PATCHes the
-  /// server. Returns the updated video on success, or the original on failure.
-  Future<UploadedVideo> _transcribeVideo({
-    required UploadedVideo video,
-    required String accessToken,
-    required String localeIdentifier,
-  }) async {
-    final videoUrl = video.videoUrl?.trim();
-    if (videoUrl == null || videoUrl.isEmpty) return video;
-
-    File? tempFile;
-    try {
-      final uri = Uri.parse(videoUrl);
-      final request = await HttpClient().getUrl(uri);
-      request.headers.set('Authorization', 'Bearer $accessToken');
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) return video;
-
-      final tempDir = await getTemporaryDirectory();
-      tempFile = File('${tempDir.path}/bantera_gen_transcribe_${video.id}.wav');
-      await response.pipe(tempFile.openWrite());
-
-      final result = await VideoProcessingService.instance
-          .transcribeAudioForUpload(
-            inputFile: tempFile,
-            localeIdentifier: localeIdentifier,
-          );
-      if (result.transcriptCues.isEmpty) return video;
-
-      final updated = await AuthApiClient.instance.updateVideoTranscript(
-        accessToken: accessToken,
-        videoId: video.id,
-        transcriptText: result.transcriptText,
-        transcriptCues: result.transcriptCues,
-      );
-      return updated;
-    } catch (_) {
-      // Transcription is best-effort; fall back to estimated cues.
-      return video;
-    } finally {
-      try {
-        await tempFile?.delete();
-      } catch (_) {}
     }
   }
 
@@ -444,10 +360,6 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   Widget _buildLoadingState(AppLocalizations l10n) {
     final steps = [
       (
-        step: _GenerationStep.preparingSpeechModel,
-        label: l10n.aiGenStepPreparingSpeechModel,
-      ),
-      (
         step: _GenerationStep.writingDialogue,
         label: l10n.aiGenStepWritingDialogue,
       ),
@@ -455,11 +367,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         step: _GenerationStep.generatingAudio,
         label: l10n.aiGenStepGeneratingAudio,
       ),
-      (step: _GenerationStep.transcribing, label: l10n.aiGenStepTranscribing),
-      (
-        step: _GenerationStep.correctingTranscript,
-        label: l10n.aiGenStepCorrectingTranscript,
-      ),
+      (step: _GenerationStep.aligningAudio, label: l10n.aiGenStepAligningAudio),
     ];
 
     return Center(
@@ -745,9 +653,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
                     children: [
                       Checkbox(
                         value: _ownershipAcknowledged,
-                        onChanged: (v) => setState(
-                          () => _ownershipAcknowledged = v ?? false,
-                        ),
+                        onChanged: (v) =>
+                            setState(() => _ownershipAcknowledged = v ?? false),
                         visualDensity: VisualDensity.compact,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -784,11 +691,4 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 }
 
-enum _GenerationStep {
-  idle,
-  preparingSpeechModel,
-  writingDialogue,
-  generatingAudio,
-  transcribing,
-  correctingTranscript,
-}
+enum _GenerationStep { idle, writingDialogue, generatingAudio, aligningAudio }

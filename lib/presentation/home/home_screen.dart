@@ -51,7 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadVideos() async {
     final lang = UserProfileNotifier.instance.learningLanguage;
     if (lang == null || lang.isEmpty) {
-      if (mounted) setState(() { _videos = []; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _videos = [];
+          _isLoading = false;
+        });
       _lastLoadedLanguage = lang;
       return;
     }
@@ -70,9 +74,17 @@ class _HomeScreenState extends State<HomeScreen> {
         limit: _kRecommendedLimit,
       );
       _lastLoadedLanguage = lang;
-      if (mounted) setState(() { _videos = results; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _videos = results;
+          _isLoading = false;
+        });
     } catch (_) {
-      if (mounted) setState(() { _videos = []; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _videos = [];
+          _isLoading = false;
+        });
     }
   }
 
@@ -145,9 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(height: 8),
                                 Text(
                                   '15 / 20 mins listened',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium,
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ],
                             ),
@@ -240,9 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
             ).colorScheme.primary.withValues(alpha: 0.35),
           ),
-          color: Theme.of(
-            context,
-          ).colorScheme.primary.withValues(alpha: 0.05),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
         ),
         child: Row(
           children: [
@@ -311,9 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ElevatedButton.icon(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const GenerateAiAudioScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const GenerateAiAudioScreen()),
             ),
             icon: const Icon(Icons.auto_awesome, size: 18),
             label: Text(l10n.generateWithAiTitle),
@@ -383,9 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isAudio
-                                  ? Icons.audiotrack
-                                  : Icons.videocam,
+                              isAudio ? Icons.audiotrack : Icons.videocam,
                               color: Colors.white,
                               size: 11,
                             ),
@@ -495,10 +499,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           )
           .toList(),
-      transcriptionSource:
-          video.isAiGenerated ? 'AI Generated' : 'User Upload',
-      isAudioOnly:
-          video.videoWidth == null && video.videoHeight == null,
+      transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
+      isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      transcriptionVersion: video.transcriptionVersion,
+      dialogueLines: video.dialogueLines,
+      wordTiming: video.wordTiming,
     );
   }
 
