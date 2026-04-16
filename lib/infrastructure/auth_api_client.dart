@@ -547,6 +547,8 @@ class AuthApiClient {
     required String scenario,
     String? scenarioId,
     required int durationSeconds,
+    String? nativeLanguage,
+    String? nativeLanguageCode,
     required void Function() onDialogueDone,
     required void Function(UploadedVideo video, List<String> lines) onAudioDone,
     bool retried = false,
@@ -558,6 +560,10 @@ class AuthApiClient {
         'scenario': scenario,
         if (scenarioId != null && scenarioId.isNotEmpty)
           'scenarioId': scenarioId,
+        if (nativeLanguage != null && nativeLanguage.isNotEmpty)
+          'nativeLanguage': nativeLanguage,
+        if (nativeLanguageCode != null && nativeLanguageCode.isNotEmpty)
+          'nativeLanguageCode': nativeLanguageCode,
         'durationSeconds': durationSeconds,
       });
       final request = await _httpClient.postUrl(
@@ -591,6 +597,8 @@ class AuthApiClient {
               scenario: scenario,
               scenarioId: scenarioId,
               durationSeconds: durationSeconds,
+              nativeLanguage: nativeLanguage,
+              nativeLanguageCode: nativeLanguageCode,
               onDialogueDone: onDialogueDone,
               onAudioDone: onAudioDone,
               retried: true,
