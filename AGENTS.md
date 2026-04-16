@@ -2,8 +2,8 @@
 
 ## iOS minimum
 
-- **Deployment target:** **iOS 15.8** (`IPHONEOS_DEPLOYMENT_TARGET`, CocoaPods `platform`, and Pod `post_install` alignment).
-- **Policy:** Do **not** maintain compatibility for **iOS &lt; 15.8**. It is acceptable to use APIs and patterns that assume 15.8+ without fallback for older OS versions.
+- **Deployment target:** **iOS 18.0** (`IPHONEOS_DEPLOYMENT_TARGET`, CocoaPods `platform`, and Pod `post_install` alignment).
+- **Policy:** Do **not** maintain compatibility for **iOS &lt; 18.0**. It is acceptable to use APIs and patterns that assume 18.0+ without fallback for older OS versions.
 
 ## Locales
 
