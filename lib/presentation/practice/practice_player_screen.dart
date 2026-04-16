@@ -56,6 +56,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   int _playAllSessionId = 0;
   int _playAllCompletedPlaysForCurrentCue = 0;
   PlayAllPauseBetweenCues? _playAllPauseMode;
+  int? _playAllPlaysPerCue;
   bool _isInitializingMedia = false;
   double? _mediaLoadProgress;
   String? _mediaError;
@@ -267,7 +268,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final isV2 = (widget.mediaItem.transcriptionVersion ?? 0) > 0;
     final allowNextCueStartStop = !isV2 ||
         (_isPlayingAll &&
-            _playAllPauseMode == PlayAllPauseBetweenCues.none);
+            _playAllPauseMode == PlayAllPauseBetweenCues.none &&
+            _playAllPlaysPerCue == 1);
 
     if (cueIndex + 1 < cues.length) {
       if (!allowNextCueStartStop) {
@@ -669,6 +671,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final pauseMode = settings.pauseBetweenCues;
     final playsPerCue = settings.playsPerCue.clamp(1, 3);
     _playAllPauseMode = pauseMode;
+    _playAllPlaysPerCue = playsPerCue;
     _playAllSessionId++;
     final sessionAtStart = _playAllSessionId;
     setState(() {
@@ -886,6 +889,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _isPlaying = false;
       _playAllInBetweenCueGap = false;
       _playAllPauseMode = null;
+      _playAllPlaysPerCue = null;
     });
     final ap = _audioPlayer;
     if (ap != null) {
