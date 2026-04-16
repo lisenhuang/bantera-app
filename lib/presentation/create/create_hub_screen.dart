@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
+import '../../core/apple_system_version.dart';
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
@@ -50,6 +51,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final showOnDevicePracticeVideo = supportsOnDevicePracticeVideo;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -69,51 +71,74 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
             const SizedBox(height: 24),
 
             // Large Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPrimaryAction(
-                    context,
-                    Icons.auto_awesome,
-                    l10n.generateWithAiTitle,
-                    colorScheme,
-                    isSecondary: true,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => GenerateAiAudioScreen(
-                            onYourMediaChanged: () {
-                              if (!mounted) return;
-                              unawaited(_loadMyVideos(showLoadingState: false));
-                            },
+            if (showOnDevicePracticeVideo)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPrimaryAction(
+                      context,
+                      Icons.auto_awesome,
+                      l10n.generateWithAiTitle,
+                      colorScheme,
+                      isSecondary: true,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => GenerateAiAudioScreen(
+                              onYourMediaChanged: () {
+                                if (!mounted) return;
+                                unawaited(_loadMyVideos(showLoadingState: false));
+                              },
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildPrimaryAction(
-                    context,
-                    CupertinoIcons.play_rectangle_fill,
-                    l10n.createPracticeVideo,
-                    colorScheme,
-                    isSecondary: true,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const LocalVideoPracticeScreen(),
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildPrimaryAction(
+                      context,
+                      CupertinoIcons.play_rectangle_fill,
+                      l10n.createPracticeVideo,
+                      colorScheme,
+                      isSecondary: true,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const LocalVideoPracticeScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              )
+            else
+              _buildPrimaryAction(
+                context,
+                Icons.auto_awesome,
+                l10n.generateWithAiTitle,
+                colorScheme,
+                isSecondary: true,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => GenerateAiAudioScreen(
+                        onYourMediaChanged: () {
+                          if (!mounted) return;
+                          unawaited(_loadMyVideos(showLoadingState: false));
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
 
-            const SizedBox(height: 48),
-            _buildLocalPracticeSection(context, colorScheme, l10n),
+            if (showOnDevicePracticeVideo) ...[
+              const SizedBox(height: 48),
+              _buildLocalPracticeSection(context, colorScheme, l10n),
+            ],
             const SizedBox(height: 48),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

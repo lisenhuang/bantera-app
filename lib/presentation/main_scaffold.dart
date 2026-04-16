@@ -31,13 +31,14 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(_migrateTabIndexIfLegacyApple);
+    WidgetsBinding.instance.addPostFrameCallback(_migrateTabIndexIfCreateHidden);
   }
 
-  /// If state ever held Profile as index 2 (3-tab), remap to 1 (2-tab). Index 1 is not migrated (Create vs Profile is ambiguous).
-  void _migrateTabIndexIfLegacyApple(Duration _) {
+  /// If state ever held Profile as index 2 (3-tab), remap to 1 (2-tab). Index 1 is
+  /// not migrated because it may already be Discover/Profile in the 2-tab layout.
+  void _migrateTabIndexIfCreateHidden(Duration _) {
     if (!mounted) return;
-    if (!isLegacyAppleOsPre26) return;
+    if (supportsCreateTabOnApple) return;
     if (_currentIndex == 2) {
       setState(() => _currentIndex = 1);
     }
@@ -46,8 +47,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final legacy = isLegacyAppleOsPre26;
-    final screens = legacy ? _twoTabs : _threeTabs;
+    final showCreateTab = supportsCreateTabOnApple;
+    final screens = showCreateTab ? _threeTabs : _twoTabs;
     final maxIndex = screens.length - 1;
     final stackIndex = _currentIndex.clamp(0, maxIndex);
 
@@ -68,7 +69,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             icon: const Icon(CupertinoIcons.compass),
             label: l10n.navDiscover,
           ),
-          if (!legacy) ...[
+          if (showCreateTab) ...[
             BottomNavigationBarItem(
               icon: const Icon(CupertinoIcons.add_circled_solid),
               label: l10n.navCreate,

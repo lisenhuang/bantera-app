@@ -24,6 +24,36 @@ bool get isLegacyAppleOsPre26 {
   return major < 26;
 }
 
+/// True when Apple devices should show the Create tab.
+///
+/// Uses the mocked-aware Apple OS helper so Dev mock version controls this too.
+/// Non-Apple platforms keep the full UI.
+bool get supportsCreateTabOnApple {
+  if (!Platform.isIOS && !Platform.isMacOS) {
+    return true;
+  }
+  final major = appleOperatingSystemMajorVersion;
+  if (major == null) {
+    return false;
+  }
+  return major >= 18;
+}
+
+/// True when Apple devices should show on-device practice video UI.
+///
+/// Uses the mocked-aware Apple OS helper so Dev mock version controls this too.
+/// Non-Apple platforms keep the full UI.
+bool get supportsOnDevicePracticeVideo {
+  if (!Platform.isIOS && !Platform.isMacOS) {
+    return true;
+  }
+  final major = appleOperatingSystemMajorVersion;
+  if (major == null) {
+    return false;
+  }
+  return major >= 26;
+}
+
 /// Returns the real iOS/macOS major version, ignoring any dev mock override.
 /// Use this for checks that must reflect the actual device OS (e.g. Dev screen visibility).
 int? get realAppleOperatingSystemMajorVersion {
