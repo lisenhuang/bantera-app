@@ -121,6 +121,16 @@ class _LearningLanguageSetupScreenState
               ),
               const SizedBox(height: 16),
               Expanded(child: _buildBody(context)),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Center(
+                  child: Text(
+                    l10n.languagePickerMoreComingSoon,
+                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

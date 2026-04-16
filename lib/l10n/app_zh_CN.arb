@@ -225,6 +225,7 @@
   "languagePickerNone": "无",
   "languagePickerClearSelection": "清除选择",
   "languagePickerNoMatchingLanguages": "未找到语言。",
+  "languagePickerMoreComingSoon": "更多语言支持即将推出",
   "editProfileNativeLanguageCleared": "已清除母语。",
   "editProfileLearningLanguageCleared": "已清除学习语言。",
   "editProfileNativeLanguageSetTo": "母语已设为 {language}。",

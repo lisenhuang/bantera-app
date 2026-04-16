@@ -703,6 +703,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => '該当する言語がありません。';
 
   @override
+  String get languagePickerMoreComingSoon => '対応言語は順次拡大予定';
+
+  @override
   String get editProfileNativeLanguageCleared => '母語をクリアしました。';
 
   @override

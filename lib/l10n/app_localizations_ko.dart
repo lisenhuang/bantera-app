@@ -706,6 +706,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => '언어를 찾을 수 없습니다.';
 
   @override
+  String get languagePickerMoreComingSoon => '더 많은 언어를 곧 추가할 예정입니다';
+
+  @override
   String get editProfileNativeLanguageCleared => '모국어가 지워졌습니다.';
 
   @override

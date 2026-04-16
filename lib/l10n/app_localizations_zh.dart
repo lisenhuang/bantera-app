@@ -696,6 +696,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => '未找到语言。';
 
   @override
+  String get languagePickerMoreComingSoon => '更多语言支持即将推出';
+
+  @override
   String get editProfileNativeLanguageCleared => '已清除母语。';
 
   @override
@@ -1711,6 +1714,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get languagePickerNoMatchingLanguages => '未找到语言。';
+
+  @override
+  String get languagePickerMoreComingSoon => '更多语言支持即将推出';
 
   @override
   String get editProfileNativeLanguageCleared => '已清除母语。';

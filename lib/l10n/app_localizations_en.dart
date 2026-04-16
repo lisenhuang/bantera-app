@@ -737,6 +737,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => 'No languages found.';
 
   @override
+  String get languagePickerMoreComingSoon => 'More languages coming soon';
+
+  @override
   String get editProfileNativeLanguageCleared => 'Native language cleared.';
 
   @override

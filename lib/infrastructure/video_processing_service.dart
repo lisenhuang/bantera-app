@@ -213,9 +213,9 @@ class VideoProcessingService {
     ].where((o) => seen.add(o.identifier)).toList();
   }
 
-  /// Resolves locales for UI: native iOS list when available, otherwise public API,
-  /// then embedded [kFallbackLearningLanguages]. Listing languages is supported on
-  /// all platforms; transcription features remain iOS-only elsewhere.
+  /// Resolves locales for UI: public API first, then embedded [kFallbackLearningLanguages].
+  /// Listing languages is supported on all platforms; transcription features remain
+  /// iOS-only elsewhere.
   ///
   /// When [excludeZhTwForLearning] is true, drops `zh-TW` (product learning language
   /// uses Mandarin `zh` / zh-CN only). Native language pickers should pass false.
@@ -225,31 +225,6 @@ class VideoProcessingService {
     List<TranscriptionLocaleOption> maybeFilter(
       List<TranscriptionLocaleOption> list,
     ) => excludeZhTwForLearning ? _withoutZhTw(list) : list;
-
-    if (Platform.isIOS) {
-      try {
-        final locales =
-            await _channel.invokeListMethod<dynamic>(
-              'getSupportedTranscriptionLocales',
-            ) ??
-            const <dynamic>[];
-
-        final parsed = locales
-            .whereType<Map<Object?, Object?>>()
-            .map(TranscriptionLocaleOption.fromMap)
-            .where((option) => option.identifier.isNotEmpty)
-            .toList();
-
-        final filtered = maybeFilter(parsed);
-        if (filtered.isNotEmpty) {
-          return filtered;
-        }
-      } on PlatformException {
-        // Fall through to API / embedded fallback.
-      } on MissingPluginException {
-        // Fall through to API / embedded fallback.
-      }
-    }
 
     final fromApi = await AuthApiClient.instance
         .fetchLearningLanguagesCatalog();

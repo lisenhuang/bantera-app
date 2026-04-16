@@ -174,6 +174,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             excludeZhTwForLearning: false,
                             currentIdentifier: _profile.nativeLanguage,
                             onSelected: _saveNativeLanguage,
+                            showComingSoonFooter: false,
                           ),
                 ),
                 const SizedBox(height: 12),
@@ -191,6 +192,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             currentIdentifier: _profile.learningLanguage,
                             onSelected: _saveLearningLanguage,
                             showClearOption: false,
+                            showComingSoonFooter: true,
                           ),
                 ),
                 if (_profile.localizedError(l10n) != null) ...[
@@ -291,6 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
+    bool showComingSoonFooter = false,
   }) async {
     // Learning picker uses transcription-only list; native picker uses combined list.
     final options =
@@ -319,6 +322,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           options: filteredOptions,
           currentIdentifier: currentIdentifier,
           showClearOption: showClearOption,
+          showComingSoonFooter: showComingSoonFooter,
           onSelected: (option) {
             Navigator.of(context).pop();
             onSelected(option);
@@ -420,6 +424,7 @@ class _LanguagePickerSheet extends StatefulWidget {
     required this.options,
     required this.currentIdentifier,
     required this.showClearOption,
+    required this.showComingSoonFooter,
     required this.onSelected,
   });
 
@@ -427,6 +432,7 @@ class _LanguagePickerSheet extends StatefulWidget {
   final List<TranscriptionLocaleOption> options;
   final String? currentIdentifier;
   final bool showClearOption;
+  final bool showComingSoonFooter;
   final void Function(TranscriptionLocaleOption) onSelected;
 
   @override
@@ -572,6 +578,20 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       },
                     ),
             ),
+            if (widget.showComingSoonFooter) ...[
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                child: Center(
+                  child: Text(
+                    l10n.languagePickerMoreComingSoon,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         );
       },

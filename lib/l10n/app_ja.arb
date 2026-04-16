@@ -225,6 +225,7 @@
   "languagePickerNone": "なし",
   "languagePickerClearSelection": "選択をクリア",
   "languagePickerNoMatchingLanguages": "該当する言語がありません。",
+  "languagePickerMoreComingSoon": "対応言語は順次拡大予定",
   "editProfileNativeLanguageCleared": "母語をクリアしました。",
   "editProfileLearningLanguageCleared": "学習言語をクリアしました。",
   "editProfileNativeLanguageSetTo": "母語を{language}に設定しました。",

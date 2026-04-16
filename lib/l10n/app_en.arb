@@ -296,6 +296,7 @@
   "languagePickerNone": "None",
   "languagePickerClearSelection": "Clear selection",
   "languagePickerNoMatchingLanguages": "No languages found.",
+  "languagePickerMoreComingSoon": "More languages coming soon",
   "editProfileNativeLanguageCleared": "Native language cleared.",
   "editProfileLearningLanguageCleared": "Learning language cleared.",
   "editProfileNativeLanguageSetTo": "Native language set to {language}.",

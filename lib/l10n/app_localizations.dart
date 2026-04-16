@@ -1411,6 +1411,12 @@ abstract class AppLocalizations {
   /// **'No languages found.'**
   String get languagePickerNoMatchingLanguages;
 
+  /// No description provided for @languagePickerMoreComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'More languages coming soon'**
+  String get languagePickerMoreComingSoon;
+
   /// No description provided for @editProfileNativeLanguageCleared.
   ///
   /// In en, this message translates to:
