@@ -32,10 +32,13 @@ import 'record_compare_sheet.dart';
 import 'session_compare_result_sheet.dart';
 
 String _practiceSubtitleHighlightKey(String word) {
-  return word
-      .toLowerCase()
-      .replaceAll(RegExp(r'[^a-z0-9\u4e00-\u9fff]'), '');
+  return word.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\u4e00-\u9fff]'), '');
 }
+
+final RegExp _kWordTokenRe = RegExp(
+  r"[\p{L}\p{N}]+(?:['\u2019\u02bc][\p{L}\p{N}]+)*",
+  unicode: true,
+);
 
 enum SubtitleState { hidden, original, translated }
 
@@ -74,6 +77,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   StreamSubscription<Duration>? _audioPositionSub;
   bool _audioPlayerReady = false;
   List<Cue> _shortCues = const [];
+  List<int?> _wordTimingCharStarts = const [];
   CueSentenceMode _sentenceMode = CueSentenceMode.short;
   int _currentPositionMs = 0;
   bool _isTimelineCueSelectionInFlight = false;
@@ -163,6 +167,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         parentCues: widget.mediaItem.cues,
       );
     }
+    _wordTimingCharStarts = _buildWordTimingCharStarts();
     unawaited(_initSentenceModeAndSeed());
     unawaited(SavedCueRepository.instance.load());
   }
@@ -172,9 +177,49 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (!mounted) {
       return;
     }
-    setState(() => _sentenceMode = mode);
+    setState(() {
+      _sentenceMode = mode;
+      _wordTimingCharStarts = _buildWordTimingCharStarts();
+    });
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
+  }
+
+  List<int?> _buildWordTimingCharStarts() {
+    final wt = widget.mediaItem.wordTiming;
+    if (wt == null || wt.isEmpty) return const [];
+
+    final result = List<int?>.filled(wt.length, null);
+    final normalize = _practiceSubtitleHighlightKey;
+
+    for (final cue in _activeCues) {
+      final cueEntries = <({int idx, WordTiming word})>[];
+      for (var i = 0; i < wt.length; i++) {
+        final wordStartMs = wt[i].startMs;
+        if (wordStartMs >= cue.startTimeMs &&
+            wordStartMs < cue.endTimeMs + 500) {
+          cueEntries.add((idx: i, word: wt[i]));
+        }
+      }
+      if (cueEntries.isEmpty) continue;
+
+      final tokens = _kWordTokenRe.allMatches(cue.originalText).toList();
+      var tokenCursor = 0;
+      for (final entry in cueEntries) {
+        final normWord = normalize(entry.word.word);
+        if (normWord.isEmpty) continue;
+        while (tokenCursor < tokens.length) {
+          final token = tokens[tokenCursor];
+          tokenCursor++;
+          if (normalize(token.group(0)!) == normWord) {
+            result[entry.idx] = token.start;
+            break;
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   Future<void> _startupPracticeSession() async {
@@ -323,7 +368,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (cueIndex < 0 || cueIndex >= cues.length) return 0;
     final cue = cues[cueIndex];
     final isV2 = (widget.mediaItem.transcriptionVersion ?? 0) > 0;
-    final allowNextCueStartStop = !isV2 ||
+    final allowNextCueStartStop =
+        !isV2 ||
         (_isPlayingAll &&
             _playAllPauseMode == PlayAllPauseBetweenCues.none &&
             _playAllPlaysPerCue == 1);
@@ -1393,7 +1439,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     /// iOS/iPadOS major &lt; 26 only — Play all left of Show Transcript; macOS legacy unchanged.
     final iosLegacyPre26 = Platform.isIOS && legacyApple;
 
-    if (!supportsBuiltInTranslation && _subtitleState == SubtitleState.translated) {
+    if (!supportsBuiltInTranslation &&
+        _subtitleState == SubtitleState.translated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() => _subtitleState = SubtitleState.original);
@@ -1435,9 +1482,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           if (supportsBuiltInTranslation || _hasWordTiming)
             IconButton(
               icon: const Icon(CupertinoIcons.settings),
-              onPressed: _isTranslating
-                  ? null
-                  : _openPracticeSettingsSheet,
+              onPressed: _isTranslating ? null : _openPracticeSettingsSheet,
             ),
         ],
       ),
@@ -1911,9 +1956,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   ),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor:
-                        ((_currentCueIndex + 1) / _activeCues.length)
-                            .clamp(0.0, 1.0),
+                    widthFactor: ((_currentCueIndex + 1) / _activeCues.length)
+                        .clamp(0.0, 1.0),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: colorScheme.primary,
@@ -1977,7 +2021,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
-  Set<String>? _subtitleHighlightWordKeysAtPlayhead() {
+  Set<int>? _subtitleHighlightCharStartsAtPlayhead() {
     if (!_hasWordTiming || !_isPlaying) {
       return null;
     }
@@ -1986,16 +2030,18 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return null;
     }
     final pos = _currentPositionMs;
-    final keys = <String>{};
-    for (final w in wt) {
-      if (pos >= w.startMs && pos < w.endMs) {
-        final k = _practiceSubtitleHighlightKey(w.word);
-        if (k.isNotEmpty) {
-          keys.add(k);
+    final charStarts = <int>{};
+    for (var i = 0; i < wt.length; i++) {
+      if (pos >= wt[i].startMs && pos < wt[i].endMs) {
+        final charStart = _wordTimingCharStarts.length > i
+            ? _wordTimingCharStarts[i]
+            : null;
+        if (charStart != null) {
+          charStarts.add(charStart);
         }
       }
     }
-    return keys.isEmpty ? null : keys;
+    return charStarts.isEmpty ? null : charStarts;
   }
 
   Widget _buildOriginalSubtitlePanel({
@@ -2028,7 +2074,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             minFontSize: hasPlayableMedia ? 16 : 18,
             maxFontSize: hasPlayableMedia ? 30 : 34,
             maxHeight: math.max(56, panelHeight - 32),
-            highlightWordKeys: _subtitleHighlightWordKeysAtPlayhead(),
+            highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
           ),
         );
       },
@@ -2099,7 +2145,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   minFontSize: hasPlayableMedia ? 14 : 18,
                   maxFontSize: hasPlayableMedia ? 28 : 34,
                   maxHeight: originalHeight,
-                  highlightWordKeys: _subtitleHighlightWordKeysAtPlayhead(),
+                  highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
                 ),
               ),
               SizedBox(height: gap),
@@ -2636,6 +2682,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     setState(() {
       _sentenceMode = mode;
+      _wordTimingCharStarts = _buildWordTimingCharStarts();
       _translatedCueTexts = const {};
       _translatedLanguageIdentifier = null;
       _translationGeneration++;
@@ -3072,9 +3119,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         await player.setSourceDeviceFile(cachedAudio.file.path);
         final audioDuration = await player.getDuration();
         _loadedMediaDurationMs = audioDuration?.inMilliseconds;
-        await player.seek(
-          Duration(milliseconds: _activeCues[0].startTimeMs),
-        );
+        await player.seek(Duration(milliseconds: _activeCues[0].startTimeMs));
         _lastKnownAudioPositionMs = _activeCues[0].startTimeMs;
         if (mounted) setState(() => _audioPlayerReady = true);
       } catch (e) {
@@ -3129,12 +3174,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _loadedMediaDurationMs = controller.value.duration.inMilliseconds;
       await controller.pause();
       await controller.seekTo(
-        Duration(
-          milliseconds: _activeCues[_currentCueIndex].startTimeMs,
-        ),
+        Duration(milliseconds: _activeCues[_currentCueIndex].startTimeMs),
       );
-      _lastKnownVideoPositionMs =
-          _activeCues[_currentCueIndex].startTimeMs;
+      _lastKnownVideoPositionMs = _activeCues[_currentCueIndex].startTimeMs;
     } catch (_) {
       _mediaError = _l10n.practiceVideoOpenError;
     } finally {
@@ -3611,11 +3653,11 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     required this.minFontSize,
     required this.maxFontSize,
     required this.maxHeight,
-    this.highlightWordKeys,
+    this.highlightCharStarts,
   });
 
   static const double _scrollBottomPadding = 14;
-  static final RegExp _wordTokenRe = RegExp(r'[\p{L}\p{N}]+', unicode: true);
+  static final RegExp _wordTokenRe = _kWordTokenRe;
 
   final String text;
   final TextAlign textAlign;
@@ -3623,7 +3665,7 @@ class _AdaptiveSubtitleText extends StatelessWidget {
   final double minFontSize;
   final double maxFontSize;
   final double maxHeight;
-  final Set<String>? highlightWordKeys;
+  final Set<int>? highlightCharStarts;
 
   @override
   Widget build(BuildContext context) {
@@ -3642,9 +3684,11 @@ class _AdaptiveSubtitleText extends StatelessWidget {
           resolvedHeight,
         );
         final effective = baseStyle?.copyWith(fontSize: fontSize);
-        final keys = highlightWordKeys;
+        final charStarts = highlightCharStarts;
         final useRich =
-            keys != null && keys.isNotEmpty && _wordTokenRe.hasMatch(text);
+            charStarts != null &&
+            charStarts.isNotEmpty &&
+            _wordTokenRe.hasMatch(text);
 
         return SizedBox(
           height: resolvedHeight,
@@ -3663,13 +3707,9 @@ class _AdaptiveSubtitleText extends StatelessWidget {
                       ? _richText(
                           context,
                           effective ?? const TextStyle(),
-                          keys,
+                          charStarts,
                         )
-                      : Text(
-                          text,
-                          textAlign: textAlign,
-                          style: effective,
-                        ),
+                      : Text(text, textAlign: textAlign, style: effective),
                 ),
               ),
             ),
@@ -3679,11 +3719,7 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     );
   }
 
-  Widget _richText(
-    BuildContext context,
-    TextStyle base,
-    Set<String> keys,
-  ) {
+  Widget _richText(BuildContext context, TextStyle base, Set<int> charStarts) {
     final children = <InlineSpan>[];
     var last = 0;
     for (final m in _wordTokenRe.allMatches(text)) {
@@ -3691,8 +3727,7 @@ class _AdaptiveSubtitleText extends StatelessWidget {
         children.add(TextSpan(text: text.substring(last, m.start)));
       }
       final slice = text.substring(m.start, m.end);
-      final key = _practiceSubtitleHighlightKey(slice);
-      final highlighted = keys.contains(key);
+      final highlighted = charStarts.contains(m.start);
       children.add(
         TextSpan(
           text: slice,
