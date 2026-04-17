@@ -1,5 +1,22 @@
 import '../domain/models/models.dart';
 
+// Placeholder (U+FFFE, guaranteed non-text) swapped in for abbreviation dots
+// before splitting so they are never treated as sentence boundaries.
+const _kAbbrDot = '\uFFFE';
+
+// Titles and honorifics for en / fr / de / it / es whose trailing period
+// should not be treated as a sentence boundary.
+final RegExp _kAbbrRe = RegExp(
+  r'\b(Mr|Mrs|Ms|Miss|Dr|Prof|Sr|Jr|Rev|Gen|Capt|Lt|Col|Sgt|Cpl|Maj|'
+  r'Adm|Gov|Pres|St|Ste|'
+  r'M|Mme|Mlle|MM|Me|Mgr|Gal|'
+  r'Hr|Fr|Nr|'
+  r'Sig|Dott|Avv|Ing|'
+  r'Sra|Srta|Dra|Lic|Gral'
+  r')\.',
+  caseSensitive: false,
+);
+
 /// Builds shorter practice [Cue]s from [dialogueLines] + [wordTiming] (v2 transcripts).
 class ShortCueBuilder {
   ShortCueBuilder._();
@@ -12,26 +29,32 @@ class ShortCueBuilder {
 
   static List<String> _fragmentsFromLine(String line) {
     final trimmed = line.trim();
-    if (trimmed.isEmpty) {
-      return const [];
-    }
+    if (trimmed.isEmpty) return const [];
+
+    // Replace abbreviation dots with placeholder so the splitter ignores them.
+    final protected = trimmed.replaceAllMapped(
+      _kAbbrRe,
+      (m) => '${m.group(1)!}$_kAbbrDot',
+    );
+
     final re = RegExp(r'[.?!;。？！…；]+');
-    if (!re.hasMatch(trimmed)) {
+    if (!re.hasMatch(protected)) {
       return [trimmed];
     }
+
     final out = <String>[];
     var start = 0;
-    for (final m in re.allMatches(line)) {
-      final piece = line.substring(start, m.end).trim();
+    for (final m in re.allMatches(protected)) {
+      final piece = protected.substring(start, m.end).trim();
       if (piece.isNotEmpty) {
-        out.add(piece);
+        out.add(piece.replaceAll(_kAbbrDot, '.'));
       }
       start = m.end;
     }
-    if (start < line.length) {
-      final tail = line.substring(start).trim();
+    if (start < protected.length) {
+      final tail = protected.substring(start).trim();
       if (tail.isNotEmpty) {
-        out.add(tail);
+        out.add(tail.replaceAll(_kAbbrDot, '.'));
       }
     }
     return out;
