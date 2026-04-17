@@ -3878,9 +3878,8 @@ class _AdaptiveSubtitleText extends StatelessWidget {
           text: slice,
           style: highlighted
               ? base.copyWith(
-                  backgroundColor: const Color(
-                    0xFFFFF59D,
-                  ).withValues(alpha: 0.85),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
                 )
               : null,
         ),
