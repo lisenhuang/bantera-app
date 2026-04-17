@@ -105,5 +105,107 @@ void main() {
       expect(cues.first.endTimeMs, 5910);
       expect(cues.first.originalText, line);
     });
+
+    test('does not split Node.js when there is no whitespace after dot', () {
+      const line = 'Node.js powers APIs.';
+      final cues = ShortCueBuilder.build(
+        mediaItemId: 'media',
+        dialogueLines: const [line],
+        wordTiming: const [
+          WordTiming(word: 'Node.js', startMs: 0, endMs: 120),
+          WordTiming(word: 'powers', startMs: 120, endMs: 260),
+          WordTiming(word: 'APIs', startMs: 260, endMs: 420),
+        ],
+        parentCues: [
+          Cue(
+            id: 'media-2',
+            startTimeMs: 0,
+            endTimeMs: 420,
+            originalText: line,
+            translatedText: '',
+          ),
+        ],
+      );
+
+      expect(cues, hasLength(1));
+      expect(cues.first.originalText, line);
+    });
+
+    test(
+      'does not split punctuation run when there is no boundary spacing',
+      () {
+        const line = 'What?!No way.';
+        final cues = ShortCueBuilder.build(
+          mediaItemId: 'media',
+          dialogueLines: const [line],
+          wordTiming: const [
+            WordTiming(word: 'WhatNo', startMs: 0, endMs: 220),
+            WordTiming(word: 'way', startMs: 220, endMs: 320),
+          ],
+          parentCues: [
+            Cue(
+              id: 'media-3',
+              startTimeMs: 0,
+              endTimeMs: 320,
+              originalText: line,
+              translatedText: '',
+            ),
+          ],
+        );
+
+        expect(cues, hasLength(1));
+        expect(cues.first.originalText, line);
+      },
+    );
+
+    test('splits punctuation run when followed by whitespace', () {
+      const line = 'What?! Yes.';
+      final cues = ShortCueBuilder.build(
+        mediaItemId: 'media',
+        dialogueLines: const [line],
+        wordTiming: const [
+          WordTiming(word: 'What', startMs: 0, endMs: 120),
+          WordTiming(word: 'Yes', startMs: 200, endMs: 320),
+        ],
+        parentCues: [
+          Cue(
+            id: 'media-4',
+            startTimeMs: 0,
+            endTimeMs: 320,
+            originalText: line,
+            translatedText: '',
+          ),
+        ],
+      );
+
+      expect(cues, hasLength(2));
+      expect(cues[0].originalText, 'What?!');
+      expect(cues[1].originalText, 'Yes.');
+    });
+
+    test('keeps cjk sentence splitting without whitespace', () {
+      const line = '你好。谢谢';
+      final cues = ShortCueBuilder.build(
+        mediaItemId: 'media',
+        dialogueLines: const [line],
+        wordTiming: const [
+          WordTiming(word: '你好', startMs: 0, endMs: 120),
+          WordTiming(word: '谢谢', startMs: 140, endMs: 260),
+        ],
+        parentCues: [
+          Cue(
+            id: 'media-5',
+            startTimeMs: 0,
+            endTimeMs: 260,
+            originalText: line,
+            translatedText: '',
+          ),
+        ],
+      );
+
+      expect(cues, hasLength(2));
+      expect(cues[0].originalText, '你好。');
+      expect(cues[1].originalText, '谢谢');
+    });
   });
 }

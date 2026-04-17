@@ -20,6 +20,9 @@ final RegExp _kAbbrRe = RegExp(
 final RegExp _kHyphenSplitRe = RegExp(
   r'[-\u2010\u2011\u2012\u2013\u2014\u2212]+',
 );
+const _kLatinStopChars = '.?!;…';
+const _kCjkStopChars = '。？！；';
+const _kLatinBoundaryClosers = '\'"”’»›)]}';
 
 /// Builds shorter practice [Cue]s from [dialogueLines] + [wordTiming] (v2 transcripts).
 class ShortCueBuilder {
@@ -41,20 +44,48 @@ class ShortCueBuilder {
       (m) => '${m.group(1)!}$_kAbbrDot',
     );
 
-    final re = RegExp(r'[.?!;。？！…；]+');
-    if (!re.hasMatch(protected)) {
+    if (!_containsAnyStopPunctuation(protected)) {
       return [trimmed];
     }
 
     final out = <String>[];
     var start = 0;
-    for (final m in re.allMatches(protected)) {
-      final piece = protected.substring(start, m.end).trim();
+    var i = 0;
+    while (i < protected.length) {
+      final ch = protected[i];
+      if (!_isStopPunctuation(ch)) {
+        i++;
+        continue;
+      }
+
+      var hasCjkStop = false;
+      while (i < protected.length && _isStopPunctuation(protected[i])) {
+        if (_isCjkStopPunctuation(protected[i])) {
+          hasCjkStop = true;
+        }
+        i++;
+      }
+      final runEnd = i;
+
+      int? splitEnd;
+      if (hasCjkStop) {
+        splitEnd = runEnd;
+      } else {
+        splitEnd = _latinSplitEndIfBoundary(protected, runEnd);
+      }
+      if (splitEnd == null) {
+        i = runEnd;
+        continue;
+      }
+
+      final piece = protected.substring(start, splitEnd).trim();
       if (piece.isNotEmpty) {
         out.add(piece.replaceAll(_kAbbrDot, '.'));
       }
-      start = m.end;
+      start = splitEnd;
+      i = splitEnd;
     }
+
     if (start < protected.length) {
       final tail = protected.substring(start).trim();
       if (tail.isNotEmpty) {
@@ -62,6 +93,42 @@ class ShortCueBuilder {
       }
     }
     return out;
+  }
+
+  static bool _containsAnyStopPunctuation(String text) {
+    for (var i = 0; i < text.length; i++) {
+      if (_isStopPunctuation(text[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _isStopPunctuation(String ch) {
+    return _kLatinStopChars.contains(ch) || _kCjkStopChars.contains(ch);
+  }
+
+  static bool _isCjkStopPunctuation(String ch) {
+    return _kCjkStopChars.contains(ch);
+  }
+
+  static int? _latinSplitEndIfBoundary(String text, int runEnd) {
+    var cursor = runEnd;
+    while (cursor < text.length &&
+        _kLatinBoundaryClosers.contains(text[cursor])) {
+      cursor++;
+    }
+    if (cursor >= text.length) {
+      return cursor;
+    }
+    if (_isWhitespace(text[cursor])) {
+      return cursor;
+    }
+    return null;
+  }
+
+  static bool _isWhitespace(String ch) {
+    return RegExp(r'\s', unicode: true).hasMatch(ch);
   }
 
   static List<({String raw, String normalized})> _tokensFromFragment(
