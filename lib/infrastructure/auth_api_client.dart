@@ -1311,6 +1311,20 @@ class AuthApiClient {
           })
           .whereType<VideoTranscriptCue>()
           .toList(),
+      transcriptShortCues: ((json['transcriptShortCues'] as List?) ?? const [])
+          .map((item) {
+            if (item is Map<String, dynamic>) {
+              return VideoTranscriptCue.fromJson(item);
+            }
+            if (item is Map) {
+              return VideoTranscriptCue.fromJson(
+                item.map((key, value) => MapEntry(key.toString(), value)),
+              );
+            }
+            return null;
+          })
+          .whereType<VideoTranscriptCue>()
+          .toList(),
       isPublic: json['isPublic'] as bool,
       isAiGenerated: json['isAiGenerated'] as bool? ?? false,
       isTranscriptionEstimated:

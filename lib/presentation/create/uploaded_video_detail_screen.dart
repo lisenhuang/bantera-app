@@ -562,6 +562,18 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
           translatedText: '',
         );
       }).toList(),
+      shortCues: _video.transcriptShortCues
+          .map(
+            (cue) => Cue(
+              id: '${_video.id}-s${cue.index}',
+              startTimeMs: cue.startMs,
+              endTimeMs: cue.endMs,
+              originalText: cue.text,
+              translatedText: '',
+            ),
+          )
+          .toList(),
+      hasBackendShortCues: _video.transcriptShortCues.isNotEmpty,
       transcriptionSource: l10n.uploadedDetailTranscriptionSourceYourUpload,
       isAudioOnly: _video.videoWidth == null && _video.videoHeight == null,
       transcriptionVersion: _video.transcriptionVersion,

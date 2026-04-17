@@ -23,7 +23,6 @@ import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_playback_speed_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
 import '../../infrastructure/practice_sentence_mode_store.dart';
-import '../../infrastructure/short_cue_builder.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -142,7 +141,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return widget.mediaItem.cues;
   }
 
-  bool get _canUseShortMode => _hasWordTiming && _shortCues.isNotEmpty;
+  bool get _canUseShortMode =>
+      widget.mediaItem.hasBackendShortCues && _shortCues.isNotEmpty;
 
   String get _activeCueMode =>
       _canUseShortMode && _sentenceMode == CueSentenceMode.short
@@ -165,15 +165,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   void initState() {
     super.initState();
-    final lines = widget.mediaItem.dialogueLines;
-    if (_hasWordTiming && lines != null && lines.isNotEmpty) {
-      _shortCues = ShortCueBuilder.build(
-        mediaItemId: widget.mediaItem.id,
-        dialogueLines: lines,
-        wordTiming: widget.mediaItem.wordTiming!,
-        parentCues: widget.mediaItem.cues,
-      );
-    }
+    _shortCues = widget.mediaItem.shortCues;
     _wordTimingCharStarts = _buildWordTimingCharStarts();
     unawaited(_initSentenceModeAndSeed());
     unawaited(SavedCueRepository.instance.load());
@@ -2796,7 +2788,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         showDragHandle: true,
         builder: (sheetContext) => _PracticeSettingsSheet(
           showTranslationRow: supportsBuiltInTranslation,
-          canPickSentenceMode: _hasWordTiming,
+          canPickSentenceMode: _canUseShortMode,
           sentenceMode: _sentenceMode,
           onPickTranslationLanguage: () {
             Navigator.of(sheetContext).pop();

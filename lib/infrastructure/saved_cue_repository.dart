@@ -9,7 +9,6 @@ import '../core/api_config_notifier.dart';
 import '../domain/models/models.dart';
 import 'auth_api_client.dart';
 import 'local_practice_database.dart';
-import 'short_cue_builder.dart';
 
 /// A saved-cue entry — works for both server-video saves (id is a Guid string)
 /// and local-only practice saves (id starts with 'saved-cue-').
@@ -209,21 +208,10 @@ class SavedCueRepository extends ChangeNotifier {
   }
 
   static List<Cue> _buildShortCuesOrEmpty(MediaItem mediaItem) {
-    final dialogueLines = mediaItem.dialogueLines;
-    final wordTiming = mediaItem.wordTiming;
-    if (dialogueLines == null ||
-        dialogueLines.isEmpty ||
-        wordTiming == null ||
-        wordTiming.isEmpty ||
-        mediaItem.cues.isEmpty) {
+    if (mediaItem.shortCues.isEmpty) {
       return const [];
     }
-    return ShortCueBuilder.build(
-      mediaItemId: mediaItem.id,
-      dialogueLines: dialogueLines,
-      wordTiming: wordTiming,
-      parentCues: mediaItem.cues,
-    );
+    return mediaItem.shortCues;
   }
 
   static ({Cue cue, int index})? _parentCueFor(Cue cue, List<Cue> parentCues) {
@@ -273,6 +261,18 @@ class SavedCueRepository extends ChangeNotifier {
             ),
           )
           .toList(),
+      shortCues: video.transcriptShortCues
+          .map(
+            (c) => Cue(
+              id: '${video.id}-s${c.index}',
+              startTimeMs: c.startMs,
+              endTimeMs: c.endMs,
+              originalText: c.text,
+              translatedText: '',
+            ),
+          )
+          .toList(),
+      hasBackendShortCues: video.transcriptShortCues.isNotEmpty,
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
       transcriptionVersion: video.transcriptionVersion,

@@ -88,6 +88,7 @@ class UploadedVideo {
   final String transcriptLanguage;
   final String transcriptLanguageCode;
   final List<VideoTranscriptCue> transcriptCues;
+  final List<VideoTranscriptCue> transcriptShortCues;
   final bool isPublic;
   final bool isAiGenerated;
   final bool isTranscriptionEstimated;
@@ -112,6 +113,7 @@ class UploadedVideo {
     required this.transcriptLanguage,
     required this.transcriptLanguageCode,
     required this.transcriptCues,
+    this.transcriptShortCues = const [],
     required this.isPublic,
     required this.isAiGenerated,
     required this.isTranscriptionEstimated,
@@ -151,6 +153,18 @@ class UploadedVideo {
             ),
           )
           .toList(),
+      shortCues: transcriptShortCues
+          .map(
+            (cue) => Cue(
+              id: '$id-s${cue.index}',
+              startTimeMs: cue.startMs,
+              endTimeMs: cue.endMs,
+              originalText: cue.text,
+              translatedText: '',
+            ),
+          )
+          .toList(),
+      hasBackendShortCues: transcriptShortCues.isNotEmpty,
       transcriptionSource: isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: videoWidth == null && videoHeight == null,
       transcriptionVersion: transcriptionVersion,
@@ -373,6 +387,8 @@ class MediaItem {
   final String accent;
   final int durationMs;
   final List<Cue> cues;
+  final List<Cue> shortCues;
+  final bool hasBackendShortCues;
   final int plays;
   final String transcriptionSource;
   final String? translatedLanguage;
@@ -395,6 +411,8 @@ class MediaItem {
     required this.accent,
     required this.durationMs,
     required this.cues,
+    this.shortCues = const [],
+    this.hasBackendShortCues = false,
     this.plays = 0,
     required this.transcriptionSource,
     this.translatedLanguage,
@@ -421,6 +439,12 @@ class MediaItem {
               ?.map((e) => Cue.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      shortCues:
+          (json['shortCues'] as List<dynamic>?)
+              ?.map((e) => Cue.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      hasBackendShortCues: json['hasBackendShortCues'] as bool? ?? false,
       transcriptionSource: json['transcriptionSource']?.toString() ?? '',
       translatedLanguage: json['translatedLanguage']?.toString(),
       isAudioOnly: json['isAudioOnly'] as bool? ?? false,
@@ -455,6 +479,8 @@ class MediaItem {
     'accent': accent,
     'durationMs': durationMs,
     'cues': cues.map((c) => c.toJson()).toList(),
+    'shortCues': shortCues.map((c) => c.toJson()).toList(),
+    'hasBackendShortCues': hasBackendShortCues,
     'transcriptionSource': transcriptionSource,
     'translatedLanguage': translatedLanguage,
     'isAudioOnly': isAudioOnly,

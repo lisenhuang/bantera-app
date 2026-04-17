@@ -614,6 +614,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             ),
           )
           .toList(),
+      shortCues: video.transcriptShortCues
+          .map(
+            (c) => Cue(
+              id: '${video.id}-s${c.index}',
+              startTimeMs: c.startMs,
+              endTimeMs: c.endMs,
+              originalText: c.text,
+              translatedText: '',
+            ),
+          )
+          .toList(),
+      hasBackendShortCues: video.transcriptShortCues.isNotEmpty,
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
       transcriptionVersion: video.transcriptionVersion,
