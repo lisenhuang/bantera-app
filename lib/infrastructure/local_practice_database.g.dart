@@ -2276,6 +2276,61 @@ class $SavedCueEntriesTable extends SavedCueEntries
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _startTimeMsMeta = const VerificationMeta(
+    'startTimeMs',
+  );
+  @override
+  late final GeneratedColumn<int> startTimeMs = GeneratedColumn<int>(
+    'start_time_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endTimeMsMeta = const VerificationMeta(
+    'endTimeMs',
+  );
+  @override
+  late final GeneratedColumn<int> endTimeMs = GeneratedColumn<int>(
+    'end_time_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cueModeMeta = const VerificationMeta(
+    'cueMode',
+  );
+  @override
+  late final GeneratedColumn<String> cueMode = GeneratedColumn<String>(
+    'cue_mode',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentCueIdMeta = const VerificationMeta(
+    'parentCueId',
+  );
+  @override
+  late final GeneratedColumn<String> parentCueId = GeneratedColumn<String>(
+    'parent_cue_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentCueIndexMeta = const VerificationMeta(
+    'parentCueIndex',
+  );
+  @override
+  late final GeneratedColumn<int> parentCueIndex = GeneratedColumn<int>(
+    'parent_cue_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _mediaItemJsonMeta = const VerificationMeta(
     'mediaItemJson',
   );
@@ -2306,6 +2361,11 @@ class $SavedCueEntriesTable extends SavedCueEntries
     cueId,
     cueIndex,
     cueText,
+    startTimeMs,
+    endTimeMs,
+    cueMode,
+    parentCueId,
+    parentCueIndex,
     mediaItemJson,
     savedAtMillis,
   ];
@@ -2372,6 +2432,45 @@ class $SavedCueEntriesTable extends SavedCueEntries
     } else if (isInserting) {
       context.missing(_cueTextMeta);
     }
+    if (data.containsKey('start_time_ms')) {
+      context.handle(
+        _startTimeMsMeta,
+        startTimeMs.isAcceptableOrUnknown(
+          data['start_time_ms']!,
+          _startTimeMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('end_time_ms')) {
+      context.handle(
+        _endTimeMsMeta,
+        endTimeMs.isAcceptableOrUnknown(data['end_time_ms']!, _endTimeMsMeta),
+      );
+    }
+    if (data.containsKey('cue_mode')) {
+      context.handle(
+        _cueModeMeta,
+        cueMode.isAcceptableOrUnknown(data['cue_mode']!, _cueModeMeta),
+      );
+    }
+    if (data.containsKey('parent_cue_id')) {
+      context.handle(
+        _parentCueIdMeta,
+        parentCueId.isAcceptableOrUnknown(
+          data['parent_cue_id']!,
+          _parentCueIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parent_cue_index')) {
+      context.handle(
+        _parentCueIndexMeta,
+        parentCueIndex.isAcceptableOrUnknown(
+          data['parent_cue_index']!,
+          _parentCueIndexMeta,
+        ),
+      );
+    }
     if (data.containsKey('media_item_json')) {
       context.handle(
         _mediaItemJsonMeta,
@@ -2427,6 +2526,26 @@ class $SavedCueEntriesTable extends SavedCueEntries
         DriftSqlType.string,
         data['${effectivePrefix}cue_text'],
       )!,
+      startTimeMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_time_ms'],
+      ),
+      endTimeMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_time_ms'],
+      ),
+      cueMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_mode'],
+      ),
+      parentCueId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_cue_id'],
+      ),
+      parentCueIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}parent_cue_index'],
+      ),
       mediaItemJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}media_item_json'],
@@ -2451,6 +2570,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
   final String cueId;
   final int cueIndex;
   final String cueText;
+  final int? startTimeMs;
+  final int? endTimeMs;
+  final String? cueMode;
+  final String? parentCueId;
+  final int? parentCueIndex;
   final String mediaItemJson;
   final int savedAtMillis;
   const SavedCueEntry({
@@ -2460,6 +2584,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
     required this.cueId,
     required this.cueIndex,
     required this.cueText,
+    this.startTimeMs,
+    this.endTimeMs,
+    this.cueMode,
+    this.parentCueId,
+    this.parentCueIndex,
     required this.mediaItemJson,
     required this.savedAtMillis,
   });
@@ -2472,6 +2601,21 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
     map['cue_id'] = Variable<String>(cueId);
     map['cue_index'] = Variable<int>(cueIndex);
     map['cue_text'] = Variable<String>(cueText);
+    if (!nullToAbsent || startTimeMs != null) {
+      map['start_time_ms'] = Variable<int>(startTimeMs);
+    }
+    if (!nullToAbsent || endTimeMs != null) {
+      map['end_time_ms'] = Variable<int>(endTimeMs);
+    }
+    if (!nullToAbsent || cueMode != null) {
+      map['cue_mode'] = Variable<String>(cueMode);
+    }
+    if (!nullToAbsent || parentCueId != null) {
+      map['parent_cue_id'] = Variable<String>(parentCueId);
+    }
+    if (!nullToAbsent || parentCueIndex != null) {
+      map['parent_cue_index'] = Variable<int>(parentCueIndex);
+    }
     map['media_item_json'] = Variable<String>(mediaItemJson);
     map['saved_at_millis'] = Variable<int>(savedAtMillis);
     return map;
@@ -2485,6 +2629,21 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
       cueId: Value(cueId),
       cueIndex: Value(cueIndex),
       cueText: Value(cueText),
+      startTimeMs: startTimeMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startTimeMs),
+      endTimeMs: endTimeMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endTimeMs),
+      cueMode: cueMode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cueMode),
+      parentCueId: parentCueId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentCueId),
+      parentCueIndex: parentCueIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentCueIndex),
       mediaItemJson: Value(mediaItemJson),
       savedAtMillis: Value(savedAtMillis),
     );
@@ -2502,6 +2661,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
       cueId: serializer.fromJson<String>(json['cueId']),
       cueIndex: serializer.fromJson<int>(json['cueIndex']),
       cueText: serializer.fromJson<String>(json['cueText']),
+      startTimeMs: serializer.fromJson<int?>(json['startTimeMs']),
+      endTimeMs: serializer.fromJson<int?>(json['endTimeMs']),
+      cueMode: serializer.fromJson<String?>(json['cueMode']),
+      parentCueId: serializer.fromJson<String?>(json['parentCueId']),
+      parentCueIndex: serializer.fromJson<int?>(json['parentCueIndex']),
       mediaItemJson: serializer.fromJson<String>(json['mediaItemJson']),
       savedAtMillis: serializer.fromJson<int>(json['savedAtMillis']),
     );
@@ -2516,6 +2680,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
       'cueId': serializer.toJson<String>(cueId),
       'cueIndex': serializer.toJson<int>(cueIndex),
       'cueText': serializer.toJson<String>(cueText),
+      'startTimeMs': serializer.toJson<int?>(startTimeMs),
+      'endTimeMs': serializer.toJson<int?>(endTimeMs),
+      'cueMode': serializer.toJson<String?>(cueMode),
+      'parentCueId': serializer.toJson<String?>(parentCueId),
+      'parentCueIndex': serializer.toJson<int?>(parentCueIndex),
       'mediaItemJson': serializer.toJson<String>(mediaItemJson),
       'savedAtMillis': serializer.toJson<int>(savedAtMillis),
     };
@@ -2528,6 +2697,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
     String? cueId,
     int? cueIndex,
     String? cueText,
+    Value<int?> startTimeMs = const Value.absent(),
+    Value<int?> endTimeMs = const Value.absent(),
+    Value<String?> cueMode = const Value.absent(),
+    Value<String?> parentCueId = const Value.absent(),
+    Value<int?> parentCueIndex = const Value.absent(),
     String? mediaItemJson,
     int? savedAtMillis,
   }) => SavedCueEntry(
@@ -2537,6 +2711,13 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
     cueId: cueId ?? this.cueId,
     cueIndex: cueIndex ?? this.cueIndex,
     cueText: cueText ?? this.cueText,
+    startTimeMs: startTimeMs.present ? startTimeMs.value : this.startTimeMs,
+    endTimeMs: endTimeMs.present ? endTimeMs.value : this.endTimeMs,
+    cueMode: cueMode.present ? cueMode.value : this.cueMode,
+    parentCueId: parentCueId.present ? parentCueId.value : this.parentCueId,
+    parentCueIndex: parentCueIndex.present
+        ? parentCueIndex.value
+        : this.parentCueIndex,
     mediaItemJson: mediaItemJson ?? this.mediaItemJson,
     savedAtMillis: savedAtMillis ?? this.savedAtMillis,
   );
@@ -2552,6 +2733,17 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
       cueId: data.cueId.present ? data.cueId.value : this.cueId,
       cueIndex: data.cueIndex.present ? data.cueIndex.value : this.cueIndex,
       cueText: data.cueText.present ? data.cueText.value : this.cueText,
+      startTimeMs: data.startTimeMs.present
+          ? data.startTimeMs.value
+          : this.startTimeMs,
+      endTimeMs: data.endTimeMs.present ? data.endTimeMs.value : this.endTimeMs,
+      cueMode: data.cueMode.present ? data.cueMode.value : this.cueMode,
+      parentCueId: data.parentCueId.present
+          ? data.parentCueId.value
+          : this.parentCueId,
+      parentCueIndex: data.parentCueIndex.present
+          ? data.parentCueIndex.value
+          : this.parentCueIndex,
       mediaItemJson: data.mediaItemJson.present
           ? data.mediaItemJson.value
           : this.mediaItemJson,
@@ -2570,6 +2762,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
           ..write('cueId: $cueId, ')
           ..write('cueIndex: $cueIndex, ')
           ..write('cueText: $cueText, ')
+          ..write('startTimeMs: $startTimeMs, ')
+          ..write('endTimeMs: $endTimeMs, ')
+          ..write('cueMode: $cueMode, ')
+          ..write('parentCueId: $parentCueId, ')
+          ..write('parentCueIndex: $parentCueIndex, ')
           ..write('mediaItemJson: $mediaItemJson, ')
           ..write('savedAtMillis: $savedAtMillis')
           ..write(')'))
@@ -2584,6 +2781,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
     cueId,
     cueIndex,
     cueText,
+    startTimeMs,
+    endTimeMs,
+    cueMode,
+    parentCueId,
+    parentCueIndex,
     mediaItemJson,
     savedAtMillis,
   );
@@ -2597,6 +2799,11 @@ class SavedCueEntry extends DataClass implements Insertable<SavedCueEntry> {
           other.cueId == this.cueId &&
           other.cueIndex == this.cueIndex &&
           other.cueText == this.cueText &&
+          other.startTimeMs == this.startTimeMs &&
+          other.endTimeMs == this.endTimeMs &&
+          other.cueMode == this.cueMode &&
+          other.parentCueId == this.parentCueId &&
+          other.parentCueIndex == this.parentCueIndex &&
           other.mediaItemJson == this.mediaItemJson &&
           other.savedAtMillis == this.savedAtMillis);
 }
@@ -2608,6 +2815,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
   final Value<String> cueId;
   final Value<int> cueIndex;
   final Value<String> cueText;
+  final Value<int?> startTimeMs;
+  final Value<int?> endTimeMs;
+  final Value<String?> cueMode;
+  final Value<String?> parentCueId;
+  final Value<int?> parentCueIndex;
   final Value<String> mediaItemJson;
   final Value<int> savedAtMillis;
   final Value<int> rowid;
@@ -2618,6 +2830,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
     this.cueId = const Value.absent(),
     this.cueIndex = const Value.absent(),
     this.cueText = const Value.absent(),
+    this.startTimeMs = const Value.absent(),
+    this.endTimeMs = const Value.absent(),
+    this.cueMode = const Value.absent(),
+    this.parentCueId = const Value.absent(),
+    this.parentCueIndex = const Value.absent(),
     this.mediaItemJson = const Value.absent(),
     this.savedAtMillis = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2629,6 +2846,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
     required String cueId,
     required int cueIndex,
     required String cueText,
+    this.startTimeMs = const Value.absent(),
+    this.endTimeMs = const Value.absent(),
+    this.cueMode = const Value.absent(),
+    this.parentCueId = const Value.absent(),
+    this.parentCueIndex = const Value.absent(),
     required String mediaItemJson,
     required int savedAtMillis,
     this.rowid = const Value.absent(),
@@ -2647,6 +2869,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
     Expression<String>? cueId,
     Expression<int>? cueIndex,
     Expression<String>? cueText,
+    Expression<int>? startTimeMs,
+    Expression<int>? endTimeMs,
+    Expression<String>? cueMode,
+    Expression<String>? parentCueId,
+    Expression<int>? parentCueIndex,
     Expression<String>? mediaItemJson,
     Expression<int>? savedAtMillis,
     Expression<int>? rowid,
@@ -2658,6 +2885,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
       if (cueId != null) 'cue_id': cueId,
       if (cueIndex != null) 'cue_index': cueIndex,
       if (cueText != null) 'cue_text': cueText,
+      if (startTimeMs != null) 'start_time_ms': startTimeMs,
+      if (endTimeMs != null) 'end_time_ms': endTimeMs,
+      if (cueMode != null) 'cue_mode': cueMode,
+      if (parentCueId != null) 'parent_cue_id': parentCueId,
+      if (parentCueIndex != null) 'parent_cue_index': parentCueIndex,
       if (mediaItemJson != null) 'media_item_json': mediaItemJson,
       if (savedAtMillis != null) 'saved_at_millis': savedAtMillis,
       if (rowid != null) 'rowid': rowid,
@@ -2671,6 +2903,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
     Value<String>? cueId,
     Value<int>? cueIndex,
     Value<String>? cueText,
+    Value<int?>? startTimeMs,
+    Value<int?>? endTimeMs,
+    Value<String?>? cueMode,
+    Value<String?>? parentCueId,
+    Value<int?>? parentCueIndex,
     Value<String>? mediaItemJson,
     Value<int>? savedAtMillis,
     Value<int>? rowid,
@@ -2682,6 +2919,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
       cueId: cueId ?? this.cueId,
       cueIndex: cueIndex ?? this.cueIndex,
       cueText: cueText ?? this.cueText,
+      startTimeMs: startTimeMs ?? this.startTimeMs,
+      endTimeMs: endTimeMs ?? this.endTimeMs,
+      cueMode: cueMode ?? this.cueMode,
+      parentCueId: parentCueId ?? this.parentCueId,
+      parentCueIndex: parentCueIndex ?? this.parentCueIndex,
       mediaItemJson: mediaItemJson ?? this.mediaItemJson,
       savedAtMillis: savedAtMillis ?? this.savedAtMillis,
       rowid: rowid ?? this.rowid,
@@ -2709,6 +2951,21 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
     if (cueText.present) {
       map['cue_text'] = Variable<String>(cueText.value);
     }
+    if (startTimeMs.present) {
+      map['start_time_ms'] = Variable<int>(startTimeMs.value);
+    }
+    if (endTimeMs.present) {
+      map['end_time_ms'] = Variable<int>(endTimeMs.value);
+    }
+    if (cueMode.present) {
+      map['cue_mode'] = Variable<String>(cueMode.value);
+    }
+    if (parentCueId.present) {
+      map['parent_cue_id'] = Variable<String>(parentCueId.value);
+    }
+    if (parentCueIndex.present) {
+      map['parent_cue_index'] = Variable<int>(parentCueIndex.value);
+    }
     if (mediaItemJson.present) {
       map['media_item_json'] = Variable<String>(mediaItemJson.value);
     }
@@ -2730,6 +2987,11 @@ class SavedCueEntriesCompanion extends UpdateCompanion<SavedCueEntry> {
           ..write('cueId: $cueId, ')
           ..write('cueIndex: $cueIndex, ')
           ..write('cueText: $cueText, ')
+          ..write('startTimeMs: $startTimeMs, ')
+          ..write('endTimeMs: $endTimeMs, ')
+          ..write('cueMode: $cueMode, ')
+          ..write('parentCueId: $parentCueId, ')
+          ..write('parentCueIndex: $parentCueIndex, ')
           ..write('mediaItemJson: $mediaItemJson, ')
           ..write('savedAtMillis: $savedAtMillis, ')
           ..write('rowid: $rowid')
@@ -4109,6 +4371,11 @@ typedef $$SavedCueEntriesTableCreateCompanionBuilder =
       required String cueId,
       required int cueIndex,
       required String cueText,
+      Value<int?> startTimeMs,
+      Value<int?> endTimeMs,
+      Value<String?> cueMode,
+      Value<String?> parentCueId,
+      Value<int?> parentCueIndex,
       required String mediaItemJson,
       required int savedAtMillis,
       Value<int> rowid,
@@ -4121,6 +4388,11 @@ typedef $$SavedCueEntriesTableUpdateCompanionBuilder =
       Value<String> cueId,
       Value<int> cueIndex,
       Value<String> cueText,
+      Value<int?> startTimeMs,
+      Value<int?> endTimeMs,
+      Value<String?> cueMode,
+      Value<String?> parentCueId,
+      Value<int?> parentCueIndex,
       Value<String> mediaItemJson,
       Value<int> savedAtMillis,
       Value<int> rowid,
@@ -4162,6 +4434,31 @@ class $$SavedCueEntriesTableFilterComposer
 
   ColumnFilters<String> get cueText => $composableBuilder(
     column: $table.cueText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startTimeMs => $composableBuilder(
+    column: $table.startTimeMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get endTimeMs => $composableBuilder(
+    column: $table.endTimeMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueMode => $composableBuilder(
+    column: $table.cueMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentCueId => $composableBuilder(
+    column: $table.parentCueId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get parentCueIndex => $composableBuilder(
+    column: $table.parentCueIndex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4215,6 +4512,31 @@ class $$SavedCueEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get startTimeMs => $composableBuilder(
+    column: $table.startTimeMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get endTimeMs => $composableBuilder(
+    column: $table.endTimeMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueMode => $composableBuilder(
+    column: $table.cueMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentCueId => $composableBuilder(
+    column: $table.parentCueId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get parentCueIndex => $composableBuilder(
+    column: $table.parentCueIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get mediaItemJson => $composableBuilder(
     column: $table.mediaItemJson,
     builder: (column) => ColumnOrderings(column),
@@ -4256,6 +4578,27 @@ class $$SavedCueEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get cueText =>
       $composableBuilder(column: $table.cueText, builder: (column) => column);
+
+  GeneratedColumn<int> get startTimeMs => $composableBuilder(
+    column: $table.startTimeMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get endTimeMs =>
+      $composableBuilder(column: $table.endTimeMs, builder: (column) => column);
+
+  GeneratedColumn<String> get cueMode =>
+      $composableBuilder(column: $table.cueMode, builder: (column) => column);
+
+  GeneratedColumn<String> get parentCueId => $composableBuilder(
+    column: $table.parentCueId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get parentCueIndex => $composableBuilder(
+    column: $table.parentCueIndex,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get mediaItemJson => $composableBuilder(
     column: $table.mediaItemJson,
@@ -4311,6 +4654,11 @@ class $$SavedCueEntriesTableTableManager
                 Value<String> cueId = const Value.absent(),
                 Value<int> cueIndex = const Value.absent(),
                 Value<String> cueText = const Value.absent(),
+                Value<int?> startTimeMs = const Value.absent(),
+                Value<int?> endTimeMs = const Value.absent(),
+                Value<String?> cueMode = const Value.absent(),
+                Value<String?> parentCueId = const Value.absent(),
+                Value<int?> parentCueIndex = const Value.absent(),
                 Value<String> mediaItemJson = const Value.absent(),
                 Value<int> savedAtMillis = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4321,6 +4669,11 @@ class $$SavedCueEntriesTableTableManager
                 cueId: cueId,
                 cueIndex: cueIndex,
                 cueText: cueText,
+                startTimeMs: startTimeMs,
+                endTimeMs: endTimeMs,
+                cueMode: cueMode,
+                parentCueId: parentCueId,
+                parentCueIndex: parentCueIndex,
                 mediaItemJson: mediaItemJson,
                 savedAtMillis: savedAtMillis,
                 rowid: rowid,
@@ -4333,6 +4686,11 @@ class $$SavedCueEntriesTableTableManager
                 required String cueId,
                 required int cueIndex,
                 required String cueText,
+                Value<int?> startTimeMs = const Value.absent(),
+                Value<int?> endTimeMs = const Value.absent(),
+                Value<String?> cueMode = const Value.absent(),
+                Value<String?> parentCueId = const Value.absent(),
+                Value<int?> parentCueIndex = const Value.absent(),
                 required String mediaItemJson,
                 required int savedAtMillis,
                 Value<int> rowid = const Value.absent(),
@@ -4343,6 +4701,11 @@ class $$SavedCueEntriesTableTableManager
                 cueId: cueId,
                 cueIndex: cueIndex,
                 cueText: cueText,
+                startTimeMs: startTimeMs,
+                endTimeMs: endTimeMs,
+                cueMode: cueMode,
+                parentCueId: parentCueId,
+                parentCueIndex: parentCueIndex,
                 mediaItemJson: mediaItemJson,
                 savedAtMillis: savedAtMillis,
                 rowid: rowid,

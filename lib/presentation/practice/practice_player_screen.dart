@@ -47,10 +47,12 @@ class PracticePlayerScreen extends StatefulWidget {
     super.key,
     required this.mediaItem,
     this.initialCueIndex,
+    this.initialSavedCue,
   });
 
   final MediaItem mediaItem;
   final int? initialCueIndex;
+  final SavedCueRecord? initialSavedCue;
 
   @override
   State<PracticePlayerScreen> createState() => _PracticePlayerScreenState();
@@ -134,13 +136,18 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       widget.mediaItem.wordTiming!.isNotEmpty;
 
   List<Cue> get _activeCues {
-    if (_hasWordTiming &&
-        _sentenceMode == CueSentenceMode.short &&
-        _shortCues.isNotEmpty) {
+    if (_canUseShortMode && _sentenceMode == CueSentenceMode.short) {
       return _shortCues;
     }
     return widget.mediaItem.cues;
   }
+
+  bool get _canUseShortMode => _hasWordTiming && _shortCues.isNotEmpty;
+
+  String get _activeCueMode =>
+      _canUseShortMode && _sentenceMode == CueSentenceMode.short
+      ? CueSentenceMode.short.name
+      : CueSentenceMode.long.name;
 
   void _setHighlightFromMediaMs(int positionMs) {
     if (!_hasWordTiming || !_isPlaying) {
@@ -173,16 +180,55 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _initSentenceModeAndSeed() async {
-    final mode = await PracticeSentenceModeStore.instance.load();
+    final storedMode = await PracticeSentenceModeStore.instance.load();
+    final startupMode = _resolveStartupSentenceMode(storedMode);
     if (!mounted) {
       return;
     }
     setState(() {
-      _sentenceMode = mode;
+      _sentenceMode = startupMode;
       _wordTimingCharStarts = _buildWordTimingCharStarts();
     });
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
+  }
+
+  CueSentenceMode _resolveStartupSentenceMode(CueSentenceMode storedMode) {
+    final savedCue = widget.initialSavedCue;
+    if (savedCue == null) {
+      return storedMode;
+    }
+
+    CueSentenceMode? parsedMode;
+    final savedMode = savedCue.cueMode?.trim().toLowerCase();
+    if (savedMode == CueSentenceMode.short.name) {
+      parsedMode = CueSentenceMode.short;
+    } else if (savedMode == CueSentenceMode.long.name) {
+      parsedMode = CueSentenceMode.long;
+    }
+
+    if (parsedMode == CueSentenceMode.short && !_canUseShortMode) {
+      return CueSentenceMode.long;
+    }
+    if (parsedMode != null) {
+      return parsedMode;
+    }
+
+    if (_canUseShortMode) {
+      final shortMatch = _shortCues.any((cue) => cue.id == savedCue.cueId);
+      if (shortMatch) {
+        return CueSentenceMode.short;
+      }
+    }
+
+    final longMatch = widget.mediaItem.cues.any(
+      (cue) => cue.id == savedCue.cueId,
+    );
+    if (longMatch) {
+      return CueSentenceMode.long;
+    }
+
+    return storedMode;
   }
 
   List<int?> _buildWordTimingCharStarts() {
@@ -256,6 +302,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (cues.isEmpty) {
       return;
     }
+    final initialSavedCue = widget.initialSavedCue;
+    if (initialSavedCue != null) {
+      final resolved = _resolveInitialSavedCueIndex(initialSavedCue);
+      if (resolved != null && mounted) {
+        setState(() => _currentCueIndex = resolved);
+        return;
+      }
+    }
     final initial = widget.initialCueIndex;
     if (initial != null && initial >= 0 && initial < cues.length) {
       if (mounted) setState(() => _currentCueIndex = initial);
@@ -267,6 +321,52 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (saved > 0 && saved < cues.length && mounted) {
       setState(() => _currentCueIndex = saved);
     }
+  }
+
+  int? _resolveInitialSavedCueIndex(SavedCueRecord savedCue) {
+    final cues = _activeCues;
+    final exact = cues.indexWhere((cue) => cue.id == savedCue.cueId);
+    if (exact >= 0) {
+      return exact;
+    }
+
+    final savedMode = savedCue.cueMode?.trim().toLowerCase();
+    if (savedMode == _activeCueMode &&
+        savedCue.cueIndex >= 0 &&
+        savedCue.cueIndex < cues.length) {
+      return savedCue.cueIndex;
+    }
+
+    final startMs = savedCue.startTimeMs;
+    final endMs = savedCue.endTimeMs;
+    if (startMs != null && endMs != null) {
+      final containing = cues.indexWhere(
+        (cue) => startMs >= cue.startTimeMs && startMs < cue.endTimeMs,
+      );
+      if (containing >= 0) {
+        return containing;
+      }
+
+      final overlapping = cues.indexWhere(
+        (cue) => startMs < cue.endTimeMs && endMs > cue.startTimeMs,
+      );
+      if (overlapping >= 0) {
+        return overlapping;
+      }
+    }
+
+    final parentIndex = savedCue.parentCueIndex;
+    if (_activeCueMode == CueSentenceMode.long.name &&
+        parentIndex != null &&
+        parentIndex >= 0 &&
+        parentIndex < cues.length) {
+      return parentIndex;
+    }
+
+    if (savedCue.cueIndex >= 0 && savedCue.cueIndex < cues.length) {
+      return savedCue.cueIndex;
+    }
+    return null;
   }
 
   @override
@@ -1992,6 +2092,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                           mediaItem: widget.mediaItem,
                           cue: cue,
                           cueIndex: _currentCueIndex,
+                          metadata: _savedCueMetadataFor(cue),
                         )
                         .then((_) {
                           if (mounted) setState(() {});
@@ -2019,6 +2120,50 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ],
       ),
     );
+  }
+
+  SavedCueMetadata _savedCueMetadataFor(Cue cue) {
+    final parent = _parentCueFor(cue);
+    return SavedCueMetadata(
+      cueText: cue.originalText,
+      startTimeMs: cue.startTimeMs,
+      endTimeMs: cue.endTimeMs,
+      cueMode: _activeCueMode,
+      parentCueId: parent?.cue.id,
+      parentCueIndex: parent?.index,
+    );
+  }
+
+  ({Cue cue, int index})? _parentCueFor(Cue cue) {
+    final parentCues = widget.mediaItem.cues;
+    if (parentCues.isEmpty) {
+      return null;
+    }
+
+    for (var i = 0; i < parentCues.length; i++) {
+      final parent = parentCues[i];
+      if (parent.id == cue.id) {
+        return (cue: parent, index: i);
+      }
+    }
+
+    for (var i = 0; i < parentCues.length; i++) {
+      final parent = parentCues[i];
+      if (cue.startTimeMs >= parent.startTimeMs &&
+          cue.startTimeMs < parent.endTimeMs) {
+        return (cue: parent, index: i);
+      }
+    }
+
+    for (var i = 0; i < parentCues.length; i++) {
+      final parent = parentCues[i];
+      if (cue.startTimeMs < parent.endTimeMs &&
+          cue.endTimeMs > parent.startTimeMs) {
+        return (cue: parent, index: i);
+      }
+    }
+
+    return null;
   }
 
   Set<int>? _subtitleHighlightCharStartsAtPlayhead() {

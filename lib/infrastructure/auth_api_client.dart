@@ -913,6 +913,12 @@ class AuthApiClient {
     required String videoId,
     required String cueId,
     required int cueIndex,
+    String? cueText,
+    int? startTimeMs,
+    int? endTimeMs,
+    String? cueMode,
+    String? parentCueId,
+    int? parentCueIndex,
   }) async {
     return _retryWithRefresh(accessToken, (token) async {
       try {
@@ -923,13 +929,25 @@ class AuthApiClient {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
         request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
         request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-        request.write(
-          jsonEncode({
-            'videoId': videoId,
-            'cueId': cueId,
-            'cueIndex': cueIndex,
-          }),
+        final payload = <String, dynamic>{
+          'videoId': videoId,
+          'cueId': cueId,
+          'cueIndex': cueIndex,
+        };
+        if (cueText != null) payload['cueText'] = cueText;
+        if (startTimeMs != null) payload['startTimeMs'] = startTimeMs;
+        if (endTimeMs != null) payload['endTimeMs'] = endTimeMs;
+        if (cueMode != null) payload['cueMode'] = cueMode;
+        if (parentCueId != null) payload['parentCueId'] = parentCueId;
+        if (parentCueIndex != null) {
+          payload['parentCueIndex'] = parentCueIndex;
+        }
+        final bodyBytes = utf8.encode(jsonEncode(payload));
+        request.headers.set(
+          HttpHeaders.contentLengthHeader,
+          bodyBytes.length.toString(),
         );
+        request.add(bodyBytes);
         final response = await request.close();
         final body = await response.transform(utf8.decoder).join();
         if (response.statusCode == 401) {
@@ -1405,6 +1423,12 @@ class SavedCueApiEntry {
   final String id;
   final String cueId;
   final int cueIndex;
+  final String? cueText;
+  final int? startTimeMs;
+  final int? endTimeMs;
+  final String? cueMode;
+  final String? parentCueId;
+  final int? parentCueIndex;
   final DateTime savedAt;
   final UploadedVideo video;
 
@@ -1412,6 +1436,12 @@ class SavedCueApiEntry {
     required this.id,
     required this.cueId,
     required this.cueIndex,
+    this.cueText,
+    this.startTimeMs,
+    this.endTimeMs,
+    this.cueMode,
+    this.parentCueId,
+    this.parentCueIndex,
     required this.savedAt,
     required this.video,
   });
@@ -1424,10 +1454,21 @@ class SavedCueApiEntry {
       id: json['id']?.toString() ?? '',
       cueId: json['cueId']?.toString() ?? '',
       cueIndex: (json['cueIndex'] as num?)?.toInt() ?? 0,
+      cueText: _nonEmptyStringOrNull(json['cueText']),
+      startTimeMs: (json['startTimeMs'] as num?)?.toInt(),
+      endTimeMs: (json['endTimeMs'] as num?)?.toInt(),
+      cueMode: _nonEmptyStringOrNull(json['cueMode']),
+      parentCueId: _nonEmptyStringOrNull(json['parentCueId']),
+      parentCueIndex: (json['parentCueIndex'] as num?)?.toInt(),
       savedAt: json['savedAt'] != null
           ? DateTime.tryParse(json['savedAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       video: AuthApiClient.uploadedVideoFromJsonPublic(videoMap),
     );
+  }
+
+  static String? _nonEmptyStringOrNull(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

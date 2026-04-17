@@ -33,7 +33,10 @@ class _SavedCuesScreenState extends State<SavedCuesScreen> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _confirmDelete(BuildContext context, SavedCueRecord entry) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    SavedCueRecord entry,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -147,12 +150,16 @@ class _SavedCuesScreenState extends State<SavedCuesScreen> {
                         builder: (_) => PracticePlayerScreen(
                           mediaItem: entry.mediaItem,
                           initialCueIndex: entry.cueIndex,
+                          initialSavedCue: entry,
                         ),
                       ),
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     child: Row(
                       children: [
                         ClipRRect(
@@ -186,12 +193,13 @@ class _SavedCuesScreenState extends State<SavedCuesScreen> {
                                 entry.cueText,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.6),
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
                               ),
                             ],
                           ),

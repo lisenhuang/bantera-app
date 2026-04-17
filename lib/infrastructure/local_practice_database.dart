@@ -62,6 +62,11 @@ class SavedCueEntries extends Table {
   TextColumn get cueId => text()();
   IntColumn get cueIndex => integer()();
   TextColumn get cueText => text()();
+  IntColumn get startTimeMs => integer().nullable()();
+  IntColumn get endTimeMs => integer().nullable()();
+  TextColumn get cueMode => text().nullable()();
+  TextColumn get parentCueId => text().nullable()();
+  IntColumn get parentCueIndex => integer().nullable()();
   TextColumn get mediaItemJson => text()();
   IntColumn get savedAtMillis => integer()();
 
@@ -99,7 +104,12 @@ LazyDatabase _openConnection() {
 }
 
 @DriftDatabase(
-  tables: [LocalPracticeEntries, LocalPracticeCueEntries, LocalCueAttemptEntries, SavedCueEntries],
+  tables: [
+    LocalPracticeEntries,
+    LocalPracticeCueEntries,
+    LocalCueAttemptEntries,
+    SavedCueEntries,
+  ],
 )
 class LocalPracticeDatabase extends _$LocalPracticeDatabase {
   LocalPracticeDatabase._internal() : super(_openConnection());
@@ -108,7 +118,7 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
       LocalPracticeDatabase._internal();
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -121,6 +131,16 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
       }
       if (from < 3) {
         await migrator.createTable(savedCueEntries);
+      }
+      if (from < 4) {
+        await migrator.addColumn(savedCueEntries, savedCueEntries.startTimeMs);
+        await migrator.addColumn(savedCueEntries, savedCueEntries.endTimeMs);
+        await migrator.addColumn(savedCueEntries, savedCueEntries.cueMode);
+        await migrator.addColumn(savedCueEntries, savedCueEntries.parentCueId);
+        await migrator.addColumn(
+          savedCueEntries,
+          savedCueEntries.parentCueIndex,
+        );
       }
     },
     beforeOpen: (details) async {
