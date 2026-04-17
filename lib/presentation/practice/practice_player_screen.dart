@@ -22,12 +22,20 @@ import '../../infrastructure/saved_cue_repository.dart';
 import '../../infrastructure/play_all_pause_store.dart';
 import '../../infrastructure/practice_playback_speed_store.dart';
 import '../../infrastructure/practice_progress_store.dart';
+import '../../infrastructure/practice_sentence_mode_store.dart';
+import '../../infrastructure/short_cue_builder.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import 'cue_recording_pipeline.dart';
 import 'record_compare_sheet.dart';
 import 'session_compare_result_sheet.dart';
+
+String _practiceSubtitleHighlightKey(String word) {
+  return word
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9\u4e00-\u9fff]'), '');
+}
 
 enum SubtitleState { hidden, original, translated }
 
@@ -65,6 +73,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   AudioPlayer? _audioPlayer;
   StreamSubscription<Duration>? _audioPositionSub;
   bool _audioPlayerReady = false;
+  List<Cue> _shortCues = const [];
+  CueSentenceMode _sentenceMode = CueSentenceMode.short;
+  int _currentPositionMs = 0;
   bool _isTimelineCueSelectionInFlight = false;
   int? _queuedTimelineCueIndex;
   int? _loadedMediaDurationMs;
@@ -114,12 +125,56 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return null;
   }
 
+  bool get _hasWordTiming =>
+      widget.mediaItem.wordTiming != null &&
+      widget.mediaItem.wordTiming!.isNotEmpty;
+
+  List<Cue> get _activeCues {
+    if (_hasWordTiming &&
+        _sentenceMode == CueSentenceMode.short &&
+        _shortCues.isNotEmpty) {
+      return _shortCues;
+    }
+    return widget.mediaItem.cues;
+  }
+
+  void _setHighlightFromMediaMs(int positionMs) {
+    if (!_hasWordTiming || !_isPlaying) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    if (_currentPositionMs == positionMs) {
+      return;
+    }
+    setState(() => _currentPositionMs = positionMs);
+  }
+
   @override
   void initState() {
     super.initState();
+    final lines = widget.mediaItem.dialogueLines;
+    if (_hasWordTiming && lines != null && lines.isNotEmpty) {
+      _shortCues = ShortCueBuilder.build(
+        mediaItemId: widget.mediaItem.id,
+        dialogueLines: lines,
+        wordTiming: widget.mediaItem.wordTiming!,
+        parentCues: widget.mediaItem.cues,
+      );
+    }
+    unawaited(_initSentenceModeAndSeed());
+    unawaited(SavedCueRepository.instance.load());
+  }
+
+  Future<void> _initSentenceModeAndSeed() async {
+    final mode = await PracticeSentenceModeStore.instance.load();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _sentenceMode = mode);
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
-    unawaited(SavedCueRepository.instance.load());
   }
 
   Future<void> _startupPracticeSession() async {
@@ -152,17 +207,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _restoreProgress() async {
+    final cues = _activeCues;
+    if (cues.isEmpty) {
+      return;
+    }
     final initial = widget.initialCueIndex;
-    if (initial != null &&
-        initial >= 0 &&
-        initial < widget.mediaItem.cues.length) {
+    if (initial != null && initial >= 0 && initial < cues.length) {
       if (mounted) setState(() => _currentCueIndex = initial);
       return;
     }
     final saved = await PracticeProgressStore.instance.getCueIndex(
       widget.mediaItem.id,
     );
-    if (saved > 0 && saved < widget.mediaItem.cues.length && mounted) {
+    if (saved > 0 && saved < cues.length && mounted) {
       setState(() => _currentCueIndex = saved);
     }
   }
@@ -202,7 +259,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _nextCue() {
-    final cues = widget.mediaItem.cues;
+    final cues = _activeCues;
     if (cues.isEmpty) return;
     if (_currentCueIndex < cues.length - 1) {
       unawaited(_selectCue(_currentCueIndex + 1));
@@ -262,7 +319,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   /// (so audio through the gap is not cut off by an early [Cue.endTimeMs]),
   /// otherwise this cue's end. If data overlaps, never stop earlier than [Cue.endTimeMs].
   int _playbackStopMsForCueIndex(int cueIndex) {
-    final cues = widget.mediaItem.cues;
+    final cues = _activeCues;
     if (cueIndex < 0 || cueIndex >= cues.length) return 0;
     final cue = cues[cueIndex];
     final isV2 = (widget.mediaItem.transcriptionVersion ?? 0) > 0;
@@ -301,7 +358,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   int _cueIndexForTimelineDx(double localDx, double width) {
-    final cueCount = widget.mediaItem.cues.length;
+    final cueCount = _activeCues.length;
     if (cueCount <= 1 || width <= 0) {
       return 0;
     }
@@ -325,7 +382,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _selectCueFromTimeline(int nextIndex) async {
-    if (nextIndex < 0 || nextIndex >= widget.mediaItem.cues.length) {
+    if (nextIndex < 0 || nextIndex >= _activeCues.length) {
       return;
     }
     if (_isTimelineCueSelectionInFlight) {
@@ -513,7 +570,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      final cues = widget.mediaItem.cues;
+      final cues = _activeCues;
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[endedCueIndex],
@@ -555,7 +612,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      final cues = widget.mediaItem.cues;
+      final cues = _activeCues;
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[endedCueIndex],
@@ -597,7 +654,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      final cues = widget.mediaItem.cues;
+      final cues = _activeCues;
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[cueIndex],
@@ -636,7 +693,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      final cues = widget.mediaItem.cues;
+      final cues = _activeCues;
       final delayMs = _playAllGapDelayMs(
         mode: pauseMode,
         endedCue: cues[cueIndex],
@@ -683,7 +740,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     final audioPlayer = _audioPlayer;
     if (audioPlayer != null && _audioPlayerReady) {
-      final cue = widget.mediaItem.cues[_currentCueIndex];
+      final cue = _activeCues[_currentCueIndex];
       final current = await audioPlayer.getCurrentPosition();
       final seekMs = _seekMsResumeWithinCurrentCue(
         cueStartMs: cue.startTimeMs,
@@ -706,8 +763,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           return;
         }
         _lastKnownAudioPositionMs = pos.inMilliseconds;
-        final cues = widget.mediaItem.cues;
         final posMs = pos.inMilliseconds;
+        _setHighlightFromMediaMs(posMs);
+        final cues = _activeCues;
         final i = _currentCueIndex;
 
         final continuous =
@@ -784,7 +842,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    final vCue = widget.mediaItem.cues[_currentCueIndex];
+    final vCue = _activeCues[_currentCueIndex];
     final vSeekMs = _seekMsResumeWithinCurrentCue(
       cueStartMs: vCue.startTimeMs,
       cuePlaybackStopMs: _playbackStopMsForCueIndex(_currentCueIndex),
@@ -812,7 +870,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
       final posMs = controller.value.position.inMilliseconds;
       _lastKnownVideoPositionMs = posMs;
-      final cues = widget.mediaItem.cues;
+      _setHighlightFromMediaMs(posMs);
+      final cues = _activeCues;
       final i = _currentCueIndex;
 
       final continuous =
@@ -899,6 +958,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _audioPositionSub = ap.onPositionChanged.listen((pos) {
         if (!mounted) return;
         _lastKnownAudioPositionMs = pos.inMilliseconds;
+        _setHighlightFromMediaMs(pos.inMilliseconds);
         if (_isPlaying &&
             pos.inMilliseconds >=
                 _playbackStopMsForCueIndex(_currentCueIndex)) {
@@ -918,10 +978,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (oldListener != null) controller.removeListener(oldListener);
       _videoListener = () {
         if (!mounted) return;
-        _lastKnownVideoPositionMs = controller.value.position.inMilliseconds;
+        final vPos = controller.value.position.inMilliseconds;
+        _lastKnownVideoPositionMs = vPos;
+        _setHighlightFromMediaMs(vPos);
         if (_isPlaying &&
-            controller.value.position.inMilliseconds >=
-                _playbackStopMsForCueIndex(_currentCueIndex)) {
+            vPos >= _playbackStopMsForCueIndex(_currentCueIndex)) {
           controller.pause();
           unawaited(WakelockPlus.disable());
           if (mounted) setState(() => _isPlaying = false);
@@ -984,7 +1045,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         builder: (context, scrollController) => RecordCompareSheet(
           scrollController: scrollController,
           mediaItemId: widget.mediaItem.id,
-          cue: widget.mediaItem.cues[_currentCueIndex],
+          cue: _activeCues[_currentCueIndex],
           sourceLocaleIdentifier: _sourceLocaleIdentifier,
         ),
       ),
@@ -1230,7 +1291,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         );
       }
 
-      final cue = widget.mediaItem.cues[_currentCueIndex];
+      final cue = _activeCues[_currentCueIndex];
       final processed = await processRecordingFile(
         audioFile: File(resolvedPath),
         expectedCueText: cue.originalText,
@@ -1304,7 +1365,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     final translated = <String, String>{};
-    for (final cue in widget.mediaItem.cues) {
+    for (final cue in _activeCues) {
       final text = cue.translatedText.trim();
       if (text.isNotEmpty) {
         translated[cue.id] = text;
@@ -1325,7 +1386,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return Scaffold(body: Center(child: Text(_l10n.practiceNoCues)));
     }
 
-    final cue = widget.mediaItem.cues[_currentCueIndex];
+    final cue = _activeCues[_currentCueIndex];
     final colorScheme = Theme.of(context).colorScheme;
     final legacyApple = isLegacyAppleOsPre26;
 
@@ -1371,14 +1432,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               style: Theme.of(context).textTheme.labelLarge,
             ),
           ),
-          if (supportsBuiltInTranslation)
+          if (supportsBuiltInTranslation || _hasWordTiming)
             IconButton(
               icon: const Icon(CupertinoIcons.settings),
               onPressed: _isTranslating
                   ? null
-                  : () {
-                      unawaited(_changeTranslationLanguage());
-                    },
+                  : _openPracticeSettingsSheet,
             ),
         ],
       ),
@@ -1853,7 +1912,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor:
-                        ((_currentCueIndex + 1) / widget.mediaItem.cues.length)
+                        ((_currentCueIndex + 1) / _activeCues.length)
                             .clamp(0.0, 1.0),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -1868,7 +1927,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           ),
           const SizedBox(width: 10),
           Text(
-            '${_currentCueIndex + 1}/${widget.mediaItem.cues.length}',
+            '${_currentCueIndex + 1}/${_activeCues.length}',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: colorScheme.primary,
@@ -1918,6 +1977,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     );
   }
 
+  Set<String>? _subtitleHighlightWordKeysAtPlayhead() {
+    if (!_hasWordTiming || !_isPlaying) {
+      return null;
+    }
+    final wt = widget.mediaItem.wordTiming;
+    if (wt == null || wt.isEmpty) {
+      return null;
+    }
+    final pos = _currentPositionMs;
+    final keys = <String>{};
+    for (final w in wt) {
+      if (pos >= w.startMs && pos < w.endMs) {
+        final k = _practiceSubtitleHighlightKey(w.word);
+        if (k.isNotEmpty) {
+          keys.add(k);
+        }
+      }
+    }
+    return keys.isEmpty ? null : keys;
+  }
+
   Widget _buildOriginalSubtitlePanel({
     required Cue cue,
     required ColorScheme colorScheme,
@@ -1948,6 +2028,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             minFontSize: hasPlayableMedia ? 16 : 18,
             maxFontSize: hasPlayableMedia ? 30 : 34,
             maxHeight: math.max(56, panelHeight - 32),
+            highlightWordKeys: _subtitleHighlightWordKeysAtPlayhead(),
           ),
         );
       },
@@ -2018,6 +2099,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   minFontSize: hasPlayableMedia ? 14 : 18,
                   maxFontSize: hasPlayableMedia ? 28 : 34,
                   maxHeight: originalHeight,
+                  highlightWordKeys: _subtitleHighlightWordKeysAtPlayhead(),
                 ),
               ),
               SizedBox(height: gap),
@@ -2149,7 +2231,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    final cue = widget.mediaItem.cues[_currentCueIndex];
+    final cue = _activeCues[_currentCueIndex];
     final generation = _activateTranslationTarget(targetLocale);
     final cachedTranslation = _translatedCueTexts[cue.id]?.trim();
 
@@ -2250,7 +2332,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    final remainingCues = widget.mediaItem.cues.where((cue) {
+    final remainingCues = _activeCues.where((cue) {
       if (cue.id == excludedCueId) {
         return false;
       }
@@ -2514,6 +2596,56 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _subtitleState = SubtitleState.original;
       }
     });
+  }
+
+  void _openPracticeSettingsSheet() {
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheetContext) => _PracticeSettingsSheet(
+          showTranslationRow: supportsBuiltInTranslation,
+          canPickSentenceMode: _hasWordTiming,
+          sentenceMode: _sentenceMode,
+          onPickTranslationLanguage: () {
+            Navigator.of(sheetContext).pop();
+            unawaited(_changeTranslationLanguage());
+          },
+          onSentenceModeChanged: (mode) {
+            Navigator.of(sheetContext).pop();
+            unawaited(_changeSentenceMode(mode));
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _changeSentenceMode(CueSentenceMode mode) async {
+    if (_sentenceMode == mode) {
+      return;
+    }
+    await PracticeSentenceModeStore.instance.save(mode);
+    if (!mounted) {
+      return;
+    }
+    if (_isPlayingAll) {
+      await _stopPlayAll();
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _sentenceMode = mode;
+      _translatedCueTexts = const {};
+      _translatedLanguageIdentifier = null;
+      _translationGeneration++;
+      _isBackgroundTranslating = false;
+      if (_subtitleState == SubtitleState.translated) {
+        _subtitleState = SubtitleState.original;
+      }
+      _currentCueIndex = 0;
+    });
+    await _selectCue(0);
   }
 
   int _activateTranslationTarget(String targetLocaleIdentifier) {
@@ -2928,6 +3060,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _audioPositionSub = player.onPositionChanged.listen((pos) {
           if (!mounted) return;
           _lastKnownAudioPositionMs = pos.inMilliseconds;
+          _setHighlightFromMediaMs(pos.inMilliseconds);
           final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
           final cueEnd = Duration(milliseconds: stopMs);
           if (_isPlaying && pos >= cueEnd) {
@@ -2940,9 +3073,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         final audioDuration = await player.getDuration();
         _loadedMediaDurationMs = audioDuration?.inMilliseconds;
         await player.seek(
-          Duration(milliseconds: widget.mediaItem.cues[0].startTimeMs),
+          Duration(milliseconds: _activeCues[0].startTimeMs),
         );
-        _lastKnownAudioPositionMs = widget.mediaItem.cues[0].startTimeMs;
+        _lastKnownAudioPositionMs = _activeCues[0].startTimeMs;
         if (mounted) setState(() => _audioPlayerReady = true);
       } catch (e) {
         _mediaError = _l10n.practiceAudioError;
@@ -2975,7 +3108,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           return;
         }
 
-        _lastKnownVideoPositionMs = controller.value.position.inMilliseconds;
+        final vPos = controller.value.position.inMilliseconds;
+        _lastKnownVideoPositionMs = vPos;
+        _setHighlightFromMediaMs(vPos);
         final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
         final cueEnd = Duration(milliseconds: stopMs);
         if (_isPlaying && controller.value.position >= cueEnd) {
@@ -2995,11 +3130,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await controller.pause();
       await controller.seekTo(
         Duration(
-          milliseconds: widget.mediaItem.cues[_currentCueIndex].startTimeMs,
+          milliseconds: _activeCues[_currentCueIndex].startTimeMs,
         ),
       );
       _lastKnownVideoPositionMs =
-          widget.mediaItem.cues[_currentCueIndex].startTimeMs;
+          _activeCues[_currentCueIndex].startTimeMs;
     } catch (_) {
       _mediaError = _l10n.practiceVideoOpenError;
     } finally {
@@ -3023,7 +3158,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         unawaited(WakelockPlus.disable());
         if (mounted) setState(() => _isPlaying = false);
       } else {
-        final cue = widget.mediaItem.cues[_currentCueIndex];
+        final cue = _activeCues[_currentCueIndex];
         final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
         final apiMs = (await audioPlayer.getCurrentPosition())?.inMilliseconds;
         final lastMs = _lastKnownAudioPositionMs;
@@ -3066,7 +3201,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    final cue = widget.mediaItem.cues[_currentCueIndex];
+    final cue = _activeCues[_currentCueIndex];
     final stopMs = _playbackStopMsForCueIndex(_currentCueIndex);
     final apiMs = controller.value.position.inMilliseconds;
     final lastMs = _lastKnownVideoPositionMs;
@@ -3092,7 +3227,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _selectCue(int nextIndex) async {
-    if (nextIndex < 0 || nextIndex >= widget.mediaItem.cues.length) {
+    if (nextIndex < 0 || nextIndex >= _activeCues.length) {
       return;
     }
 
@@ -3101,14 +3236,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final audioPlayer = _audioPlayer;
     if (audioPlayer != null && _audioPlayerReady) {
       await audioPlayer.pause();
-      final startMs = widget.mediaItem.cues[nextIndex].startTimeMs;
+      final startMs = _activeCues[nextIndex].startTimeMs;
       await audioPlayer.seek(Duration(milliseconds: startMs));
       _lastKnownAudioPositionMs = startMs;
     } else {
       final controller = _videoController;
       if (controller != null && controller.value.isInitialized) {
         await controller.pause();
-        final startMs = widget.mediaItem.cues[nextIndex].startTimeMs;
+        final startMs = _activeCues[nextIndex].startTimeMs;
         await controller.seekTo(Duration(milliseconds: startMs));
         _lastKnownVideoPositionMs = startMs;
       }
@@ -3145,6 +3280,80 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+}
+
+class _PracticeSettingsSheet extends StatelessWidget {
+  const _PracticeSettingsSheet({
+    super.key,
+    required this.showTranslationRow,
+    required this.canPickSentenceMode,
+    required this.sentenceMode,
+    required this.onPickTranslationLanguage,
+    required this.onSentenceModeChanged,
+  });
+
+  final bool showTranslationRow;
+  final bool canPickSentenceMode;
+  final CueSentenceMode sentenceMode;
+  final VoidCallback onPickTranslationLanguage;
+  final void Function(CueSentenceMode mode) onSentenceModeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showTranslationRow) ...[
+              ListTile(
+                leading: const Icon(Icons.translate_outlined),
+                title: const Text('Translation language'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: onPickTranslationLanguage,
+              ),
+              if (canPickSentenceMode) const Divider(height: 1),
+            ],
+            if (canPickSentenceMode) ...[
+              const SizedBox(height: 12),
+              Text(
+                'Sentence length',
+                style: Theme.of(context).textTheme.titleSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              SegmentedButton<CueSentenceMode>(
+                segments: const [
+                  ButtonSegment(
+                    value: CueSentenceMode.short,
+                    label: Text('Short'),
+                  ),
+                  ButtonSegment(
+                    value: CueSentenceMode.long,
+                    label: Text('Long'),
+                  ),
+                ],
+                selected: {sentenceMode},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) {
+                  if (s.isEmpty) {
+                    return;
+                  }
+                  final next = s.first;
+                  if (next == sentenceMode) {
+                    return;
+                  }
+                  onSentenceModeChanged(next);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -3402,9 +3611,11 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     required this.minFontSize,
     required this.maxFontSize,
     required this.maxHeight,
+    this.highlightWordKeys,
   });
 
   static const double _scrollBottomPadding = 14;
+  static final RegExp _wordTokenRe = RegExp(r'[\p{L}\p{N}]+', unicode: true);
 
   final String text;
   final TextAlign textAlign;
@@ -3412,6 +3623,7 @@ class _AdaptiveSubtitleText extends StatelessWidget {
   final double minFontSize;
   final double maxFontSize;
   final double maxHeight;
+  final Set<String>? highlightWordKeys;
 
   @override
   Widget build(BuildContext context) {
@@ -3429,6 +3641,10 @@ class _AdaptiveSubtitleText extends StatelessWidget {
           constraints.maxWidth,
           resolvedHeight,
         );
+        final effective = baseStyle?.copyWith(fontSize: fontSize);
+        final keys = highlightWordKeys;
+        final useRich =
+            keys != null && keys.isNotEmpty && _wordTokenRe.hasMatch(text);
 
         return SizedBox(
           height: resolvedHeight,
@@ -3443,17 +3659,62 @@ class _AdaptiveSubtitleText extends StatelessWidget {
                 ),
                 child: Align(
                   alignment: Alignment.topCenter,
-                  child: Text(
-                    text,
-                    textAlign: textAlign,
-                    style: baseStyle?.copyWith(fontSize: fontSize),
-                  ),
+                  child: useRich
+                      ? _richText(
+                          context,
+                          effective ?? const TextStyle(),
+                          keys,
+                        )
+                      : Text(
+                          text,
+                          textAlign: textAlign,
+                          style: effective,
+                        ),
                 ),
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _richText(
+    BuildContext context,
+    TextStyle base,
+    Set<String> keys,
+  ) {
+    final children = <InlineSpan>[];
+    var last = 0;
+    for (final m in _wordTokenRe.allMatches(text)) {
+      if (m.start > last) {
+        children.add(TextSpan(text: text.substring(last, m.start)));
+      }
+      final slice = text.substring(m.start, m.end);
+      final key = _practiceSubtitleHighlightKey(slice);
+      final highlighted = keys.contains(key);
+      children.add(
+        TextSpan(
+          text: slice,
+          style: highlighted
+              ? base.copyWith(
+                  backgroundColor: const Color(
+                    0xFFFFF59D,
+                  ).withValues(alpha: 0.85),
+                )
+              : null,
+        ),
+      );
+      last = m.end;
+    }
+    if (last < text.length) {
+      children.add(TextSpan(text: text.substring(last)));
+    }
+    return Text.rich(
+      TextSpan(style: base, children: children),
+      textAlign: textAlign,
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
     );
   }
 
