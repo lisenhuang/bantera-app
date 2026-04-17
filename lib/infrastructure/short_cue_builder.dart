@@ -118,7 +118,12 @@ class ShortCueBuilder {
           continue;
         }
         if (matched < tokens.length) {
-          endMs = parent.endTimeMs;
+          // A token in this fragment is missing from wordTiming (for example
+          // TTS drops short words). Cap endMs at the next unconsumed word so
+          // this cue does not bleed into the following fragment's audio.
+          endMs = wPos < wordTiming.length
+              ? wordTiming[wPos].startMs
+              : parent.endTimeMs;
         }
         final end = endMs ?? startMs;
         final safeEnd = end < startMs ? startMs : end;
