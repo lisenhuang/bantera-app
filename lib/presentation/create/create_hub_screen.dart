@@ -17,6 +17,7 @@ import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../practice/practice_player_screen.dart';
+import '../shared/locale_flag.dart';
 import 'generate_ai_audio_screen.dart';
 import 'local_video_practice_screen.dart';
 import 'uploaded_video_detail_screen.dart';
@@ -36,9 +37,31 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   List<UploadedVideo> _myVideos = const [];
   bool _isLoadingVideos = true;
   String? _loadError;
+  String? _selectedLanguageCode;
   String? _openingLocalVideoId;
   String? _deletingLocalVideoId;
   String? _deletingUploadedVideoId;
+
+  List<({String code, String name, int count})> get _languageGroups {
+    final map = <String, ({String name, int count})>{};
+    for (final v in _myVideos) {
+      final e = map[v.transcriptLanguageCode];
+      map[v.transcriptLanguageCode] = e == null
+          ? (name: v.transcriptLanguage, count: 1)
+          : (name: e.name, count: e.count + 1);
+    }
+    return (map.entries
+        .map((e) => (code: e.key, name: e.value.name, count: e.value.count))
+        .toList()
+      ..sort((a, b) => b.count.compareTo(a.count)));
+  }
+
+  List<UploadedVideo> get _filteredVideos {
+    if (_selectedLanguageCode == null) return _myVideos;
+    return _myVideos
+        .where((v) => v.transcriptLanguageCode == _selectedLanguageCode)
+        .toList();
+  }
 
   @override
   void initState() {
@@ -141,12 +164,18 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
             ],
             const SizedBox(height: 48),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   l10n.createYourMedia,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+                const SizedBox(width: 8),
+                if (!_isLoadingVideos && _myVideos.isNotEmpty)
+                  Expanded(
+                    child: _buildLanguageDropdown(colorScheme),
+                  )
+                else
+                  const Spacer(),
                 IconButton(
                   onPressed: _isLoadingVideos
                       ? null
@@ -201,8 +230,23 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )
+            else if (_filteredVideos.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.onSurface.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Text(
+                  'No media for this language.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              )
             else
-              ..._myVideos.map((video) {
+              ..._filteredVideos.map((video) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _buildUploadedVideoItem(
@@ -256,6 +300,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       setState(() {
         _myVideos = videos;
         _isLoadingVideos = false;
+        if (_selectedLanguageCode != null &&
+            !videos.any(
+              (v) => v.transcriptLanguageCode == _selectedLanguageCode,
+            )) {
+          _selectedLanguageCode = null;
+        }
       });
     } on AuthApiException catch (error) {
       if (!mounted) {
@@ -538,6 +588,34 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     );
   }
 
+  Widget _buildLanguageDropdown(ColorScheme colorScheme) {
+    final groups = _languageGroups;
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<String?>(
+        value: _selectedLanguageCode,
+        isExpanded: true,
+        borderRadius: BorderRadius.circular(12),
+        style: Theme.of(context).textTheme.bodySmall,
+        items: [
+          DropdownMenuItem<String?>(
+            value: null,
+            child: Text('All (${_myVideos.length})'),
+          ),
+          ...groups.map(
+            (g) => DropdownMenuItem<String?>(
+              value: g.code,
+              child: Text(
+                '${flagEmojiForLocale(g.code)} ${g.name} (${g.count})',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+        onChanged: (value) => setState(() => _selectedLanguageCode = value),
+      ),
+    );
+  }
+
   Widget _buildUploadedVideoItem(
     BuildContext context,
     UploadedVideo video,
@@ -597,7 +675,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.transcriptCues.length)}',
+                    '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.transcriptCues.length)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
