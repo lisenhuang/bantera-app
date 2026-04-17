@@ -17,6 +17,10 @@ final RegExp _kAbbrRe = RegExp(
   caseSensitive: false,
 );
 
+final RegExp _kHyphenSplitRe = RegExp(
+  r'[-\u2010\u2011\u2012\u2013\u2014\u2212]+',
+);
+
 /// Builds shorter practice [Cue]s from [dialogueLines] + [wordTiming] (v2 transcripts).
 class ShortCueBuilder {
   ShortCueBuilder._();
@@ -60,11 +64,34 @@ class ShortCueBuilder {
     return out;
   }
 
-  static List<String> _tokensFromFragment(String fragment) {
+  static List<({String raw, String normalized})> _tokensFromFragment(
+    String fragment,
+  ) {
     return fragment
         .split(RegExp(r'\s+'))
+        .map((raw) => (raw: raw, normalized: _normToken(raw)))
+        .where((token) => token.normalized.isNotEmpty)
+        .toList();
+  }
+
+  static int _findWordTimingIndex(
+    List<WordTiming> wordTiming,
+    int from,
+    String token,
+  ) {
+    for (var i = from; i < wordTiming.length; i++) {
+      if (_normTimingWord(wordTiming[i]) == token) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  static List<String> _splitHyphenTokenParts(String rawToken) {
+    return rawToken
+        .split(_kHyphenSplitRe)
         .map(_normToken)
-        .where((t) => t.isNotEmpty)
+        .where((part) => part.isNotEmpty)
         .toList();
   }
 
@@ -97,21 +124,45 @@ class ShortCueBuilder {
         int? endMs;
         var matched = 0;
 
-        for (final tok in tokens) {
-          var foundAt = -1;
-          for (var j = wPos; j < wordTiming.length; j++) {
-            if (_normTimingWord(wordTiming[j]) == tok) {
-              foundAt = j;
-              break;
+        for (final token in tokens) {
+          final merged = token.normalized;
+          var foundAt = _findWordTimingIndex(wordTiming, wPos, merged);
+          if (foundAt >= 0) {
+            matched++;
+            startMs ??= wordTiming[foundAt].startMs;
+            endMs = wordTiming[foundAt].endMs;
+            wPos = foundAt + 1;
+            continue;
+          }
+
+          final splitParts = _splitHyphenTokenParts(token.raw);
+          if (splitParts.length > 1) {
+            var stagedWPos = wPos;
+            var stagedStartMs = startMs;
+            var stagedEndMs = endMs;
+            var allPartsMatched = true;
+
+            for (final part in splitParts) {
+              foundAt = _findWordTimingIndex(wordTiming, stagedWPos, part);
+              if (foundAt < 0) {
+                allPartsMatched = false;
+                break;
+              }
+              stagedStartMs ??= wordTiming[foundAt].startMs;
+              stagedEndMs = wordTiming[foundAt].endMs;
+              stagedWPos = foundAt + 1;
+            }
+
+            if (allPartsMatched) {
+              matched++;
+              startMs = stagedStartMs;
+              endMs = stagedEndMs;
+              wPos = stagedWPos;
+              continue;
             }
           }
-          if (foundAt < 0) {
-            break;
-          }
-          matched++;
-          startMs ??= wordTiming[foundAt].startMs;
-          endMs = wordTiming[foundAt].endMs;
-          wPos = foundAt + 1;
+
+          break;
         }
 
         if (startMs == null) {
