@@ -557,6 +557,7 @@ class AuthApiClient {
     required void Function() onDialogueDone,
     required void Function(UploadedVideo video, List<String> lines) onAudioDone,
     bool useV2 = false,
+    void Function(String jobId)? onStarted,
     void Function()? onAudioGenerated,
     void Function()? onAligning,
     bool retried = false,
@@ -612,6 +613,7 @@ class AuthApiClient {
               onDialogueDone: onDialogueDone,
               onAudioDone: onAudioDone,
               useV2: useV2,
+              onStarted: onStarted,
               onAudioGenerated: onAudioGenerated,
               onAligning: onAligning,
               retried: true,
@@ -639,7 +641,12 @@ class AuthApiClient {
         }
 
         final step = data['step'];
-        if (step == 'dialogue') {
+        if (step == 'started') {
+          final jobId = data['jobId']?.toString();
+          if (jobId != null && jobId.isNotEmpty) {
+            onStarted?.call(jobId);
+          }
+        } else if (step == 'dialogue') {
           _dialogueLines =
               (data['lines'] as List?)?.map((e) => e.toString()).toList() ?? [];
           onDialogueDone();
@@ -683,6 +690,7 @@ class AuthApiClient {
     required int durationSeconds,
     String? nativeLanguage,
     String? nativeLanguageCode,
+    void Function(String jobId)? onStarted,
     required void Function() onDialogueDone,
     required void Function() onAudioGenerated,
     required void Function() onAligning,
@@ -697,6 +705,7 @@ class AuthApiClient {
       durationSeconds: durationSeconds,
       nativeLanguage: nativeLanguage,
       nativeLanguageCode: nativeLanguageCode,
+      onStarted: onStarted,
       onDialogueDone: onDialogueDone,
       onAudioDone: onDone,
       useV2: true,
@@ -756,6 +765,61 @@ class AuthApiClient {
         }
         final json = await _parseJsonResponse(response);
         _throwApiException(json, response.statusCode);
+      } on AuthApiException {
+        rethrow;
+      } on SocketException {
+        await _throwNetworkFailure();
+      } on HandshakeException {
+        throw const AuthApiException(
+          code: 'tls_error',
+          message: 'The app could not establish a secure connection.',
+        );
+      }
+    });
+  }
+
+  Future<List<PendingAudioJob>> fetchPendingJobs({
+    required String accessToken,
+  }) async {
+    return _retryWithRefresh(accessToken, (token) async {
+      try {
+        final request = await _httpClient.getUrl(
+          _resolve('/api/me/audio/jobs/pending'),
+        );
+        request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+        final response = await request.close();
+        final responseText = await response.transform(utf8.decoder).join();
+        final decoded = jsonDecode(responseText);
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          if (decoded is! List) return const [];
+          return decoded.whereType<Map>().map((raw) {
+            final map = raw.map((k, v) => MapEntry(k.toString(), v));
+            DateTime parseDate(dynamic value) {
+              final parsed = DateTime.tryParse(value?.toString() ?? '');
+              return parsed ?? DateTime.fromMillisecondsSinceEpoch(0);
+            }
+
+            DateTime? parseOptionalDate(dynamic value) {
+              final text = value?.toString();
+              if (text == null || text.isEmpty) return null;
+              return DateTime.tryParse(text);
+            }
+
+            return PendingAudioJob(
+              id: map['id']?.toString() ?? '',
+              status: map['status']?.toString() ?? '',
+              videoId: map['videoId']?.toString(),
+              createdAt: parseDate(map['createdAt']),
+              completedAt: parseOptionalDate(map['completedAt']),
+              errorMessage: map['errorMessage']?.toString(),
+            );
+          }).toList();
+        }
+        if (decoded is Map<String, dynamic>) {
+          _throwApiException(decoded, response.statusCode);
+        }
+        return const [];
       } on AuthApiException {
         rethrow;
       } on SocketException {

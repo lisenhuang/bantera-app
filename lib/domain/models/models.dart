@@ -179,6 +179,24 @@ class UploadedVideo {
   }
 }
 
+class PendingAudioJob {
+  final String id;
+  final String status;
+  final String? videoId;
+  final DateTime createdAt;
+  final DateTime? completedAt;
+  final String? errorMessage;
+
+  const PendingAudioJob({
+    required this.id,
+    required this.status,
+    required this.videoId,
+    required this.createdAt,
+    required this.completedAt,
+    required this.errorMessage,
+  });
+}
+
 class LocalPracticeVideoSummary {
   final String id;
   final String title;

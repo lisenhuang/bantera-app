@@ -9,6 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
+import '../../core/generation_job_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/ai_audio_constants.dart';
@@ -42,11 +43,16 @@ String _localizedScenarioLabel(AppLocalizations l10n, AiScenario scenario) {
 }
 
 class GenerateAiAudioScreen extends StatefulWidget {
-  const GenerateAiAudioScreen({super.key, this.onYourMediaChanged});
+  const GenerateAiAudioScreen({
+    super.key,
+    this.onYourMediaChanged,
+    this.onGenerationStarted,
+  });
 
   /// Called when a new upload exists on the server (before opening detail).
   /// Used so the Create hub "Your Media" list can refetch.
   final VoidCallback? onYourMediaChanged;
+  final void Function(String jobId)? onGenerationStarted;
 
   @override
   State<GenerateAiAudioScreen> createState() => _GenerateAiAudioScreenState();
@@ -174,18 +180,19 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final d = AppLocalizations.of(ctx)!;
         return AlertDialog(
-          title: Text(d.aiGenLeaveTitle),
-          content: Text(d.aiGenLeaveBody),
+          title: const Text('Generate in background?'),
+          content: const Text(
+            'Audio generation can continue in the background. You can come back later.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(d.aiGenStay),
+              child: const Text('Cancel generation'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(d.aiGenLeave),
+              child: const Text('Generate in background'),
             ),
           ],
         );
@@ -293,6 +300,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         scenarioId: _selectedScenario?.id,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
+        onStarted: (jobId) {
+          GenerationJobNotifier.instance.start(jobId);
+          widget.onGenerationStarted?.call(jobId);
+        },
         onDialogueDone: () {
           if (mounted) setState(() => _step = _GenerationStep.generatingAudio);
         },
@@ -308,6 +319,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       );
 
       if (!mounted || video == null) return;
+      GenerationJobNotifier.instance.clear();
       widget.onYourMediaChanged?.call();
       Navigator.pushReplacement(
         context,
@@ -318,13 +330,16 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     } on SessionExpiredException {
       // User is being signed out — do nothing.
     } on VideoProcessingException catch (e) {
+      GenerationJobNotifier.instance.clear();
       if (mounted) setState(() => _errorMessage = e.message);
     } on AuthApiException catch (e) {
+      GenerationJobNotifier.instance.clear();
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         setState(() => _errorMessage = localizeAuthApiError(l10n, e));
       }
     } catch (e) {
+      GenerationJobNotifier.instance.clear();
       if (mounted) {
         setState(
           () => _errorMessage = 'Something went wrong. Please try again.',

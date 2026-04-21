@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/api_config_notifier.dart';
 import 'core/app_locale.dart';
+import 'core/app_resume_notifier.dart';
 import 'core/auth_session_notifier.dart';
 import 'core/settings_notifier.dart';
 import 'core/theme.dart';
@@ -24,12 +25,14 @@ Future<void> main() async {
   ]);
   UserProfileNotifier.instance;
   // Preload language lists in the background so pickers are fast on first open.
-  unawaited(Future.wait([
-    VideoProcessingService.instance.fetchNativeLanguageOptions(),
-    VideoProcessingService.instance.fetchSupportedLocales(
-      excludeZhTwForLearning: true,
-    ),
-  ]));
+  unawaited(
+    Future.wait([
+      VideoProcessingService.instance.fetchNativeLanguageOptions(),
+      VideoProcessingService.instance.fetchSupportedLocales(
+        excludeZhTwForLearning: true,
+      ),
+    ]),
+  );
   runApp(const MyApp());
 }
 
@@ -58,6 +61,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (SettingsNotifier.instance.appLocalePreference ==
         AppLocalePreference.system) {
       SettingsNotifier.instance.notifyLocaleChanged();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      AppResumeNotifier.instance.notifyResumed();
     }
   }
 

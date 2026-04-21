@@ -8,8 +8,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../core/apple_system_version.dart';
+import '../../core/app_resume_notifier.dart';
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
+import '../../core/generation_job_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
@@ -33,6 +35,8 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   final AuthApiClient _apiClient = AuthApiClient.instance;
   final LocalPracticeRepository _localPracticeRepository =
       LocalPracticeRepository.instance;
+  final GenerationJobNotifier _generationJobNotifier =
+      GenerationJobNotifier.instance;
 
   List<UploadedVideo> _myVideos = const [];
   bool _isLoadingVideos = true;
@@ -66,8 +70,15 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   @override
   void initState() {
     super.initState();
+    AppResumeNotifier.instance.addListener(_handleAppResumed);
     unawaited(_localPracticeRepository.refreshForCurrentUser());
     _loadMyVideos();
+  }
+
+  @override
+  void dispose() {
+    AppResumeNotifier.instance.removeListener(_handleAppResumed);
+    super.dispose();
   }
 
   @override
@@ -108,9 +119,14 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => GenerateAiAudioScreen(
+                              onGenerationStarted: (jobId) {
+                                _generationJobNotifier.start(jobId);
+                              },
                               onYourMediaChanged: () {
                                 if (!mounted) return;
-                                unawaited(_loadMyVideos(showLoadingState: false));
+                                unawaited(
+                                  _loadMyVideos(showLoadingState: false),
+                                );
                               },
                             ),
                           ),
@@ -148,6 +164,9 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => GenerateAiAudioScreen(
+                        onGenerationStarted: (jobId) {
+                          _generationJobNotifier.start(jobId);
+                        },
                         onYourMediaChanged: () {
                           if (!mounted) return;
                           unawaited(_loadMyVideos(showLoadingState: false));
@@ -163,6 +182,36 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               _buildLocalPracticeSection(context, colorScheme, l10n),
             ],
             const SizedBox(height: 48),
+            ListenableBuilder(
+              listenable: _generationJobNotifier,
+              builder: (context, _) {
+                if (!_generationJobNotifier.hasProcessingJob) {
+                  return const SizedBox.shrink();
+                }
+                return Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Text(
+                    'Generating audio in background...',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              },
+            ),
             Row(
               children: [
                 Text(
@@ -171,9 +220,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                 ),
                 const SizedBox(width: 8),
                 if (!_isLoadingVideos && _myVideos.isNotEmpty)
-                  Expanded(
-                    child: _buildLanguageDropdown(colorScheme),
-                  )
+                  Expanded(child: _buildLanguageDropdown(colorScheme))
                 else
                   const Spacer(),
                 IconButton(
@@ -257,7 +304,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                 );
               }),
-
           ],
         ),
       ),
@@ -293,9 +339,14 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
       final videos = await _apiClient.fetchMyVideos(
         accessToken: session.accessToken,
       );
+      final pendingJobs = await _apiClient.fetchPendingJobs(
+        accessToken: session.accessToken,
+      );
       if (!mounted) {
         return;
       }
+
+      final completedJob = _resolveGenerationJobState(pendingJobs: pendingJobs);
 
       setState(() {
         _myVideos = videos;
@@ -307,6 +358,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
           _selectedLanguageCode = null;
         }
       });
+
+      if (completedJob) {
+        unawaited(_loadMyVideos(showLoadingState: false));
+      }
     } on AuthApiException catch (error) {
       if (!mounted) {
         return;
@@ -317,6 +372,45 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         _loadError = localizeAuthApiError(l10n, error);
       });
     }
+  }
+
+  void _handleAppResumed() {
+    unawaited(_loadMyVideos(showLoadingState: false));
+  }
+
+  bool _resolveGenerationJobState({
+    required List<PendingAudioJob> pendingJobs,
+  }) {
+    final activeJobId = _generationJobNotifier.jobId;
+    if (activeJobId != null && activeJobId.isNotEmpty) {
+      final matching = pendingJobs.where((j) => j.id == activeJobId).toList();
+      if (matching.isNotEmpty) {
+        final status = matching.first.status;
+        _generationJobNotifier.updateStatus(status);
+        if (status == 'processing') {
+          return false;
+        }
+        _generationJobNotifier.clear();
+        if (mounted) {
+          final messenger = ScaffoldMessenger.of(context);
+          final message = status == 'done'
+              ? 'Your audio is ready!'
+              : 'Audio generation failed.';
+          messenger.showSnackBar(SnackBar(content: Text(message)));
+        }
+        return status == 'done';
+      }
+      _generationJobNotifier.clear();
+      return false;
+    }
+
+    final processingJob = pendingJobs
+        .where((j) => j.status == 'processing')
+        .firstOrNull;
+    if (processingJob != null) {
+      _generationJobNotifier.start(processingJob.id);
+    }
+    return false;
   }
 
   Widget _buildPrimaryAction(
