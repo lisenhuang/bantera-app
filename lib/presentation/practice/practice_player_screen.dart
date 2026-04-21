@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -79,6 +81,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _audioPlayerReady = false;
   List<Cue> _shortCues = const [];
   List<int?> _wordTimingCharStarts = const [];
+  Map<String, ({int startMs, int endMs})> _charStartToWordMs = const {};
+  int? _wordTapPlayUntilMs;
   CueSentenceMode _sentenceMode = CueSentenceMode.short;
   int _currentPositionMs = 0;
   bool _isTimelineCueSelectionInFlight = false;
@@ -149,7 +153,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       ? CueSentenceMode.short.name
       : CueSentenceMode.long.name;
 
+  String _wordTapKey(String cueId, int charStart) => '$cueId:$charStart';
+
+  void _logWordTap(String message) {
+    final line = '[Bantera][WordTap] $message';
+    debugPrint(line);
+    developer.log(line, name: 'Bantera.WordTap');
+  }
+
   void _setHighlightFromMediaMs(int positionMs) {
+    final playUntil = _wordTapPlayUntilMs;
+    if (playUntil != null && positionMs >= playUntil) {
+      _logWordTap(
+        'auto-pause at word end: positionMs=$positionMs playUntilMs=$playUntil cueIndex=$_currentCueIndex',
+      );
+      _wordTapPlayUntilMs = null;
+      unawaited(_audioPlayer?.pause());
+      unawaited(_videoController?.pause());
+      unawaited(WakelockPlus.disable());
+      if (mounted) setState(() => _isPlaying = false);
+      return;
+    }
     if (!_hasWordTiming || !_isPlaying) {
       return;
     }
@@ -225,11 +249,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   List<int?> _buildWordTimingCharStarts() {
     final wt = widget.mediaItem.wordTiming;
-    if (wt == null || wt.isEmpty) return const [];
+    if (wt == null || wt.isEmpty) {
+      _charStartToWordMs = const {};
+      _logWordTap(
+        'build map skipped: no word timing. mediaId=${widget.mediaItem.id}',
+      );
+      return const [];
+    }
 
     final result = List<int?>.filled(wt.length, null);
     final normalize = _practiceSubtitleHighlightKey;
+    final charMap = <String, ({int startMs, int endMs})>{};
 
+    var totalTokens = 0;
+    var totalMatched = 0;
+    var overwrittenStarts = 0;
     for (final cue in _activeCues) {
       final cueEntries = <({int idx, WordTiming word})>[];
       for (var i = 0; i < wt.length; i++) {
@@ -242,6 +276,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (cueEntries.isEmpty) continue;
 
       final tokens = _kWordTokenRe.allMatches(cue.originalText).toList();
+      totalTokens += tokens.length;
       var tokenCursor = 0;
       for (final entry in cueEntries) {
         final normWord = normalize(entry.word.word);
@@ -251,12 +286,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           tokenCursor++;
           if (normalize(token.group(0)!) == normWord) {
             result[entry.idx] = token.start;
+            totalMatched++;
+            final key = _wordTapKey(cue.id, token.start);
+            if (charMap.containsKey(key)) {
+              overwrittenStarts++;
+            }
+            charMap[key] = (
+              startMs: entry.word.startMs,
+              endMs: entry.word.endMs,
+            );
             break;
           }
         }
       }
     }
-
+    _charStartToWordMs = charMap;
+    _logWordTap(
+      'build map done: mediaId=${widget.mediaItem.id} cueMode=$_activeCueMode '
+      'cueCount=${_activeCues.length} wordTimingCount=${wt.length} '
+      'tokenCount=$totalTokens matchedTokens=$totalMatched '
+      'mappedCueStarts=${charMap.length} overwrittenStarts=$overwrittenStarts',
+    );
     return result;
   }
 
@@ -438,6 +488,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _togglePlay() {
+    _wordTapPlayUntilMs = null;
     if (_isPlayingAll) {
       unawaited(_stopPlayAll());
     } else {
@@ -2181,6 +2232,119 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return charStarts.isEmpty ? null : charStarts;
   }
 
+  void _onWordTap(int charStart) {
+    final cues = _activeCues;
+    if (_currentCueIndex < 0 || _currentCueIndex >= cues.length) {
+      _logWordTap(
+        'tap ignored: invalid cue index $_currentCueIndex for ${cues.length} cues',
+      );
+      return;
+    }
+    final cue = cues[_currentCueIndex];
+    String? tappedWord;
+    for (final match in _kWordTokenRe.allMatches(cue.originalText)) {
+      if (match.start == charStart) {
+        tappedWord = match.group(0);
+        break;
+      }
+    }
+
+    _logWordTap(
+      'tap received: cueIndex=$_currentCueIndex charStart=$charStart '
+      'word=${tappedWord ?? "(unknown)"} '
+      'cueRange=${cue.startTimeMs}-${cue.endTimeMs} '
+      'playbackStopMs=${_playbackStopMsForCueIndex(_currentCueIndex)} '
+      'isPlaying=$_isPlaying isPlayingAll=$_isPlayingAll',
+    );
+
+    final entry = _charStartToWordMs[_wordTapKey(cue.id, charStart)];
+    if (_isPlayingAll) {
+      _logWordTap('tap ignored: play-all mode is active');
+      return;
+    }
+    if (entry == null) {
+      final cueStarts = _kWordTokenRe
+          .allMatches(cue.originalText)
+          .map((m) => m.start)
+          .toList();
+      final mappedInCue = cueStarts
+          .where(
+            (start) =>
+                _charStartToWordMs.containsKey(_wordTapKey(cue.id, start)),
+          )
+          .length;
+      final missingSample = cueStarts
+          .where(
+            (start) =>
+                !_charStartToWordMs.containsKey(_wordTapKey(cue.id, start)),
+          )
+          .take(10)
+          .join(',');
+      _logWordTap(
+        'tap ignored: no timing entry for charStart=$charStart '
+        'mapSize=${_charStartToWordMs.length} cueWordCount=${cueStarts.length} '
+        'mappedInCue=$mappedInCue missingStartsSample=[$missingSample]',
+      );
+      return;
+    }
+    _wordTapPlayUntilMs = entry.endMs;
+    _logWordTap(
+      'tap mapped: charStart=$charStart startMs=${entry.startMs} endMs=${entry.endMs}',
+    );
+    unawaited(_seekToWordAndPlay(entry.startMs));
+  }
+
+  Future<void> _seekToWordAndPlay(int ms) async {
+    final target = Duration(milliseconds: ms);
+    _lastKnownAudioPositionMs = ms;
+    _lastKnownVideoPositionMs = ms;
+    if (mounted && _currentPositionMs != ms) {
+      setState(() => _currentPositionMs = ms);
+    }
+
+    try {
+      final audioPlayer = _audioPlayer;
+      if (audioPlayer != null && _audioPlayerReady) {
+        _logWordTap('seek via audio player: targetMs=$ms');
+        await audioPlayer.seek(target);
+        if (!_isPlaying) {
+          await audioPlayer.resume();
+          unawaited(WakelockPlus.enable());
+          if (mounted) {
+            setState(() => _isPlaying = true);
+          }
+          _logWordTap('audio resume success from targetMs=$ms');
+        }
+        return;
+      }
+
+      final controller = _videoController;
+      if (controller != null && controller.value.isInitialized) {
+        _logWordTap('seek via video controller: targetMs=$ms');
+        await controller.seekTo(target);
+        if (!_isPlaying) {
+          await controller.play();
+          unawaited(WakelockPlus.enable());
+          if (mounted) {
+            setState(() => _isPlaying = true);
+          }
+          _logWordTap('video play success from targetMs=$ms');
+        }
+      } else {
+        _logWordTap(
+          'seek ignored: no ready audio/video player for targetMs=$ms',
+        );
+      }
+    } catch (error, stackTrace) {
+      _logWordTap('seek failed at targetMs=$ms error=$error');
+      debugPrintStack(
+        stackTrace: stackTrace,
+        label: '[Bantera][WordTap] seek stack',
+      );
+      // Keep word tap as best-effort and never crash the practice screen.
+    }
+  }
+
   Widget _buildOriginalSubtitlePanel({
     required Cue cue,
     required ColorScheme colorScheme,
@@ -2212,6 +2376,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             maxFontSize: hasPlayableMedia ? 30 : 34,
             maxHeight: math.max(56, panelHeight - 32),
             highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
+            onWordTap: _hasWordTiming ? _onWordTap : null,
           ),
         );
       },
@@ -2283,6 +2448,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   maxFontSize: hasPlayableMedia ? 28 : 34,
                   maxHeight: originalHeight,
                   highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
+                  onWordTap: _hasWordTiming ? _onWordTap : null,
                 ),
               ),
               SizedBox(height: gap),
@@ -3464,7 +3630,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
 class _PracticeSettingsSheet extends StatelessWidget {
   const _PracticeSettingsSheet({
-    super.key,
     required this.showTranslationRow,
     required this.canPickSentenceMode,
     required this.sentenceMode,
@@ -3782,7 +3947,7 @@ String? _defaultRegionForLanguageCode(String languageCode) {
   return defaults[languageCode];
 }
 
-class _AdaptiveSubtitleText extends StatelessWidget {
+class _AdaptiveSubtitleText extends StatefulWidget {
   const _AdaptiveSubtitleText({
     required this.text,
     required this.textAlign,
@@ -3791,10 +3956,8 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     required this.maxFontSize,
     required this.maxHeight,
     this.highlightCharStarts,
+    this.onWordTap,
   });
-
-  static const double _scrollBottomPadding = 14;
-  static final RegExp _wordTokenRe = _kWordTokenRe;
 
   final String text;
   final TextAlign textAlign;
@@ -3803,14 +3966,33 @@ class _AdaptiveSubtitleText extends StatelessWidget {
   final double maxFontSize;
   final double maxHeight;
   final Set<int>? highlightCharStarts;
+  final void Function(int charStart)? onWordTap;
+
+  @override
+  State<_AdaptiveSubtitleText> createState() => _AdaptiveSubtitleTextState();
+}
+
+class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
+  static const double _scrollBottomPadding = 14;
+  static final RegExp _wordTokenRe = _kWordTokenRe;
+  final List<TapGestureRecognizer> _recognizers = [];
+
+  @override
+  void dispose() {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (text.trim().isEmpty) {
+    if (widget.text.trim().isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final baseStyle = style ?? Theme.of(context).textTheme.bodyLarge;
+    final baseStyle = widget.style ?? Theme.of(context).textTheme.bodyLarge;
     return LayoutBuilder(
       builder: (context, constraints) {
         final resolvedHeight = _resolvedHeight(constraints.maxHeight);
@@ -3821,11 +4003,11 @@ class _AdaptiveSubtitleText extends StatelessWidget {
           resolvedHeight,
         );
         final effective = baseStyle?.copyWith(fontSize: fontSize);
-        final charStarts = highlightCharStarts;
+        final charStarts = widget.highlightCharStarts;
         final useRich =
-            charStarts != null &&
-            charStarts.isNotEmpty &&
-            _wordTokenRe.hasMatch(text);
+            ((charStarts != null && charStarts.isNotEmpty) ||
+                widget.onWordTap != null) &&
+            _wordTokenRe.hasMatch(widget.text);
 
         return SizedBox(
           height: resolvedHeight,
@@ -3844,9 +4026,13 @@ class _AdaptiveSubtitleText extends StatelessWidget {
                       ? _richText(
                           context,
                           effective ?? const TextStyle(),
-                          charStarts,
+                          charStarts ?? const <int>{},
                         )
-                      : Text(text, textAlign: textAlign, style: effective),
+                      : Text(
+                          widget.text,
+                          textAlign: widget.textAlign,
+                          style: effective,
+                        ),
                 ),
               ),
             ),
@@ -3857,17 +4043,37 @@ class _AdaptiveSubtitleText extends StatelessWidget {
   }
 
   Widget _richText(BuildContext context, TextStyle base, Set<int> charStarts) {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
+
     final children = <InlineSpan>[];
     var last = 0;
-    for (final m in _wordTokenRe.allMatches(text)) {
+    for (final m in _wordTokenRe.allMatches(widget.text)) {
       if (m.start > last) {
-        children.add(TextSpan(text: text.substring(last, m.start)));
+        children.add(TextSpan(text: widget.text.substring(last, m.start)));
       }
-      final slice = text.substring(m.start, m.end);
+      final slice = widget.text.substring(m.start, m.end);
       final highlighted = charStarts.contains(m.start);
+      TapGestureRecognizer? recognizer;
+      if (widget.onWordTap != null) {
+        final charStart = m.start;
+        recognizer = TapGestureRecognizer()
+          ..onTap = () {
+            final line =
+                '[Bantera][WordTap] token tap gesture: '
+                'charStart=$charStart word="$slice" textLen=${widget.text.length}';
+            debugPrint(line);
+            developer.log(line, name: 'Bantera.WordTap');
+            widget.onWordTap!(charStart);
+          };
+        _recognizers.add(recognizer);
+      }
       children.add(
         TextSpan(
           text: slice,
+          recognizer: recognizer,
           style: highlighted
               ? base.copyWith(
                   backgroundColor: Theme.of(context).colorScheme.primary,
@@ -3878,12 +4084,12 @@ class _AdaptiveSubtitleText extends StatelessWidget {
       );
       last = m.end;
     }
-    if (last < text.length) {
-      children.add(TextSpan(text: text.substring(last)));
+    if (last < widget.text.length) {
+      children.add(TextSpan(text: widget.text.substring(last)));
     }
     return Text.rich(
       TextSpan(style: base, children: children),
-      textAlign: textAlign,
+      textAlign: widget.textAlign,
       textDirection: Directionality.of(context),
       textScaler: MediaQuery.textScalerOf(context),
     );
@@ -3903,18 +4109,18 @@ class _AdaptiveSubtitleText extends StatelessWidget {
     final direction = Directionality.of(context);
     final scaler = MediaQuery.textScalerOf(context);
 
-    var low = minFontSize;
-    var high = math.max(minFontSize, maxFontSize);
-    var best = minFontSize;
+    var low = widget.minFontSize;
+    var high = math.max(widget.minFontSize, widget.maxFontSize);
+    var best = widget.minFontSize;
 
     for (var i = 0; i < 8; i++) {
       final mid = (low + high) / 2;
       final painter = TextPainter(
         text: TextSpan(
-          text: text,
+          text: widget.text,
           style: baseStyle?.copyWith(fontSize: mid),
         ),
-        textAlign: textAlign,
+        textAlign: widget.textAlign,
         textDirection: direction,
         textScaler: scaler,
       )..layout(maxWidth: resolvedWidth);
@@ -3931,8 +4137,8 @@ class _AdaptiveSubtitleText extends StatelessWidget {
   }
 
   double _resolvedHeight(double fallbackHeight) {
-    final resolved = maxHeight.isFinite && maxHeight > 0
-        ? maxHeight
+    final resolved = widget.maxHeight.isFinite && widget.maxHeight > 0
+        ? widget.maxHeight
         : fallbackHeight;
     return resolved.isFinite && resolved > 0 ? resolved : 80;
   }
