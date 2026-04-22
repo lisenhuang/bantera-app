@@ -4056,32 +4056,51 @@ class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
       }
       final slice = widget.text.substring(m.start, m.end);
       final highlighted = charStarts.contains(m.start);
-      TapGestureRecognizer? recognizer;
-      if (widget.onWordTap != null) {
-        final charStart = m.start;
-        recognizer = TapGestureRecognizer()
-          ..onTap = () {
-            final line =
-                '[Bantera][WordTap] token tap gesture: '
-                'charStart=$charStart word="$slice" textLen=${widget.text.length}';
-            debugPrint(line);
-            developer.log(line, name: 'Bantera.WordTap');
-            widget.onWordTap!(charStart);
-          };
-        _recognizers.add(recognizer);
+      if (highlighted) {
+        final radius = (base.fontSize ?? 16) * 0.2;
+        Widget wordWidget = Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          child: Text(slice, style: base.copyWith(fontWeight: FontWeight.bold)),
+        );
+        if (widget.onWordTap != null) {
+          final charStart = m.start;
+          wordWidget = GestureDetector(
+            onTap: () {
+              final line =
+                  '[Bantera][WordTap] token tap gesture: '
+                  'charStart=$charStart word="$slice" textLen=${widget.text.length}';
+              debugPrint(line);
+              developer.log(line, name: 'Bantera.WordTap');
+              widget.onWordTap!(charStart);
+            },
+            child: wordWidget,
+          );
+        }
+        children.add(WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: wordWidget,
+        ));
+      } else {
+        TapGestureRecognizer? recognizer;
+        if (widget.onWordTap != null) {
+          final charStart = m.start;
+          recognizer = TapGestureRecognizer()
+            ..onTap = () {
+              final line =
+                  '[Bantera][WordTap] token tap gesture: '
+                  'charStart=$charStart word="$slice" textLen=${widget.text.length}';
+              debugPrint(line);
+              developer.log(line, name: 'Bantera.WordTap');
+              widget.onWordTap!(charStart);
+            };
+          _recognizers.add(recognizer);
+        }
+        children.add(TextSpan(text: slice, recognizer: recognizer));
       }
-      children.add(
-        TextSpan(
-          text: slice,
-          recognizer: recognizer,
-          style: highlighted
-              ? base.copyWith(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                )
-              : null,
-        ),
-      );
       last = m.end;
     }
     if (last < widget.text.length) {
