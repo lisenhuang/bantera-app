@@ -293,6 +293,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     unawaited(WakelockPlus.enable());
     UploadedVideo? video;
     try {
+      final nativeLanguageCode = UserProfileNotifier.instance.nativeLanguage;
       await AuthApiClient.instance.generateAiAudioStreamingV2(
         accessToken: session.accessToken,
         language: locale.displayName,
@@ -300,6 +301,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         scenarioId: _selectedScenario?.id,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
+        nativeLanguageCode: nativeLanguageCode,
         onStarted: (jobId) {
           GenerationJobNotifier.instance.start(jobId);
           widget.onGenerationStarted?.call(jobId);
