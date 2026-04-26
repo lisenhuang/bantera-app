@@ -948,6 +948,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsShareButton => 'Bantera をシェア';
 
   @override
+  String get settingsContactButton => 'お問い合わせ';
+
+  @override
   String get localVideoDescription =>
       '写真から動画を選択し、言語を選んだ後、iPhone がバックグラウンドで文字起こしをして、キューごとの練習が始まります。';
 

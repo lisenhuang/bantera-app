@@ -938,6 +938,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsShareButton => '分享 Bantera';
 
   @override
+  String get settingsContactButton => '联系我们';
+
+  @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';
 
   @override
@@ -1956,6 +1959,9 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get settingsShareButton => '分享 Bantera';
+
+  @override
+  String get settingsContactButton => '联系我们';
 
   @override
   String get localVideoDescription => '从照片库选择视频，选择语言，让 iPhone 在后台转录后即可逐句练习。';

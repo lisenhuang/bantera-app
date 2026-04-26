@@ -993,6 +993,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsShareButton => 'Share Bantera';
 
   @override
+  String get settingsContactButton => 'Contact us';
+
+  @override
   String get localVideoDescription =>
       'Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.';
 

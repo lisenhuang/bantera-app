@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_locale.dart';
 import '../../core/auth_session_notifier.dart';
@@ -19,6 +20,11 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static final Uri _contactEmailUri = Uri(
+    scheme: 'mailto',
+    path: 'bantera.app@gmail.com',
+  );
+
   int _titleTapCount = 0;
 
   Future<void> _confirmSignOut() async {
@@ -51,9 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _titleTapCount = 0;
 
     final auth = AuthSessionNotifier.instance;
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (context) => const DevScreen()),
-    );
+    final changed = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (context) => const DevScreen()));
 
     if (changed == true && mounted) {
       auth.signOut();
@@ -354,6 +360,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             uri: Uri.parse('https://bantera.app?from=iOS'),
                           ),
                         );
+                      },
+                    ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.mail_outline),
+                      title: Text(l10n.settingsContactButton),
+                      subtitle: const Text('bantera.app@gmail.com'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        await launchUrl(_contactEmailUri);
                       },
                     ),
                   ],

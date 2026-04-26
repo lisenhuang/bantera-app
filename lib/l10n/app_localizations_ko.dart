@@ -951,6 +951,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsShareButton => 'Bantera 공유하기';
 
   @override
+  String get settingsContactButton => '문의하기';
+
+  @override
   String get localVideoDescription =>
       '사진 보관함에서 동영상을 선택하고 언어를 고른 다음, iPhone이 백그라운드에서 전사하면 단서별 연습을 시작하세요.';
 

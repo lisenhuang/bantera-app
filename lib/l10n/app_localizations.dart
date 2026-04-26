@@ -1867,6 +1867,12 @@ abstract class AppLocalizations {
   /// **'Share Bantera'**
   String get settingsShareButton;
 
+  /// No description provided for @settingsContactButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get settingsContactButton;
+
   /// No description provided for @localVideoDescription.
   ///
   /// In en, this message translates to:

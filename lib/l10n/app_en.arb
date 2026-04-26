@@ -407,6 +407,7 @@
   "settingsRateAppButton": "Rate on the App Store",
   "settingsSharePrompt": "Know someone learning a language? Share Bantera with them.",
   "settingsShareButton": "Share Bantera",
+  "settingsContactButton": "Contact us",
   "localVideoDescription": "Choose a video from Photos, pick the spoken language, then let iPhone transcribe it in the background before cue-by-cue practice.",
   "localVideoStep1Title": "1. Choose video",
   "localVideoChooseFromPhotos": "Choose from Photos",
