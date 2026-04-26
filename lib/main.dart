@@ -28,9 +28,7 @@ Future<void> main() async {
   unawaited(
     Future.wait([
       VideoProcessingService.instance.fetchNativeLanguageOptions(),
-      VideoProcessingService.instance.fetchSupportedLocales(
-        excludeZhTwForLearning: true,
-      ),
+      VideoProcessingService.instance.fetchLearningLanguageOptions(),
     ]),
   );
   runApp(const MyApp());

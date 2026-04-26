@@ -29,10 +29,8 @@ class _LearningLanguageSetupScreenState
 
   Future<void> _loadLocales() async {
     try {
-      final locales =
-          await VideoProcessingService.instance.fetchSupportedLocales(
-        excludeZhTwForLearning: true,
-      );
+      final locales = await VideoProcessingService.instance
+          .fetchLearningLanguageOptions();
       if (!mounted) return;
       setState(() {
         _locales = locales;
@@ -50,8 +48,9 @@ class _LearningLanguageSetupScreenState
 
   Future<void> _selectLocale(TranscriptionLocaleOption locale) async {
     setState(() => _isSaving = true);
-    final ok =
-        await UserProfileNotifier.instance.updateLearningLanguage(locale.identifier);
+    final ok = await UserProfileNotifier.instance.updateLearningLanguage(
+      locale.identifier,
+    );
     if (mounted) setState(() => _isSaving = false);
     if (!ok && mounted) {
       final l10n = AppLocalizations.of(context)!;
@@ -71,9 +70,11 @@ class _LearningLanguageSetupScreenState
     if (_searchText.isEmpty) return all;
     final q = _searchText.toLowerCase();
     return all
-        .where((l) =>
-            l.displayName.toLowerCase().contains(q) ||
-            l.identifier.toLowerCase().contains(q))
+        .where(
+          (l) =>
+              l.displayName.toLowerCase().contains(q) ||
+              l.identifier.toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -100,9 +101,7 @@ class _LearningLanguageSetupScreenState
               const SizedBox(height: 8),
               Text(
                 l10n.onboardingSubtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 24),
               TextField(
@@ -127,7 +126,9 @@ class _LearningLanguageSetupScreenState
                 child: Center(
                   child: Text(
                     l10n.languagePickerMoreComingSoon,
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ),

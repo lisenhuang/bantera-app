@@ -17,14 +17,20 @@ class SettingsNotifier extends ChangeNotifier {
   AppLocalePreference _appLocalePreference = AppLocalePreference.system;
   bool _isInitialized = false;
   int? _devMockIosMajorVersion;
+  bool _devShowAllLearningLanguages = false;
 
   ThemeMode get themeMode => _themeMode;
   bool get notificationsEnabled => _notificationsEnabled;
   String? get lastTranscriptionLocale => _lastTranscriptionLocale;
   AppLocalePreference get appLocalePreference => _appLocalePreference;
   bool get isInitialized => _isInitialized;
+
   /// Dev-only: when non-null, overrides the iOS major version used for all feature checks.
   int? get devMockIosMajorVersion => _devMockIosMajorVersion;
+
+  /// Dev-only, in-memory toggle for showing native transcription locales in
+  /// learning-language pickers. This intentionally resets on every app launch.
+  bool get devShowAllLearningLanguages => _devShowAllLearningLanguages;
 
   Future<void> initialize() async {
     if (_isInitialized) {
@@ -122,6 +128,12 @@ class SettingsNotifier extends ChangeNotifier {
     notifyListeners();
     _persist();
     _syncDevMockIosToNative();
+  }
+
+  void setDevShowAllLearningLanguages(bool value) {
+    if (_devShowAllLearningLanguages == value) return;
+    _devShowAllLearningLanguages = value;
+    notifyListeners();
   }
 
   void setLastTranscriptionLocale(String? identifier) {

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
+import '../core/settings_notifier.dart';
 import 'auth_api_client.dart';
 import 'learning_language_catalog.dart';
 import 'transcription_locale_option.dart';
@@ -135,6 +136,20 @@ class VideoProcessingService {
     List<TranscriptionLocaleOption> options,
   ) => options.where((o) => o.identifier != 'zh-TW').toList();
 
+  Future<List<TranscriptionLocaleOption>>
+  _fetchNativeTranscriptionLocales() async {
+    final raw =
+        await _channel.invokeListMethod<dynamic>(
+          'getSupportedTranscriptionLocales',
+        ) ??
+        const <dynamic>[];
+    return raw
+        .whereType<Map<Object?, Object?>>()
+        .map(TranscriptionLocaleOption.fromMap)
+        .where((o) => o.identifier.isNotEmpty)
+        .toList();
+  }
+
   /// Resolves locales for the native-language picker: combines iOS transcription locales
   /// and iOS translation locales (deduped by identifier). Falls back to both API catalogs,
   /// then to embedded lists.
@@ -142,16 +157,7 @@ class VideoProcessingService {
     if (Platform.isIOS) {
       try {
         // a) iOS transcription locales
-        final txRaw =
-            await _channel.invokeListMethod<dynamic>(
-              'getSupportedTranscriptionLocales',
-            ) ??
-            const <dynamic>[];
-        final txOptions = txRaw
-            .whereType<Map<Object?, Object?>>()
-            .map(TranscriptionLocaleOption.fromMap)
-            .where((o) => o.identifier.isNotEmpty)
-            .toList();
+        final txOptions = await _fetchNativeTranscriptionLocales();
 
         // b) iOS translation locales (all, no source filter)
         final trOptions = await TranslationService.instance
@@ -247,6 +253,29 @@ class VideoProcessingService {
     return maybeFilter(
       List<TranscriptionLocaleOption>.from(kFallbackLearningLanguages),
     );
+  }
+
+  /// Resolves locales for learning-language pickers. In normal product mode this
+  /// uses the API learning-language catalog. A Dev-only in-memory toggle can
+  /// switch the picker to the full native iOS transcription locale list.
+  Future<List<TranscriptionLocaleOption>> fetchLearningLanguageOptions() async {
+    if (Platform.isIOS &&
+        SettingsNotifier.instance.devShowAllLearningLanguages) {
+      try {
+        final nativeOptions = await _fetchNativeTranscriptionLocales();
+        if (nativeOptions.isNotEmpty) {
+          return nativeOptions;
+        }
+      } on PlatformException {
+        // Fall through to product catalog.
+      } on MissingPluginException {
+        // Fall through to product catalog.
+      } catch (_) {
+        // Fall through to product catalog.
+      }
+    }
+
+    return fetchSupportedLocales(excludeZhTwForLearning: true);
   }
 
   Future<PreparedVideoUpload> prepareVideoForUpload({

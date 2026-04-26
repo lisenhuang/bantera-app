@@ -23,8 +23,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _seededInitialName = false;
-  List<TranscriptionLocaleOption>? _localeOptions;        // native picker (transcription + translation)
-  List<TranscriptionLocaleOption>? _learningLocaleOptions; // learning picker (transcription only)
+  List<TranscriptionLocaleOption>?
+  _localeOptions; // native picker (transcription + translation)
+  List<TranscriptionLocaleOption>?
+  _learningLocaleOptions; // learning picker (transcription only)
   bool _loadingLocales = false;
   String? _localeLoadError;
 
@@ -55,9 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final results = await Future.wait([
         VideoProcessingService.instance.fetchNativeLanguageOptions(),
-        VideoProcessingService.instance.fetchSupportedLocales(
-          excludeZhTwForLearning: true,
-        ),
+        VideoProcessingService.instance.fetchLearningLanguageOptions(),
       ]);
       if (mounted) {
         setState(() {
@@ -69,8 +69,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _localeLoadError =
-              AppLocalizations.of(context)!.editProfileCouldNotLoadLanguages;
+          _localeLoadError = AppLocalizations.of(
+            context,
+          )!.editProfileCouldNotLoadLanguages;
           _loadingLocales = false;
         });
       }
@@ -80,9 +81,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.editProfile),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.editProfile)),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: _profile,
@@ -170,12 +169,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
-                            title: l10n.editProfileMyNativeLanguage,
-                            excludeZhTwForLearning: false,
-                            currentIdentifier: _profile.nativeLanguage,
-                            onSelected: _saveNativeLanguage,
-                            showComingSoonFooter: false,
-                          ),
+                          title: l10n.editProfileMyNativeLanguage,
+                          excludeZhTwForLearning: false,
+                          currentIdentifier: _profile.nativeLanguage,
+                          onSelected: _saveNativeLanguage,
+                          showComingSoonFooter: false,
+                        ),
                 ),
                 const SizedBox(height: 12),
                 _buildLanguageTile(
@@ -187,13 +186,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
-                            title: l10n.editProfileLearningLanguage,
-                            excludeZhTwForLearning: true,
-                            currentIdentifier: _profile.learningLanguage,
-                            onSelected: _saveLearningLanguage,
-                            showClearOption: false,
-                            showComingSoonFooter: true,
-                          ),
+                          title: l10n.editProfileLearningLanguage,
+                          excludeZhTwForLearning: true,
+                          currentIdentifier: _profile.learningLanguage,
+                          onSelected: _saveLearningLanguage,
+                          showClearOption: false,
+                          showComingSoonFooter: true,
+                        ),
                 ),
                 if (_profile.localizedError(l10n) != null) ...[
                   const SizedBox(height: 20),
@@ -296,13 +295,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool showComingSoonFooter = false,
   }) async {
     // Learning picker uses transcription-only list; native picker uses combined list.
-    final options =
-        excludeZhTwForLearning ? _learningLocaleOptions : _localeOptions;
+    final options = excludeZhTwForLearning
+        ? _learningLocaleOptions
+        : _localeOptions;
     if (options == null) {
       if (_localeLoadError != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_localeLoadError!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_localeLoadError!)));
       }
       return;
     }
@@ -362,7 +362,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.editProfileImageUpdated)),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.editProfileImageUpdated),
+      ),
     );
   }
 
@@ -379,7 +381,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.editProfileNameUpdated)),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.editProfileNameUpdated),
+      ),
     );
   }
 
@@ -569,8 +573,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                           trailing: isSelected
                               ? Icon(
                                   Icons.check_circle,
-                                  color:
-                                      Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                 )
                               : null,
                           onTap: () => widget.onSelected(option),
@@ -581,13 +584,16 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
             if (widget.showComingSoonFooter) ...[
               const Divider(height: 1),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 child: Center(
                   child: Text(
                     l10n.languagePickerMoreComingSoon,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                   ),
                 ),
               ),
