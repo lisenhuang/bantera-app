@@ -198,32 +198,32 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     List<TranscriptionLocaleOption> locales,
     String learningLanguage,
   ) {
-    final normalizedLearning = _normalizeLocaleIdentifier(learningLanguage);
+    final normalizedLearning = normalizeLocaleIdentifierForLookup(
+      normalizeLegacyLearningLanguageIdentifier(learningLanguage),
+    );
     if (normalizedLearning.isEmpty) return null;
 
     final exact = locales
         .where(
-          (l) => _normalizeLocaleIdentifier(l.identifier) == normalizedLearning,
+          (l) =>
+              normalizeLocaleIdentifierForLookup(l.identifier) ==
+              normalizedLearning,
         )
         .firstOrNull;
     if (exact != null) return exact;
 
-    final learningPrimary = _primaryLanguageCode(normalizedLearning);
+    final learningPrimary = primaryLanguageCodeForLocaleIdentifier(
+      normalizedLearning,
+    );
     if (learningPrimary == null) return null;
 
     return locales
-        .where((l) => _primaryLanguageCode(l.identifier) == learningPrimary)
+        .where(
+          (l) =>
+              primaryLanguageCodeForLocaleIdentifier(l.identifier) ==
+              learningPrimary,
+        )
         .firstOrNull;
-  }
-
-  static String _normalizeLocaleIdentifier(String identifier) {
-    return identifier.trim().replaceAll('_', '-').toLowerCase();
-  }
-
-  static String? _primaryLanguageCode(String identifier) {
-    final normalized = _normalizeLocaleIdentifier(identifier);
-    if (normalized.isEmpty) return null;
-    return normalized.split('-').first;
   }
 
   Future<void> _onGenerateTapped() async {

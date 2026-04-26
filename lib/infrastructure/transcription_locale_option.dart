@@ -20,3 +20,24 @@ class TranscriptionLocaleOption {
   final bool isInstalled;
   final String? flagEmoji;
 }
+
+String normalizeLocaleIdentifierForLookup(String identifier) {
+  return identifier.trim().replaceAll('_', '-').toLowerCase();
+}
+
+String? primaryLanguageCodeForLocaleIdentifier(String identifier) {
+  final normalized = normalizeLocaleIdentifierForLookup(identifier);
+  if (normalized.isEmpty) return null;
+  return normalized.split('-').first;
+}
+
+String normalizeLegacyLearningLanguageIdentifier(String identifier) {
+  final normalized = normalizeLocaleIdentifierForLookup(identifier);
+  return switch (normalized) {
+    'fr' => 'fr-FR',
+    'it' => 'it-IT',
+    'de' => 'de-DE',
+    'es' => 'es-ES',
+    _ => identifier.trim().replaceAll('_', '-'),
+  };
+}

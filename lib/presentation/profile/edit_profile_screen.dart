@@ -166,6 +166,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   subtitle: l10n.editProfileMyNativeLanguageSubtitle,
                   icon: Icons.record_voice_over_outlined,
                   currentIdentifier: _profile.nativeLanguage,
+                  displayOptions: _localeOptions,
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
@@ -183,6 +184,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   subtitle: l10n.editProfileLearningLanguageSubtitle,
                   icon: Icons.school_outlined,
                   currentIdentifier: _profile.learningLanguage,
+                  displayOptions: _learningLocaleOptions,
+                  applyLegacyLearningDefaults: true,
                   onTap: _profile.isSavingProfile
                       ? null
                       : () => _showLanguagePicker(
@@ -236,9 +239,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String subtitle,
     required IconData icon,
     required String? currentIdentifier,
+    required List<TranscriptionLocaleOption>? displayOptions,
     required VoidCallback? onTap,
+    bool applyLegacyLearningDefaults = false,
   }) {
-    final displayName = _displayNameForIdentifier(currentIdentifier);
+    final displayName = _displayNameForIdentifier(
+      currentIdentifier,
+      displayOptions,
+      applyLegacyLearningDefaults: applyLegacyLearningDefaults,
+    );
     final flag = currentIdentifier != null
         ? flagEmojiForLocale(currentIdentifier)
         : null;
@@ -270,20 +279,50 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  String? _displayNameForIdentifier(String? identifier) {
+  String? _displayNameForIdentifier(
+    String? identifier,
+    List<TranscriptionLocaleOption>? options, {
+    bool applyLegacyLearningDefaults = false,
+  }) {
     if (identifier == null || identifier.isEmpty) {
       return null;
     }
-    final options = _localeOptions;
     if (options != null) {
+      final targetIdentifier = applyLegacyLearningDefaults
+          ? normalizeLegacyLearningLanguageIdentifier(identifier)
+          : identifier;
+      final normalizedTarget = normalizeLocaleIdentifierForLookup(
+        targetIdentifier,
+      );
       final match = options
           .where((o) => o.identifier == identifier)
           .firstOrNull;
-      if (match != null) {
-        return match.displayName;
+      final fallbackMatch =
+          match ??
+          options
+              .where(
+                (o) =>
+                    normalizeLocaleIdentifierForLookup(o.identifier) ==
+                    normalizedTarget,
+              )
+              .firstOrNull;
+      if (fallbackMatch != null) {
+        return fallbackMatch.displayName;
       }
     }
     return identifier;
+  }
+
+  String? _selectedIdentifierForPicker({
+    required bool excludeZhTwForLearning,
+    required String? currentIdentifier,
+  }) {
+    if (!excludeZhTwForLearning ||
+        currentIdentifier == null ||
+        currentIdentifier.isEmpty) {
+      return currentIdentifier;
+    }
+    return normalizeLegacyLearningLanguageIdentifier(currentIdentifier);
   }
 
   Future<void> _showLanguagePicker({
@@ -308,6 +347,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     final filteredOptions = options;
+    final selectedIdentifier = _selectedIdentifierForPicker(
+      excludeZhTwForLearning: excludeZhTwForLearning,
+      currentIdentifier: currentIdentifier,
+    );
 
     await showModalBottomSheet<void>(
       context: context,
@@ -320,7 +363,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return _LanguagePickerSheet(
           title: title,
           options: filteredOptions,
-          currentIdentifier: currentIdentifier,
+          currentIdentifier: selectedIdentifier,
           showClearOption: showClearOption,
           showComingSoonFooter: showComingSoonFooter,
           onSelected: (option) {

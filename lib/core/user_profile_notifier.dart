@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
+import '../infrastructure/transcription_locale_option.dart';
 import '../infrastructure/user_profile_cache_store.dart';
 import '../l10n/app_localizations.dart';
 import 'auth_api_error_localizations.dart';
@@ -57,7 +58,11 @@ class UserProfileNotifier extends ChangeNotifier {
   String? get avatarUrl => _profile?.avatarUrl;
   String? get translationLanguage => _profile?.translationLanguage;
   String? get nativeLanguage => _profile?.nativeLanguage;
-  String? get learningLanguage => _profile?.learningLanguage;
+  String? get learningLanguage {
+    final value = _profile?.learningLanguage;
+    if (value == null || value.trim().isEmpty) return value;
+    return normalizeLegacyLearningLanguageIdentifier(value);
+  }
 
   String get displayName {
     final profileName = _profile?.name.trim();
