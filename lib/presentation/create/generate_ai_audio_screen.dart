@@ -107,43 +107,22 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   Future<void> _loadLocales() async {
     try {
       final locales = await VideoProcessingService.instance
-          .fetchSupportedLocales();
+          .fetchLearningLanguageOptions();
       if (!mounted) return;
 
-      // Determine default locale: learning language takes priority over saved pref.
+      // AI generation must follow the saved learning language exactly. If the
+      // current language source cannot resolve it, generation stays disabled.
       final learningLang =
           UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
 
-      TranscriptionLocaleOption? defaultLocale;
-      if (learningLang.isNotEmpty) {
-        // Exact match first (e.g. "en-US" → "en-US").
-        defaultLocale = locales
-            .where((l) => l.identifier == learningLang)
-            .firstOrNull;
-        // Prefix match fallback (e.g. "en" → first "en-*" locale).
-        defaultLocale ??= locales
-            .where((l) => l.identifier.startsWith('$learningLang-'))
-            .firstOrNull;
-      }
+      final defaultLocale = _matchLearningLanguage(locales, learningLang);
 
-      // Restore scenario from prefs; locale pref is only a fallback when a
-      // learning language IS set but didn't match exactly.
       AiScenario? restoredScenario;
       try {
         final file = await _prefsFile();
         if (await file.exists()) {
           final prefs =
               jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-          // Only fall back to the saved locale when the user has a learning
-          // language configured (prevents re-enabling the button via old prefs).
-          if (defaultLocale == null && learningLang.isNotEmpty) {
-            final lastId = prefs['lastLanguageIdentifier'] as String?;
-            if (lastId != null) {
-              defaultLocale = locales
-                  .where((l) => l.identifier == lastId)
-                  .firstOrNull;
-            }
-          }
           final lastScenarioId = prefs['lastScenarioId'] as String?;
           if (lastScenarioId != null) {
             restoredScenario = kAiScenarios
@@ -208,13 +187,43 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       final file = await _prefsFile();
       await file.writeAsString(
         jsonEncode({
-          if (_selectedLocale != null)
-            'lastLanguageIdentifier': _selectedLocale!.identifier,
           if (_selectedScenario != null)
             'lastScenarioId': _selectedScenario!.id,
         }),
       );
     } catch (_) {}
+  }
+
+  TranscriptionLocaleOption? _matchLearningLanguage(
+    List<TranscriptionLocaleOption> locales,
+    String learningLanguage,
+  ) {
+    final normalizedLearning = _normalizeLocaleIdentifier(learningLanguage);
+    if (normalizedLearning.isEmpty) return null;
+
+    final exact = locales
+        .where(
+          (l) => _normalizeLocaleIdentifier(l.identifier) == normalizedLearning,
+        )
+        .firstOrNull;
+    if (exact != null) return exact;
+
+    final learningPrimary = _primaryLanguageCode(normalizedLearning);
+    if (learningPrimary == null) return null;
+
+    return locales
+        .where((l) => _primaryLanguageCode(l.identifier) == learningPrimary)
+        .firstOrNull;
+  }
+
+  static String _normalizeLocaleIdentifier(String identifier) {
+    return identifier.trim().replaceAll('_', '-').toLowerCase();
+  }
+
+  static String? _primaryLanguageCode(String identifier) {
+    final normalized = _normalizeLocaleIdentifier(identifier);
+    if (normalized.isEmpty) return null;
+    return normalized.split('-').first;
   }
 
   Future<void> _onGenerateTapped() async {
