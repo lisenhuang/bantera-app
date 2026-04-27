@@ -337,10 +337,6 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _InfoRow(
-                      label: l10n.uploadedDetailFileSize,
-                      value: _formatBytes(video.fileSizeBytes),
-                    ),
                     if (video.videoWidth != null && video.videoHeight != null)
                       _InfoRow(
                         label: l10n.uploadedDetailResolution,
