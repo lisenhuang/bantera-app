@@ -64,8 +64,7 @@ class LocalPracticeRepository extends ChangeNotifier {
     try {
       _videos = await _loadSummaries(ownerCacheKey);
     } catch (_) {
-      _errorMessage =
-          'Bantera could not load the videos saved on this iPhone.';
+      _errorMessage = 'Bantera could not load the videos saved on this iPhone.';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -80,9 +79,13 @@ class LocalPracticeRepository extends ChangeNotifier {
     required String? translatedLanguage,
   }) async {
     final ownerCacheKey = _currentOwnerCacheKey ?? 'local-device-user';
-    final normalizedTranslatedLanguage =
-        translatedCueTexts.isEmpty ? null : _normalizeOptional(translatedLanguage);
-    final persistedFile = await _persistPreparedVideo(id: id, prepared: prepared);
+    final normalizedTranslatedLanguage = translatedCueTexts.isEmpty
+        ? null
+        : _normalizeOptional(translatedLanguage);
+    final persistedFile = await _persistPreparedVideo(
+      id: id,
+      prepared: prepared,
+    );
     final now = DateTime.now().millisecondsSinceEpoch;
     final spokenLanguage = prepared.transcriptLanguageCode.isEmpty
         ? prepared.transcriptLanguage
@@ -138,6 +141,25 @@ class LocalPracticeRepository extends ChangeNotifier {
             );
           }).toList(),
         );
+        if (normalizedTranslatedLanguage != null) {
+          batch.insertAll(
+            _database.localPracticeTranslationEntries,
+            translatedCueTexts.entries
+                .where((entry) => entry.value.trim().isNotEmpty)
+                .map(
+                  (entry) => LocalPracticeTranslationEntriesCompanion.insert(
+                    itemId: id,
+                    targetLanguage: normalizedTranslatedLanguage,
+                    cueMode: 'long',
+                    cueId: entry.key,
+                    translatedText: entry.value.trim(),
+                    updatedAtMillis: now,
+                  ),
+                )
+                .toList(),
+            mode: drift.InsertMode.insertOrReplace,
+          );
+        }
       });
     });
 
@@ -161,23 +183,24 @@ class LocalPracticeRepository extends ChangeNotifier {
       return null;
     }
 
-    final entry = await (_database.select(_database.localPracticeEntries)
-          ..where(
-            (table) =>
-                table.id.equals(id) &
-                table.ownerCacheKey.equals(ownerCacheKey),
-          ))
-        .getSingleOrNull();
+    final entry =
+        await (_database.select(_database.localPracticeEntries)..where(
+              (table) =>
+                  table.id.equals(id) &
+                  table.ownerCacheKey.equals(ownerCacheKey),
+            ))
+            .getSingleOrNull();
     if (entry == null) {
       return null;
     }
 
     final normalizedEntry = await _normalizeEntryPath(entry);
 
-    final cues = await (_database.select(_database.localPracticeCueEntries)
-          ..where((table) => table.itemId.equals(id))
-          ..orderBy([(table) => drift.OrderingTerm.asc(table.cueIndex)]))
-        .get();
+    final cues =
+        await (_database.select(_database.localPracticeCueEntries)
+              ..where((table) => table.itemId.equals(id))
+              ..orderBy([(table) => drift.OrderingTerm.asc(table.cueIndex)]))
+            .get();
 
     return _mapVideo(normalizedEntry, cues);
   }
@@ -191,12 +214,10 @@ class LocalPracticeRepository extends ChangeNotifier {
     }
 
     final now = DateTime.now().millisecondsSinceEpoch;
-    await (_database.update(_database.localPracticeEntries)
-          ..where(
-            (table) =>
-                table.id.equals(id) &
-                table.ownerCacheKey.equals(ownerCacheKey),
-          ))
+    await (_database.update(_database.localPracticeEntries)..where(
+          (table) =>
+              table.id.equals(id) & table.ownerCacheKey.equals(ownerCacheKey),
+        ))
         .write(
           LocalPracticeEntriesCompanion(
             updatedAtMillis: drift.Value(now),
@@ -233,9 +254,9 @@ class LocalPracticeRepository extends ChangeNotifier {
       return;
     }
 
-    final entries = await (_database.select(_database.localPracticeEntries)
-          ..where((table) => table.ownerCacheKey.equals(ownerCacheKey)))
-        .get();
+    final entries = await (_database.select(
+      _database.localPracticeEntries,
+    )..where((table) => table.ownerCacheKey.equals(ownerCacheKey))).get();
 
     for (final entry in entries) {
       await deleteVideo(entry.id);
@@ -248,23 +269,21 @@ class LocalPracticeRepository extends ChangeNotifier {
       return;
     }
 
-    final entry = await (_database.select(_database.localPracticeEntries)
-          ..where(
-            (table) =>
-                table.id.equals(id) &
-                table.ownerCacheKey.equals(ownerCacheKey),
-          ))
-        .getSingleOrNull();
+    final entry =
+        await (_database.select(_database.localPracticeEntries)..where(
+              (table) =>
+                  table.id.equals(id) &
+                  table.ownerCacheKey.equals(ownerCacheKey),
+            ))
+            .getSingleOrNull();
     if (entry == null) {
       return;
     }
 
-    await (_database.delete(_database.localPracticeEntries)
-          ..where(
-            (table) =>
-                table.id.equals(id) &
-                table.ownerCacheKey.equals(ownerCacheKey),
-          ))
+    await (_database.delete(_database.localPracticeEntries)..where(
+          (table) =>
+              table.id.equals(id) & table.ownerCacheKey.equals(ownerCacheKey),
+        ))
         .go();
 
     await _deleteCueAttemptsForMediaItem(
@@ -293,12 +312,10 @@ class LocalPracticeRepository extends ChangeNotifier {
 
     final now = DateTime.now().millisecondsSinceEpoch;
     await _database.transaction(() async {
-      await (_database.update(_database.localPracticeEntries)
-            ..where(
-              (table) =>
-                  table.id.equals(id) &
-                  table.ownerCacheKey.equals(ownerCacheKey),
-            ))
+      await (_database.update(_database.localPracticeEntries)..where(
+            (table) =>
+                table.id.equals(id) & table.ownerCacheKey.equals(ownerCacheKey),
+          ))
           .write(
             LocalPracticeEntriesCompanion(
               translatedLanguage: drift.Value(translatedLanguage),
@@ -306,13 +323,17 @@ class LocalPracticeRepository extends ChangeNotifier {
               lastOpenedAtMillis: drift.Value(now),
             ),
           );
-      await (_database.update(_database.localPracticeCueEntries)
-            ..where((table) => table.itemId.equals(id)))
-          .write(
-            const LocalPracticeCueEntriesCompanion(
-              translatedText: drift.Value(''),
-            ),
-          );
+      await (_database.update(
+        _database.localPracticeCueEntries,
+      )..where((table) => table.itemId.equals(id))).write(
+        const LocalPracticeCueEntriesCompanion(translatedText: drift.Value('')),
+      );
+      await (_database.delete(_database.localPracticeTranslationEntries)..where(
+            (table) =>
+                table.itemId.equals(id) &
+                table.targetLanguage.equals(translatedLanguage),
+          ))
+          .go();
     });
 
     if (_activeOwnerCacheKey == ownerCacheKey) {
@@ -323,7 +344,9 @@ class LocalPracticeRepository extends ChangeNotifier {
   Future<void> storeTranslations({
     required String id,
     required String translatedLanguage,
+    required String cueMode,
     required Map<String, String> translations,
+    bool refreshSummaries = true,
   }) async {
     if (translations.isEmpty) {
       return;
@@ -336,12 +359,10 @@ class LocalPracticeRepository extends ChangeNotifier {
 
     final now = DateTime.now().millisecondsSinceEpoch;
     await _database.transaction(() async {
-      await (_database.update(_database.localPracticeEntries)
-            ..where(
-              (table) =>
-                  table.id.equals(id) &
-                  table.ownerCacheKey.equals(ownerCacheKey),
-            ))
+      await (_database.update(_database.localPracticeEntries)..where(
+            (table) =>
+                table.id.equals(id) & table.ownerCacheKey.equals(ownerCacheKey),
+          ))
           .write(
             LocalPracticeEntriesCompanion(
               translatedLanguage: drift.Value(translatedLanguage),
@@ -352,21 +373,91 @@ class LocalPracticeRepository extends ChangeNotifier {
 
       await _database.batch((batch) {
         for (final entry in translations.entries) {
-          batch.update(
-            _database.localPracticeCueEntries,
-            LocalPracticeCueEntriesCompanion(
-              translatedText: drift.Value(entry.value.trim()),
+          final text = entry.value.trim();
+          if (text.isEmpty) {
+            continue;
+          }
+          batch.insert(
+            _database.localPracticeTranslationEntries,
+            LocalPracticeTranslationEntriesCompanion.insert(
+              itemId: id,
+              targetLanguage: translatedLanguage,
+              cueMode: cueMode,
+              cueId: entry.key,
+              translatedText: text,
+              updatedAtMillis: now,
             ),
-            where: (table) =>
-                table.itemId.equals(id) & table.id.equals(entry.key),
+            mode: drift.InsertMode.insertOrReplace,
           );
+          if (cueMode == 'long') {
+            batch.update(
+              _database.localPracticeCueEntries,
+              LocalPracticeCueEntriesCompanion(
+                translatedText: drift.Value(text),
+              ),
+              where: (table) =>
+                  table.itemId.equals(id) & table.id.equals(entry.key),
+            );
+          }
         }
       });
     });
 
-    if (_activeOwnerCacheKey == ownerCacheKey) {
+    if (refreshSummaries && _activeOwnerCacheKey == ownerCacheKey) {
       await refreshForCurrentUser(showLoadingState: false);
     }
+  }
+
+  Future<Map<String, String>> fetchTranslations({
+    required String id,
+    required String translatedLanguage,
+    required String cueMode,
+  }) async {
+    final ownerCacheKey = _currentOwnerCacheKey;
+    if (ownerCacheKey == null) {
+      return const {};
+    }
+
+    final entry =
+        await (_database.select(_database.localPracticeEntries)..where(
+              (table) =>
+                  table.id.equals(id) &
+                  table.ownerCacheKey.equals(ownerCacheKey),
+            ))
+            .getSingleOrNull();
+    if (entry == null) {
+      return const {};
+    }
+
+    final rows =
+        await (_database.select(_database.localPracticeTranslationEntries)
+              ..where(
+                (table) =>
+                    table.itemId.equals(id) &
+                    table.targetLanguage.equals(translatedLanguage) &
+                    table.cueMode.equals(cueMode),
+              ))
+            .get();
+    if (rows.isNotEmpty) {
+      return {
+        for (final row in rows)
+          if (row.translatedText.trim().isNotEmpty)
+            row.cueId: row.translatedText,
+      };
+    }
+
+    if (cueMode != 'long' ||
+        entry.translatedLanguage?.trim() != translatedLanguage.trim()) {
+      return const {};
+    }
+
+    final legacyRows = await (_database.select(
+      _database.localPracticeCueEntries,
+    )..where((table) => table.itemId.equals(id))).get();
+    return {
+      for (final row in legacyRows)
+        if (row.translatedText.trim().isNotEmpty) row.id: row.translatedText,
+    };
   }
 
   Future<LocalCuePracticeAttempt> saveCueAttempt({
@@ -444,10 +535,13 @@ class LocalPracticeRepository extends ChangeNotifier {
   Future<List<LocalPracticeVideoSummary>> _loadSummaries(
     String ownerCacheKey,
   ) async {
-    final entries = await (_database.select(_database.localPracticeEntries)
-          ..where((table) => table.ownerCacheKey.equals(ownerCacheKey))
-          ..orderBy([(table) => drift.OrderingTerm.desc(table.updatedAtMillis)]))
-        .get();
+    final entries =
+        await (_database.select(_database.localPracticeEntries)
+              ..where((table) => table.ownerCacheKey.equals(ownerCacheKey))
+              ..orderBy([
+                (table) => drift.OrderingTerm.desc(table.updatedAtMillis),
+              ]))
+            .get();
 
     final normalized = <LocalPracticeVideoSummary>[];
     for (final entry in entries) {
@@ -461,23 +555,26 @@ class LocalPracticeRepository extends ChangeNotifier {
     required String mediaItemId,
     required String cueId,
   }) async {
-    final entries = await (_database.select(_database.localCueAttemptEntries)
-          ..where(
-            (table) =>
-                table.ownerCacheKey.equals(ownerCacheKey) &
-                table.mediaItemId.equals(mediaItemId) &
-                table.cueId.equals(cueId),
-          )
-          ..orderBy([
-            (table) => drift.OrderingTerm.desc(table.createdAtMillis),
-          ]))
-        .get();
+    final entries =
+        await (_database.select(_database.localCueAttemptEntries)
+              ..where(
+                (table) =>
+                    table.ownerCacheKey.equals(ownerCacheKey) &
+                    table.mediaItemId.equals(mediaItemId) &
+                    table.cueId.equals(cueId),
+              )
+              ..orderBy([
+                (table) => drift.OrderingTerm.desc(table.createdAtMillis),
+              ]))
+            .get();
 
     final attempts = <LocalCuePracticeAttempt>[];
     final missingIds = <String>[];
     for (final entry in entries) {
       final normalizedEntry = await _normalizeCueAttemptPath(entry);
-      final resolvedAudioPath = await _resolveAttemptPath(normalizedEntry.audioPath);
+      final resolvedAudioPath = await _resolveAttemptPath(
+        normalizedEntry.audioPath,
+      );
       if (!await File(resolvedAudioPath).exists()) {
         missingIds.add(entry.id);
         continue;
@@ -486,15 +583,17 @@ class LocalPracticeRepository extends ChangeNotifier {
     }
 
     if (missingIds.isNotEmpty) {
-      await (_database.delete(_database.localCueAttemptEntries)
-            ..where((table) => table.id.isIn(missingIds)))
-          .go();
+      await (_database.delete(
+        _database.localCueAttemptEntries,
+      )..where((table) => table.id.isIn(missingIds))).go();
     }
 
     return attempts;
   }
 
-  Future<LocalPracticeVideoSummary> _mapSummary(LocalPracticeEntry entry) async {
+  Future<LocalPracticeVideoSummary> _mapSummary(
+    LocalPracticeEntry entry,
+  ) async {
     final resolvedVideoPath = await _resolveVideoPath(entry.localVideoPath);
     return LocalPracticeVideoSummary(
       id: entry.id,
@@ -538,15 +637,17 @@ class LocalPracticeRepository extends ChangeNotifier {
           : DateTime.fromMillisecondsSinceEpoch(entry.lastOpenedAtMillis!),
       description: entry.description,
       transcriptionSource: entry.transcriptionSource,
-      cues: cues.map((cue) {
-        return Cue(
-          id: cue.id,
-          startTimeMs: cue.startTimeMs,
-          endTimeMs: cue.endTimeMs,
-          originalText: cue.originalText,
-          translatedText: cue.translatedText,
-        );
-      }).toList(growable: false),
+      cues: cues
+          .map((cue) {
+            return Cue(
+              id: cue.id,
+              startTimeMs: cue.startTimeMs,
+              endTimeMs: cue.endTimeMs,
+              originalText: cue.originalText,
+              translatedText: cue.translatedText,
+            );
+          })
+          .toList(growable: false),
     );
   }
 
@@ -691,7 +792,9 @@ class LocalPracticeRepository extends ChangeNotifier {
       return existingAbsolute.path;
     }
 
-    final remapped = await _remapManagedAttemptAbsolutePath(normalizedReference);
+    final remapped = await _remapManagedAttemptAbsolutePath(
+      normalizedReference,
+    );
     if (remapped != null) {
       return remapped;
     }
@@ -710,9 +813,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       markerIndex + _managedVideoMarker.length,
     );
     final directory = await _localVideoDirectory;
-    final candidate = File(
-      p.normalize(p.join(directory.path, relativeSuffix)),
-    );
+    final candidate = File(p.normalize(p.join(directory.path, relativeSuffix)));
     if (await candidate.exists()) {
       return candidate.path;
     }
@@ -731,9 +832,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       markerIndex + _managedAttemptMarker.length,
     );
     final directory = await _attemptAudioDirectory;
-    final candidate = File(
-      p.normalize(p.join(directory.path, relativeSuffix)),
-    );
+    final candidate = File(p.normalize(p.join(directory.path, relativeSuffix)));
     if (await candidate.exists()) {
       return candidate.path;
     }
@@ -741,7 +840,9 @@ class LocalPracticeRepository extends ChangeNotifier {
     return null;
   }
 
-  Future<LocalPracticeEntry> _normalizeEntryPath(LocalPracticeEntry entry) async {
+  Future<LocalPracticeEntry> _normalizeEntryPath(
+    LocalPracticeEntry entry,
+  ) async {
     final resolvedPath = await _resolveVideoPath(entry.localVideoPath);
     final preferredStoredReference = await _storedReferenceForResolvedPath(
       resolvedPath,
@@ -754,13 +855,13 @@ class LocalPracticeRepository extends ChangeNotifier {
       return entry.copyWith(localVideoPath: normalizedPreferred);
     }
 
-    await (_database.update(_database.localPracticeEntries)
-          ..where((table) => table.id.equals(entry.id)))
-        .write(
-          LocalPracticeEntriesCompanion(
-            localVideoPath: drift.Value(preferredStoredReference),
-          ),
-        );
+    await (_database.update(
+      _database.localPracticeEntries,
+    )..where((table) => table.id.equals(entry.id))).write(
+      LocalPracticeEntriesCompanion(
+        localVideoPath: drift.Value(preferredStoredReference),
+      ),
+    );
 
     return entry.copyWith(localVideoPath: preferredStoredReference);
   }
@@ -780,13 +881,13 @@ class LocalPracticeRepository extends ChangeNotifier {
       return entry.copyWith(audioPath: normalizedPreferred);
     }
 
-    await (_database.update(_database.localCueAttemptEntries)
-          ..where((table) => table.id.equals(entry.id)))
-        .write(
-          LocalCueAttemptEntriesCompanion(
-            audioPath: drift.Value(preferredStoredReference),
-          ),
-        );
+    await (_database.update(
+      _database.localCueAttemptEntries,
+    )..where((table) => table.id.equals(entry.id))).write(
+      LocalCueAttemptEntriesCompanion(
+        audioPath: drift.Value(preferredStoredReference),
+      ),
+    );
 
     return entry.copyWith(audioPath: preferredStoredReference);
   }
@@ -866,20 +967,19 @@ class LocalPracticeRepository extends ChangeNotifier {
     required String ownerCacheKey,
     required String mediaItemId,
   }) async {
-    final entries = await (_database.select(_database.localCueAttemptEntries)
-          ..where(
-            (table) =>
-                table.ownerCacheKey.equals(ownerCacheKey) &
-                table.mediaItemId.equals(mediaItemId),
-          ))
-        .get();
+    final entries =
+        await (_database.select(_database.localCueAttemptEntries)..where(
+              (table) =>
+                  table.ownerCacheKey.equals(ownerCacheKey) &
+                  table.mediaItemId.equals(mediaItemId),
+            ))
+            .get();
 
-    await (_database.delete(_database.localCueAttemptEntries)
-          ..where(
-            (table) =>
-                table.ownerCacheKey.equals(ownerCacheKey) &
-                table.mediaItemId.equals(mediaItemId),
-          ))
+    await (_database.delete(_database.localCueAttemptEntries)..where(
+          (table) =>
+              table.ownerCacheKey.equals(ownerCacheKey) &
+              table.mediaItemId.equals(mediaItemId),
+        ))
         .go();
 
     for (final entry in entries) {

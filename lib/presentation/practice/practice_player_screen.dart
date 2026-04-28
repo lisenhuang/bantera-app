@@ -93,12 +93,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   /// wrong right after pause; single-cue resume prefers this when in-range for the cue.
   int? _lastKnownAudioPositionMs;
   int? _lastKnownVideoPositionMs;
-  Map<String, String> _translatedCueTexts = const {};
-  String? _translatedLanguageIdentifier;
+  Map<CueSentenceMode, Map<String, String>> _translatedCueTextsByMode =
+      const {};
+  Map<CueSentenceMode, String> _translatedLanguageIdentifiersByMode = const {};
   bool _isTranslating = false;
-  bool _isBackgroundTranslating = false;
+  final Set<String> _backgroundTranslationKeys = <String>{};
   String? _translationErrorMessage;
   int _translationGeneration = 0;
+  Future<void> _translationRequestQueue = Future.value();
   double _playbackSpeed = 1.0;
 
   final AudioRecorder _cueRecorder = AudioRecorder();
@@ -152,6 +154,22 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _canUseShortMode && _sentenceMode == CueSentenceMode.short
       ? CueSentenceMode.short.name
       : CueSentenceMode.long.name;
+
+  CueSentenceMode get _activeCueSentenceMode =>
+      _canUseShortMode && _sentenceMode == CueSentenceMode.short
+      ? CueSentenceMode.short
+      : CueSentenceMode.long;
+
+  Map<String, String> _translatedCueTextsFor(CueSentenceMode mode) =>
+      _translatedCueTextsByMode[mode] ?? const {};
+
+  String? _translatedLanguageIdentifierFor(CueSentenceMode mode) =>
+      _translatedLanguageIdentifiersByMode[mode];
+
+  String _backgroundTranslationKey(
+    CueSentenceMode mode,
+    String targetLocaleIdentifier,
+  ) => '${mode.name}:${targetLocaleIdentifier.trim().toLowerCase()}';
 
   String _wordTapKey(String cueId, int charStart) => '$cueId:$charStart';
 
@@ -325,7 +343,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
     await _applyPlaybackSpeedToMedia();
-    unawaited(_loadUploadedVideoTranslations());
+    unawaited(_loadPersistedTranslations());
   }
 
   Future<void> _applyPlaybackSpeedToMedia() async {
@@ -1565,8 +1583,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    _translatedCueTexts = translated;
-    _translatedLanguageIdentifier = targetLanguage;
+    final mode = _activeCueSentenceMode;
+    _translatedCueTextsByMode = {
+      ..._translatedCueTextsByMode,
+      mode: translated,
+    };
+    _translatedLanguageIdentifiersByMode = {
+      ..._translatedLanguageIdentifiersByMode,
+      mode: targetLanguage,
+    };
   }
 
   @override
@@ -2044,7 +2069,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     final translatedText =
-        _translatedCueTexts[cue.id]?.trim() ?? cue.translatedText.trim();
+        _translatedCueTextsFor(_activeCueSentenceMode)[cue.id]?.trim() ??
+        cue.translatedText.trim();
     return _buildTranslatedSubtitlePanel(
       cue: cue,
       translatedText: translatedText.isEmpty
@@ -2580,9 +2606,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    final cueMode = _activeCueSentenceMode;
+    final cues = List<Cue>.of(_activeCues);
     final cue = _activeCues[_currentCueIndex];
-    final generation = _activateTranslationTarget(targetLocale);
-    final cachedTranslation = _translatedCueTexts[cue.id]?.trim();
+    final generation = _activateTranslationTarget(targetLocale, cueMode);
+    final cachedTranslation = _translatedCueTextsFor(cueMode)[cue.id]?.trim();
 
     if (cachedTranslation != null && cachedTranslation.isNotEmpty) {
       if (!mounted) {
@@ -2597,6 +2625,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocale,
           generation: generation,
+          cueMode: cueMode,
+          cues: cues,
           excludedCueId: cue.id,
         ),
       );
@@ -2609,40 +2639,24 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     });
 
     try {
-      Future<Map<String, String>> translateOnce() {
-        return TranslationService.instance.translateCues(
-          sourceLocaleIdentifier: sourceLocaleIdentifier,
-          targetLocaleIdentifier: targetLocale,
-          cues: [cue],
-        );
-      }
-
-      late final Map<String, String> translated;
-      try {
-        translated = await translateOnce();
-      } on TranslationException catch (error) {
-        if (error.code == 'translation_assets_not_installed' && mounted) {
-          await TranslationService.instance.prepareTranslationAssets(
-            sourceLocaleIdentifier: sourceLocaleIdentifier,
-            targetLocaleIdentifier: targetLocale,
-          );
-          translated = await translateOnce();
-        } else {
-          rethrow;
-        }
-      }
-      if (!_isCurrentTranslationGeneration(generation, targetLocale) ||
+      final translated = await _translateCuesSerialized(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocale,
+        cues: [cue],
+      );
+      if (!_isCurrentTranslationGeneration(generation, targetLocale, cueMode) ||
           !mounted) {
         return;
       }
 
       setState(() {
-        _translatedCueTexts = {..._translatedCueTexts, ...translated};
+        _mergeTranslatedCueTexts(cueMode, translated);
         _subtitleState = SubtitleState.translated;
       });
       unawaited(
         _persistLocalTranslations(
           targetLocaleIdentifier: targetLocale,
+          cueMode: cueMode,
           translations: translated,
         ),
       );
@@ -2651,6 +2665,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocale,
           generation: generation,
+          cueMode: cueMode,
+          cues: cues,
           excludedCueId: cue.id,
         ),
       );
@@ -2674,18 +2690,28 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
     required int generation,
+    required CueSentenceMode cueMode,
+    required List<Cue> cues,
     required String excludedCueId,
   }) async {
-    if (_isBackgroundTranslating ||
-        !_isCurrentTranslationGeneration(generation, targetLocaleIdentifier)) {
+    final backgroundKey = _backgroundTranslationKey(
+      cueMode,
+      targetLocaleIdentifier,
+    );
+    if (_backgroundTranslationKeys.contains(backgroundKey) ||
+        !_isCurrentTranslationGeneration(
+          generation,
+          targetLocaleIdentifier,
+          cueMode,
+        )) {
       return;
     }
 
-    final remainingCues = _activeCues.where((cue) {
+    final remainingCues = cues.where((cue) {
       if (cue.id == excludedCueId) {
         return false;
       }
-      final cached = _translatedCueTexts[cue.id]?.trim();
+      final cached = _translatedCueTextsFor(cueMode)[cue.id]?.trim();
       return cached == null || cached.isEmpty;
     }).toList();
 
@@ -2693,55 +2719,131 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
-    _isBackgroundTranslating = true;
+    _backgroundTranslationKeys.add(backgroundKey);
 
     try {
-      Future<Map<String, String>> translateOnce() {
-        return TranslationService.instance.translateCues(
+      for (final cue in remainingCues) {
+        if (!_isCurrentTranslationGeneration(
+          generation,
+          targetLocaleIdentifier,
+          cueMode,
+        )) {
+          return;
+        }
+        final cached = _translatedCueTextsFor(cueMode)[cue.id]?.trim();
+        if (cached != null && cached.isNotEmpty) {
+          continue;
+        }
+
+        final translated = await _translateCuesSerialized(
           sourceLocaleIdentifier: sourceLocaleIdentifier,
           targetLocaleIdentifier: targetLocaleIdentifier,
-          cues: remainingCues,
+          cues: [cue],
+        );
+        if (!_isCurrentTranslationGeneration(
+              generation,
+              targetLocaleIdentifier,
+              cueMode,
+            ) ||
+            !mounted) {
+          return;
+        }
+
+        setState(() {
+          _mergeTranslatedCueTexts(cueMode, translated);
+        });
+        await _persistLocalTranslations(
+          targetLocaleIdentifier: targetLocaleIdentifier,
+          cueMode: cueMode,
+          translations: translated,
         );
       }
-
-      late final Map<String, String> translated;
-      try {
-        translated = await translateOnce();
-      } on TranslationException catch (error) {
-        if (error.code == 'translation_assets_not_installed') {
-          await TranslationService.instance.prepareTranslationAssets(
-            sourceLocaleIdentifier: sourceLocaleIdentifier,
-            targetLocaleIdentifier: targetLocaleIdentifier,
-          );
-          translated = await translateOnce();
-        } else {
-          rethrow;
-        }
-      }
-      if (!_isCurrentTranslationGeneration(
-            generation,
-            targetLocaleIdentifier,
-          ) ||
-          !mounted) {
-        return;
-      }
-
-      setState(() {
-        _translatedCueTexts = {..._translatedCueTexts, ...translated};
-      });
-      unawaited(
-        _persistLocalTranslations(
-          targetLocaleIdentifier: targetLocaleIdentifier,
-          translations: translated,
-        ),
-      );
     } on TranslationException {
-      // Keep the current cue responsive even if the background batch fails.
+      // Keep the current cue responsive even if background translation fails.
     } finally {
-      if (_isCurrentTranslationGeneration(generation, targetLocaleIdentifier)) {
-        _isBackgroundTranslating = false;
+      _backgroundTranslationKeys.remove(backgroundKey);
+    }
+  }
+
+  Future<Map<String, String>> _translateCuesSerialized({
+    required String sourceLocaleIdentifier,
+    required String targetLocaleIdentifier,
+    required List<Cue> cues,
+  }) {
+    final request = _translationRequestQueue.then<Map<String, String>>((_) {
+      return _translateCuesWithAssetRetry(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocaleIdentifier,
+        cues: cues,
+      );
+    });
+    _translationRequestQueue = request.then<void>((_) {}, onError: (_) {});
+    return request;
+  }
+
+  Future<Map<String, String>> _translateCuesWithAssetRetry({
+    required String sourceLocaleIdentifier,
+    required String targetLocaleIdentifier,
+    required List<Cue> cues,
+  }) async {
+    Future<Map<String, String>> translateOnce() {
+      return TranslationService.instance.translateCues(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocaleIdentifier,
+        cues: cues,
+      );
+    }
+
+    try {
+      return await translateOnce();
+    } on TranslationException catch (error) {
+      if (error.code == 'translation_assets_not_installed' && mounted) {
+        await TranslationService.instance.prepareTranslationAssets(
+          sourceLocaleIdentifier: sourceLocaleIdentifier,
+          targetLocaleIdentifier: targetLocaleIdentifier,
+        );
+        return await translateOnce();
+      }
+      rethrow;
+    }
+  }
+
+  void _mergeTranslatedCueTexts(
+    CueSentenceMode cueMode,
+    Map<String, String> translations,
+  ) {
+    if (translations.isEmpty) {
+      return;
+    }
+    _translatedCueTextsByMode = {
+      ..._translatedCueTextsByMode,
+      cueMode: {..._translatedCueTextsFor(cueMode), ...translations},
+    };
+  }
+
+  Map<CueSentenceMode, Map<String, String>> _splitTranslationsByMode(
+    Map<String, String> translations,
+  ) {
+    final longCueIds = widget.mediaItem.cues.map((cue) => cue.id).toSet();
+    final shortCueIds = _shortCues.map((cue) => cue.id).toSet();
+    final split = <CueSentenceMode, Map<String, String>>{
+      CueSentenceMode.long: <String, String>{},
+      CueSentenceMode.short: <String, String>{},
+    };
+
+    for (final entry in translations.entries) {
+      final text = entry.value.trim();
+      if (text.isEmpty) {
+        continue;
+      }
+      if (shortCueIds.contains(entry.key)) {
+        split[CueSentenceMode.short]![entry.key] = text;
+      } else if (longCueIds.contains(entry.key)) {
+        split[CueSentenceMode.long]![entry.key] = text;
       }
     }
+
+    return split;
   }
 
   Future<String?> _ensureTranslationLanguage({
@@ -2936,10 +3038,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       ),
     );
     setState(() {
-      _translatedCueTexts = const {};
-      _translatedLanguageIdentifier = null;
+      _translatedCueTextsByMode = const {};
+      _translatedLanguageIdentifiersByMode = const {};
       _translationErrorMessage = null;
-      _isBackgroundTranslating = false;
+      _backgroundTranslationKeys.clear();
       _translationGeneration += 1;
       if (_subtitleState == SubtitleState.translated) {
         _subtitleState = SubtitleState.original;
@@ -2986,29 +3088,59 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     setState(() {
       _sentenceMode = mode;
       _wordTimingCharStarts = _buildWordTimingCharStarts();
-      _translatedCueTexts = const {};
-      _translatedLanguageIdentifier = null;
-      _translationGeneration++;
-      _isBackgroundTranslating = false;
+      final newMode = _activeCueSentenceMode;
+      final currentCue = _activeCues.isEmpty ? null : _activeCues.first;
+      final hasTranslation = currentCue == null
+          ? false
+          : (_translatedCueTextsFor(
+                  newMode,
+                )[currentCue.id]?.trim().isNotEmpty ??
+                false);
       if (_subtitleState == SubtitleState.translated) {
-        _subtitleState = SubtitleState.original;
+        _subtitleState = hasTranslation
+            ? SubtitleState.translated
+            : SubtitleState.original;
       }
       _currentCueIndex = 0;
     });
     await _selectCue(0);
   }
 
-  int _activateTranslationTarget(String targetLocaleIdentifier) {
+  int _activateTranslationTarget(
+    String targetLocaleIdentifier,
+    CueSentenceMode cueMode,
+  ) {
     final normalizedTarget = targetLocaleIdentifier.trim().toLowerCase();
-    final currentTarget = _translatedLanguageIdentifier?.trim().toLowerCase();
-    if (currentTarget == normalizedTarget) {
+    final existingTargets = _translatedLanguageIdentifiersByMode.values
+        .map((target) => target.trim().toLowerCase())
+        .where((target) => target.isNotEmpty)
+        .toSet();
+    final targetIsUnchanged =
+        existingTargets.isEmpty ||
+        (existingTargets.length == 1 &&
+            existingTargets.first == normalizedTarget);
+
+    if (targetIsUnchanged) {
+      if (_translatedLanguageIdentifierFor(cueMode)?.trim().toLowerCase() !=
+          normalizedTarget) {
+        setState(() {
+          _translatedLanguageIdentifiersByMode = {
+            ..._translatedLanguageIdentifiersByMode,
+            CueSentenceMode.long: targetLocaleIdentifier,
+            CueSentenceMode.short: targetLocaleIdentifier,
+          };
+        });
+      }
       return _translationGeneration;
     }
 
     setState(() {
-      _translatedCueTexts = const {};
-      _translatedLanguageIdentifier = targetLocaleIdentifier;
-      _isBackgroundTranslating = false;
+      _translatedCueTextsByMode = const {};
+      _translatedLanguageIdentifiersByMode = {
+        CueSentenceMode.long: targetLocaleIdentifier,
+        CueSentenceMode.short: targetLocaleIdentifier,
+      };
+      _backgroundTranslationKeys.clear();
       _translationGeneration += 1;
     });
     return _translationGeneration;
@@ -3017,8 +3149,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isCurrentTranslationGeneration(
     int generation,
     String targetLocaleIdentifier,
+    CueSentenceMode cueMode,
   ) {
-    final activeTarget = _translatedLanguageIdentifier?.trim().toLowerCase();
+    final activeTarget = _translatedLanguageIdentifierFor(
+      cueMode,
+    )?.trim().toLowerCase();
     return mounted &&
         generation == _translationGeneration &&
         activeTarget == targetLocaleIdentifier.trim().toLowerCase();
@@ -3026,6 +3161,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   Future<void> _persistLocalTranslations({
     required String targetLocaleIdentifier,
+    required CueSentenceMode cueMode,
     required Map<String, String> translations,
   }) async {
     if (translations.isEmpty) return;
@@ -3036,7 +3172,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         await LocalPracticeRepository.instance.storeTranslations(
           id: localPracticeId,
           translatedLanguage: targetLocaleIdentifier,
+          cueMode: cueMode.name,
           translations: translations,
+          refreshSummaries: false,
         );
       } catch (_) {
         // Local persistence should not block practice playback.
@@ -3059,6 +3197,57 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return dir;
   }
 
+  Future<void> _loadPersistedTranslations() async {
+    final localPracticeId = _savedLocalPracticeId;
+    final localTargetLanguage = widget.mediaItem.translatedLanguage?.trim();
+    if (localPracticeId != null &&
+        localTargetLanguage != null &&
+        localTargetLanguage.isNotEmpty) {
+      await _loadLocalPracticeTranslations(
+        localPracticeId: localPracticeId,
+        targetLocaleIdentifier: localTargetLanguage,
+      );
+      return;
+    }
+    await _loadUploadedVideoTranslations();
+  }
+
+  Future<void> _loadLocalPracticeTranslations({
+    required String localPracticeId,
+    required String targetLocaleIdentifier,
+  }) async {
+    try {
+      final longTranslations = await LocalPracticeRepository.instance
+          .fetchTranslations(
+            id: localPracticeId,
+            translatedLanguage: targetLocaleIdentifier,
+            cueMode: CueSentenceMode.long.name,
+          );
+      final shortTranslations = await LocalPracticeRepository.instance
+          .fetchTranslations(
+            id: localPracticeId,
+            translatedLanguage: targetLocaleIdentifier,
+            cueMode: CueSentenceMode.short.name,
+          );
+      if (!mounted) return;
+      setState(() {
+        _translatedLanguageIdentifiersByMode = {
+          ..._translatedLanguageIdentifiersByMode,
+          CueSentenceMode.long: targetLocaleIdentifier,
+          CueSentenceMode.short: targetLocaleIdentifier,
+        };
+        if (longTranslations.isNotEmpty) {
+          _mergeTranslatedCueTexts(CueSentenceMode.long, longTranslations);
+        }
+        if (shortTranslations.isNotEmpty) {
+          _mergeTranslatedCueTexts(CueSentenceMode.short, shortTranslations);
+        }
+      });
+    } catch (_) {
+      // Cache load failures should never break the practice session.
+    }
+  }
+
   Future<void> _loadUploadedVideoTranslations() async {
     final videoId = _uploadedVideoId;
     if (videoId == null) return;
@@ -3074,9 +3263,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (decoded is! Map) return;
       final translations = decoded.cast<String, String>();
       if (!mounted) return;
+      final translationsByMode = _splitTranslationsByMode(translations);
       setState(() {
-        _translatedCueTexts = {..._translatedCueTexts, ...translations};
-        _translatedLanguageIdentifier = lang;
+        _translatedLanguageIdentifiersByMode = {
+          ..._translatedLanguageIdentifiersByMode,
+          CueSentenceMode.long: lang,
+          CueSentenceMode.short: lang,
+        };
+        for (final entry in translationsByMode.entries) {
+          if (entry.value.isEmpty) {
+            continue;
+          }
+          _mergeTranslatedCueTexts(entry.key, entry.value);
+        }
       });
       // Pre-translate any remaining cues in the background so they're ready
       // when the user taps translate — same strategy as local video practice.
@@ -3085,6 +3284,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           sourceLocaleIdentifier: _sourceLocaleIdentifier,
           targetLocaleIdentifier: lang,
           generation: _translationGeneration,
+          cueMode: _activeCueSentenceMode,
+          cues: List<Cue>.of(_activeCues),
           excludedCueId: '',
         ),
       );
@@ -4071,13 +4272,15 @@ class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
             };
           _recognizers.add(recognizer);
         }
-        children.add(TextSpan(
-          text: slice,
-          style: base.copyWith(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+        children.add(
+          TextSpan(
+            text: slice,
+            style: base.copyWith(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            recognizer: recognizer,
           ),
-          recognizer: recognizer,
-        ));
+        );
       } else {
         TapGestureRecognizer? recognizer;
         if (widget.onWordTap != null) {

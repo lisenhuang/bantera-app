@@ -1448,6 +1448,458 @@ class LocalPracticeCueEntriesCompanion
   }
 }
 
+class $LocalPracticeTranslationEntriesTable
+    extends LocalPracticeTranslationEntries
+    with
+        TableInfo<
+          $LocalPracticeTranslationEntriesTable,
+          LocalPracticeTranslationEntry
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalPracticeTranslationEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES local_practice_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _targetLanguageMeta = const VerificationMeta(
+    'targetLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> targetLanguage = GeneratedColumn<String>(
+    'target_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueModeMeta = const VerificationMeta(
+    'cueMode',
+  );
+  @override
+  late final GeneratedColumn<String> cueMode = GeneratedColumn<String>(
+    'cue_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueIdMeta = const VerificationMeta('cueId');
+  @override
+  late final GeneratedColumn<String> cueId = GeneratedColumn<String>(
+    'cue_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _translatedTextMeta = const VerificationMeta(
+    'translatedText',
+  );
+  @override
+  late final GeneratedColumn<String> translatedText = GeneratedColumn<String>(
+    'translated_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMillisMeta = const VerificationMeta(
+    'updatedAtMillis',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAtMillis = GeneratedColumn<int>(
+    'updated_at_millis',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    itemId,
+    targetLanguage,
+    cueMode,
+    cueId,
+    translatedText,
+    updatedAtMillis,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_practice_translation_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalPracticeTranslationEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('target_language')) {
+      context.handle(
+        _targetLanguageMeta,
+        targetLanguage.isAcceptableOrUnknown(
+          data['target_language']!,
+          _targetLanguageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetLanguageMeta);
+    }
+    if (data.containsKey('cue_mode')) {
+      context.handle(
+        _cueModeMeta,
+        cueMode.isAcceptableOrUnknown(data['cue_mode']!, _cueModeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueModeMeta);
+    }
+    if (data.containsKey('cue_id')) {
+      context.handle(
+        _cueIdMeta,
+        cueId.isAcceptableOrUnknown(data['cue_id']!, _cueIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cueIdMeta);
+    }
+    if (data.containsKey('translated_text')) {
+      context.handle(
+        _translatedTextMeta,
+        translatedText.isAcceptableOrUnknown(
+          data['translated_text']!,
+          _translatedTextMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_translatedTextMeta);
+    }
+    if (data.containsKey('updated_at_millis')) {
+      context.handle(
+        _updatedAtMillisMeta,
+        updatedAtMillis.isAcceptableOrUnknown(
+          data['updated_at_millis']!,
+          _updatedAtMillisMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMillisMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {
+    itemId,
+    targetLanguage,
+    cueMode,
+    cueId,
+  };
+  @override
+  LocalPracticeTranslationEntry map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalPracticeTranslationEntry(
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      targetLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_language'],
+      )!,
+      cueMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_mode'],
+      )!,
+      cueId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_id'],
+      )!,
+      translatedText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}translated_text'],
+      )!,
+      updatedAtMillis: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at_millis'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalPracticeTranslationEntriesTable createAlias(String alias) {
+    return $LocalPracticeTranslationEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalPracticeTranslationEntry extends DataClass
+    implements Insertable<LocalPracticeTranslationEntry> {
+  final String itemId;
+  final String targetLanguage;
+  final String cueMode;
+  final String cueId;
+  final String translatedText;
+  final int updatedAtMillis;
+  const LocalPracticeTranslationEntry({
+    required this.itemId,
+    required this.targetLanguage,
+    required this.cueMode,
+    required this.cueId,
+    required this.translatedText,
+    required this.updatedAtMillis,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['item_id'] = Variable<String>(itemId);
+    map['target_language'] = Variable<String>(targetLanguage);
+    map['cue_mode'] = Variable<String>(cueMode);
+    map['cue_id'] = Variable<String>(cueId);
+    map['translated_text'] = Variable<String>(translatedText);
+    map['updated_at_millis'] = Variable<int>(updatedAtMillis);
+    return map;
+  }
+
+  LocalPracticeTranslationEntriesCompanion toCompanion(bool nullToAbsent) {
+    return LocalPracticeTranslationEntriesCompanion(
+      itemId: Value(itemId),
+      targetLanguage: Value(targetLanguage),
+      cueMode: Value(cueMode),
+      cueId: Value(cueId),
+      translatedText: Value(translatedText),
+      updatedAtMillis: Value(updatedAtMillis),
+    );
+  }
+
+  factory LocalPracticeTranslationEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalPracticeTranslationEntry(
+      itemId: serializer.fromJson<String>(json['itemId']),
+      targetLanguage: serializer.fromJson<String>(json['targetLanguage']),
+      cueMode: serializer.fromJson<String>(json['cueMode']),
+      cueId: serializer.fromJson<String>(json['cueId']),
+      translatedText: serializer.fromJson<String>(json['translatedText']),
+      updatedAtMillis: serializer.fromJson<int>(json['updatedAtMillis']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'itemId': serializer.toJson<String>(itemId),
+      'targetLanguage': serializer.toJson<String>(targetLanguage),
+      'cueMode': serializer.toJson<String>(cueMode),
+      'cueId': serializer.toJson<String>(cueId),
+      'translatedText': serializer.toJson<String>(translatedText),
+      'updatedAtMillis': serializer.toJson<int>(updatedAtMillis),
+    };
+  }
+
+  LocalPracticeTranslationEntry copyWith({
+    String? itemId,
+    String? targetLanguage,
+    String? cueMode,
+    String? cueId,
+    String? translatedText,
+    int? updatedAtMillis,
+  }) => LocalPracticeTranslationEntry(
+    itemId: itemId ?? this.itemId,
+    targetLanguage: targetLanguage ?? this.targetLanguage,
+    cueMode: cueMode ?? this.cueMode,
+    cueId: cueId ?? this.cueId,
+    translatedText: translatedText ?? this.translatedText,
+    updatedAtMillis: updatedAtMillis ?? this.updatedAtMillis,
+  );
+  LocalPracticeTranslationEntry copyWithCompanion(
+    LocalPracticeTranslationEntriesCompanion data,
+  ) {
+    return LocalPracticeTranslationEntry(
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      targetLanguage: data.targetLanguage.present
+          ? data.targetLanguage.value
+          : this.targetLanguage,
+      cueMode: data.cueMode.present ? data.cueMode.value : this.cueMode,
+      cueId: data.cueId.present ? data.cueId.value : this.cueId,
+      translatedText: data.translatedText.present
+          ? data.translatedText.value
+          : this.translatedText,
+      updatedAtMillis: data.updatedAtMillis.present
+          ? data.updatedAtMillis.value
+          : this.updatedAtMillis,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPracticeTranslationEntry(')
+          ..write('itemId: $itemId, ')
+          ..write('targetLanguage: $targetLanguage, ')
+          ..write('cueMode: $cueMode, ')
+          ..write('cueId: $cueId, ')
+          ..write('translatedText: $translatedText, ')
+          ..write('updatedAtMillis: $updatedAtMillis')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    itemId,
+    targetLanguage,
+    cueMode,
+    cueId,
+    translatedText,
+    updatedAtMillis,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalPracticeTranslationEntry &&
+          other.itemId == this.itemId &&
+          other.targetLanguage == this.targetLanguage &&
+          other.cueMode == this.cueMode &&
+          other.cueId == this.cueId &&
+          other.translatedText == this.translatedText &&
+          other.updatedAtMillis == this.updatedAtMillis);
+}
+
+class LocalPracticeTranslationEntriesCompanion
+    extends UpdateCompanion<LocalPracticeTranslationEntry> {
+  final Value<String> itemId;
+  final Value<String> targetLanguage;
+  final Value<String> cueMode;
+  final Value<String> cueId;
+  final Value<String> translatedText;
+  final Value<int> updatedAtMillis;
+  final Value<int> rowid;
+  const LocalPracticeTranslationEntriesCompanion({
+    this.itemId = const Value.absent(),
+    this.targetLanguage = const Value.absent(),
+    this.cueMode = const Value.absent(),
+    this.cueId = const Value.absent(),
+    this.translatedText = const Value.absent(),
+    this.updatedAtMillis = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalPracticeTranslationEntriesCompanion.insert({
+    required String itemId,
+    required String targetLanguage,
+    required String cueMode,
+    required String cueId,
+    required String translatedText,
+    required int updatedAtMillis,
+    this.rowid = const Value.absent(),
+  }) : itemId = Value(itemId),
+       targetLanguage = Value(targetLanguage),
+       cueMode = Value(cueMode),
+       cueId = Value(cueId),
+       translatedText = Value(translatedText),
+       updatedAtMillis = Value(updatedAtMillis);
+  static Insertable<LocalPracticeTranslationEntry> custom({
+    Expression<String>? itemId,
+    Expression<String>? targetLanguage,
+    Expression<String>? cueMode,
+    Expression<String>? cueId,
+    Expression<String>? translatedText,
+    Expression<int>? updatedAtMillis,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (itemId != null) 'item_id': itemId,
+      if (targetLanguage != null) 'target_language': targetLanguage,
+      if (cueMode != null) 'cue_mode': cueMode,
+      if (cueId != null) 'cue_id': cueId,
+      if (translatedText != null) 'translated_text': translatedText,
+      if (updatedAtMillis != null) 'updated_at_millis': updatedAtMillis,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalPracticeTranslationEntriesCompanion copyWith({
+    Value<String>? itemId,
+    Value<String>? targetLanguage,
+    Value<String>? cueMode,
+    Value<String>? cueId,
+    Value<String>? translatedText,
+    Value<int>? updatedAtMillis,
+    Value<int>? rowid,
+  }) {
+    return LocalPracticeTranslationEntriesCompanion(
+      itemId: itemId ?? this.itemId,
+      targetLanguage: targetLanguage ?? this.targetLanguage,
+      cueMode: cueMode ?? this.cueMode,
+      cueId: cueId ?? this.cueId,
+      translatedText: translatedText ?? this.translatedText,
+      updatedAtMillis: updatedAtMillis ?? this.updatedAtMillis,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (targetLanguage.present) {
+      map['target_language'] = Variable<String>(targetLanguage.value);
+    }
+    if (cueMode.present) {
+      map['cue_mode'] = Variable<String>(cueMode.value);
+    }
+    if (cueId.present) {
+      map['cue_id'] = Variable<String>(cueId.value);
+    }
+    if (translatedText.present) {
+      map['translated_text'] = Variable<String>(translatedText.value);
+    }
+    if (updatedAtMillis.present) {
+      map['updated_at_millis'] = Variable<int>(updatedAtMillis.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPracticeTranslationEntriesCompanion(')
+          ..write('itemId: $itemId, ')
+          ..write('targetLanguage: $targetLanguage, ')
+          ..write('cueMode: $cueMode, ')
+          ..write('cueId: $cueId, ')
+          ..write('translatedText: $translatedText, ')
+          ..write('updatedAtMillis: $updatedAtMillis, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalCueAttemptEntriesTable extends LocalCueAttemptEntries
     with TableInfo<$LocalCueAttemptEntriesTable, LocalCueAttemptEntry> {
   @override
@@ -3008,6 +3460,8 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
       $LocalPracticeEntriesTable(this);
   late final $LocalPracticeCueEntriesTable localPracticeCueEntries =
       $LocalPracticeCueEntriesTable(this);
+  late final $LocalPracticeTranslationEntriesTable
+  localPracticeTranslationEntries = $LocalPracticeTranslationEntriesTable(this);
   late final $LocalCueAttemptEntriesTable localCueAttemptEntries =
       $LocalCueAttemptEntriesTable(this);
   late final $SavedCueEntriesTable savedCueEntries = $SavedCueEntriesTable(
@@ -3020,6 +3474,7 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     localPracticeEntries,
     localPracticeCueEntries,
+    localPracticeTranslationEntries,
     localCueAttemptEntries,
     savedCueEntries,
   ];
@@ -3032,6 +3487,18 @@ abstract class _$LocalPracticeDatabase extends GeneratedDatabase {
       ),
       result: [
         TableUpdate('local_practice_cue_entries', kind: UpdateKind.delete),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'local_practice_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate(
+          'local_practice_translation_entries',
+          kind: UpdateKind.delete,
+        ),
       ],
     ),
   ]);
@@ -3113,6 +3580,34 @@ final class $$LocalPracticeEntriesTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _localPracticeCueEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $LocalPracticeTranslationEntriesTable,
+    List<LocalPracticeTranslationEntry>
+  >
+  _localPracticeTranslationEntriesRefsTable(_$LocalPracticeDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.localPracticeTranslationEntries,
+        aliasName: $_aliasNameGenerator(
+          db.localPracticeEntries.id,
+          db.localPracticeTranslationEntries.itemId,
+        ),
+      );
+
+  $$LocalPracticeTranslationEntriesTableProcessedTableManager
+  get localPracticeTranslationEntriesRefs {
+    final manager = $$LocalPracticeTranslationEntriesTableTableManager(
+      $_db,
+      $_db.localPracticeTranslationEntries,
+    ).filter((f) => f.itemId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _localPracticeTranslationEntriesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3226,6 +3721,35 @@ class $$LocalPracticeEntriesTableFilterComposer
               }) => $$LocalPracticeCueEntriesTableFilterComposer(
                 $db: $db,
                 $table: $db.localPracticeCueEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> localPracticeTranslationEntriesRefs(
+    Expression<bool> Function(
+      $$LocalPracticeTranslationEntriesTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$LocalPracticeTranslationEntriesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.localPracticeTranslationEntries,
+          getReferencedColumn: (t) => t.itemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LocalPracticeTranslationEntriesTableFilterComposer(
+                $db: $db,
+                $table: $db.localPracticeTranslationEntries,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -3433,6 +3957,35 @@ class $$LocalPracticeEntriesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> localPracticeTranslationEntriesRefs<T extends Object>(
+    Expression<T> Function(
+      $$LocalPracticeTranslationEntriesTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$LocalPracticeTranslationEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.localPracticeTranslationEntries,
+          getReferencedColumn: (t) => t.itemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LocalPracticeTranslationEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.localPracticeTranslationEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$LocalPracticeEntriesTableTableManager
@@ -3448,7 +4001,10 @@ class $$LocalPracticeEntriesTableTableManager
           $$LocalPracticeEntriesTableUpdateCompanionBuilder,
           (LocalPracticeEntry, $$LocalPracticeEntriesTableReferences),
           LocalPracticeEntry,
-          PrefetchHooks Function({bool localPracticeCueEntriesRefs})
+          PrefetchHooks Function({
+            bool localPracticeCueEntriesRefs,
+            bool localPracticeTranslationEntriesRefs,
+          })
         > {
   $$LocalPracticeEntriesTableTableManager(
     _$LocalPracticeDatabase db,
@@ -3553,38 +4109,67 @@ class $$LocalPracticeEntriesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({localPracticeCueEntriesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (localPracticeCueEntriesRefs) db.localPracticeCueEntries,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (localPracticeCueEntriesRefs)
-                    await $_getPrefetchedData<
-                      LocalPracticeEntry,
-                      $LocalPracticeEntriesTable,
-                      LocalPracticeCueEntry
-                    >(
-                      currentTable: table,
-                      referencedTable: $$LocalPracticeEntriesTableReferences
-                          ._localPracticeCueEntriesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$LocalPracticeEntriesTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).localPracticeCueEntriesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.itemId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                localPracticeCueEntriesRefs = false,
+                localPracticeTranslationEntriesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (localPracticeCueEntriesRefs) db.localPracticeCueEntries,
+                    if (localPracticeTranslationEntriesRefs)
+                      db.localPracticeTranslationEntries,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (localPracticeCueEntriesRefs)
+                        await $_getPrefetchedData<
+                          LocalPracticeEntry,
+                          $LocalPracticeEntriesTable,
+                          LocalPracticeCueEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LocalPracticeEntriesTableReferences
+                              ._localPracticeCueEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LocalPracticeEntriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).localPracticeCueEntriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.itemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (localPracticeTranslationEntriesRefs)
+                        await $_getPrefetchedData<
+                          LocalPracticeEntry,
+                          $LocalPracticeEntriesTable,
+                          LocalPracticeTranslationEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LocalPracticeEntriesTableReferences
+                              ._localPracticeTranslationEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LocalPracticeEntriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).localPracticeTranslationEntriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.itemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3601,7 +4186,10 @@ typedef $$LocalPracticeEntriesTableProcessedTableManager =
       $$LocalPracticeEntriesTableUpdateCompanionBuilder,
       (LocalPracticeEntry, $$LocalPracticeEntriesTableReferences),
       LocalPracticeEntry,
-      PrefetchHooks Function({bool localPracticeCueEntriesRefs})
+      PrefetchHooks Function({
+        bool localPracticeCueEntriesRefs,
+        bool localPracticeTranslationEntriesRefs,
+      })
     >;
 typedef $$LocalPracticeCueEntriesTableCreateCompanionBuilder =
     LocalPracticeCueEntriesCompanion Function({
@@ -3991,6 +4579,399 @@ typedef $$LocalPracticeCueEntriesTableProcessedTableManager =
       $$LocalPracticeCueEntriesTableUpdateCompanionBuilder,
       (LocalPracticeCueEntry, $$LocalPracticeCueEntriesTableReferences),
       LocalPracticeCueEntry,
+      PrefetchHooks Function({bool itemId})
+    >;
+typedef $$LocalPracticeTranslationEntriesTableCreateCompanionBuilder =
+    LocalPracticeTranslationEntriesCompanion Function({
+      required String itemId,
+      required String targetLanguage,
+      required String cueMode,
+      required String cueId,
+      required String translatedText,
+      required int updatedAtMillis,
+      Value<int> rowid,
+    });
+typedef $$LocalPracticeTranslationEntriesTableUpdateCompanionBuilder =
+    LocalPracticeTranslationEntriesCompanion Function({
+      Value<String> itemId,
+      Value<String> targetLanguage,
+      Value<String> cueMode,
+      Value<String> cueId,
+      Value<String> translatedText,
+      Value<int> updatedAtMillis,
+      Value<int> rowid,
+    });
+
+final class $$LocalPracticeTranslationEntriesTableReferences
+    extends
+        BaseReferences<
+          _$LocalPracticeDatabase,
+          $LocalPracticeTranslationEntriesTable,
+          LocalPracticeTranslationEntry
+        > {
+  $$LocalPracticeTranslationEntriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $LocalPracticeEntriesTable _itemIdTable(_$LocalPracticeDatabase db) =>
+      db.localPracticeEntries.createAlias(
+        $_aliasNameGenerator(
+          db.localPracticeTranslationEntries.itemId,
+          db.localPracticeEntries.id,
+        ),
+      );
+
+  $$LocalPracticeEntriesTableProcessedTableManager get itemId {
+    final $_column = $_itemColumn<String>('item_id')!;
+
+    final manager = $$LocalPracticeEntriesTableTableManager(
+      $_db,
+      $_db.localPracticeEntries,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_itemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LocalPracticeTranslationEntriesTableFilterComposer
+    extends
+        Composer<
+          _$LocalPracticeDatabase,
+          $LocalPracticeTranslationEntriesTable
+        > {
+  $$LocalPracticeTranslationEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueMode => $composableBuilder(
+    column: $table.cueMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get translatedText => $composableBuilder(
+    column: $table.translatedText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAtMillis => $composableBuilder(
+    column: $table.updatedAtMillis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LocalPracticeEntriesTableFilterComposer get itemId {
+    final $$LocalPracticeEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.itemId,
+      referencedTable: $db.localPracticeEntries,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalPracticeEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.localPracticeEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LocalPracticeTranslationEntriesTableOrderingComposer
+    extends
+        Composer<
+          _$LocalPracticeDatabase,
+          $LocalPracticeTranslationEntriesTable
+        > {
+  $$LocalPracticeTranslationEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueMode => $composableBuilder(
+    column: $table.cueMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueId => $composableBuilder(
+    column: $table.cueId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get translatedText => $composableBuilder(
+    column: $table.translatedText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAtMillis => $composableBuilder(
+    column: $table.updatedAtMillis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LocalPracticeEntriesTableOrderingComposer get itemId {
+    final $$LocalPracticeEntriesTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.itemId,
+          referencedTable: $db.localPracticeEntries,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LocalPracticeEntriesTableOrderingComposer(
+                $db: $db,
+                $table: $db.localPracticeEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$LocalPracticeTranslationEntriesTableAnnotationComposer
+    extends
+        Composer<
+          _$LocalPracticeDatabase,
+          $LocalPracticeTranslationEntriesTable
+        > {
+  $$LocalPracticeTranslationEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cueMode =>
+      $composableBuilder(column: $table.cueMode, builder: (column) => column);
+
+  GeneratedColumn<String> get cueId =>
+      $composableBuilder(column: $table.cueId, builder: (column) => column);
+
+  GeneratedColumn<String> get translatedText => $composableBuilder(
+    column: $table.translatedText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get updatedAtMillis => $composableBuilder(
+    column: $table.updatedAtMillis,
+    builder: (column) => column,
+  );
+
+  $$LocalPracticeEntriesTableAnnotationComposer get itemId {
+    final $$LocalPracticeEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.itemId,
+          referencedTable: $db.localPracticeEntries,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LocalPracticeEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.localPracticeEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$LocalPracticeTranslationEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$LocalPracticeDatabase,
+          $LocalPracticeTranslationEntriesTable,
+          LocalPracticeTranslationEntry,
+          $$LocalPracticeTranslationEntriesTableFilterComposer,
+          $$LocalPracticeTranslationEntriesTableOrderingComposer,
+          $$LocalPracticeTranslationEntriesTableAnnotationComposer,
+          $$LocalPracticeTranslationEntriesTableCreateCompanionBuilder,
+          $$LocalPracticeTranslationEntriesTableUpdateCompanionBuilder,
+          (
+            LocalPracticeTranslationEntry,
+            $$LocalPracticeTranslationEntriesTableReferences,
+          ),
+          LocalPracticeTranslationEntry,
+          PrefetchHooks Function({bool itemId})
+        > {
+  $$LocalPracticeTranslationEntriesTableTableManager(
+    _$LocalPracticeDatabase db,
+    $LocalPracticeTranslationEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalPracticeTranslationEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalPracticeTranslationEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalPracticeTranslationEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> itemId = const Value.absent(),
+                Value<String> targetLanguage = const Value.absent(),
+                Value<String> cueMode = const Value.absent(),
+                Value<String> cueId = const Value.absent(),
+                Value<String> translatedText = const Value.absent(),
+                Value<int> updatedAtMillis = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPracticeTranslationEntriesCompanion(
+                itemId: itemId,
+                targetLanguage: targetLanguage,
+                cueMode: cueMode,
+                cueId: cueId,
+                translatedText: translatedText,
+                updatedAtMillis: updatedAtMillis,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String itemId,
+                required String targetLanguage,
+                required String cueMode,
+                required String cueId,
+                required String translatedText,
+                required int updatedAtMillis,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPracticeTranslationEntriesCompanion.insert(
+                itemId: itemId,
+                targetLanguage: targetLanguage,
+                cueMode: cueMode,
+                cueId: cueId,
+                translatedText: translatedText,
+                updatedAtMillis: updatedAtMillis,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$LocalPracticeTranslationEntriesTableReferences(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({itemId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (itemId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.itemId,
+                                referencedTable:
+                                    $$LocalPracticeTranslationEntriesTableReferences
+                                        ._itemIdTable(db),
+                                referencedColumn:
+                                    $$LocalPracticeTranslationEntriesTableReferences
+                                        ._itemIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LocalPracticeTranslationEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalPracticeDatabase,
+      $LocalPracticeTranslationEntriesTable,
+      LocalPracticeTranslationEntry,
+      $$LocalPracticeTranslationEntriesTableFilterComposer,
+      $$LocalPracticeTranslationEntriesTableOrderingComposer,
+      $$LocalPracticeTranslationEntriesTableAnnotationComposer,
+      $$LocalPracticeTranslationEntriesTableCreateCompanionBuilder,
+      $$LocalPracticeTranslationEntriesTableUpdateCompanionBuilder,
+      (
+        LocalPracticeTranslationEntry,
+        $$LocalPracticeTranslationEntriesTableReferences,
+      ),
+      LocalPracticeTranslationEntry,
       PrefetchHooks Function({bool itemId})
     >;
 typedef $$LocalCueAttemptEntriesTableCreateCompanionBuilder =
@@ -4749,6 +5730,12 @@ class $LocalPracticeDatabaseManager {
       $$LocalPracticeCueEntriesTableTableManager(
         _db,
         _db.localPracticeCueEntries,
+      );
+  $$LocalPracticeTranslationEntriesTableTableManager
+  get localPracticeTranslationEntries =>
+      $$LocalPracticeTranslationEntriesTableTableManager(
+        _db,
+        _db.localPracticeTranslationEntries,
       );
   $$LocalCueAttemptEntriesTableTableManager get localCueAttemptEntries =>
       $$LocalCueAttemptEntriesTableTableManager(

@@ -52,6 +52,30 @@ class LocalPracticeCueEntries extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class LocalPracticeTranslationEntries extends Table {
+  @override
+  String get tableName => 'local_practice_translation_entries';
+
+  TextColumn get itemId => text().references(
+    LocalPracticeEntries,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
+  TextColumn get targetLanguage => text()();
+  TextColumn get cueMode => text()();
+  TextColumn get cueId => text()();
+  TextColumn get translatedText => text()();
+  IntColumn get updatedAtMillis => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {
+    itemId,
+    targetLanguage,
+    cueMode,
+    cueId,
+  };
+}
+
 class SavedCueEntries extends Table {
   @override
   String get tableName => 'saved_cue_entries';
@@ -107,6 +131,7 @@ LazyDatabase _openConnection() {
   tables: [
     LocalPracticeEntries,
     LocalPracticeCueEntries,
+    LocalPracticeTranslationEntries,
     LocalCueAttemptEntries,
     SavedCueEntries,
   ],
@@ -118,7 +143,7 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
       LocalPracticeDatabase._internal();
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -141,6 +166,24 @@ class LocalPracticeDatabase extends _$LocalPracticeDatabase {
           savedCueEntries,
           savedCueEntries.parentCueIndex,
         );
+      }
+      if (from < 5) {
+        await migrator.createTable(localPracticeTranslationEntries);
+        await customStatement('''
+          INSERT OR REPLACE INTO local_practice_translation_entries
+            (item_id, target_language, cue_mode, cue_id, translated_text, updated_at_millis)
+          SELECT cues.item_id,
+                 entries.translated_language,
+                 'long',
+                 cues.id,
+                 cues.translated_text,
+                 entries.updated_at_millis
+          FROM local_practice_cue_entries AS cues
+          JOIN local_practice_entries AS entries ON entries.id = cues.item_id
+          WHERE entries.translated_language IS NOT NULL
+            AND entries.translated_language != ''
+            AND cues.translated_text != ''
+        ''');
       }
     },
     beforeOpen: (details) async {
