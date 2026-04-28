@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../core/apple_system_version.dart';
@@ -613,8 +614,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${video.accent} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.cueCount)}',
+                    '${video.accent} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.cueCount)} · ${_formatDateLabel(context, video.createdAt)}',
                     style: theme.textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -769,8 +772,10 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.transcriptCues.length)}',
+                    '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage} · ${_formatDuration(video.durationMs)} · ${l10n.createVideoMetaCues(video.transcriptCues.length)} · ${_formatDateLabel(context, video.createdAt)}',
                     style: theme.textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -906,6 +911,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDateLabel(BuildContext context, DateTime value) {
+    return DateFormat.yMMMd(
+      AppLocalizations.of(context)!.localeName,
+    ).format(value.toLocal());
   }
 
   static bool _usesRemoveFromList(UploadedVideo video) {

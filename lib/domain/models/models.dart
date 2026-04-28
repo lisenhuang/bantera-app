@@ -167,6 +167,7 @@ class UploadedVideo {
       hasBackendShortCues: transcriptShortCues.isNotEmpty,
       transcriptionSource: isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: videoWidth == null && videoHeight == null,
+      createdAt: createdAt,
       transcriptionVersion: transcriptionVersion,
       dialogueLines: dialogueLines,
       wordTiming: wordTiming,
@@ -267,6 +268,7 @@ class LocalPracticeVideo extends LocalPracticeVideoSummary {
       cues: cues,
       transcriptionSource: transcriptionSource,
       translatedLanguage: translatedLanguage,
+      createdAt: createdAt,
     );
   }
 }
@@ -411,6 +413,7 @@ class MediaItem {
   final String transcriptionSource;
   final String? translatedLanguage;
   final bool isAudioOnly;
+  final DateTime? createdAt;
   final int? transcriptionVersion;
   final List<String>? dialogueLines;
   final List<WordTiming>? wordTiming;
@@ -435,6 +438,7 @@ class MediaItem {
     required this.transcriptionSource,
     this.translatedLanguage,
     this.isAudioOnly = false,
+    this.createdAt,
     this.transcriptionVersion,
     this.dialogueLines,
     this.wordTiming,
@@ -466,6 +470,7 @@ class MediaItem {
       transcriptionSource: json['transcriptionSource']?.toString() ?? '',
       translatedLanguage: json['translatedLanguage']?.toString(),
       isAudioOnly: json['isAudioOnly'] as bool? ?? false,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
       transcriptionVersion: (json['transcriptionVersion'] as num?)?.toInt(),
       dialogueLines: (json['dialogueLines'] as List<dynamic>?)
           ?.map((e) => e.toString())
@@ -502,6 +507,7 @@ class MediaItem {
     'transcriptionSource': transcriptionSource,
     'translatedLanguage': translatedLanguage,
     'isAudioOnly': isAudioOnly,
+    'createdAt': createdAt?.toIso8601String(),
     'transcriptionVersion': transcriptionVersion,
     'dialogueLines': dialogueLines,
     'wordTiming': wordTiming?.map((w) => w.toJson()).toList(),

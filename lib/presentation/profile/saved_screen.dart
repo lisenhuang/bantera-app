@@ -263,6 +263,7 @@ class _SavedScreenState extends State<SavedScreen> {
       hasBackendShortCues: video.transcriptShortCues.isNotEmpty,
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      createdAt: video.createdAt,
       transcriptionVersion: video.transcriptionVersion,
       dialogueLines: video.dialogueLines,
       wordTiming: video.wordTiming,

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/apple_system_version.dart';
 import '../../core/api_config_notifier.dart';
@@ -488,6 +489,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final transcriptLanguageLabel = showEnglishVariantFlag
         ? '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage}'
         : video.transcriptLanguage;
+    final dateLabel = _formatDateLabel(context, video.createdAt);
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -554,10 +556,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      transcriptLanguageLabel,
+                      '$transcriptLanguageLabel · $dateLabel',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -628,10 +632,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       hasBackendShortCues: video.transcriptShortCues.isNotEmpty,
       transcriptionSource: video.isAiGenerated ? 'AI Generated' : 'User Upload',
       isAudioOnly: video.videoWidth == null && video.videoHeight == null,
+      createdAt: video.createdAt,
       transcriptionVersion: video.transcriptionVersion,
       dialogueLines: video.dialogueLines,
       wordTiming: video.wordTiming,
     );
+  }
+
+  String _formatDateLabel(BuildContext context, DateTime value) {
+    return DateFormat.yMMMd(
+      AppLocalizations.of(context)!.localeName,
+    ).format(value.toLocal());
   }
 
   static String _titleFromFileName(String fileName) {

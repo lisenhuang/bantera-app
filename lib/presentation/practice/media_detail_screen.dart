@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
@@ -217,12 +218,26 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                         showBanteraLogo: _showsBanteraAiBranding,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        _showsBanteraAiBranding
-                            ? 'Bantera AI'
-                            : widget.mediaItem.creator.displayName,
-                        style: Theme.of(context).textTheme.titleMedium,
+                      Expanded(
+                        child: Text(
+                          _showsBanteraAiBranding
+                              ? 'Bantera AI'
+                              : widget.mediaItem.creator.displayName,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      if (widget.mediaItem.createdAt != null) ...[
+                        const SizedBox(width: 12),
+                        Text(
+                          _formatDateLabel(
+                            context,
+                            widget.mediaItem.createdAt!,
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -331,6 +346,12 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
         ],
       ],
     );
+  }
+
+  String _formatDateLabel(BuildContext context, DateTime value) {
+    return DateFormat.yMMMd(
+      AppLocalizations.of(context)!.localeName,
+    ).format(value.toLocal());
   }
 }
 

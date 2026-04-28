@@ -572,6 +572,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
       hasBackendShortCues: _video.transcriptShortCues.isNotEmpty,
       transcriptionSource: l10n.uploadedDetailTranscriptionSourceYourUpload,
       isAudioOnly: _video.videoWidth == null && _video.videoHeight == null,
+      createdAt: _video.createdAt,
       transcriptionVersion: _video.transcriptionVersion,
       dialogueLines: _video.dialogueLines,
       wordTiming: _video.wordTiming,
