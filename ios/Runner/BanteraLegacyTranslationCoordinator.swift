@@ -190,8 +190,21 @@ private struct LegacyTranslationView: View {
             onComplete(.success(results))
           }
         } catch {
+          let banteraError: BanteraTranslationError
+          let nsError = error as NSError
+          // Apple's Translation framework uses a "Translation"-prefixed error domain when
+          // language models are not downloaded or the user cancels the download prompt.
+          // Remapping to translationAssetsNotInstalled lets Flutter re-trigger the sheet.
+          if nsError.domain.hasPrefix("Translation") {
+            banteraError = .translationAssetsNotInstalled(
+              source: source.minimalIdentifier,
+              target: target.minimalIdentifier
+            )
+          } else {
+            banteraError = .translationFailed(error.localizedDescription)
+          }
           await MainActor.run {
-            onComplete(.failure(error))
+            onComplete(.failure(banteraError))
           }
         }
       }
