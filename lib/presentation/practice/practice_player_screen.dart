@@ -4057,32 +4057,26 @@ class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
       final slice = widget.text.substring(m.start, m.end);
       final highlighted = charStarts.contains(m.start);
       if (highlighted) {
-        final radius = (base.fontSize ?? 16) * 0.2;
-        Widget wordWidget = Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(radius),
-          ),
-          child: Text(slice, style: base.copyWith(fontWeight: FontWeight.bold)),
-        );
+        TapGestureRecognizer? recognizer;
         if (widget.onWordTap != null) {
           final charStart = m.start;
-          wordWidget = GestureDetector(
-            onTap: () {
+          recognizer = TapGestureRecognizer()
+            ..onTap = () {
               final line =
                   '[Bantera][WordTap] token tap gesture: '
                   'charStart=$charStart word="$slice" textLen=${widget.text.length}';
               debugPrint(line);
               developer.log(line, name: 'Bantera.WordTap');
               widget.onWordTap!(charStart);
-            },
-            child: wordWidget,
-          );
+            };
+          _recognizers.add(recognizer);
         }
-        children.add(WidgetSpan(
-          alignment: PlaceholderAlignment.baseline,
-          baseline: TextBaseline.alphabetic,
-          child: wordWidget,
+        children.add(TextSpan(
+          text: slice,
+          style: base.copyWith(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          recognizer: recognizer,
         ));
       } else {
         TapGestureRecognizer? recognizer;
