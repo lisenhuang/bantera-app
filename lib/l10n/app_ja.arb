@@ -329,5 +329,9 @@
   "savedCuesDeleteConfirmBody": "このキューが保存リストから削除されます。",
   "savedCuesDeleteAllTooltip": "保存したキューをすべて削除",
   "savedCuesDeleteAllConfirmTitle": "すべての保存したキューを削除しますか？",
-  "savedCuesDeleteAllConfirmBody": "保存したキューがすべて完全に削除されます。"
+  "savedCuesDeleteAllConfirmBody": "保存したキューがすべて完全に削除されます。",
+  "updateAlertTitle": "アップデートがあります",
+  "updateAlertMessage": "Bantera の新しいバージョンが利用可能です。今すぐアップデートして最新の機能と改善をお楽しみください。",
+  "updateAlertUpdate": "アップデート",
+  "updateAlertLater": "後で"
 }

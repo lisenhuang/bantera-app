@@ -1043,4 +1043,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get savedCuesDeleteAllConfirmBody => '저장된 구간이 모두 영구적으로 삭제됩니다.';
+
+  @override
+  String get updateAlertTitle => '업데이트 가능';
+
+  @override
+  String get updateAlertMessage =>
+      '새로운 버전의 Bantera가 출시되었습니다. 지금 업데이트하여 최신 기능과 개선 사항을 누려보세요.';
+
+  @override
+  String get updateAlertUpdate => '업데이트';
+
+  @override
+  String get updateAlertLater => '나중에';
 }

@@ -2040,6 +2040,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All saved cues will be permanently removed.'**
   String get savedCuesDeleteAllConfirmBody;
+
+  /// No description provided for @updateAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Available'**
+  String get updateAlertTitle;
+
+  /// No description provided for @updateAlertMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Bantera is available. Update now to get the latest features and improvements.'**
+  String get updateAlertMessage;
+
+  /// No description provided for @updateAlertUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateAlertUpdate;
+
+  /// No description provided for @updateAlertLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateAlertLater;
 }
 
 class _AppLocalizationsDelegate

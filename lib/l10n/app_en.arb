@@ -435,5 +435,9 @@
   "savedCuesDeleteConfirmBody": "This cue will be removed from your saved list.",
   "savedCuesDeleteAllTooltip": "Delete all saved cues",
   "savedCuesDeleteAllConfirmTitle": "Delete all saved cues?",
-  "savedCuesDeleteAllConfirmBody": "All saved cues will be permanently removed."
+  "savedCuesDeleteAllConfirmBody": "All saved cues will be permanently removed.",
+  "updateAlertTitle": "Update Available",
+  "updateAlertMessage": "A new version of Bantera is available. Update now to get the latest features and improvements.",
+  "updateAlertUpdate": "Update",
+  "updateAlertLater": "Later"
 }

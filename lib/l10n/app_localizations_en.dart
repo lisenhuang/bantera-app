@@ -1091,4 +1091,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get savedCuesDeleteAllConfirmBody =>
       'All saved cues will be permanently removed.';
+
+  @override
+  String get updateAlertTitle => 'Update Available';
+
+  @override
+  String get updateAlertMessage =>
+      'A new version of Bantera is available. Update now to get the latest features and improvements.';
+
+  @override
+  String get updateAlertUpdate => 'Update';
+
+  @override
+  String get updateAlertLater => 'Later';
 }

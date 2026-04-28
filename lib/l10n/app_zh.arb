@@ -329,5 +329,9 @@
   "savedCuesDeleteConfirmBody": "此片段将从你的保存列表中移除。",
   "savedCuesDeleteAllTooltip": "删除所有已保存片段",
   "savedCuesDeleteAllConfirmTitle": "删除所有已保存片段？",
-  "savedCuesDeleteAllConfirmBody": "所有已保存的片段将被永久删除。"
+  "savedCuesDeleteAllConfirmBody": "所有已保存的片段将被永久删除。",
+  "updateAlertTitle": "有新版本可用",
+  "updateAlertMessage": "Bantera 有新版本可用。立即更新以获取最新功能和改进。",
+  "updateAlertUpdate": "更新",
+  "updateAlertLater": "稍后"
 }

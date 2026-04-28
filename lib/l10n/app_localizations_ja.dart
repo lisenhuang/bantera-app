@@ -1039,4 +1039,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get savedCuesDeleteAllConfirmBody => '保存したキューがすべて完全に削除されます。';
+
+  @override
+  String get updateAlertTitle => 'アップデートがあります';
+
+  @override
+  String get updateAlertMessage =>
+      'Bantera の新しいバージョンが利用可能です。今すぐアップデートして最新の機能と改善をお楽しみください。';
+
+  @override
+  String get updateAlertUpdate => 'アップデート';
+
+  @override
+  String get updateAlertLater => '後で';
 }

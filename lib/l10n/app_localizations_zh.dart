@@ -1025,6 +1025,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get savedCuesDeleteAllConfirmBody => '所有已保存的片段将被永久删除。';
+
+  @override
+  String get updateAlertTitle => '有新版本可用';
+
+  @override
+  String get updateAlertMessage => 'Bantera 有新版本可用。立即更新以获取最新功能和改进。';
+
+  @override
+  String get updateAlertUpdate => '更新';
+
+  @override
+  String get updateAlertLater => '稍后';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -2048,4 +2060,16 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get savedCuesDeleteAllConfirmBody => '所有已保存的片段将被永久删除。';
+
+  @override
+  String get updateAlertTitle => '有新版本可用';
+
+  @override
+  String get updateAlertMessage => 'Bantera 有新版本可用。立即更新以获取最新功能和改进。';
+
+  @override
+  String get updateAlertUpdate => '更新';
+
+  @override
+  String get updateAlertLater => '稍后';
 }

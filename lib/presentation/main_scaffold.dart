@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/apple_system_version.dart';
+import '../core/app_resume_notifier.dart';
+import '../infrastructure/app_update_service.dart';
 import '../l10n/app_localizations.dart';
 import 'create/create_hub_screen.dart';
 import 'discover/discover_screen.dart';
@@ -16,6 +19,7 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
+  bool _checkingUpdate = false;
 
   static const List<Widget> _threeTabs = [
     DiscoverScreen(),
@@ -32,6 +36,57 @@ class _MainScaffoldState extends State<MainScaffold> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(_migrateTabIndexIfCreateHidden);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+    AppResumeNotifier.instance.addListener(_onResume);
+  }
+
+  @override
+  void dispose() {
+    AppResumeNotifier.instance.removeListener(_onResume);
+    super.dispose();
+  }
+
+  void _onResume() => _checkForUpdate();
+
+  Future<void> _checkForUpdate() async {
+    if (_checkingUpdate) return;
+    _checkingUpdate = true;
+    try {
+      final result = await AppUpdateService.checkForUpdate();
+      if (!mounted) return;
+      if (result != null && result.needsUpdate) {
+        _showUpdateDialog(result.storeUrl);
+      }
+    } finally {
+      _checkingUpdate = false;
+    }
+  }
+
+  void _showUpdateDialog(String storeUrl) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.updateAlertTitle),
+        content: Text(l10n.updateAlertMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.updateAlertLater),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await launchUrl(
+                Uri.parse(storeUrl),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            child: Text(l10n.updateAlertUpdate),
+          ),
+        ],
+      ),
+    );
   }
 
   /// If state ever held Profile as index 2 (3-tab), remap to 1 (2-tab). Index 1 is
