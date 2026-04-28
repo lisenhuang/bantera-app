@@ -40,8 +40,7 @@ enum AppLocalePreference {
   Locale? get explicitLocale => switch (this) {
         AppLocalePreference.system => null,
         AppLocalePreference.en => const Locale('en'),
-        AppLocalePreference.zhCn =>
-          const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN'),
+        AppLocalePreference.zhCn => const Locale('zh'),
         AppLocalePreference.ko => const Locale('ko'),
         AppLocalePreference.ja => const Locale('ja'),
       };
@@ -64,7 +63,7 @@ class AppLocaleAutonyms {
 Locale resolvePlatformLocale(Locale platform) {
   final lang = platform.languageCode;
   if (lang == 'zh') {
-    return const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN');
+    return const Locale('zh');
   }
   if (lang == 'ko') {
     return const Locale('ko');

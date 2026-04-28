@@ -100,7 +100,6 @@ abstract class AppLocalizations {
     Locale('ja'),
     Locale('ko'),
     Locale('zh'),
-    Locale('zh', 'CN'),
   ];
 
   /// No description provided for @appName.
@@ -2084,18 +2083,6 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when language+country codes are specified.
-  switch (locale.languageCode) {
-    case 'zh':
-      {
-        switch (locale.countryCode) {
-          case 'CN':
-            return AppLocalizationsZhCn();
-        }
-        break;
-      }
-  }
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':
