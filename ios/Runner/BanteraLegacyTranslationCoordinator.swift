@@ -176,12 +176,15 @@ private struct LegacyTranslationView: View {
       .frame(width: 1, height: 1)
       .translationTask(configuration) { session in
         do {
+          let requests = cues.map {
+            TranslationSession.Request(sourceText: $0.text, clientIdentifier: $0.id)
+          }
           var results: [BanteraLegacyTranslationCoordinator.CueOutput] = []
-          for cue in cues {
-            let response = try await session.translate(cue.text)
+          for try await response in session.translate(batch: requests) {
+            guard let id = response.clientIdentifier else { continue }
             results.append(
               BanteraLegacyTranslationCoordinator.CueOutput(
-                id: cue.id,
+                id: id,
                 translatedText: Self.cleanText(response.targetText)
               )
             )

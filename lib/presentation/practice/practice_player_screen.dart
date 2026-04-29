@@ -2725,42 +2725,36 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _backgroundTranslationKeys.add(backgroundKey);
 
     try {
-      for (final cue in remainingCues) {
-        if (!_isCurrentTranslationGeneration(
-          generation,
-          targetLocaleIdentifier,
-          cueMode,
-        )) {
-          return;
-        }
-        final cached = _translatedCueTextsFor(cueMode)[cue.id]?.trim();
-        if (cached != null && cached.isNotEmpty) {
-          continue;
-        }
-
-        final translated = await _translateCuesSerialized(
-          sourceLocaleIdentifier: sourceLocaleIdentifier,
-          targetLocaleIdentifier: targetLocaleIdentifier,
-          cues: [cue],
-        );
-        if (!_isCurrentTranslationGeneration(
-              generation,
-              targetLocaleIdentifier,
-              cueMode,
-            ) ||
-            !mounted) {
-          return;
-        }
-
-        setState(() {
-          _mergeTranslatedCueTexts(cueMode, translated);
-        });
-        await _persistLocalTranslations(
-          targetLocaleIdentifier: targetLocaleIdentifier,
-          cueMode: cueMode,
-          translations: translated,
-        );
+      if (!_isCurrentTranslationGeneration(
+        generation,
+        targetLocaleIdentifier,
+        cueMode,
+      )) {
+        return;
       }
+
+      final translated = await _translateCuesSerialized(
+        sourceLocaleIdentifier: sourceLocaleIdentifier,
+        targetLocaleIdentifier: targetLocaleIdentifier,
+        cues: remainingCues,
+      );
+      if (!_isCurrentTranslationGeneration(
+            generation,
+            targetLocaleIdentifier,
+            cueMode,
+          ) ||
+          !mounted) {
+        return;
+      }
+
+      setState(() {
+        _mergeTranslatedCueTexts(cueMode, translated);
+      });
+      await _persistLocalTranslations(
+        targetLocaleIdentifier: targetLocaleIdentifier,
+        cueMode: cueMode,
+        translations: translated,
+      );
     } on TranslationException {
       // Keep the current cue responsive even if background translation fails.
     } finally {
