@@ -896,18 +896,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiGenOwnershipNotice =>
-      'Audio generated here is created by Bantera AI. All generated content is owned by Bantera and shared as public practice material — it is not associated with your personal account.';
+      'Audio you generate here becomes Bantera community content — shared publicly as practice material for all learners.';
 
   @override
   String get aiGenOwnershipCheckbox =>
-      'I understand this audio belongs to Bantera, not me';
+      'Share this audio as Bantera community content';
 
   @override
-  String get aiGenOwnershipConfirmTitle => 'Generate as Bantera content?';
-
-  @override
-  String get aiGenOwnershipConfirmBody =>
-      'This audio will be owned by Bantera and shared publicly. It won\'t appear as your personal content. Do you want to continue?';
+  String get aiGenOwnershipConfirmTitle => 'Share as community content?';
 
   @override
   String get aiGenOwnershipConfirmCancel => 'Cancel';

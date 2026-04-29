@@ -857,17 +857,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiGenOwnershipNotice =>
-      '여기서 생성된 오디오는 Bantera AI가 제작합니다. 생성된 모든 콘텐츠는 Bantera 소유이며 공개 연습 자료로 공유됩니다. 개인 계정과는 연결되지 않습니다.';
+      '여기서 생성하는 오디오는 Bantera 커뮤니티 콘텐츠가 되어 모든 학습자를 위한 연습 자료로 공개 공유됩니다.';
 
   @override
-  String get aiGenOwnershipCheckbox => '이 오디오는 저가 아닌 Bantera의 소유임을 이해합니다';
+  String get aiGenOwnershipCheckbox => '이 오디오를 Bantera 커뮤니티 콘텐츠로 공유합니다';
 
   @override
-  String get aiGenOwnershipConfirmTitle => 'Bantera 콘텐츠로 생성하시겠습니까?';
-
-  @override
-  String get aiGenOwnershipConfirmBody =>
-      '이 오디오는 Bantera 소유로 공개 공유되며 개인 콘텐츠에는 표시되지 않습니다. 계속하시겠습니까?';
+  String get aiGenOwnershipConfirmTitle => '커뮤니티 콘텐츠로 공유하시겠습니까?';
 
   @override
   String get aiGenOwnershipConfirmCancel => '취소';

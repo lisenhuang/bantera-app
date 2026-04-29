@@ -377,10 +377,9 @@
     }
   },
   "aiGenGenerateButton": "Generate",
-  "aiGenOwnershipNotice": "Audio generated here is created by Bantera AI. All generated content is owned by Bantera and shared as public practice material — it is not associated with your personal account.",
-  "aiGenOwnershipCheckbox": "I understand this audio belongs to Bantera, not me",
-  "aiGenOwnershipConfirmTitle": "Generate as Bantera content?",
-  "aiGenOwnershipConfirmBody": "This audio will be owned by Bantera and shared publicly. It won't appear as your personal content. Do you want to continue?",
+  "aiGenOwnershipNotice": "Audio you generate here becomes Bantera community content — shared publicly as practice material for all learners.",
+  "aiGenOwnershipCheckbox": "Share this audio as Bantera community content",
+  "aiGenOwnershipConfirmTitle": "Share as community content?",
   "aiGenOwnershipConfirmCancel": "Cancel",
   "aiGenOwnershipConfirmGenerate": "Generate",
   "aiGenFooterNotice": "AI will write a two-speaker dialogue and synthesise it as audio. The result will be saved as a public practice audio.",

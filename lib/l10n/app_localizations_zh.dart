@@ -845,17 +845,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiGenOwnershipNotice =>
-      '此处生成的音频由 Bantera AI 创作。所有生成内容归 Bantera 所有，并作为公开练习素材共享——不与您的个人账户关联。';
+      '您在此生成的音频将成为 Bantera 社区内容——作为练习素材公开共享，供所有学习者使用。';
 
   @override
-  String get aiGenOwnershipCheckbox => '我了解此音频归 Bantera 所有，而非我个人';
+  String get aiGenOwnershipCheckbox => '将此音频作为 Bantera 社区内容分享';
 
   @override
-  String get aiGenOwnershipConfirmTitle => '作为 Bantera 内容生成？';
-
-  @override
-  String get aiGenOwnershipConfirmBody =>
-      '此音频将归 Bantera 所有并公开分享，不会出现在您的个人内容中。是否继续？';
+  String get aiGenOwnershipConfirmTitle => '作为社区内容分享？';
 
   @override
   String get aiGenOwnershipConfirmCancel => '取消';

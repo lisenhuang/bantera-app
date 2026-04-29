@@ -240,24 +240,34 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           builder: (ctx, setDialogState) {
             return AlertDialog(
               title: Text(d.aiGenOwnershipConfirmTitle),
-              content: InkWell(
-                borderRadius: BorderRadius.circular(6),
-                onTap: () => setDialogState(
-                  () => dialogAcknowledged = !dialogAcknowledged,
-                ),
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: dialogAcknowledged,
-                      onChanged: (v) =>
-                          setDialogState(() => dialogAcknowledged = v ?? false),
-                      visualDensity: VisualDensity.compact,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(d.aiGenOwnershipNotice),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () => setDialogState(
+                      () => dialogAcknowledged = !dialogAcknowledged,
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(child: Text(d.aiGenOwnershipCheckbox)),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: dialogAcknowledged,
+                          onChanged: (v) => setDialogState(
+                            () => dialogAcknowledged = v ?? false,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(child: Text(d.aiGenOwnershipCheckbox)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 TextButton(
@@ -277,6 +287,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       },
     );
     if (confirmed == true && mounted) {
+      setState(() => _ownershipAcknowledged = true);
       await _generate();
     }
   }
