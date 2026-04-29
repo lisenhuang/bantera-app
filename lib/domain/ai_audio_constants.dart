@@ -15,7 +15,6 @@ class AiScenario {
 }
 
 const kAiScenarios = [
-  AiScenario(id: 'latest_news', emoji: '📰', label: 'Latest News'),
   AiScenario(
     id: 'coffee_shop',
     emoji: '☕',
@@ -114,5 +113,6 @@ const kAiScenarios = [
     scenarioText:
         'Two friends passionately disagree about whether a sequel was better than the original.',
   ),
+  AiScenario(id: 'latest_news', emoji: '📰', label: 'Latest News'),
   AiScenario(id: 'custom', emoji: '✏️', label: 'Custom…'),
 ];
