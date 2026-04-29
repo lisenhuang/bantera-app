@@ -2634,6 +2634,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    _translationRequestQueue = Future.value();
     _foregroundTranslationToken++;
     final myToken = _foregroundTranslationToken;
     setState(() {
