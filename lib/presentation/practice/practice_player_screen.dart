@@ -97,6 +97,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       const {};
   Map<CueSentenceMode, String> _translatedLanguageIdentifiersByMode = const {};
   bool _isTranslating = false;
+  int _foregroundTranslationToken = 0;
   final Set<String> _backgroundTranslationKeys = <String>{};
   String? _translationErrorMessage;
   int _translationGeneration = 0;
@@ -2633,6 +2634,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
 
+    _foregroundTranslationToken++;
+    final myToken = _foregroundTranslationToken;
     setState(() {
       _isTranslating = true;
       _translationErrorMessage = null;
@@ -2678,7 +2681,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _translationErrorMessage = error.message;
       });
     } finally {
-      if (mounted) {
+      if (mounted && _foregroundTranslationToken == myToken) {
         setState(() {
           _isTranslating = false;
         });
@@ -3801,6 +3804,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _currentCueIndex = nextIndex;
       _subtitleState = SubtitleState.hidden;
       _isPlaying = false;
+      _isTranslating = false;
+      _foregroundTranslationToken++;
     });
 
     unawaited(
