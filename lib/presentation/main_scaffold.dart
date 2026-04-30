@@ -6,6 +6,7 @@ import '../core/apple_system_version.dart';
 import '../core/app_resume_notifier.dart';
 import '../infrastructure/app_update_service.dart';
 import '../l10n/app_localizations.dart';
+import 'chats/chats_screen.dart';
 import 'create/create_hub_screen.dart';
 import 'discover/discover_screen.dart';
 import 'profile/profile_screen.dart';
@@ -21,21 +22,25 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
   bool _checkingUpdate = false;
 
-  static const List<Widget> _threeTabs = [
+  static const List<Widget> _fourTabs = [
     DiscoverScreen(),
     CreateHubScreen(),
+    ChatsScreen(),
     ProfileScreen(),
   ];
 
-  static const List<Widget> _twoTabs = [
+  static const List<Widget> _threeTabs = [
     DiscoverScreen(),
+    ChatsScreen(),
     ProfileScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(_migrateTabIndexIfCreateHidden);
+    WidgetsBinding.instance.addPostFrameCallback(
+      _migrateTabIndexIfCreateHidden,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
     AppResumeNotifier.instance.addListener(_onResume);
   }
@@ -89,13 +94,15 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
-  /// If state ever held Profile as index 2 (3-tab), remap to 1 (2-tab). Index 1 is
-  /// not migrated because it may already be Discover/Profile in the 2-tab layout.
+  /// If state ever held Chats/Profile as indices 2/3 (4-tab), remap to 1/2
+  /// when Create is hidden. Index 1 naturally becomes Chats in the 3-tab layout.
   void _migrateTabIndexIfCreateHidden(Duration _) {
     if (!mounted) return;
     if (supportsCreateTabOnApple) return;
     if (_currentIndex == 2) {
       setState(() => _currentIndex = 1);
+    } else if (_currentIndex == 3) {
+      setState(() => _currentIndex = 2);
     }
   }
 
@@ -103,15 +110,12 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final showCreateTab = supportsCreateTabOnApple;
-    final screens = showCreateTab ? _threeTabs : _twoTabs;
+    final screens = showCreateTab ? _fourTabs : _threeTabs;
     final maxIndex = screens.length - 1;
     final stackIndex = _currentIndex.clamp(0, maxIndex);
 
     return Scaffold(
-      body: IndexedStack(
-        index: stackIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: stackIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: stackIndex,
         onTap: (index) {
@@ -130,6 +134,10 @@ class _MainScaffoldState extends State<MainScaffold> {
               label: l10n.navCreate,
             ),
           ],
+          BottomNavigationBarItem(
+            icon: const Icon(CupertinoIcons.chat_bubble_text_fill),
+            label: l10n.chatsTitle,
+          ),
           BottomNavigationBarItem(
             icon: const Icon(CupertinoIcons.person_solid),
             label: l10n.navProfile,

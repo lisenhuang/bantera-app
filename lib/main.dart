@@ -7,6 +7,7 @@ import 'core/api_config_notifier.dart';
 import 'core/app_locale.dart';
 import 'core/app_resume_notifier.dart';
 import 'core/auth_session_notifier.dart';
+import 'core/chat_session_notifier.dart';
 import 'core/settings_notifier.dart';
 import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
     AuthSessionNotifier.instance.initialize(),
   ]);
   UserProfileNotifier.instance;
+  ChatSessionNotifier.instance;
   // Preload language lists in the background so pickers are fast on first open.
   unawaited(
     Future.wait([

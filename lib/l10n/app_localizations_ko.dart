@@ -84,6 +84,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sectionPermissions => '권한';
 
   @override
+  String get sectionNotifications => '알림';
+
+  @override
   String get languageSectionSubtitle => '앱 표시 언어를 선택하세요. 시스템은 기기 설정을 따릅니다.';
 
   @override
@@ -187,6 +190,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get cancel => '취소';
 
   @override
+  String get closeLabel => '닫기';
+
+  @override
   String get navDiscover => '탐색';
 
   @override
@@ -197,6 +203,143 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatsTitle => '채팅';
+
+  @override
+  String get chatNoChatsYet => '아직 채팅이 없습니다.';
+
+  @override
+  String get chatOnlineSection => '온라인';
+
+  @override
+  String get chatDirectMessagesSection => 'DM';
+
+  @override
+  String chatAudioDuration(String duration) {
+    return '오디오 $duration';
+  }
+
+  @override
+  String get chatEnableNotifications => '알림 켜기';
+
+  @override
+  String get chatMuteNotifications => '알림 음소거';
+
+  @override
+  String get chatBlockUser => '사용자 차단';
+
+  @override
+  String get chatDeleteDm => 'DM 삭제';
+
+  @override
+  String get chatGroupReady => '이 그룹에서 음성 메시지를 보낼 수 있습니다.';
+
+  @override
+  String get chatHoldToStartDm => '길게 눌러 녹음하고 DM을 시작하세요.';
+
+  @override
+  String get chatNoGroupAudio => '아직 그룹 오디오가 없습니다.';
+
+  @override
+  String get chatNoDmAudio => '이 DM에는 아직 오디오가 없습니다.';
+
+  @override
+  String get chatSendingAudio => '오디오 보내는 중...';
+
+  @override
+  String get chatRecordingReleaseToSend => '녹음 중...손을 떼면 전송';
+
+  @override
+  String get chatHoldToRecordAudio => '길게 눌러 오디오 녹음';
+
+  @override
+  String get chatRecordingStatus => '녹음 중...';
+
+  @override
+  String get chatGroupLabel => '그룹';
+
+  @override
+  String get chatNotificationsEnabledForDm => '이 DM의 알림을 켰습니다.';
+
+  @override
+  String get chatNotificationsMutedForDm => '이 DM의 알림을 음소거했습니다.';
+
+  @override
+  String chatBlockUserTitle(String user) {
+    return '$user님을 차단할까요?';
+  }
+
+  @override
+  String get chatBlockUserBody =>
+      '차단을 해제할 때까지 DM 보내기와 공유 그룹 메시지에서 서로 보이지 않습니다.';
+
+  @override
+  String get chatDeleteDmTitle => '이 DM을 삭제할까요?';
+
+  @override
+  String get chatDeleteDmBody => '목록에서만 제거됩니다. 나중에 새 메시지가 오면 다시 나타날 수 있습니다.';
+
+  @override
+  String get chatMicrophoneRequiredTitle => '마이크가 필요합니다';
+
+  @override
+  String get chatMicrophoneRequiredSettings =>
+      '채팅 오디오를 녹음하려면 Bantera에 마이크 접근 권한이 필요합니다. 설정에서 켜 주세요.';
+
+  @override
+  String get chatMicrophoneRequiredBody =>
+      '채팅 오디오를 녹음하려면 Bantera에 마이크 접근 권한이 필요합니다.';
+
+  @override
+  String get chatGroupNotReady => '이 그룹은 아직 준비되지 않았습니다.';
+
+  @override
+  String get chatMessageAction => '메시지';
+
+  @override
+  String get chatRetranscribe => '다시 전사';
+
+  @override
+  String get chatTranscribe => '전사';
+
+  @override
+  String get chatTranscribingOnDevice => '이 iPhone에서 전사 중...';
+
+  @override
+  String get chatTranscriptionFailed => '전사하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get chatGroupSettingsTitle => '그룹 설정';
+
+  @override
+  String get chatNotifications => '알림';
+
+  @override
+  String get chatBlockedPeople => '차단한 사람';
+
+  @override
+  String get chatNoBlockedPeople => '아직 차단한 사람이 없습니다.';
+
+  @override
+  String get chatUnblock => '차단 해제';
+
+  @override
+  String get chatNotificationsTitle => '채팅 알림';
+
+  @override
+  String get chatNotificationsSubtitle => '모든 기기에서 하나의 계정 전체 스위치를 사용합니다.';
+
+  @override
+  String get chatNotificationsDisabledTitle => '알림이 꺼져 있습니다';
+
+  @override
+  String get chatNotificationsDisabledSettings =>
+      'Bantera 채팅 알림을 받으려면 설정에서 알림을 켜세요.';
+
+  @override
+  String get chatNotificationsDisabledBody => '채팅 알림을 켜려면 알림 권한이 필요합니다.';
+
+  @override
+  String get chatNotificationUpdateFailed => '채팅 알림을 업데이트하지 못했습니다. 다시 시도하세요.';
 
   @override
   String get savedTitle => '저장된 미디어';

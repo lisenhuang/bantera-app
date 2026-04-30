@@ -86,6 +86,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionPermissions => 'Permissions';
 
   @override
+  String get sectionNotifications => 'Notifications';
+
+  @override
   String get languageSectionSubtitle =>
       'Choose app display language. System follows your device settings.';
 
@@ -194,6 +197,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get closeLabel => 'Close';
+
+  @override
   String get navDiscover => 'Discover';
 
   @override
@@ -204,6 +210,148 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatsTitle => 'Chats';
+
+  @override
+  String get chatNoChatsYet => 'No chats yet.';
+
+  @override
+  String get chatOnlineSection => 'Online';
+
+  @override
+  String get chatDirectMessagesSection => 'DM';
+
+  @override
+  String chatAudioDuration(String duration) {
+    return 'Audio $duration';
+  }
+
+  @override
+  String get chatEnableNotifications => 'Enable notifications';
+
+  @override
+  String get chatMuteNotifications => 'Mute notifications';
+
+  @override
+  String get chatBlockUser => 'Block user';
+
+  @override
+  String get chatDeleteDm => 'Delete DM';
+
+  @override
+  String get chatGroupReady => 'This group is ready for audio messages.';
+
+  @override
+  String get chatHoldToStartDm => 'Hold to record and start the DM.';
+
+  @override
+  String get chatNoGroupAudio => 'No group audio yet.';
+
+  @override
+  String get chatNoDmAudio => 'No audio in this DM yet.';
+
+  @override
+  String get chatSendingAudio => 'Sending audio...';
+
+  @override
+  String get chatRecordingReleaseToSend => 'Recording... release to send';
+
+  @override
+  String get chatHoldToRecordAudio => 'Hold to record audio';
+
+  @override
+  String get chatRecordingStatus => 'Recording...';
+
+  @override
+  String get chatGroupLabel => 'Group';
+
+  @override
+  String get chatNotificationsEnabledForDm =>
+      'Notifications enabled for this DM.';
+
+  @override
+  String get chatNotificationsMutedForDm => 'Notifications muted for this DM.';
+
+  @override
+  String chatBlockUserTitle(String user) {
+    return 'Block $user?';
+  }
+
+  @override
+  String get chatBlockUserBody =>
+      'You will stop seeing each other in DM sends and shared group messages until you unblock.';
+
+  @override
+  String get chatDeleteDmTitle => 'Delete this DM?';
+
+  @override
+  String get chatDeleteDmBody =>
+      'This only removes it from your list. A new message can bring it back later.';
+
+  @override
+  String get chatMicrophoneRequiredTitle => 'Microphone required';
+
+  @override
+  String get chatMicrophoneRequiredSettings =>
+      'Bantera needs microphone access to record chat audio. Enable it in Settings.';
+
+  @override
+  String get chatMicrophoneRequiredBody =>
+      'Bantera needs microphone access to record chat audio.';
+
+  @override
+  String get chatGroupNotReady => 'This group is not ready yet.';
+
+  @override
+  String get chatMessageAction => 'Message';
+
+  @override
+  String get chatRetranscribe => 'Retranscribe';
+
+  @override
+  String get chatTranscribe => 'Transcribe';
+
+  @override
+  String get chatTranscribingOnDevice => 'Transcribing on this iPhone...';
+
+  @override
+  String get chatTranscriptionFailed => 'Transcription failed. Try again.';
+
+  @override
+  String get chatGroupSettingsTitle => 'Group settings';
+
+  @override
+  String get chatNotifications => 'Notifications';
+
+  @override
+  String get chatBlockedPeople => 'Blocked people';
+
+  @override
+  String get chatNoBlockedPeople => 'No blocked people yet.';
+
+  @override
+  String get chatUnblock => 'Unblock';
+
+  @override
+  String get chatNotificationsTitle => 'Chat notifications';
+
+  @override
+  String get chatNotificationsSubtitle =>
+      'Use one account-wide switch across your devices.';
+
+  @override
+  String get chatNotificationsDisabledTitle => 'Notifications disabled';
+
+  @override
+  String get chatNotificationsDisabledSettings =>
+      'Enable notifications in Settings to receive Bantera chat alerts.';
+
+  @override
+  String get chatNotificationsDisabledBody =>
+      'Bantera needs notification permission before chat alerts can be enabled.';
+
+  @override
+  String get chatNotificationUpdateFailed =>
+      'Could not update chat notifications. Please try again.';
 
   @override
   String get savedTitle => 'Saved Media';

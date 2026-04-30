@@ -84,6 +84,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sectionPermissions => '权限';
 
   @override
+  String get sectionNotifications => '通知';
+
+  @override
   String get languageSectionSubtitle => '选择应用显示语言。“跟随系统”将使用设备的语言设置。';
 
   @override
@@ -186,6 +189,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancel => '取消';
 
   @override
+  String get closeLabel => '关闭';
+
+  @override
   String get navDiscover => '发现';
 
   @override
@@ -196,6 +202,140 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatsTitle => '聊天';
+
+  @override
+  String get chatNoChatsYet => '还没有聊天。';
+
+  @override
+  String get chatOnlineSection => '在线';
+
+  @override
+  String get chatDirectMessagesSection => '私信';
+
+  @override
+  String chatAudioDuration(String duration) {
+    return '音频 $duration';
+  }
+
+  @override
+  String get chatEnableNotifications => '开启通知';
+
+  @override
+  String get chatMuteNotifications => '静音通知';
+
+  @override
+  String get chatBlockUser => '屏蔽用户';
+
+  @override
+  String get chatDeleteDm => '删除私信';
+
+  @override
+  String get chatGroupReady => '这个群组可以发送语音消息。';
+
+  @override
+  String get chatHoldToStartDm => '长按录音并开始私信。';
+
+  @override
+  String get chatNoGroupAudio => '还没有群组语音。';
+
+  @override
+  String get chatNoDmAudio => '这条私信里还没有语音。';
+
+  @override
+  String get chatSendingAudio => '正在发送音频...';
+
+  @override
+  String get chatRecordingReleaseToSend => '正在录音...松开发送';
+
+  @override
+  String get chatHoldToRecordAudio => '长按录制音频';
+
+  @override
+  String get chatRecordingStatus => '正在录音...';
+
+  @override
+  String get chatGroupLabel => '群组';
+
+  @override
+  String get chatNotificationsEnabledForDm => '已开启这条私信的通知。';
+
+  @override
+  String get chatNotificationsMutedForDm => '已静音这条私信的通知。';
+
+  @override
+  String chatBlockUserTitle(String user) {
+    return '屏蔽 $user？';
+  }
+
+  @override
+  String get chatBlockUserBody => '在解除屏蔽前，你们不会在私信发送和共享群组消息中看到彼此。';
+
+  @override
+  String get chatDeleteDmTitle => '删除这条私信？';
+
+  @override
+  String get chatDeleteDmBody => '这只会把它从列表中移除。之后有新消息时可能会重新出现。';
+
+  @override
+  String get chatMicrophoneRequiredTitle => '需要麦克风';
+
+  @override
+  String get chatMicrophoneRequiredSettings =>
+      'Bantera 需要麦克风权限来录制聊天音频。请在设置中开启。';
+
+  @override
+  String get chatMicrophoneRequiredBody => 'Bantera 需要麦克风权限来录制聊天音频。';
+
+  @override
+  String get chatGroupNotReady => '这个群组还没准备好。';
+
+  @override
+  String get chatMessageAction => '发消息';
+
+  @override
+  String get chatRetranscribe => '重新转写';
+
+  @override
+  String get chatTranscribe => '转写';
+
+  @override
+  String get chatTranscribingOnDevice => '正在此 iPhone 上转写...';
+
+  @override
+  String get chatTranscriptionFailed => '转写失败，请重试。';
+
+  @override
+  String get chatGroupSettingsTitle => '群组设置';
+
+  @override
+  String get chatNotifications => '通知';
+
+  @override
+  String get chatBlockedPeople => '已屏蔽的人';
+
+  @override
+  String get chatNoBlockedPeople => '还没有屏蔽任何人。';
+
+  @override
+  String get chatUnblock => '解除屏蔽';
+
+  @override
+  String get chatNotificationsTitle => '聊天通知';
+
+  @override
+  String get chatNotificationsSubtitle => '在所有设备上使用同一个账户级开关。';
+
+  @override
+  String get chatNotificationsDisabledTitle => '通知已关闭';
+
+  @override
+  String get chatNotificationsDisabledSettings => '请在设置中开启通知，以接收 Bantera 聊天提醒。';
+
+  @override
+  String get chatNotificationsDisabledBody => '开启聊天提醒前，Bantera 需要通知权限。';
+
+  @override
+  String get chatNotificationUpdateFailed => '无法更新聊天通知，请重试。';
 
   @override
   String get savedTitle => '已保存媒体';

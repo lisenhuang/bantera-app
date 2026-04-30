@@ -276,7 +276,9 @@ class AuthSessionNotifier extends ChangeNotifier {
   /// Matches [_scheduleRefresh] timing: refresh when within [_refreshLeadTime] of access token expiry.
   bool _accessTokenNeedsRefreshNow(AuthSession session) {
     if (session.expiresIn <= 0) return true;
-    final expiresAt = session.issuedAt.add(Duration(seconds: session.expiresIn));
+    final expiresAt = session.issuedAt.add(
+      Duration(seconds: session.expiresIn),
+    );
     final refreshAt = expiresAt.subtract(_refreshLeadTime(session));
     return refreshAt.difference(DateTime.now()) <= Duration.zero;
   }
@@ -288,7 +290,9 @@ class AuthSessionNotifier extends ChangeNotifier {
     final session = _session;
     if (session == null || session.expiresIn <= 0) return;
 
-    final expiresAt = session.issuedAt.add(Duration(seconds: session.expiresIn));
+    final expiresAt = session.issuedAt.add(
+      Duration(seconds: session.expiresIn),
+    );
     final refreshAt = expiresAt.subtract(_refreshLeadTime(session));
     final remaining = refreshAt.difference(DateTime.now());
 
@@ -337,6 +341,10 @@ class AuthSessionNotifier extends ChangeNotifier {
     _plainErrorMessage = null;
     _authApiError = null;
     notifyListeners();
+  }
+
+  Future<String?> refreshAccessTokenForApi() {
+    return _silentRefresh();
   }
 
   Future<void> _runAuthAction(
