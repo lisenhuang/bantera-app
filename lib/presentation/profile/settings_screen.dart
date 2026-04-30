@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_locale.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/settings_notifier.dart';
+import '../../infrastructure/app_update_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../dev/dev_screen.dart';
 import 'account_more_screen.dart';
@@ -26,6 +28,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   );
 
   int _titleTapCount = 0;
+  bool _checkingUpdate = false;
+  String? _currentVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentVersion();
+  }
+
+  Future<void> _loadCurrentVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() => _currentVersion = info.version);
+    }
+  }
 
   Future<void> _confirmSignOut() async {
     final l10n = AppLocalizations.of(context)!;
@@ -49,6 +66,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed != true || !mounted) return;
     AuthSessionNotifier.instance.signOut();
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _checkForUpdate() async {
+    if (_checkingUpdate) return;
+    setState(() => _checkingUpdate = true);
+    try {
+      final result = await AppUpdateService.checkForUpdate();
+      if (!mounted) return;
+      if (result == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not check for updates')),
+        );
+        return;
+      }
+      if (!result.needsUpdate) {
+        _showUpToDateDialog(result.currentVersion);
+      } else {
+        _showUpdateDialog(
+          result.storeUrl,
+          result.currentVersion,
+          result.storeVersion,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _checkingUpdate = false);
+      }
+    }
+  }
+
+  void _showUpToDateDialog(String version) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.upToDateAlertTitle),
+        content: Text(l10n.upToDateAlertMessage(version)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpdateDialog(
+    String storeUrl,
+    String currentVersion,
+    String? storeVersion,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.updateAlertTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.updateAlertMessage),
+            if (storeVersion != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'v$currentVersion → v$storeVersion',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.updateAlertLater),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await launchUrl(
+                Uri.parse(storeUrl),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            child: Text(l10n.updateAlertUpdate),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleTitleTap() async {
@@ -375,6 +482,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () async {
                         await launchUrl(_contactEmailUri);
                       },
+                    ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.system_update_outlined),
+                      title: Text(l10n.checkForUpdateButton),
+                      subtitle: _currentVersion != null
+                          ? Text('v$_currentVersion')
+                          : null,
+                      trailing: _checkingUpdate
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.chevron_right),
+                      onTap: _checkingUpdate ? null : _checkForUpdate,
                     ),
                   ],
                 ),

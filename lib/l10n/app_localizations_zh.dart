@@ -1033,4 +1033,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updateAlertLater => '稍后';
+
+  @override
+  String get checkForUpdateButton => '检查更新';
+
+  @override
+  String get upToDateAlertTitle => '已是最新版本';
+
+  @override
+  String upToDateAlertMessage(Object version) {
+    return 'Bantera $version 已是最新版本。';
+  }
 }

@@ -2057,6 +2057,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Later'**
   String get updateAlertLater;
+
+  /// No description provided for @checkForUpdateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Updates'**
+  String get checkForUpdateButton;
+
+  /// No description provided for @upToDateAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to Date'**
+  String get upToDateAlertTitle;
+
+  /// No description provided for @upToDateAlertMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera {version} is the latest version.'**
+  String upToDateAlertMessage(Object version);
 }
 
 class _AppLocalizationsDelegate

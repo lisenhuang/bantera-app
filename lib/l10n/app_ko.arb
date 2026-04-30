@@ -332,5 +332,8 @@
   "updateAlertTitle": "업데이트 가능",
   "updateAlertMessage": "새로운 버전의 Bantera가 출시되었습니다. 지금 업데이트하여 최신 기능과 개선 사항을 누려보세요.",
   "updateAlertUpdate": "업데이트",
-  "updateAlertLater": "나중에"
+  "updateAlertLater": "나중에",
+  "checkForUpdateButton": "업데이트 확인",
+  "upToDateAlertTitle": "최신 버전입니다",
+  "upToDateAlertMessage": "Bantera {version}이(가) 최신 버전입니다."
 }

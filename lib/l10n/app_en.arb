@@ -438,5 +438,8 @@
   "updateAlertTitle": "Update Available",
   "updateAlertMessage": "A new version of Bantera is available. Update now to get the latest features and improvements.",
   "updateAlertUpdate": "Update",
-  "updateAlertLater": "Later"
+  "updateAlertLater": "Later",
+  "checkForUpdateButton": "Check for Updates",
+  "upToDateAlertTitle": "Up to Date",
+  "upToDateAlertMessage": "Bantera {version} is the latest version."
 }

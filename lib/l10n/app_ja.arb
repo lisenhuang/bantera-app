@@ -332,5 +332,8 @@
   "updateAlertTitle": "アップデートがあります",
   "updateAlertMessage": "Bantera の新しいバージョンが利用可能です。今すぐアップデートして最新の機能と改善をお楽しみください。",
   "updateAlertUpdate": "アップデート",
-  "updateAlertLater": "後で"
+  "updateAlertLater": "後で",
+  "checkForUpdateButton": "アップデートを確認",
+  "upToDateAlertTitle": "最新版です",
+  "upToDateAlertMessage": "Bantera {version} は最新バージョンです。"
 }

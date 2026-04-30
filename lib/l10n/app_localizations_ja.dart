@@ -1048,4 +1048,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get updateAlertLater => '後で';
+
+  @override
+  String get checkForUpdateButton => 'アップデートを確認';
+
+  @override
+  String get upToDateAlertTitle => '最新版です';
+
+  @override
+  String upToDateAlertMessage(Object version) {
+    return 'Bantera $version は最新バージョンです。';
+  }
 }

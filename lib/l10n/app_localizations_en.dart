@@ -1100,4 +1100,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateAlertLater => 'Later';
+
+  @override
+  String get checkForUpdateButton => 'Check for Updates';
+
+  @override
+  String get upToDateAlertTitle => 'Up to Date';
+
+  @override
+  String upToDateAlertMessage(Object version) {
+    return 'Bantera $version is the latest version.';
+  }
 }

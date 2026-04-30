@@ -1052,4 +1052,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get updateAlertLater => '나중에';
+
+  @override
+  String get checkForUpdateButton => '업데이트 확인';
+
+  @override
+  String get upToDateAlertTitle => '최신 버전입니다';
+
+  @override
+  String upToDateAlertMessage(Object version) {
+    return 'Bantera $version이(가) 최신 버전입니다.';
+  }
 }

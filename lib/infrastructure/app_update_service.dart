@@ -10,7 +10,7 @@ class AppUpdateService {
   static const String _storeUrl =
       'https://apps.apple.com/app/id$_appStoreId';
 
-  static Future<({bool needsUpdate, String storeUrl})?> checkForUpdate() async {
+  static Future<({bool needsUpdate, String storeUrl, String currentVersion, String? storeVersion})?> checkForUpdate() async {
     try {
       final info = await PackageInfo.fromPlatform();
       final currentVersion = info.version;
@@ -34,6 +34,8 @@ class AppUpdateService {
       return (
         needsUpdate: _isNewer(storeVersion, currentVersion),
         storeUrl: _storeUrl,
+        currentVersion: currentVersion,
+        storeVersion: storeVersion,
       );
     } catch (_) {
       return null;
