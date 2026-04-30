@@ -348,24 +348,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionPermissions),
-              Card(
-                margin: EdgeInsets.zero,
-                child: ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: Text(l10n.appPermissionsTitle),
-                  subtitle: Text(l10n.appPermissionsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const PermissionsScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
               _buildSectionHeader(context, l10n.sectionAccount),
               Card(
                 margin: EdgeInsets.zero,
@@ -469,11 +451,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         );
                       },
                     ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, l10n.sectionPermissions),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(l10n.appPermissionsTitle),
+                  subtitle: Text(l10n.appPermissionsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const PermissionsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, l10n.sectionSupport),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Column(
+                  children: [
                     ListTile(
                       leading: const Icon(Icons.mail_outline),
                       title: Text(l10n.settingsContactButton),

@@ -335,5 +335,6 @@
   "updateAlertLater": "나중에",
   "checkForUpdateButton": "업데이트 확인",
   "upToDateAlertTitle": "최신 버전입니다",
-  "upToDateAlertMessage": "Bantera {version}이(가) 최신 버전입니다."
+  "upToDateAlertMessage": "Bantera {version}이(가) 최신 버전입니다.",
+  "sectionSupport": "지원"
 }

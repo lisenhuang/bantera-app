@@ -335,5 +335,6 @@
   "updateAlertLater": "後で",
   "checkForUpdateButton": "アップデートを確認",
   "upToDateAlertTitle": "最新版です",
-  "upToDateAlertMessage": "Bantera {version} は最新バージョンです。"
+  "upToDateAlertMessage": "Bantera {version} は最新バージョンです。",
+  "sectionSupport": "サポート"
 }

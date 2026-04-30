@@ -1059,4 +1059,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String upToDateAlertMessage(Object version) {
     return 'Bantera $version は最新バージョンです。';
   }
+
+  @override
+  String get sectionSupport => 'サポート';
 }

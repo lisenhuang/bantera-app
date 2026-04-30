@@ -1044,4 +1044,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String upToDateAlertMessage(Object version) {
     return 'Bantera $version 已是最新版本。';
   }
+
+  @override
+  String get sectionSupport => '支持';
 }

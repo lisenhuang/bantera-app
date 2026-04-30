@@ -1063,4 +1063,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String upToDateAlertMessage(Object version) {
     return 'Bantera $version이(가) 최신 버전입니다.';
   }
+
+  @override
+  String get sectionSupport => '지원';
 }

@@ -2075,6 +2075,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bantera {version} is the latest version.'**
   String upToDateAlertMessage(Object version);
+
+  /// No description provided for @sectionSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get sectionSupport;
 }
 
 class _AppLocalizationsDelegate

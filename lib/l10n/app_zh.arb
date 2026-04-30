@@ -335,5 +335,6 @@
   "updateAlertLater": "稍后",
   "checkForUpdateButton": "检查更新",
   "upToDateAlertTitle": "已是最新版本",
-  "upToDateAlertMessage": "Bantera {version} 已是最新版本。"
+  "upToDateAlertMessage": "Bantera {version} 已是最新版本。",
+  "sectionSupport": "支持"
 }

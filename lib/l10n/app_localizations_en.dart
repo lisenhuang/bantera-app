@@ -1111,4 +1111,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String upToDateAlertMessage(Object version) {
     return 'Bantera $version is the latest version.';
   }
+
+  @override
+  String get sectionSupport => 'Support';
 }
