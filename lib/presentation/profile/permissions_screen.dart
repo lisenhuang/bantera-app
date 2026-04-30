@@ -239,7 +239,12 @@ class _PermissionTile extends StatelessWidget {
       title: Text(row.title(l10n)),
       subtitle: Text(row.description(l10n)),
       trailing: needsAction
-          ? TextButton(
+          ? FilledButton(
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               onPressed: onAllow,
               child: Text(l10n.permissionActionAllow),
             )
