@@ -5,18 +5,37 @@ import Network
 import Speech
 @preconcurrency import Translation
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var videoProcessingBridge: BanteraVideoProcessingBridge?
   private var translationBridge: BanteraTranslationBridge?
   private var iosVersionBridge: BanteraIosVersionBridge?
+  private var pushNotificationsBridge: BanteraPushNotificationsBridge?
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    UNUserNotificationCenter.current().delegate = self
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    pushNotificationsBridge?.handleRegisteredDeviceToken(deviceToken)
+    super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    pushNotificationsBridge?.handleRegistrationFailure(error)
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
@@ -33,6 +52,104 @@ import UIKit
     _ = BanteraNetworkReachabilityBridge(
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
+    pushNotificationsBridge = BanteraPushNotificationsBridge(
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+  }
+}
+
+private final class BanteraPushNotificationsBridge {
+  private let channel: FlutterMethodChannel
+  private var cachedToken: String?
+  private var pendingResult: FlutterResult?
+
+  init(binaryMessenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(
+      name: "bantera/push_notifications",
+      binaryMessenger: binaryMessenger
+    )
+    channel.setMethodCallHandler(handle)
+  }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "getCachedPushToken":
+      result(tokenPayload())
+    case "requestAuthorizationAndRegister":
+      requestAuthorizationAndRegister(result: result)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
+
+  private func requestAuthorizationAndRegister(result: @escaping FlutterResult) {
+    UNUserNotificationCenter.current().requestAuthorization(
+      options: [.alert, .badge, .sound]
+    ) { granted, error in
+      DispatchQueue.main.async {
+        if let error {
+          result(
+            FlutterError(
+              code: "notification_authorization_failed",
+              message: error.localizedDescription,
+              details: nil
+            )
+          )
+          return
+        }
+
+        guard granted else {
+          result(nil)
+          return
+        }
+
+        UIApplication.shared.registerForRemoteNotifications()
+        if let payload = self.tokenPayload() {
+          result(payload)
+          return
+        }
+
+        self.pendingResult = result
+      }
+    }
+  }
+
+  func handleRegisteredDeviceToken(_ deviceToken: Data) {
+    cachedToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+    if let pendingResult {
+      pendingResult(tokenPayload())
+      self.pendingResult = nil
+    }
+  }
+
+  func handleRegistrationFailure(_ error: Error) {
+    if let pendingResult {
+      pendingResult(
+        FlutterError(
+          code: "push_registration_failed",
+          message: error.localizedDescription,
+          details: nil
+        )
+      )
+      self.pendingResult = nil
+    }
+  }
+
+  private func tokenPayload() -> [String: Any]? {
+    guard let cachedToken, !cachedToken.isEmpty else {
+      return nil
+    }
+
+    #if DEBUG
+    let isSandbox = true
+    #else
+    let isSandbox = false
+    #endif
+
+    return [
+      "token": cachedToken,
+      "isSandbox": isSandbox,
+    ]
   }
 }
 

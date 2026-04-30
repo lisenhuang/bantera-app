@@ -252,6 +252,12 @@ abstract class AppLocalizations {
   /// **'Permissions'**
   String get sectionPermissions;
 
+  /// No description provided for @sectionNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get sectionNotifications;
+
   /// No description provided for @languageSectionSubtitle.
   ///
   /// In en, this message translates to:
@@ -450,6 +456,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @closeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeLabel;
+
   /// No description provided for @navDiscover.
   ///
   /// In en, this message translates to:
@@ -473,6 +485,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chats'**
   String get chatsTitle;
+
+  /// No description provided for @chatNoChatsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats yet.'**
+  String get chatNoChatsYet;
+
+  /// No description provided for @chatOnlineSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get chatOnlineSection;
+
+  /// No description provided for @chatDirectMessagesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'DM'**
+  String get chatDirectMessagesSection;
+
+  /// No description provided for @chatAudioDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio {duration}'**
+  String chatAudioDuration(String duration);
+
+  /// No description provided for @chatEnableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get chatEnableNotifications;
+
+  /// No description provided for @chatMuteNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute notifications'**
+  String get chatMuteNotifications;
+
+  /// No description provided for @chatBlockUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Block user'**
+  String get chatBlockUser;
+
+  /// No description provided for @chatDeleteDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete DM'**
+  String get chatDeleteDm;
+
+  /// No description provided for @chatGroupReady.
+  ///
+  /// In en, this message translates to:
+  /// **'This group is ready for audio messages.'**
+  String get chatGroupReady;
+
+  /// No description provided for @chatHoldToStartDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to record and start the DM.'**
+  String get chatHoldToStartDm;
+
+  /// No description provided for @chatNoGroupAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'No group audio yet.'**
+  String get chatNoGroupAudio;
+
+  /// No description provided for @chatNoDmAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio in this DM yet.'**
+  String get chatNoDmAudio;
+
+  /// No description provided for @chatSendingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending audio...'**
+  String get chatSendingAudio;
+
+  /// No description provided for @chatRecordingReleaseToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording... release to send'**
+  String get chatRecordingReleaseToSend;
+
+  /// No description provided for @chatHoldToRecordAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to record audio'**
+  String get chatHoldToRecordAudio;
+
+  /// No description provided for @chatRecordingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording...'**
+  String get chatRecordingStatus;
+
+  /// No description provided for @chatGroupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get chatGroupLabel;
+
+  /// No description provided for @chatNotificationsEnabledForDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications enabled for this DM.'**
+  String get chatNotificationsEnabledForDm;
+
+  /// No description provided for @chatNotificationsMutedForDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications muted for this DM.'**
+  String get chatNotificationsMutedForDm;
+
+  /// No description provided for @chatBlockUserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {user}?'**
+  String chatBlockUserTitle(String user);
+
+  /// No description provided for @chatBlockUserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will stop seeing each other in DM sends and shared group messages until you unblock.'**
+  String get chatBlockUserBody;
+
+  /// No description provided for @chatDeleteDmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this DM?'**
+  String get chatDeleteDmTitle;
+
+  /// No description provided for @chatDeleteDmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This only removes it from your list. A new message can bring it back later.'**
+  String get chatDeleteDmBody;
+
+  /// No description provided for @chatMicrophoneRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone required'**
+  String get chatMicrophoneRequiredTitle;
+
+  /// No description provided for @chatMicrophoneRequiredSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera needs microphone access to record chat audio. Enable it in Settings.'**
+  String get chatMicrophoneRequiredSettings;
+
+  /// No description provided for @chatMicrophoneRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera needs microphone access to record chat audio.'**
+  String get chatMicrophoneRequiredBody;
+
+  /// No description provided for @chatGroupNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'This group is not ready yet.'**
+  String get chatGroupNotReady;
+
+  /// No description provided for @chatMessageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get chatMessageAction;
+
+  /// No description provided for @chatRetranscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Retranscribe'**
+  String get chatRetranscribe;
+
+  /// No description provided for @chatTranscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe'**
+  String get chatTranscribe;
+
+  /// No description provided for @chatTranscribingOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing on this iPhone...'**
+  String get chatTranscribingOnDevice;
+
+  /// No description provided for @chatTranscriptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription failed. Try again.'**
+  String get chatTranscriptionFailed;
+
+  /// No description provided for @chatGroupSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group settings'**
+  String get chatGroupSettingsTitle;
+
+  /// No description provided for @chatNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get chatNotifications;
+
+  /// No description provided for @chatBlockedPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked people'**
+  String get chatBlockedPeople;
+
+  /// No description provided for @chatNoBlockedPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocked people yet.'**
+  String get chatNoBlockedPeople;
+
+  /// No description provided for @chatUnblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get chatUnblock;
+
+  /// No description provided for @chatNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat notifications'**
+  String get chatNotificationsTitle;
+
+  /// No description provided for @chatNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use one account-wide switch across your devices.'**
+  String get chatNotificationsSubtitle;
+
+  /// No description provided for @chatNotificationsDisabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications disabled'**
+  String get chatNotificationsDisabledTitle;
+
+  /// No description provided for @chatNotificationsDisabledSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications in Settings to receive Bantera chat alerts.'**
+  String get chatNotificationsDisabledSettings;
+
+  /// No description provided for @chatNotificationsDisabledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera needs notification permission before chat alerts can be enabled.'**
+  String get chatNotificationsDisabledBody;
+
+  /// No description provided for @chatNotificationUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update chat notifications. Please try again.'**
+  String get chatNotificationUpdateFailed;
 
   /// No description provided for @savedTitle.
   ///

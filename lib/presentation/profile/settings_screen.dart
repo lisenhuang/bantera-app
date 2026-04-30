@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_locale.dart';
 import '../../core/auth_session_notifier.dart';
+import '../../core/chat_session_notifier.dart';
 import '../../core/settings_notifier.dart';
 import '../../infrastructure/app_update_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -171,6 +173,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (changed == true && mounted) {
       auth.signOut();
       Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    final l10n = AppLocalizations.of(context)!;
+    final chat = ChatSessionNotifier.instance;
+    if (value) {
+      var status = await Permission.notification.status;
+      if (!status.isGranted) {
+        status = await Permission.notification.request();
+      }
+
+      if (!status.isGranted) {
+        if (!mounted) return;
+        final permanentlyDenied =
+            status.isPermanentlyDenied || status.isRestricted;
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.chatNotificationsDisabledTitle),
+            content: Text(
+              permanentlyDenied
+                  ? l10n.chatNotificationsDisabledSettings
+                  : l10n.chatNotificationsDisabledBody,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.closeLabel),
+              ),
+              if (permanentlyDenied)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    openAppSettings();
+                  },
+                  child: Text(l10n.permissionsOpenSettings),
+                ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
+    try {
+      await chat.updateGlobalNotifications(value);
+    } on Exception {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.chatNotificationUpdateFailed)),
+      );
     }
   }
 
@@ -348,6 +402,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              _buildSectionHeader(context, l10n.sectionNotifications),
+              ListenableBuilder(
+                listenable: ChatSessionNotifier.instance,
+                builder: (context, _) {
+                  final chat = ChatSessionNotifier.instance;
+                  return Card(
+                    margin: EdgeInsets.zero,
+                    child: SwitchListTile(
+                      secondary: const Icon(Icons.notifications_outlined),
+                      title: Text(l10n.chatNotificationsTitle),
+                      subtitle: Text(l10n.chatNotificationsSubtitle),
+                      value: chat.globalNotificationsEnabled,
+                      onChanged: auth.session == null
+                          ? null
+                          : _toggleNotifications,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
               _buildSectionHeader(context, l10n.sectionAccount),
               Card(
                 margin: EdgeInsets.zero,
@@ -502,9 +576,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.chevron_right),
                       onTap: _checkingUpdate ? null : _checkForUpdate,

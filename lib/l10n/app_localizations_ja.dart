@@ -84,6 +84,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sectionPermissions => '権限';
 
   @override
+  String get sectionNotifications => '通知';
+
+  @override
   String get languageSectionSubtitle => 'アプリの表示言語を選びます。「システムに合わせる」は端末の設定に従います。';
 
   @override
@@ -186,6 +189,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get cancel => 'キャンセル';
 
   @override
+  String get closeLabel => '閉じる';
+
+  @override
   String get navDiscover => '発見';
 
   @override
@@ -196,6 +202,141 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chatsTitle => 'チャット';
+
+  @override
+  String get chatNoChatsYet => 'まだチャットがありません。';
+
+  @override
+  String get chatOnlineSection => 'オンライン';
+
+  @override
+  String get chatDirectMessagesSection => 'DM';
+
+  @override
+  String chatAudioDuration(String duration) {
+    return 'オーディオ $duration';
+  }
+
+  @override
+  String get chatEnableNotifications => '通知をオンにする';
+
+  @override
+  String get chatMuteNotifications => '通知をミュート';
+
+  @override
+  String get chatBlockUser => 'ユーザーをブロック';
+
+  @override
+  String get chatDeleteDm => 'DMを削除';
+
+  @override
+  String get chatGroupReady => 'このグループは音声メッセージを送信できます。';
+
+  @override
+  String get chatHoldToStartDm => '長押しして録音し、DMを始めます。';
+
+  @override
+  String get chatNoGroupAudio => 'グループ音声はまだありません。';
+
+  @override
+  String get chatNoDmAudio => 'このDMにはまだ音声がありません。';
+
+  @override
+  String get chatSendingAudio => '音声を送信中...';
+
+  @override
+  String get chatRecordingReleaseToSend => '録音中...離すと送信';
+
+  @override
+  String get chatHoldToRecordAudio => '長押しして音声を録音';
+
+  @override
+  String get chatRecordingStatus => '録音中...';
+
+  @override
+  String get chatGroupLabel => 'グループ';
+
+  @override
+  String get chatNotificationsEnabledForDm => 'このDMの通知をオンにしました。';
+
+  @override
+  String get chatNotificationsMutedForDm => 'このDMの通知をミュートしました。';
+
+  @override
+  String chatBlockUserTitle(String user) {
+    return '$userをブロックしますか？';
+  }
+
+  @override
+  String get chatBlockUserBody => 'ブロックを解除するまで、DM送信や共有グループメッセージで互いに表示されなくなります。';
+
+  @override
+  String get chatDeleteDmTitle => 'このDMを削除しますか？';
+
+  @override
+  String get chatDeleteDmBody => 'これはリストから削除するだけです。新しいメッセージで後から戻ることがあります。';
+
+  @override
+  String get chatMicrophoneRequiredTitle => 'マイクが必要です';
+
+  @override
+  String get chatMicrophoneRequiredSettings =>
+      'チャット音声を録音するにはBanteraにマイクアクセスが必要です。設定で有効にしてください。';
+
+  @override
+  String get chatMicrophoneRequiredBody => 'チャット音声を録音するにはBanteraにマイクアクセスが必要です。';
+
+  @override
+  String get chatGroupNotReady => 'このグループはまだ準備できていません。';
+
+  @override
+  String get chatMessageAction => 'メッセージ';
+
+  @override
+  String get chatRetranscribe => '再文字起こし';
+
+  @override
+  String get chatTranscribe => '文字起こし';
+
+  @override
+  String get chatTranscribingOnDevice => 'このiPhoneで文字起こし中...';
+
+  @override
+  String get chatTranscriptionFailed => '文字起こしに失敗しました。もう一度お試しください。';
+
+  @override
+  String get chatGroupSettingsTitle => 'グループ設定';
+
+  @override
+  String get chatNotifications => '通知';
+
+  @override
+  String get chatBlockedPeople => 'ブロックした人';
+
+  @override
+  String get chatNoBlockedPeople => 'ブロックした人はいません。';
+
+  @override
+  String get chatUnblock => 'ブロック解除';
+
+  @override
+  String get chatNotificationsTitle => 'チャット通知';
+
+  @override
+  String get chatNotificationsSubtitle => 'アカウント共通の切り替えをすべてのデバイスで使います。';
+
+  @override
+  String get chatNotificationsDisabledTitle => '通知が無効です';
+
+  @override
+  String get chatNotificationsDisabledSettings =>
+      'Banteraのチャット通知を受け取るには、設定で通知を有効にしてください。';
+
+  @override
+  String get chatNotificationsDisabledBody => 'チャット通知を有効にするには通知の許可が必要です。';
+
+  @override
+  String get chatNotificationUpdateFailed => 'チャット通知を更新できませんでした。もう一度お試しください。';
 
   @override
   String get savedTitle => '保存済みメディア';
