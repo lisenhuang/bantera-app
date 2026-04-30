@@ -1114,4 +1114,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sectionSupport => 'Support';
+
+  @override
+  String get permissionActionAllow => 'Allow';
 }

@@ -1062,4 +1062,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sectionSupport => 'サポート';
+
+  @override
+  String get permissionActionAllow => '許可';
 }

@@ -142,14 +142,15 @@ class _PermissionsScreenState extends State<PermissionsScreen>
     }
   }
 
-  bool get _hasMissingPermission {
-    for (final row in _visiblePermissions) {
-      final status = _statuses[row.kind] ?? _PermissionDisplayStatus.unknown;
-      if (status != _PermissionDisplayStatus.allowed) {
-        return true;
-      }
+  Future<void> _handleAllow(_RequiredPermission row) async {
+    final status = _statuses[row.kind] ?? _PermissionDisplayStatus.unknown;
+    if (status == _PermissionDisplayStatus.notDetermined &&
+        row.permission != null) {
+      await row.permission!.request();
+      await _refreshStatuses();
+    } else {
+      await openAppSettings();
     }
-    return false;
   }
 
   @override
@@ -195,6 +196,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                     _PermissionTile(
                       row: _visiblePermissions[index],
                       status: _statuses[_visiblePermissions[index].kind],
+                      onAllow: () => _handleAllow(_visiblePermissions[index]),
                     ),
                     if (index != _visiblePermissions.length - 1)
                       Divider(
@@ -206,14 +208,6 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                 ],
               ),
             ),
-          if (!_isLoading && _hasMissingPermission) ...[
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              icon: const Icon(Icons.open_in_new),
-              label: Text(l10n.permissionsOpenSettings),
-              onPressed: openAppSettings,
-            ),
-          ],
         ],
       ),
     );
@@ -221,35 +215,47 @@ class _PermissionsScreenState extends State<PermissionsScreen>
 }
 
 class _PermissionTile extends StatelessWidget {
-  const _PermissionTile({required this.row, required this.status});
+  const _PermissionTile({
+    required this.row,
+    required this.status,
+    required this.onAllow,
+  });
 
   final _RequiredPermission row;
   final _PermissionDisplayStatus? status;
+  final VoidCallback onAllow;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final effectiveStatus = status ?? _PermissionDisplayStatus.unknown;
     final colorScheme = Theme.of(context).colorScheme;
-    final statusColor = effectiveStatus == _PermissionDisplayStatus.allowed
-        ? colorScheme.primary
-        : colorScheme.error;
+    final needsAction =
+        effectiveStatus == _PermissionDisplayStatus.notDetermined ||
+        effectiveStatus == _PermissionDisplayStatus.notAllowed;
 
     return ListTile(
       leading: Icon(row.icon, color: colorScheme.primary),
       title: Text(row.title(l10n)),
       subtitle: Text(row.description(l10n)),
-      trailing: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 120),
-        child: Text(
-          _statusLabel(l10n, effectiveStatus),
-          textAlign: TextAlign.end,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: statusColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
+      trailing: needsAction
+          ? TextButton(
+              onPressed: onAllow,
+              child: Text(l10n.permissionActionAllow),
+            )
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 120),
+              child: Text(
+                _statusLabel(l10n, effectiveStatus),
+                textAlign: TextAlign.end,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: effectiveStatus == _PermissionDisplayStatus.allowed
+                      ? colorScheme.primary
+                      : colorScheme.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
     );
   }
 
@@ -257,6 +263,7 @@ class _PermissionTile extends StatelessWidget {
     return switch (status) {
       _PermissionDisplayStatus.allowed => l10n.permissionStatusAllowed,
       _PermissionDisplayStatus.limited => l10n.permissionStatusLimited,
+      _PermissionDisplayStatus.notDetermined => l10n.permissionStatusNotAllowed,
       _PermissionDisplayStatus.notAllowed => l10n.permissionStatusNotAllowed,
       _PermissionDisplayStatus.unknown => l10n.permissionStatusUnknown,
     };
@@ -288,19 +295,16 @@ class _RequiredPermission {
     }
 
     final result = await permission!.status;
-    if (result.isGranted) {
-      return _PermissionDisplayStatus.allowed;
-    }
-    if (result.isLimited) {
-      return _PermissionDisplayStatus.limited;
-    }
+    if (result.isGranted) return _PermissionDisplayStatus.allowed;
+    if (result.isLimited) return _PermissionDisplayStatus.limited;
+    if (result.isDenied) return _PermissionDisplayStatus.notDetermined;
     return _PermissionDisplayStatus.notAllowed;
   }
 }
 
 enum _PermissionKind { microphone, speech, mobileData }
 
-enum _PermissionDisplayStatus { allowed, limited, notAllowed, unknown }
+enum _PermissionDisplayStatus { allowed, limited, notDetermined, notAllowed, unknown }
 
 enum _PermissionTextKey {
   microphoneTitle,

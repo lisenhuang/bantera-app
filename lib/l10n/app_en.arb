@@ -442,5 +442,6 @@
   "checkForUpdateButton": "Check for Updates",
   "upToDateAlertTitle": "Up to Date",
   "upToDateAlertMessage": "Bantera {version} is the latest version.",
-  "sectionSupport": "Support"
+  "sectionSupport": "Support",
+  "permissionActionAllow": "Allow"
 }

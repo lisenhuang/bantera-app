@@ -1066,4 +1066,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sectionSupport => '지원';
+
+  @override
+  String get permissionActionAllow => '허용';
 }

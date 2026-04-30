@@ -1047,4 +1047,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sectionSupport => '支持';
+
+  @override
+  String get permissionActionAllow => '允许';
 }

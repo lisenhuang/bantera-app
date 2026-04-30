@@ -336,5 +336,6 @@
   "checkForUpdateButton": "アップデートを確認",
   "upToDateAlertTitle": "最新版です",
   "upToDateAlertMessage": "Bantera {version} は最新バージョンです。",
-  "sectionSupport": "サポート"
+  "sectionSupport": "サポート",
+  "permissionActionAllow": "許可"
 }

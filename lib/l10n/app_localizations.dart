@@ -2081,6 +2081,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Support'**
   String get sectionSupport;
+
+  /// No description provided for @permissionActionAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get permissionActionAllow;
 }
 
 class _AppLocalizationsDelegate
