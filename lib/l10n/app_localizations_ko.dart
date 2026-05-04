@@ -156,7 +156,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get permissionSpeechTitle => '음성 인식';
 
   @override
-  String get permissionSpeechDescription => '연습 녹음과 업로드한 오디오를 전사합니다.';
+  String get permissionSpeechDescription => '연습 녹음과 음성 메시지를 전사합니다.';
 
   @override
   String get permissionMobileDataTitle => '모바일 데이터';

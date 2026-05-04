@@ -155,7 +155,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get permissionSpeechTitle => '音声認識';
 
   @override
-  String get permissionSpeechDescription => '練習録音とアップロードした音声の書き起こしに使います。';
+  String get permissionSpeechDescription => '練習録音とボイスメッセージの書き起こしに使います。';
 
   @override
   String get permissionMobileDataTitle => 'モバイルデータ通信';

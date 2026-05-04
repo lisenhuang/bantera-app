@@ -162,7 +162,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionSpeechDescription =>
-      'Transcribe practice recordings and uploaded audio.';
+      'Transcribe practice recordings and voice messages.';
 
   @override
   String get permissionMobileDataTitle => 'Mobile Data';

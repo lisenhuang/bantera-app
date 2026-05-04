@@ -393,7 +393,7 @@ abstract class AppLocalizations {
   /// No description provided for @permissionSpeechDescription.
   ///
   /// In en, this message translates to:
-  /// **'Transcribe practice recordings and uploaded audio.'**
+  /// **'Transcribe practice recordings and voice messages.'**
   String get permissionSpeechDescription;
 
   /// No description provided for @permissionMobileDataTitle.

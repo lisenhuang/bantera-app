@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../core/apple_system_version.dart';
 import '../../l10n/app_localizations.dart';
 
 class PermissionsScreen extends StatefulWidget {
@@ -51,7 +50,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   List<_RequiredPermission> _buildVisiblePermissions(bool isIphone) {
     final permissions = <_RequiredPermission>[
       _microphonePermission,
-      if (Platform.isIOS && isLegacyAppleOsPre26) _speechPermission,
+      if (Platform.isIOS) _speechPermission,
       if (isIphone) _mobileDataPermission,
     ];
     return permissions;
@@ -241,7 +240,10 @@ class _PermissionTile extends StatelessWidget {
       trailing: needsAction
           ? FilledButton(
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -309,7 +311,13 @@ class _RequiredPermission {
 
 enum _PermissionKind { microphone, speech, mobileData }
 
-enum _PermissionDisplayStatus { allowed, limited, notDetermined, notAllowed, unknown }
+enum _PermissionDisplayStatus {
+  allowed,
+  limited,
+  notDetermined,
+  notAllowed,
+  unknown,
+}
 
 enum _PermissionTextKey {
   microphoneTitle,
