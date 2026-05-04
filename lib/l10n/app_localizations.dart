@@ -690,11 +690,29 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get chatNotifications;
 
+  /// No description provided for @chatBlockedUsersMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked Users'**
+  String get chatBlockedUsersMenu;
+
+  /// No description provided for @chatBlockedUsersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked Users'**
+  String get chatBlockedUsersTitle;
+
   /// No description provided for @chatBlockedPeople.
   ///
   /// In en, this message translates to:
   /// **'Blocked people'**
   String get chatBlockedPeople;
+
+  /// No description provided for @chatNoBlockedUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocked users yet.'**
+  String get chatNoBlockedUsers;
 
   /// No description provided for @chatNoBlockedPeople.
   ///
@@ -707,6 +725,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unblock'**
   String get chatUnblock;
+
+  /// No description provided for @chatUnblockUserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock {user}?'**
+  String chatUnblockUserTitle(String user);
+
+  /// No description provided for @chatUnblockUserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You may see each other again in DMs and shared group messages.'**
+  String get chatUnblockUserBody;
+
+  /// No description provided for @chatUnblockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not unblock this user. Please try again.'**
+  String get chatUnblockFailed;
 
   /// No description provided for @chatNotificationsTitle.
   ///

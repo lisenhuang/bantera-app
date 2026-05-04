@@ -323,13 +323,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatNotifications => 'Notifications';
 
   @override
+  String get chatBlockedUsersMenu => 'Blocked Users';
+
+  @override
+  String get chatBlockedUsersTitle => 'Blocked Users';
+
+  @override
   String get chatBlockedPeople => 'Blocked people';
+
+  @override
+  String get chatNoBlockedUsers => 'No blocked users yet.';
 
   @override
   String get chatNoBlockedPeople => 'No blocked people yet.';
 
   @override
   String get chatUnblock => 'Unblock';
+
+  @override
+  String chatUnblockUserTitle(String user) {
+    return 'Unblock $user?';
+  }
+
+  @override
+  String get chatUnblockUserBody =>
+      'You may see each other again in DMs and shared group messages.';
+
+  @override
+  String get chatUnblockFailed =>
+      'Could not unblock this user. Please try again.';
 
   @override
   String get chatNotificationsTitle => 'Chat notifications';
