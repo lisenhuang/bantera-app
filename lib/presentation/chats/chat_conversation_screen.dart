@@ -40,6 +40,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   bool _isRecording = false;
   bool _isSending = false;
   String? _currentPlayingMessageId;
+  Duration _currentPlaybackPosition = Duration.zero;
+  StreamSubscription<void>? _playerCompleteSubscription;
+  StreamSubscription<Duration>? _playerPositionSubscription;
   String? _threadId;
   String? _groupKind;
   ChatUserSummary? _partner;
@@ -57,10 +60,18 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       unawaited(_chat.loadMessages(_threadId!));
     }
 
-    _player.onPlayerComplete.listen((_) {
+    _playerCompleteSubscription = _player.onPlayerComplete.listen((_) {
       if (mounted) {
         setState(() {
           _currentPlayingMessageId = null;
+          _currentPlaybackPosition = Duration.zero;
+        });
+      }
+    });
+    _playerPositionSubscription = _player.onPositionChanged.listen((position) {
+      if (_currentPlayingMessageId != null && mounted) {
+        setState(() {
+          _currentPlaybackPosition = position;
         });
       }
     });
@@ -69,6 +80,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   @override
   void dispose() {
     _maxRecordingTimer?.cancel();
+    _playerCompleteSubscription?.cancel();
+    _playerPositionSubscription?.cancel();
     if (_threadId != null) {
       _chat.unregisterActiveThread(_threadId!);
     }
@@ -216,6 +229,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               message: message,
               isGroup: _isGroup,
               isPlaying: _currentPlayingMessageId == message.messageId,
+              playbackPosition: _currentPlayingMessageId == message.messageId
+                  ? _currentPlaybackPosition
+                  : Duration.zero,
               isTranscribing: _transcribingIds.contains(message.messageId),
               onPlay: () => _playMessage(message),
               onTranscribe: () => _transcribeMessage(message),
@@ -600,6 +616,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       if (mounted) {
         setState(() {
           _currentPlayingMessageId = null;
+          _currentPlaybackPosition = Duration.zero;
         });
       }
       return;
@@ -608,14 +625,19 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     try {
       final file = await _chat.ensureLocalAudio(message);
       await _player.stop();
-      await _player.play(DeviceFileSource(file.path));
       if (mounted) {
         setState(() {
           _currentPlayingMessageId = message.messageId;
+          _currentPlaybackPosition = Duration.zero;
         });
       }
+      await _player.play(DeviceFileSource(file.path));
     } on AuthApiException catch (error) {
       if (mounted) {
+        setState(() {
+          _currentPlayingMessageId = null;
+          _currentPlaybackPosition = Duration.zero;
+        });
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(error.message)));
@@ -797,11 +819,55 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
 
 enum _DirectMenuAction { toggleMute, block, deleteDm }
 
+class _RoundedAudioProgressBar extends StatelessWidget {
+  const _RoundedAudioProgressBar({
+    required this.value,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
+
+  final double value;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final clampedValue = value.clamp(0.0, 1.0);
+
+    return SizedBox(
+      height: 6,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: backgroundColor),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: clampedValue,
+                heightFactor: 1,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: foregroundColor,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     required this.message,
     required this.isGroup,
     required this.isPlaying,
+    required this.playbackPosition,
     required this.isTranscribing,
     required this.onPlay,
     required this.onTranscribe,
@@ -811,6 +877,7 @@ class _MessageBubble extends StatelessWidget {
   final ChatMessageItem message;
   final bool isGroup;
   final bool isPlaying;
+  final Duration playbackPosition;
   final bool isTranscribing;
   final VoidCallback onPlay;
   final VoidCallback onTranscribe;
@@ -823,6 +890,10 @@ class _MessageBubble extends StatelessWidget {
     final bubbleColor = message.isMine
         ? theme.colorScheme.primary.withValues(alpha: 0.12)
         : theme.colorScheme.surfaceContainerHighest;
+    final durationMs = message.durationMs;
+    final progress = isPlaying && durationMs > 0
+        ? (playbackPosition.inMilliseconds / durationMs).clamp(0.0, 1.0)
+        : 0.0;
 
     return Align(
       alignment: message.isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -856,10 +927,10 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: LinearProgressIndicator(
-                    value: isPlaying ? null : 0,
-                    minHeight: 6,
+                  child: _RoundedAudioProgressBar(
+                    value: progress,
                     backgroundColor: theme.colorScheme.outlineVariant,
+                    foregroundColor: theme.colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
