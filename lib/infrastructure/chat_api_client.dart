@@ -245,6 +245,17 @@ class ChatApiClient {
     );
   }
 
+  Future<void> deleteOwnMessage({
+    required String accessToken,
+    required String messageId,
+  }) async {
+    await _sendEmptyRequest(
+      method: 'DELETE',
+      path: '/api/chat/messages/$messageId',
+      accessToken: accessToken,
+    );
+  }
+
   Future<List<ChatUserSummary>> fetchBlockedUsers({
     required String accessToken,
   }) async {

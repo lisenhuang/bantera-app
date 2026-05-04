@@ -624,6 +624,36 @@ abstract class AppLocalizations {
   /// **'Could not block this user. Please try again.'**
   String get chatBlockUserFailed;
 
+  /// No description provided for @chatDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get chatDeleteMessage;
+
+  /// No description provided for @chatDeleteMessageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get chatDeleteMessageTitle;
+
+  /// No description provided for @chatDeleteMessageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This message will be removed for everyone in the conversation. This can\'t be undone.'**
+  String get chatDeleteMessageBody;
+
+  /// No description provided for @chatDeleteMessageSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get chatDeleteMessageSuccess;
+
+  /// No description provided for @chatDeleteMessageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the message. Please try again.'**
+  String get chatDeleteMessageFailed;
+
   /// No description provided for @chatDeleteDmTitle.
   ///
   /// In en, this message translates to:

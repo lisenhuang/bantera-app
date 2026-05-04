@@ -115,6 +115,11 @@
     }
   },
   "chatBlockUserFailed": "无法屏蔽此用户，请重试。",
+  "chatDeleteMessage": "删除消息",
+  "chatDeleteMessageTitle": "删除这条消息？",
+  "chatDeleteMessageBody": "此消息将对所有人删除，且无法撤销。",
+  "chatDeleteMessageSuccess": "消息已删除",
+  "chatDeleteMessageFailed": "消息删除失败，请重试。",
   "chatDeleteDmTitle": "删除这条私信？",
   "chatDeleteDmBody": "这只会把它从列表中移除。之后有新消息时可能会重新出现。",
   "chatMicrophoneRequiredTitle": "需要麦克风",

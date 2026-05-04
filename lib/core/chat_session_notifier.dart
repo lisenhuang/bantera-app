@@ -376,6 +376,23 @@ class ChatSessionNotifier extends ChangeNotifier {
     await refreshBlockedUsers();
   }
 
+  Future<void> deleteOwnMessage(ChatMessageItem message) async {
+    if (!message.isMine) return;
+    await _localRepository.deleteMessage(message.messageId);
+    try {
+      await _withRetry<void>(
+        (token) => _apiClient.deleteOwnMessage(
+          accessToken: token,
+          messageId: message.messageId,
+        ),
+      );
+      await refreshBootstrap(showLoadingState: false);
+    } catch (_) {
+      await refreshBootstrap(showLoadingState: false);
+      rethrow;
+    }
+  }
+
   Future<void> deleteDirectMessageForSelf(String threadId) async {
     await _withRetry<void>(
       (token) => _apiClient.deleteDirectMessageForSelf(

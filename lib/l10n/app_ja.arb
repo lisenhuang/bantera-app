@@ -115,6 +115,11 @@
     }
   },
   "chatBlockUserFailed": "このユーザーをブロックできませんでした。もう一度お試しください。",
+  "chatDeleteMessage": "メッセージを削除",
+  "chatDeleteMessageTitle": "このメッセージを削除しますか？",
+  "chatDeleteMessageBody": "このメッセージは会話の全員に対して削除されます。元に戻すことはできません。",
+  "chatDeleteMessageSuccess": "メッセージを削除しました",
+  "chatDeleteMessageFailed": "メッセージを削除できませんでした。もう一度お試しください。",
   "chatDeleteDmTitle": "このDMを削除しますか？",
   "chatDeleteDmBody": "これはリストから削除するだけです。新しいメッセージで後から戻ることがあります。",
   "chatMicrophoneRequiredTitle": "マイクが必要です",

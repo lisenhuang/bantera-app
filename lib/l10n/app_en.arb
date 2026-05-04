@@ -115,6 +115,11 @@
     }
   },
   "chatBlockUserFailed": "Could not block this user. Please try again.",
+  "chatDeleteMessage": "Delete message",
+  "chatDeleteMessageTitle": "Delete this message?",
+  "chatDeleteMessageBody": "This message will be removed for everyone in the conversation. This can't be undone.",
+  "chatDeleteMessageSuccess": "Message deleted",
+  "chatDeleteMessageFailed": "Couldn't delete the message. Please try again.",
   "chatDeleteDmTitle": "Delete this DM?",
   "chatDeleteDmBody": "This only removes it from your list. A new message can bring it back later.",
   "chatMicrophoneRequiredTitle": "Microphone required",

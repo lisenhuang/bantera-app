@@ -279,6 +279,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatBlockUserFailed => '无法屏蔽此用户，请重试。';
 
   @override
+  String get chatDeleteMessage => '删除消息';
+
+  @override
+  String get chatDeleteMessageTitle => '删除这条消息？';
+
+  @override
+  String get chatDeleteMessageBody => '此消息将对所有人删除，且无法撤销。';
+
+  @override
+  String get chatDeleteMessageSuccess => '消息已删除';
+
+  @override
+  String get chatDeleteMessageFailed => '消息删除失败，请重试。';
+
+  @override
   String get chatDeleteDmTitle => '删除这条私信？';
 
   @override

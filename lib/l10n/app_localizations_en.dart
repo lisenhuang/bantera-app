@@ -290,6 +290,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not block this user. Please try again.';
 
   @override
+  String get chatDeleteMessage => 'Delete message';
+
+  @override
+  String get chatDeleteMessageTitle => 'Delete this message?';
+
+  @override
+  String get chatDeleteMessageBody =>
+      'This message will be removed for everyone in the conversation. This can\'t be undone.';
+
+  @override
+  String get chatDeleteMessageSuccess => 'Message deleted';
+
+  @override
+  String get chatDeleteMessageFailed =>
+      'Couldn\'t delete the message. Please try again.';
+
+  @override
   String get chatDeleteDmTitle => 'Delete this DM?';
 
   @override

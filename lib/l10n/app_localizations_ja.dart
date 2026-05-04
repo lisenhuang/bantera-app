@@ -279,6 +279,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatBlockUserFailed => 'このユーザーをブロックできませんでした。もう一度お試しください。';
 
   @override
+  String get chatDeleteMessage => 'メッセージを削除';
+
+  @override
+  String get chatDeleteMessageTitle => 'このメッセージを削除しますか？';
+
+  @override
+  String get chatDeleteMessageBody => 'このメッセージは会話の全員に対して削除されます。元に戻すことはできません。';
+
+  @override
+  String get chatDeleteMessageSuccess => 'メッセージを削除しました';
+
+  @override
+  String get chatDeleteMessageFailed => 'メッセージを削除できませんでした。もう一度お試しください。';
+
+  @override
   String get chatDeleteDmTitle => 'このDMを削除しますか？';
 
   @override

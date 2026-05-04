@@ -281,6 +281,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatBlockUserFailed => '이 사용자를 차단하지 못했습니다. 다시 시도하세요.';
 
   @override
+  String get chatDeleteMessage => '메시지 삭제';
+
+  @override
+  String get chatDeleteMessageTitle => '이 메시지를 삭제할까요?';
+
+  @override
+  String get chatDeleteMessageBody => '이 메시지는 대화의 모든 사람에게서 삭제됩니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get chatDeleteMessageSuccess => '메시지가 삭제되었습니다';
+
+  @override
+  String get chatDeleteMessageFailed => '메시지를 삭제하지 못했습니다. 다시 시도하세요.';
+
+  @override
   String get chatDeleteDmTitle => '이 DM을 삭제할까요?';
 
   @override

@@ -238,6 +238,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               onTapSender: _isGroup && !message.isMine
                   ? () => _showUserSheet(message.senderUser)
                   : null,
+              onLongPress: message.isMine
+                  ? () => _showOwnMessageMenu(message)
+                  : null,
             );
           },
         );
@@ -748,6 +751,67 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     );
   }
 
+  Future<void> _showOwnMessageMenu(ChatMessageItem message) async {
+    final l10n = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _deleteOwnMessage(message);
+                },
+                child: ChatMenuItemRow(
+                  icon: Icons.delete_outline,
+                  label: l10n.chatDeleteMessage,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteOwnMessage(ChatMessageItem message) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await _confirmAction(
+      title: l10n.chatDeleteMessageTitle,
+      body: l10n.chatDeleteMessageBody,
+    );
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await _chat.deleteOwnMessage(message);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.chatDeleteMessageSuccess)),
+        );
+      }
+    } on AuthApiException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.chatDeleteMessageFailed)),
+        );
+      }
+    }
+  }
+
   Future<void> _blockGroupUser(ChatUserSummary user) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await _confirmAction(
@@ -872,6 +936,7 @@ class _MessageBubble extends StatelessWidget {
     required this.onPlay,
     required this.onTranscribe,
     required this.onTapSender,
+    required this.onLongPress,
   });
 
   final ChatMessageItem message;
@@ -882,6 +947,7 @@ class _MessageBubble extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onTranscribe;
   final VoidCallback? onTapSender;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -897,7 +963,9 @@ class _MessageBubble extends StatelessWidget {
 
     return Align(
       alignment: message.isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: Container(
         constraints: const BoxConstraints(maxWidth: 340),
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(14),
@@ -987,6 +1055,7 @@ class _MessageBubble extends StatelessWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -342,6 +342,18 @@ class LocalChatRepository {
     return row == null ? null : _messageFromRow(row);
   }
 
+  Future<void> deleteMessage(String messageId) async {
+    final ownerKey = _currentOwnerCacheKey;
+    if (ownerKey == null) {
+      return;
+    }
+
+    await (_database.delete(_database.chatMessageEntries)
+          ..where((table) => table.ownerCacheKey.equals(ownerKey))
+          ..where((table) => table.messageId.equals(messageId)))
+        .go();
+  }
+
   Future<void> markMessageExpired(String messageId) async {
     final ownerKey = _currentOwnerCacheKey;
     if (ownerKey == null) {
