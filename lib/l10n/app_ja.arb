@@ -55,7 +55,7 @@
   "permissionMicrophoneTitle": "マイク",
   "permissionMicrophoneDescription": "練習の録音とボイスメッセージに使います。",
   "permissionSpeechTitle": "音声認識",
-  "permissionSpeechDescription": "練習録音とアップロードした音声の書き起こしに使います。",
+  "permissionSpeechDescription": "練習録音とボイスメッセージの書き起こしに使います。",
   "permissionMobileDataTitle": "モバイルデータ通信",
   "permissionMobileDataDescription": "このiPhoneがWi-Fiに接続されていないときにBanteraを使います。",
   "permissionStatusAllowed": "許可済み",

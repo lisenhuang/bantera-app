@@ -55,7 +55,7 @@
   "permissionMicrophoneTitle": "마이크",
   "permissionMicrophoneDescription": "연습 시도와 음성 메시지를 녹음합니다.",
   "permissionSpeechTitle": "음성 인식",
-  "permissionSpeechDescription": "연습 녹음과 업로드한 오디오를 전사합니다.",
+  "permissionSpeechDescription": "연습 녹음과 음성 메시지를 전사합니다.",
   "permissionMobileDataTitle": "모바일 데이터",
   "permissionMobileDataDescription": "이 iPhone이 Wi-Fi에 연결되어 있지 않을 때 Bantera를 사용합니다.",
   "permissionStatusAllowed": "허용됨",

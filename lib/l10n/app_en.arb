@@ -55,7 +55,7 @@
   "permissionMicrophoneTitle": "Microphone",
   "permissionMicrophoneDescription": "Record practice attempts and voice messages.",
   "permissionSpeechTitle": "Speech Recognition",
-  "permissionSpeechDescription": "Transcribe practice recordings and uploaded audio.",
+  "permissionSpeechDescription": "Transcribe practice recordings and voice messages.",
   "permissionMobileDataTitle": "Mobile Data",
   "permissionMobileDataDescription": "Use Bantera when this iPhone is not connected to Wi-Fi.",
   "permissionStatusAllowed": "Allowed",
