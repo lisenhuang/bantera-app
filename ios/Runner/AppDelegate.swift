@@ -361,9 +361,7 @@ private final class BanteraVideoProcessingBridge {
       binaryMessenger: binaryMessenger
     )
     channel.setMethodCallHandler(handle)
-    if !BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
-      BanteraLegacySpeechRecognitionService.logSupportedLocales()
-    }
+    BanteraLegacySpeechRecognitionService.logSupportedLocales()
   }
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
