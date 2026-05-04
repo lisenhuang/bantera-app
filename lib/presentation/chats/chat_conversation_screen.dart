@@ -675,12 +675,20 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.of(sheetContext).pop();
+                    final existingThread = await _chat
+                        .directMessageThreadForUser(user.id);
+                    if (!mounted) {
+                      return;
+                    }
                     navigator.push(
                       MaterialPageRoute<void>(
-                        builder: (_) =>
-                            ChatConversationScreen.directUser(partner: user),
+                        builder: (_) => existingThread == null
+                            ? ChatConversationScreen.directUser(partner: user)
+                            : ChatConversationScreen.thread(
+                                thread: existingThread,
+                              ),
                       ),
                     );
                   },
