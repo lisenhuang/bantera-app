@@ -320,6 +320,17 @@ class LocalChatRepository {
                   previous?.localTranscriptLanguageCode ??
                       message.localTranscriptLanguageCode,
                 ),
+                localTranslationText: drift.Value(
+                  previous?.localTranslationText ?? message.localTranslationText,
+                ),
+                localTranslationStatus: drift.Value(
+                  previous?.localTranslationStatus ??
+                      message.localTranslationStatus,
+                ),
+                localTranslationLanguageCode: drift.Value(
+                  previous?.localTranslationLanguageCode ??
+                      message.localTranslationLanguageCode,
+                ),
                 isServerVisible: const drift.Value(true),
                 updatedAtMillis: nowMillis,
               ),
@@ -412,6 +423,30 @@ class LocalChatRepository {
             localTranscriptLanguage: drift.Value(transcriptLanguage),
             localTranscriptLanguageCode: drift.Value(transcriptLanguageCode),
             localTranscriptStatus: drift.Value(status),
+            updatedAtMillis: drift.Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
+  }
+
+  Future<void> updateMessageTranslation({
+    required String messageId,
+    required String translationText,
+    required String translationLanguageCode,
+    required String status,
+  }) async {
+    final ownerKey = _currentOwnerCacheKey;
+    if (ownerKey == null) {
+      return;
+    }
+
+    await (_database.update(_database.chatMessageEntries)
+          ..where((table) => table.ownerCacheKey.equals(ownerKey))
+          ..where((table) => table.messageId.equals(messageId)))
+        .write(
+          ChatMessageEntriesCompanion(
+            localTranslationText: drift.Value(translationText),
+            localTranslationLanguageCode: drift.Value(translationLanguageCode),
+            localTranslationStatus: drift.Value(status),
             updatedAtMillis: drift.Value(DateTime.now().millisecondsSinceEpoch),
           ),
         );
@@ -588,6 +623,9 @@ class LocalChatRepository {
       localTranscriptStatus: row.localTranscriptStatus,
       localTranscriptLanguage: row.localTranscriptLanguage,
       localTranscriptLanguageCode: row.localTranscriptLanguageCode,
+      localTranslationText: row.localTranslationText,
+      localTranslationStatus: row.localTranslationStatus,
+      localTranslationLanguageCode: row.localTranslationLanguageCode,
       isServerVisible: row.isServerVisible,
     );
   }

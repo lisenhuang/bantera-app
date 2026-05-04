@@ -2036,6 +2036,39 @@ class $ChatMessageEntriesTable extends ChatMessageEntries
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _localTranslationTextMeta =
+      const VerificationMeta('localTranslationText');
+  @override
+  late final GeneratedColumn<String> localTranslationText =
+      GeneratedColumn<String>(
+        'local_translation_text',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _localTranslationStatusMeta =
+      const VerificationMeta('localTranslationStatus');
+  @override
+  late final GeneratedColumn<String> localTranslationStatus =
+      GeneratedColumn<String>(
+        'local_translation_status',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _localTranslationLanguageCodeMeta =
+      const VerificationMeta('localTranslationLanguageCode');
+  @override
+  late final GeneratedColumn<String> localTranslationLanguageCode =
+      GeneratedColumn<String>(
+        'local_translation_language_code',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _isServerVisibleMeta = const VerificationMeta(
     'isServerVisible',
   );
@@ -2087,6 +2120,9 @@ class $ChatMessageEntriesTable extends ChatMessageEntries
     localTranscriptStatus,
     localTranscriptLanguage,
     localTranscriptLanguageCode,
+    localTranslationText,
+    localTranslationStatus,
+    localTranslationLanguageCode,
     isServerVisible,
     updatedAtMillis,
   ];
@@ -2308,6 +2344,33 @@ class $ChatMessageEntriesTable extends ChatMessageEntries
         ),
       );
     }
+    if (data.containsKey('local_translation_text')) {
+      context.handle(
+        _localTranslationTextMeta,
+        localTranslationText.isAcceptableOrUnknown(
+          data['local_translation_text']!,
+          _localTranslationTextMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_translation_status')) {
+      context.handle(
+        _localTranslationStatusMeta,
+        localTranslationStatus.isAcceptableOrUnknown(
+          data['local_translation_status']!,
+          _localTranslationStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_translation_language_code')) {
+      context.handle(
+        _localTranslationLanguageCodeMeta,
+        localTranslationLanguageCode.isAcceptableOrUnknown(
+          data['local_translation_language_code']!,
+          _localTranslationLanguageCodeMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_server_visible')) {
       context.handle(
         _isServerVisibleMeta,
@@ -2429,6 +2492,18 @@ class $ChatMessageEntriesTable extends ChatMessageEntries
         DriftSqlType.string,
         data['${effectivePrefix}local_transcript_language_code'],
       ),
+      localTranslationText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_translation_text'],
+      ),
+      localTranslationStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_translation_status'],
+      ),
+      localTranslationLanguageCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_translation_language_code'],
+      ),
       isServerVisible: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_server_visible'],
@@ -2471,6 +2546,9 @@ class ChatMessageEntry extends DataClass
   final String? localTranscriptStatus;
   final String? localTranscriptLanguage;
   final String? localTranscriptLanguageCode;
+  final String? localTranslationText;
+  final String? localTranslationStatus;
+  final String? localTranslationLanguageCode;
   final bool isServerVisible;
   final int updatedAtMillis;
   const ChatMessageEntry({
@@ -2497,6 +2575,9 @@ class ChatMessageEntry extends DataClass
     this.localTranscriptStatus,
     this.localTranscriptLanguage,
     this.localTranscriptLanguageCode,
+    this.localTranslationText,
+    this.localTranslationStatus,
+    this.localTranslationLanguageCode,
     required this.isServerVisible,
     required this.updatedAtMillis,
   });
@@ -2558,6 +2639,19 @@ class ChatMessageEntry extends DataClass
         localTranscriptLanguageCode,
       );
     }
+    if (!nullToAbsent || localTranslationText != null) {
+      map['local_translation_text'] = Variable<String>(localTranslationText);
+    }
+    if (!nullToAbsent || localTranslationStatus != null) {
+      map['local_translation_status'] = Variable<String>(
+        localTranslationStatus,
+      );
+    }
+    if (!nullToAbsent || localTranslationLanguageCode != null) {
+      map['local_translation_language_code'] = Variable<String>(
+        localTranslationLanguageCode,
+      );
+    }
     map['is_server_visible'] = Variable<bool>(isServerVisible);
     map['updated_at_millis'] = Variable<int>(updatedAtMillis);
     return map;
@@ -2613,6 +2707,16 @@ class ChatMessageEntry extends DataClass
           localTranscriptLanguageCode == null && nullToAbsent
           ? const Value.absent()
           : Value(localTranscriptLanguageCode),
+      localTranslationText: localTranslationText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localTranslationText),
+      localTranslationStatus: localTranslationStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localTranslationStatus),
+      localTranslationLanguageCode:
+          localTranslationLanguageCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localTranslationLanguageCode),
       isServerVisible: Value(isServerVisible),
       updatedAtMillis: Value(updatedAtMillis),
     );
@@ -2665,6 +2769,15 @@ class ChatMessageEntry extends DataClass
       localTranscriptLanguageCode: serializer.fromJson<String?>(
         json['localTranscriptLanguageCode'],
       ),
+      localTranslationText: serializer.fromJson<String?>(
+        json['localTranslationText'],
+      ),
+      localTranslationStatus: serializer.fromJson<String?>(
+        json['localTranslationStatus'],
+      ),
+      localTranslationLanguageCode: serializer.fromJson<String?>(
+        json['localTranslationLanguageCode'],
+      ),
       isServerVisible: serializer.fromJson<bool>(json['isServerVisible']),
       updatedAtMillis: serializer.fromJson<int>(json['updatedAtMillis']),
     );
@@ -2708,6 +2821,13 @@ class ChatMessageEntry extends DataClass
       'localTranscriptLanguageCode': serializer.toJson<String?>(
         localTranscriptLanguageCode,
       ),
+      'localTranslationText': serializer.toJson<String?>(localTranslationText),
+      'localTranslationStatus': serializer.toJson<String?>(
+        localTranslationStatus,
+      ),
+      'localTranslationLanguageCode': serializer.toJson<String?>(
+        localTranslationLanguageCode,
+      ),
       'isServerVisible': serializer.toJson<bool>(isServerVisible),
       'updatedAtMillis': serializer.toJson<int>(updatedAtMillis),
     };
@@ -2737,6 +2857,9 @@ class ChatMessageEntry extends DataClass
     Value<String?> localTranscriptStatus = const Value.absent(),
     Value<String?> localTranscriptLanguage = const Value.absent(),
     Value<String?> localTranscriptLanguageCode = const Value.absent(),
+    Value<String?> localTranslationText = const Value.absent(),
+    Value<String?> localTranslationStatus = const Value.absent(),
+    Value<String?> localTranslationLanguageCode = const Value.absent(),
     bool? isServerVisible,
     int? updatedAtMillis,
   }) => ChatMessageEntry(
@@ -2785,6 +2908,15 @@ class ChatMessageEntry extends DataClass
     localTranscriptLanguageCode: localTranscriptLanguageCode.present
         ? localTranscriptLanguageCode.value
         : this.localTranscriptLanguageCode,
+    localTranslationText: localTranslationText.present
+        ? localTranslationText.value
+        : this.localTranslationText,
+    localTranslationStatus: localTranslationStatus.present
+        ? localTranslationStatus.value
+        : this.localTranslationStatus,
+    localTranslationLanguageCode: localTranslationLanguageCode.present
+        ? localTranslationLanguageCode.value
+        : this.localTranslationLanguageCode,
     isServerVisible: isServerVisible ?? this.isServerVisible,
     updatedAtMillis: updatedAtMillis ?? this.updatedAtMillis,
   );
@@ -2851,6 +2983,15 @@ class ChatMessageEntry extends DataClass
       localTranscriptLanguageCode: data.localTranscriptLanguageCode.present
           ? data.localTranscriptLanguageCode.value
           : this.localTranscriptLanguageCode,
+      localTranslationText: data.localTranslationText.present
+          ? data.localTranslationText.value
+          : this.localTranslationText,
+      localTranslationStatus: data.localTranslationStatus.present
+          ? data.localTranslationStatus.value
+          : this.localTranslationStatus,
+      localTranslationLanguageCode: data.localTranslationLanguageCode.present
+          ? data.localTranslationLanguageCode.value
+          : this.localTranslationLanguageCode,
       isServerVisible: data.isServerVisible.present
           ? data.isServerVisible.value
           : this.isServerVisible,
@@ -2888,6 +3029,11 @@ class ChatMessageEntry extends DataClass
           ..write('localTranscriptStatus: $localTranscriptStatus, ')
           ..write('localTranscriptLanguage: $localTranscriptLanguage, ')
           ..write('localTranscriptLanguageCode: $localTranscriptLanguageCode, ')
+          ..write('localTranslationText: $localTranslationText, ')
+          ..write('localTranslationStatus: $localTranslationStatus, ')
+          ..write(
+            'localTranslationLanguageCode: $localTranslationLanguageCode, ',
+          )
           ..write('isServerVisible: $isServerVisible, ')
           ..write('updatedAtMillis: $updatedAtMillis')
           ..write(')'))
@@ -2919,6 +3065,9 @@ class ChatMessageEntry extends DataClass
     localTranscriptStatus,
     localTranscriptLanguage,
     localTranscriptLanguageCode,
+    localTranslationText,
+    localTranslationStatus,
+    localTranslationLanguageCode,
     isServerVisible,
     updatedAtMillis,
   ]);
@@ -2952,6 +3101,10 @@ class ChatMessageEntry extends DataClass
           other.localTranscriptLanguage == this.localTranscriptLanguage &&
           other.localTranscriptLanguageCode ==
               this.localTranscriptLanguageCode &&
+          other.localTranslationText == this.localTranslationText &&
+          other.localTranslationStatus == this.localTranslationStatus &&
+          other.localTranslationLanguageCode ==
+              this.localTranslationLanguageCode &&
           other.isServerVisible == this.isServerVisible &&
           other.updatedAtMillis == this.updatedAtMillis);
 }
@@ -2980,6 +3133,9 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
   final Value<String?> localTranscriptStatus;
   final Value<String?> localTranscriptLanguage;
   final Value<String?> localTranscriptLanguageCode;
+  final Value<String?> localTranslationText;
+  final Value<String?> localTranslationStatus;
+  final Value<String?> localTranslationLanguageCode;
   final Value<bool> isServerVisible;
   final Value<int> updatedAtMillis;
   final Value<int> rowid;
@@ -3007,6 +3163,9 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
     this.localTranscriptStatus = const Value.absent(),
     this.localTranscriptLanguage = const Value.absent(),
     this.localTranscriptLanguageCode = const Value.absent(),
+    this.localTranslationText = const Value.absent(),
+    this.localTranslationStatus = const Value.absent(),
+    this.localTranslationLanguageCode = const Value.absent(),
     this.isServerVisible = const Value.absent(),
     this.updatedAtMillis = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3035,6 +3194,9 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
     this.localTranscriptStatus = const Value.absent(),
     this.localTranscriptLanguage = const Value.absent(),
     this.localTranscriptLanguageCode = const Value.absent(),
+    this.localTranslationText = const Value.absent(),
+    this.localTranslationStatus = const Value.absent(),
+    this.localTranslationLanguageCode = const Value.absent(),
     this.isServerVisible = const Value.absent(),
     required int updatedAtMillis,
     this.rowid = const Value.absent(),
@@ -3073,6 +3235,9 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
     Expression<String>? localTranscriptStatus,
     Expression<String>? localTranscriptLanguage,
     Expression<String>? localTranscriptLanguageCode,
+    Expression<String>? localTranslationText,
+    Expression<String>? localTranslationStatus,
+    Expression<String>? localTranslationLanguageCode,
     Expression<bool>? isServerVisible,
     Expression<int>? updatedAtMillis,
     Expression<int>? rowid,
@@ -3110,6 +3275,12 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
         'local_transcript_language': localTranscriptLanguage,
       if (localTranscriptLanguageCode != null)
         'local_transcript_language_code': localTranscriptLanguageCode,
+      if (localTranslationText != null)
+        'local_translation_text': localTranslationText,
+      if (localTranslationStatus != null)
+        'local_translation_status': localTranslationStatus,
+      if (localTranslationLanguageCode != null)
+        'local_translation_language_code': localTranslationLanguageCode,
       if (isServerVisible != null) 'is_server_visible': isServerVisible,
       if (updatedAtMillis != null) 'updated_at_millis': updatedAtMillis,
       if (rowid != null) 'rowid': rowid,
@@ -3140,6 +3311,9 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
     Value<String?>? localTranscriptStatus,
     Value<String?>? localTranscriptLanguage,
     Value<String?>? localTranscriptLanguageCode,
+    Value<String?>? localTranslationText,
+    Value<String?>? localTranslationStatus,
+    Value<String?>? localTranslationLanguageCode,
     Value<bool>? isServerVisible,
     Value<int>? updatedAtMillis,
     Value<int>? rowid,
@@ -3174,6 +3348,11 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
           localTranscriptLanguage ?? this.localTranscriptLanguage,
       localTranscriptLanguageCode:
           localTranscriptLanguageCode ?? this.localTranscriptLanguageCode,
+      localTranslationText: localTranslationText ?? this.localTranslationText,
+      localTranslationStatus:
+          localTranslationStatus ?? this.localTranslationStatus,
+      localTranslationLanguageCode:
+          localTranslationLanguageCode ?? this.localTranslationLanguageCode,
       isServerVisible: isServerVisible ?? this.isServerVisible,
       updatedAtMillis: updatedAtMillis ?? this.updatedAtMillis,
       rowid: rowid ?? this.rowid,
@@ -3268,6 +3447,21 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
         localTranscriptLanguageCode.value,
       );
     }
+    if (localTranslationText.present) {
+      map['local_translation_text'] = Variable<String>(
+        localTranslationText.value,
+      );
+    }
+    if (localTranslationStatus.present) {
+      map['local_translation_status'] = Variable<String>(
+        localTranslationStatus.value,
+      );
+    }
+    if (localTranslationLanguageCode.present) {
+      map['local_translation_language_code'] = Variable<String>(
+        localTranslationLanguageCode.value,
+      );
+    }
     if (isServerVisible.present) {
       map['is_server_visible'] = Variable<bool>(isServerVisible.value);
     }
@@ -3308,6 +3502,11 @@ class ChatMessageEntriesCompanion extends UpdateCompanion<ChatMessageEntry> {
           ..write('localTranscriptStatus: $localTranscriptStatus, ')
           ..write('localTranscriptLanguage: $localTranscriptLanguage, ')
           ..write('localTranscriptLanguageCode: $localTranscriptLanguageCode, ')
+          ..write('localTranslationText: $localTranslationText, ')
+          ..write('localTranslationStatus: $localTranslationStatus, ')
+          ..write(
+            'localTranslationLanguageCode: $localTranslationLanguageCode, ',
+          )
           ..write('isServerVisible: $isServerVisible, ')
           ..write('updatedAtMillis: $updatedAtMillis, ')
           ..write('rowid: $rowid')
@@ -4840,6 +5039,9 @@ typedef $$ChatMessageEntriesTableCreateCompanionBuilder =
       Value<String?> localTranscriptStatus,
       Value<String?> localTranscriptLanguage,
       Value<String?> localTranscriptLanguageCode,
+      Value<String?> localTranslationText,
+      Value<String?> localTranslationStatus,
+      Value<String?> localTranslationLanguageCode,
       Value<bool> isServerVisible,
       required int updatedAtMillis,
       Value<int> rowid,
@@ -4869,6 +5071,9 @@ typedef $$ChatMessageEntriesTableUpdateCompanionBuilder =
       Value<String?> localTranscriptStatus,
       Value<String?> localTranscriptLanguage,
       Value<String?> localTranscriptLanguageCode,
+      Value<String?> localTranslationText,
+      Value<String?> localTranslationStatus,
+      Value<String?> localTranslationLanguageCode,
       Value<bool> isServerVisible,
       Value<int> updatedAtMillis,
       Value<int> rowid,
@@ -4995,6 +5200,21 @@ class $$ChatMessageEntriesTableFilterComposer
 
   ColumnFilters<String> get localTranscriptLanguageCode => $composableBuilder(
     column: $table.localTranscriptLanguageCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localTranslationText => $composableBuilder(
+    column: $table.localTranslationText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localTranslationStatus => $composableBuilder(
+    column: $table.localTranslationStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localTranslationLanguageCode => $composableBuilder(
+    column: $table.localTranslationLanguageCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5134,6 +5354,22 @@ class $$ChatMessageEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get localTranslationText => $composableBuilder(
+    column: $table.localTranslationText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localTranslationStatus => $composableBuilder(
+    column: $table.localTranslationStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localTranslationLanguageCode =>
+      $composableBuilder(
+        column: $table.localTranslationLanguageCode,
+        builder: (column) => ColumnOrderings(column),
+      );
+
   ColumnOrderings<bool> get isServerVisible => $composableBuilder(
     column: $table.isServerVisible,
     builder: (column) => ColumnOrderings(column),
@@ -5262,6 +5498,22 @@ class $$ChatMessageEntriesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get localTranslationText => $composableBuilder(
+    column: $table.localTranslationText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localTranslationStatus => $composableBuilder(
+    column: $table.localTranslationStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localTranslationLanguageCode =>
+      $composableBuilder(
+        column: $table.localTranslationLanguageCode,
+        builder: (column) => column,
+      );
+
   GeneratedColumn<bool> get isServerVisible => $composableBuilder(
     column: $table.isServerVisible,
     builder: (column) => column,
@@ -5339,6 +5591,10 @@ class $$ChatMessageEntriesTableTableManager
                 Value<String?> localTranscriptLanguage = const Value.absent(),
                 Value<String?> localTranscriptLanguageCode =
                     const Value.absent(),
+                Value<String?> localTranslationText = const Value.absent(),
+                Value<String?> localTranslationStatus = const Value.absent(),
+                Value<String?> localTranslationLanguageCode =
+                    const Value.absent(),
                 Value<bool> isServerVisible = const Value.absent(),
                 Value<int> updatedAtMillis = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5366,6 +5622,9 @@ class $$ChatMessageEntriesTableTableManager
                 localTranscriptStatus: localTranscriptStatus,
                 localTranscriptLanguage: localTranscriptLanguage,
                 localTranscriptLanguageCode: localTranscriptLanguageCode,
+                localTranslationText: localTranslationText,
+                localTranslationStatus: localTranslationStatus,
+                localTranslationLanguageCode: localTranslationLanguageCode,
                 isServerVisible: isServerVisible,
                 updatedAtMillis: updatedAtMillis,
                 rowid: rowid,
@@ -5398,6 +5657,10 @@ class $$ChatMessageEntriesTableTableManager
                 Value<String?> localTranscriptLanguage = const Value.absent(),
                 Value<String?> localTranscriptLanguageCode =
                     const Value.absent(),
+                Value<String?> localTranslationText = const Value.absent(),
+                Value<String?> localTranslationStatus = const Value.absent(),
+                Value<String?> localTranslationLanguageCode =
+                    const Value.absent(),
                 Value<bool> isServerVisible = const Value.absent(),
                 required int updatedAtMillis,
                 Value<int> rowid = const Value.absent(),
@@ -5425,6 +5688,9 @@ class $$ChatMessageEntriesTableTableManager
                 localTranscriptStatus: localTranscriptStatus,
                 localTranscriptLanguage: localTranscriptLanguage,
                 localTranscriptLanguageCode: localTranscriptLanguageCode,
+                localTranslationText: localTranslationText,
+                localTranslationStatus: localTranslationStatus,
+                localTranslationLanguageCode: localTranslationLanguageCode,
                 isServerVisible: isServerVisible,
                 updatedAtMillis: updatedAtMillis,
                 rowid: rowid,

@@ -50,6 +50,9 @@ class ChatMessageItem {
     required this.localTranscriptStatus,
     required this.localTranscriptLanguage,
     required this.localTranscriptLanguageCode,
+    required this.localTranslationText,
+    required this.localTranslationStatus,
+    required this.localTranslationLanguageCode,
     required this.isServerVisible,
   });
 
@@ -77,6 +80,9 @@ class ChatMessageItem {
       localTranscriptStatus: null,
       localTranscriptLanguage: null,
       localTranscriptLanguageCode: null,
+      localTranslationText: null,
+      localTranslationStatus: null,
+      localTranslationLanguageCode: null,
       isServerVisible: true,
     );
   }
@@ -96,6 +102,9 @@ class ChatMessageItem {
   final String? localTranscriptStatus;
   final String? localTranscriptLanguage;
   final String? localTranscriptLanguageCode;
+  final String? localTranslationText;
+  final String? localTranslationStatus;
+  final String? localTranslationLanguageCode;
   final bool isServerVisible;
 
   bool get isDirectMessage => threadType == 'dm';
@@ -108,6 +117,9 @@ class ChatMessageItem {
     String? localTranscriptStatus,
     String? localTranscriptLanguage,
     String? localTranscriptLanguageCode,
+    String? localTranslationText,
+    String? localTranslationStatus,
+    String? localTranslationLanguageCode,
     bool? isServerVisible,
   }) {
     return ChatMessageItem(
@@ -129,6 +141,11 @@ class ChatMessageItem {
           localTranscriptLanguage ?? this.localTranscriptLanguage,
       localTranscriptLanguageCode:
           localTranscriptLanguageCode ?? this.localTranscriptLanguageCode,
+      localTranslationText: localTranslationText ?? this.localTranslationText,
+      localTranslationStatus:
+          localTranslationStatus ?? this.localTranslationStatus,
+      localTranslationLanguageCode:
+          localTranslationLanguageCode ?? this.localTranslationLanguageCode,
       isServerVisible: isServerVisible ?? this.isServerVisible,
     );
   }

@@ -328,6 +328,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatTranscriptionFailed => '文字起こしに失敗しました。もう一度お試しください。';
 
   @override
+  String get chatTranslate => '翻訳';
+
+  @override
+  String get chatRetranslate => '再翻訳';
+
+  @override
+  String get chatTranslating => 'このiPhoneで翻訳中...';
+
+  @override
+  String get chatTranslationFailed => '翻訳に失敗しました。もう一度お試しください。';
+
+  @override
   String get chatGroupSettingsTitle => 'グループ設定';
 
   @override

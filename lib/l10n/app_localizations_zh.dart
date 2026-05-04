@@ -328,6 +328,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatTranscriptionFailed => '转写失败，请重试。';
 
   @override
+  String get chatTranslate => '翻译';
+
+  @override
+  String get chatRetranslate => '重新翻译';
+
+  @override
+  String get chatTranslating => '正在此 iPhone 上翻译...';
+
+  @override
+  String get chatTranslationFailed => '翻译失败，请重试。';
+
+  @override
   String get chatGroupSettingsTitle => '群组设置';
 
   @override

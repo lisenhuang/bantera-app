@@ -5,14 +5,17 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../domain/models/chat_models.dart';
+import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../infrastructure/push_notifications_service.dart';
+import '../infrastructure/translation_service.dart';
 import '../infrastructure/video_processing_service.dart';
 import 'auth_api_error_localizations.dart';
 import 'auth_session_notifier.dart';
 import 'settings_notifier.dart';
+import 'user_profile_notifier.dart';
 
 class ChatSessionNotifier extends ChangeNotifier {
   ChatSessionNotifier._() {
@@ -272,6 +275,76 @@ class ChatSessionNotifier extends ChangeNotifier {
             message.localTranscriptLanguage ?? message.spokenLanguageCode,
         transcriptLanguageCode:
             message.localTranscriptLanguageCode ?? message.spokenLanguageCode,
+        status: 'failed',
+      );
+      rethrow;
+    }
+
+    return _localRepository.getMessage(message.messageId);
+  }
+
+  Future<ChatMessageItem?> translateMessage(ChatMessageItem message) async {
+    final source = (message.localTranscriptLanguageCode ?? '').trim();
+    final transcript = (message.localTranscriptText ?? '').trim();
+    if (source.isEmpty || transcript.isEmpty) {
+      return null;
+    }
+    final target = (UserProfileNotifier.instance.nativeLanguage ?? '').trim();
+    if (target.isEmpty || _localesEquivalent(source, target)) {
+      return null;
+    }
+
+    await _localRepository.updateMessageTranslation(
+      messageId: message.messageId,
+      translationText: message.localTranslationText ?? '',
+      translationLanguageCode: target,
+      status: 'processing',
+    );
+
+    Future<Map<String, String>> doTranslate() {
+      return TranslationService.instance.translateCues(
+        sourceLocaleIdentifier: source,
+        targetLocaleIdentifier: target,
+        cues: [
+          Cue(
+            id: 'msg',
+            startTimeMs: 0,
+            endTimeMs: 0,
+            originalText: transcript,
+            translatedText: '',
+          ),
+        ],
+      );
+    }
+
+    try {
+      Map<String, String> result;
+      try {
+        result = await doTranslate();
+      } on TranslationException catch (error) {
+        if (error.code == 'translation_assets_not_installed') {
+          await TranslationService.instance.prepareTranslationAssets(
+            sourceLocaleIdentifier: source,
+            targetLocaleIdentifier: target,
+          );
+          result = await doTranslate();
+        } else {
+          rethrow;
+        }
+      }
+
+      final translated = (result['msg'] ?? '').trim();
+      await _localRepository.updateMessageTranslation(
+        messageId: message.messageId,
+        translationText: translated,
+        translationLanguageCode: target,
+        status: translated.isEmpty ? 'failed' : 'ready',
+      );
+    } on TranslationException {
+      await _localRepository.updateMessageTranslation(
+        messageId: message.messageId,
+        translationText: message.localTranslationText ?? '',
+        translationLanguageCode: target,
         status: 'failed',
       );
       rethrow;
@@ -646,4 +719,24 @@ class ChatSessionNotifier extends ChangeNotifier {
     notifyListeners();
     unawaited(refreshBootstrap(showLoadingState: false));
   }
+}
+
+bool chatLocalesEquivalent(String first, String second) {
+  final normalizedFirst = first.trim().toLowerCase();
+  final normalizedSecond = second.trim().toLowerCase();
+  if (normalizedFirst.isEmpty || normalizedSecond.isEmpty) {
+    return false;
+  }
+  if (normalizedFirst == normalizedSecond) {
+    return true;
+  }
+  final firstPrimary = normalizedFirst.split('-').first;
+  final secondPrimary = normalizedSecond.split('-').first;
+  return firstPrimary.isNotEmpty &&
+      secondPrimary.isNotEmpty &&
+      firstPrimary == secondPrimary;
+}
+
+bool _localesEquivalent(String first, String second) {
+  return chatLocalesEquivalent(first, second);
 }

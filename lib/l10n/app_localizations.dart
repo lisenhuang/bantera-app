@@ -720,6 +720,30 @@ abstract class AppLocalizations {
   /// **'Transcription failed. Try again.'**
   String get chatTranscriptionFailed;
 
+  /// No description provided for @chatTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get chatTranslate;
+
+  /// No description provided for @chatRetranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslate'**
+  String get chatRetranslate;
+
+  /// No description provided for @chatTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating on this iPhone...'**
+  String get chatTranslating;
+
+  /// No description provided for @chatTranslationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation failed. Please try again.'**
+  String get chatTranslationFailed;
+
   /// No description provided for @chatGroupSettingsTitle.
   ///
   /// In en, this message translates to:

@@ -331,6 +331,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatTranscriptionFailed => '전사하지 못했습니다. 다시 시도하세요.';
 
   @override
+  String get chatTranslate => '번역';
+
+  @override
+  String get chatRetranslate => '다시 번역';
+
+  @override
+  String get chatTranslating => '이 iPhone에서 번역 중...';
+
+  @override
+  String get chatTranslationFailed => '번역하지 못했습니다. 다시 시도하세요.';
+
+  @override
   String get chatGroupSettingsTitle => '그룹 설정';
 
   @override

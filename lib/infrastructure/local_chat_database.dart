@@ -81,6 +81,9 @@ class ChatMessageEntries extends Table {
   TextColumn get localTranscriptStatus => text().nullable()();
   TextColumn get localTranscriptLanguage => text().nullable()();
   TextColumn get localTranscriptLanguageCode => text().nullable()();
+  TextColumn get localTranslationText => text().nullable()();
+  TextColumn get localTranslationStatus => text().nullable()();
+  TextColumn get localTranslationLanguageCode => text().nullable()();
   BoolColumn get isServerVisible =>
       boolean().withDefault(const Constant(true))();
   IntColumn get updatedAtMillis => integer()();
@@ -130,12 +133,28 @@ class LocalChatDatabase extends _$LocalChatDatabase {
   static final LocalChatDatabase instance = LocalChatDatabase._internal();
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) async {
       await migrator.createAll();
+    },
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.addColumn(
+          chatMessageEntries,
+          chatMessageEntries.localTranslationText,
+        );
+        await migrator.addColumn(
+          chatMessageEntries,
+          chatMessageEntries.localTranslationStatus,
+        );
+        await migrator.addColumn(
+          chatMessageEntries,
+          chatMessageEntries.localTranslationLanguageCode,
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

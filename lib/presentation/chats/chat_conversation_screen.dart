@@ -8,9 +8,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
+import '../../core/apple_system_version.dart';
 import '../../core/chat_session_notifier.dart';
+import '../../core/user_profile_notifier.dart';
 import '../../domain/models/chat_models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -37,6 +40,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
   final Set<String> _transcribingIds = <String>{};
+  final Set<String> _translatingIds = <String>{};
   bool _isRecording = false;
   bool _isSending = false;
   String? _currentPlayingMessageId;
@@ -233,8 +237,11 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   ? _currentPlaybackPosition
                   : Duration.zero,
               isTranscribing: _transcribingIds.contains(message.messageId),
+              isTranslating: _translatingIds.contains(message.messageId),
+              viewerNativeLanguageCode: UserProfileNotifier.instance.nativeLanguage,
               onPlay: () => _playMessage(message),
               onTranscribe: () => _transcribeMessage(message),
+              onTranslate: () => _translateMessage(message),
               onTapSender: _isGroup && !message.isMine
                   ? () => _showUserSheet(message.senderUser)
                   : null,
@@ -673,6 +680,38 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
   }
 
+  Future<void> _translateMessage(ChatMessageItem message) async {
+    if (_translatingIds.contains(message.messageId)) {
+      return;
+    }
+
+    setState(() {
+      _translatingIds.add(message.messageId);
+    });
+    try {
+      await _chat.translateMessage(message);
+    } on TranslationException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.chatTranslationFailed)));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _translatingIds.remove(message.messageId);
+        });
+      }
+    }
+  }
+
   Future<void> _showUserSheet(ChatUserSummary user) async {
     if (!_isGroup) {
       return;
@@ -933,8 +972,11 @@ class _MessageBubble extends StatelessWidget {
     required this.isPlaying,
     required this.playbackPosition,
     required this.isTranscribing,
+    required this.isTranslating,
+    required this.viewerNativeLanguageCode,
     required this.onPlay,
     required this.onTranscribe,
+    required this.onTranslate,
     required this.onTapSender,
     required this.onLongPress,
   });
@@ -944,8 +986,11 @@ class _MessageBubble extends StatelessWidget {
   final bool isPlaying;
   final Duration playbackPosition;
   final bool isTranscribing;
+  final bool isTranslating;
+  final String? viewerNativeLanguageCode;
   final VoidCallback onPlay;
   final VoidCallback onTranscribe;
+  final VoidCallback onTranslate;
   final VoidCallback? onTapSender;
   final VoidCallback? onLongPress;
 
@@ -960,6 +1005,20 @@ class _MessageBubble extends StatelessWidget {
     final progress = isPlaying && durationMs > 0
         ? (playbackPosition.inMilliseconds / durationMs).clamp(0.0, 1.0)
         : 0.0;
+    final sourceLanguageCode = message.localTranscriptLanguageCode;
+    final targetLanguageCode = (viewerNativeLanguageCode ?? '').trim();
+    final canTranslate =
+        supportsBuiltInTranslation &&
+        message.hasTranscript &&
+        sourceLanguageCode != null &&
+        sourceLanguageCode.trim().isNotEmpty &&
+        targetLanguageCode.isNotEmpty &&
+        !chatLocalesEquivalent(sourceLanguageCode, targetLanguageCode);
+    final hasReadyTranscript = message.localTranscriptStatus == 'ready';
+    final hasReadyTranslation = message.localTranslationStatus == 'ready';
+    final showTranscribeButton = !hasReadyTranscript;
+    final showTranslateButton =
+        hasReadyTranscript && !hasReadyTranslation && canTranslate;
 
     return Align(
       alignment: message.isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -1008,21 +1067,32 @@ class _MessageBubble extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                OutlinedButton.icon(
-                  onPressed: isTranscribing ? null : onTranscribe,
-                  icon: isTranscribing
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.subtitles_outlined),
-                  label: Text(
-                    message.hasTranscript
-                        ? l10n.chatRetranscribe
-                        : l10n.chatTranscribe,
+                if (showTranscribeButton)
+                  OutlinedButton.icon(
+                    onPressed: isTranscribing ? null : onTranscribe,
+                    icon: isTranscribing
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.subtitles_outlined),
+                    label: Text(l10n.chatTranscribe),
                   ),
-                ),
+                if (showTranslateButton) ...[
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: isTranslating ? null : onTranslate,
+                    icon: isTranslating
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.translate),
+                    label: Text(l10n.chatTranslate),
+                  ),
+                ],
                 const Spacer(),
                 Text(
                   _formatTimestamp(message.createdAt),
@@ -1051,6 +1121,37 @@ class _MessageBubble extends StatelessWidget {
                 child: SelectableText(
                   message.localTranscriptText!,
                   style: theme.textTheme.bodyLarge,
+                ),
+              ),
+            if (message.localTranslationStatus == 'processing')
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(l10n.chatTranslating),
+              ),
+            if (message.localTranslationStatus == 'failed')
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  l10n.chatTranslationFailed,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ),
+            if (message.localTranslationText != null &&
+                message.localTranslationText!.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(color: theme.colorScheme.outlineVariant, height: 1),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      message.localTranslationText!,
+                      style: theme.textTheme.bodyLarge,
+                    ),
+                  ],
                 ),
               ),
           ],

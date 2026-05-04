@@ -343,6 +343,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatTranscriptionFailed => 'Transcription failed. Try again.';
 
   @override
+  String get chatTranslate => 'Translate';
+
+  @override
+  String get chatRetranslate => 'Retranslate';
+
+  @override
+  String get chatTranslating => 'Translating on this iPhone...';
+
+  @override
+  String get chatTranslationFailed => 'Translation failed. Please try again.';
+
+  @override
   String get chatGroupSettingsTitle => 'Group settings';
 
   @override
