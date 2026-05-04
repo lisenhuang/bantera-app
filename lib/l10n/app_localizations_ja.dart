@@ -271,6 +271,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatBlockUserBody => 'ブロックを解除するまで、DM送信や共有グループメッセージで互いに表示されなくなります。';
 
   @override
+  String chatBlockUserSuccess(String user) {
+    return '$userをブロックしました。';
+  }
+
+  @override
+  String get chatBlockUserFailed => 'このユーザーをブロックできませんでした。もう一度お試しください。';
+
+  @override
   String get chatDeleteDmTitle => 'このDMを削除しますか？';
 
   @override

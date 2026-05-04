@@ -273,6 +273,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '차단을 해제할 때까지 DM 보내기와 공유 그룹 메시지에서 서로 보이지 않습니다.';
 
   @override
+  String chatBlockUserSuccess(String user) {
+    return '$user님을 차단했습니다.';
+  }
+
+  @override
+  String get chatBlockUserFailed => '이 사용자를 차단하지 못했습니다. 다시 시도하세요.';
+
+  @override
   String get chatDeleteDmTitle => '이 DM을 삭제할까요?';
 
   @override
