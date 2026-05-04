@@ -882,31 +882,67 @@ class _GroupSettingsScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: chat,
         builder: (context, _) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              SwitchListTile(
-                title: Text(l10n.chatNotifications),
-                subtitle: Text(thread.title),
-                value: !thread.isMuted,
-                onChanged: (value) async {
-                  await chat.updateThreadNotifications(
-                    threadId: thread.threadId,
-                    enabled: value,
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.chatBlockedPeople,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              const BlockedUsersList(),
-            ],
+          return StreamBuilder<List<ChatThreadSummary>>(
+            stream: chat.watchGroups(),
+            builder: (context, snapshot) {
+              final currentThread = _currentThread(snapshot.data) ?? thread;
+              final isUpdating = chat.isUpdatingThreadNotifications(
+                currentThread.threadId,
+              );
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  SwitchListTile(
+                    title: Text(l10n.chatNotifications),
+                    subtitle: Text(currentThread.title),
+                    value: !currentThread.isMuted,
+                    onChanged: isUpdating
+                        ? null
+                        : (value) async {
+                            try {
+                              await chat.updateThreadNotifications(
+                                threadId: currentThread.threadId,
+                                enabled: value,
+                              );
+                            } catch (_) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.chatNotificationUpdateFailed,
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.chatBlockedPeople,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  const BlockedUsersList(),
+                ],
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  ChatThreadSummary? _currentThread(List<ChatThreadSummary>? threads) {
+    if (threads == null) {
+      return null;
+    }
+    for (final candidate in threads) {
+      if (candidate.threadId == thread.threadId) {
+        return candidate;
+      }
+    }
+    return null;
   }
 }

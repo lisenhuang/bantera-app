@@ -27,6 +27,7 @@ class ChatSessionNotifier extends ChangeNotifier {
   final ChatApiClient _apiClient = ChatApiClient.instance;
   final LocalChatRepository _localRepository = LocalChatRepository.instance;
   final Set<String> _activeThreadIds = <String>{};
+  final Set<String> _updatingThreadNotificationIds = <String>{};
   final Map<String, bool> _partnerRecordingByThread = <String, bool>{};
 
   AuthSession? _observedSession;
@@ -67,6 +68,10 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   bool isPartnerRecording(String threadId) {
     return _partnerRecordingByThread[threadId] == true;
+  }
+
+  bool isUpdatingThreadNotifications(String threadId) {
+    return _updatingThreadNotificationIds.contains(threadId);
   }
 
   Future<void> refreshBootstrap({bool showLoadingState = true}) async {
@@ -309,17 +314,45 @@ class ChatSessionNotifier extends ChangeNotifier {
     required String threadId,
     required bool enabled,
   }) async {
-    await _withRetry<void>(
-      (token) => _apiClient.updateThreadNotifications(
-        accessToken: token,
-        threadId: threadId,
-        enabled: enabled,
-      ),
-    );
+    final previousIsMuted = await _localRepository.threadMutedState(threadId);
+    _updatingThreadNotificationIds.add(threadId);
     await _localRepository.updateThreadMutedState(
       threadId: threadId,
       isMuted: !enabled,
     );
+    notifyListeners();
+
+    try {
+      await _withRetry<void>(
+        (token) => _apiClient.updateThreadNotifications(
+          accessToken: token,
+          threadId: threadId,
+          enabled: enabled,
+        ),
+      );
+      await refreshBootstrap(showLoadingState: false);
+    } on AuthApiException catch (error) {
+      _authApiError = error;
+      _plainErrorMessage = null;
+      if (previousIsMuted != null) {
+        await _localRepository.updateThreadMutedState(
+          threadId: threadId,
+          isMuted: previousIsMuted,
+        );
+      }
+      rethrow;
+    } catch (_) {
+      if (previousIsMuted != null) {
+        await _localRepository.updateThreadMutedState(
+          threadId: threadId,
+          isMuted: previousIsMuted,
+        );
+      }
+      rethrow;
+    } finally {
+      _updatingThreadNotificationIds.remove(threadId);
+      notifyListeners();
+    }
   }
 
   Future<void> blockUser(String userId) async {
