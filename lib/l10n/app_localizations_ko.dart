@@ -314,13 +314,33 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatNotifications => '알림';
 
   @override
+  String get chatBlockedUsersMenu => '차단한 사용자';
+
+  @override
+  String get chatBlockedUsersTitle => '차단한 사용자';
+
+  @override
   String get chatBlockedPeople => '차단한 사람';
+
+  @override
+  String get chatNoBlockedUsers => '차단한 사용자가 없습니다.';
 
   @override
   String get chatNoBlockedPeople => '아직 차단한 사람이 없습니다.';
 
   @override
   String get chatUnblock => '차단 해제';
+
+  @override
+  String chatUnblockUserTitle(String user) {
+    return '$user님을 차단 해제할까요?';
+  }
+
+  @override
+  String get chatUnblockUserBody => 'DM과 공유 그룹 메시지에서 서로 다시 보일 수 있습니다.';
+
+  @override
+  String get chatUnblockFailed => '이 사용자를 차단 해제하지 못했습니다. 다시 시도하세요.';
 
   @override
   String get chatNotificationsTitle => '채팅 알림';

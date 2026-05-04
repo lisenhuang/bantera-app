@@ -311,13 +311,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatNotifications => '通知';
 
   @override
+  String get chatBlockedUsersMenu => '已屏蔽用户';
+
+  @override
+  String get chatBlockedUsersTitle => '已屏蔽用户';
+
+  @override
   String get chatBlockedPeople => '已屏蔽的人';
+
+  @override
+  String get chatNoBlockedUsers => '还没有屏蔽任何用户。';
 
   @override
   String get chatNoBlockedPeople => '还没有屏蔽任何人。';
 
   @override
   String get chatUnblock => '解除屏蔽';
+
+  @override
+  String chatUnblockUserTitle(String user) {
+    return '解除屏蔽 $user？';
+  }
+
+  @override
+  String get chatUnblockUserBody => '你们可能会再次在私信和共享群组消息中看到彼此。';
+
+  @override
+  String get chatUnblockFailed => '无法解除屏蔽此用户，请重试。';
 
   @override
   String get chatNotificationsTitle => '聊天通知';

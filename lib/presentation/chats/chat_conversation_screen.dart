@@ -15,6 +15,7 @@ import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
+import 'blocked_users_screen.dart';
 
 class ChatConversationScreen extends StatefulWidget {
   const ChatConversationScreen.thread({super.key, required this.thread})
@@ -901,46 +902,7 @@ class _GroupSettingsScreen extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              StreamBuilder<List<ChatUserSummary>>(
-                stream: chat.watchBlockedUsers(),
-                builder: (context, snapshot) {
-                  final users = snapshot.data ?? const <ChatUserSummary>[];
-                  if (users.isEmpty) {
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(l10n.chatNoBlockedPeople),
-                      ),
-                    );
-                  }
-
-                  return Column(
-                    children: users
-                        .map(
-                          (user) => Card(
-                            child: ListTile(
-                              leading: ProfileAvatar(
-                                radius: 22,
-                                imageUrl: user.avatarUrl,
-                              ),
-                              title: Text(user.name),
-                              subtitle: Text(
-                                [
-                                  user.learningLanguageDisplay,
-                                  user.nativeLanguageDisplay,
-                                ].whereType<String>().join(' • '),
-                              ),
-                              trailing: TextButton(
-                                onPressed: () => chat.unblockUser(user.id),
-                                child: Text(l10n.chatUnblock),
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  );
-                },
-              ),
+              const BlockedUsersList(),
             ],
           );
         },

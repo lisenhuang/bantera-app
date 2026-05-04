@@ -119,9 +119,22 @@
   "chatTranscriptionFailed": "Transcription failed. Try again.",
   "chatGroupSettingsTitle": "Group settings",
   "chatNotifications": "Notifications",
+  "chatBlockedUsersMenu": "Blocked Users",
+  "chatBlockedUsersTitle": "Blocked Users",
   "chatBlockedPeople": "Blocked people",
+  "chatNoBlockedUsers": "No blocked users yet.",
   "chatNoBlockedPeople": "No blocked people yet.",
   "chatUnblock": "Unblock",
+  "chatUnblockUserTitle": "Unblock {user}?",
+  "@chatUnblockUserTitle": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatUnblockUserBody": "You may see each other again in DMs and shared group messages.",
+  "chatUnblockFailed": "Could not unblock this user. Please try again.",
   "chatNotificationsTitle": "Chat notifications",
   "chatNotificationsSubtitle": "Use one account-wide switch across your devices.",
   "chatNotificationsDisabledTitle": "Notifications disabled",

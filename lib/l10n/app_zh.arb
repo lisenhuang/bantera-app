@@ -119,9 +119,22 @@
   "chatTranscriptionFailed": "转写失败，请重试。",
   "chatGroupSettingsTitle": "群组设置",
   "chatNotifications": "通知",
+  "chatBlockedUsersMenu": "已屏蔽用户",
+  "chatBlockedUsersTitle": "已屏蔽用户",
   "chatBlockedPeople": "已屏蔽的人",
+  "chatNoBlockedUsers": "还没有屏蔽任何用户。",
   "chatNoBlockedPeople": "还没有屏蔽任何人。",
   "chatUnblock": "解除屏蔽",
+  "chatUnblockUserTitle": "解除屏蔽 {user}？",
+  "@chatUnblockUserTitle": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatUnblockUserBody": "你们可能会再次在私信和共享群组消息中看到彼此。",
+  "chatUnblockFailed": "无法解除屏蔽此用户，请重试。",
   "chatNotificationsTitle": "聊天通知",
   "chatNotificationsSubtitle": "在所有设备上使用同一个账户级开关。",
   "chatNotificationsDisabledTitle": "通知已关闭",

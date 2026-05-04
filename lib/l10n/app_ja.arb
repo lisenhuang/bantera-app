@@ -119,9 +119,22 @@
   "chatTranscriptionFailed": "文字起こしに失敗しました。もう一度お試しください。",
   "chatGroupSettingsTitle": "グループ設定",
   "chatNotifications": "通知",
+  "chatBlockedUsersMenu": "ブロック中のユーザー",
+  "chatBlockedUsersTitle": "ブロック中のユーザー",
   "chatBlockedPeople": "ブロックした人",
+  "chatNoBlockedUsers": "ブロック中のユーザーはいません。",
   "chatNoBlockedPeople": "ブロックした人はいません。",
   "chatUnblock": "ブロック解除",
+  "chatUnblockUserTitle": "{user}のブロックを解除しますか？",
+  "@chatUnblockUserTitle": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatUnblockUserBody": "DMや共有グループメッセージで再び互いに表示されることがあります。",
+  "chatUnblockFailed": "このユーザーのブロックを解除できませんでした。もう一度お試しください。",
   "chatNotificationsTitle": "チャット通知",
   "chatNotificationsSubtitle": "アカウント共通の切り替えをすべてのデバイスで使います。",
   "chatNotificationsDisabledTitle": "通知が無効です",

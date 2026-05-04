@@ -5,6 +5,7 @@ import '../../domain/models/chat_models.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
+import 'blocked_users_screen.dart';
 import 'chat_conversation_screen.dart';
 
 class ChatsScreen extends StatefulWidget {
@@ -30,7 +31,21 @@ class _ChatsScreenState extends State<ChatsScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.chatsTitle)),
+      appBar: AppBar(
+        title: Text(l10n.chatsTitle),
+        actions: [
+          PopupMenuButton<_ChatsMenuAction>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: _handleMenuAction,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _ChatsMenuAction.blockedUsers,
+                child: Text(l10n.chatBlockedUsersMenu),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => _chat.refreshBootstrap(),
         child: ListenableBuilder(
@@ -126,6 +141,16 @@ class _ChatsScreenState extends State<ChatsScreen> {
     );
   }
 
+  void _handleMenuAction(_ChatsMenuAction action) {
+    switch (action) {
+      case _ChatsMenuAction.blockedUsers:
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const BlockedUsersScreen()),
+        );
+        break;
+    }
+  }
+
   List<_ChatHomeItem> _buildHomeItems(
     AppLocalizations l10n,
     List<ChatThreadSummary> groups,
@@ -141,6 +166,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
     ];
   }
 }
+
+enum _ChatsMenuAction { blockedUsers }
 
 sealed class _ChatHomeItem {
   const _ChatHomeItem();

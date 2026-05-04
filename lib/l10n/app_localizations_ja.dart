@@ -311,13 +311,33 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatNotifications => '通知';
 
   @override
+  String get chatBlockedUsersMenu => 'ブロック中のユーザー';
+
+  @override
+  String get chatBlockedUsersTitle => 'ブロック中のユーザー';
+
+  @override
   String get chatBlockedPeople => 'ブロックした人';
+
+  @override
+  String get chatNoBlockedUsers => 'ブロック中のユーザーはいません。';
 
   @override
   String get chatNoBlockedPeople => 'ブロックした人はいません。';
 
   @override
   String get chatUnblock => 'ブロック解除';
+
+  @override
+  String chatUnblockUserTitle(String user) {
+    return '$userのブロックを解除しますか？';
+  }
+
+  @override
+  String get chatUnblockUserBody => 'DMや共有グループメッセージで再び互いに表示されることがあります。';
+
+  @override
+  String get chatUnblockFailed => 'このユーザーのブロックを解除できませんでした。もう一度お試しください。';
 
   @override
   String get chatNotificationsTitle => 'チャット通知';
