@@ -409,6 +409,20 @@ class LocalChatRepository {
         );
   }
 
+  Future<bool?> threadMutedState(String threadId) async {
+    final ownerKey = _currentOwnerCacheKey;
+    if (ownerKey == null) {
+      return null;
+    }
+
+    final row =
+        await (_database.select(_database.chatThreadEntries)
+              ..where((table) => table.ownerCacheKey.equals(ownerKey))
+              ..where((table) => table.threadId.equals(threadId)))
+            .getSingleOrNull();
+    return row?.isMuted;
+  }
+
   Future<void> markThreadRead(String threadId) async {
     final ownerKey = _currentOwnerCacheKey;
     if (ownerKey == null) {
