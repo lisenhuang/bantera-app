@@ -59,6 +59,10 @@ class ChatSessionNotifier extends ChangeNotifier {
   Stream<List<ChatMessageItem>> watchMessages(String threadId) =>
       _localRepository.watchMessages(threadId);
 
+  Future<ChatThreadSummary?> directMessageThreadForUser(String userId) {
+    return _localRepository.directMessageThreadForUser(userId);
+  }
+
   String? localizedErrorText(dynamic l10n) {
     if (_authApiError != null) {
       return localizeAuthApiError(l10n, _authApiError!);

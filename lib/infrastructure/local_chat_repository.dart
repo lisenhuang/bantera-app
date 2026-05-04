@@ -56,6 +56,22 @@ class LocalChatRepository {
     return query.watch().map((rows) => rows.map(_threadFromRow).toList());
   }
 
+  Future<ChatThreadSummary?> directMessageThreadForUser(String userId) async {
+    final ownerKey = _currentOwnerCacheKey;
+    final normalizedUserId = userId.trim();
+    if (ownerKey == null || normalizedUserId.isEmpty) {
+      return null;
+    }
+
+    final row =
+        await (_database.select(_database.chatThreadEntries)
+              ..where((table) => table.ownerCacheKey.equals(ownerKey))
+              ..where((table) => table.section.equals('dm'))
+              ..where((table) => table.otherUserId.equals(normalizedUserId)))
+            .getSingleOrNull();
+    return row == null ? null : _threadFromRow(row);
+  }
+
   Stream<List<ChatUserSummary>> watchOnlineUsers() {
     final ownerKey = _currentOwnerCacheKey;
     if (ownerKey == null) {
