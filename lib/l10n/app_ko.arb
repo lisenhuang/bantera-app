@@ -106,6 +106,15 @@
     }
   },
   "chatBlockUserBody": "차단을 해제할 때까지 DM 보내기와 공유 그룹 메시지에서 서로 보이지 않습니다.",
+  "chatBlockUserSuccess": "{user}님을 차단했습니다.",
+  "@chatBlockUserSuccess": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatBlockUserFailed": "이 사용자를 차단하지 못했습니다. 다시 시도하세요.",
   "chatDeleteDmTitle": "이 DM을 삭제할까요?",
   "chatDeleteDmBody": "목록에서만 제거됩니다. 나중에 새 메시지가 오면 다시 나타날 수 있습니다.",
   "chatMicrophoneRequiredTitle": "마이크가 필요합니다",

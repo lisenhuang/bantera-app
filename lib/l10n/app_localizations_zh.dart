@@ -271,6 +271,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatBlockUserBody => '在解除屏蔽前，你们不会在私信发送和共享群组消息中看到彼此。';
 
   @override
+  String chatBlockUserSuccess(String user) {
+    return '已屏蔽 $user。';
+  }
+
+  @override
+  String get chatBlockUserFailed => '无法屏蔽此用户，请重试。';
+
+  @override
   String get chatDeleteDmTitle => '删除这条私信？';
 
   @override

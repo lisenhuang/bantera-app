@@ -612,6 +612,18 @@ abstract class AppLocalizations {
   /// **'You will stop seeing each other in DM sends and shared group messages until you unblock.'**
   String get chatBlockUserBody;
 
+  /// No description provided for @chatBlockUserSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'{user} has been blocked.'**
+  String chatBlockUserSuccess(String user);
+
+  /// No description provided for @chatBlockUserFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not block this user. Please try again.'**
+  String get chatBlockUserFailed;
+
   /// No description provided for @chatDeleteDmTitle.
   ///
   /// In en, this message translates to:

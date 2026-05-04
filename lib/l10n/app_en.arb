@@ -106,6 +106,15 @@
     }
   },
   "chatBlockUserBody": "You will stop seeing each other in DM sends and shared group messages until you unblock.",
+  "chatBlockUserSuccess": "{user} has been blocked.",
+  "@chatBlockUserSuccess": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatBlockUserFailed": "Could not block this user. Please try again.",
   "chatDeleteDmTitle": "Delete this DM?",
   "chatDeleteDmBody": "This only removes it from your list. A new message can bring it back later.",
   "chatMicrophoneRequiredTitle": "Microphone required",

@@ -209,7 +209,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               isTranscribing: _transcribingIds.contains(message.messageId),
               onPlay: () => _playMessage(message),
               onTranscribe: () => _transcribeMessage(message),
-              onTapSender: _isGroup
+              onTapSender: _isGroup && !message.isMine
                   ? () => _showUserSheet(message.senderUser)
                   : null,
             );
@@ -644,10 +644,11 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    final navigator = Navigator.of(context);
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Column(
@@ -671,23 +672,76 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) =>
-                          ChatConversationScreen.directUser(partner: user),
-                    ),
-                  );
-                },
-                child: Text(l10n.chatMessageAction),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    navigator.push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            ChatConversationScreen.directUser(partner: user),
+                      ),
+                    );
+                  },
+                  child: Text(l10n.chatMessageAction),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    unawaited(_blockGroupUser(user));
+                  },
+                  child: Text(l10n.chatBlockUser),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _blockGroupUser(ChatUserSummary user) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await _confirmAction(
+      title: l10n.chatBlockUserTitle(user.name),
+      body: l10n.chatBlockUserBody,
+    );
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await _chat.blockUser(user.id);
+      final threadId = _threadId;
+      if (threadId != null) {
+        await _chat.loadMessages(threadId);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.chatBlockUserSuccess(user.name))),
+        );
+      }
+    } on AuthApiException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.chatBlockUserFailed)));
+      }
+    }
   }
 
   String? _languageLine(String? identifier, String? display) {
@@ -766,19 +820,13 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isGroup && !message.isMine)
-              GestureDetector(
+            if (isGroup)
+              _SenderHeader(
+                user: message.senderUser,
                 onTap: onTapSender,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    message.senderUser.name,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                color: onTapSender == null
+                    ? theme.colorScheme.onSurfaceVariant
+                    : theme.colorScheme.primary,
               ),
             Row(
               children: [
@@ -853,19 +901,62 @@ class _MessageBubble extends StatelessWidget {
       ),
     );
   }
+}
 
-  static String _formatDuration(int durationMs) {
-    final totalSeconds = (durationMs / 1000).round();
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
+class _SenderHeader extends StatelessWidget {
+  const _SenderHeader({
+    required this.user,
+    required this.color,
+    required this.onTap,
+  });
 
-  static String _formatTimestamp(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+  final ChatUserSummary user;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final row = Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ProfileAvatar(radius: 14, imageUrl: user.avatarUrl),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              user.name,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (onTap == null) {
+      return row;
+    }
+
+    return GestureDetector(onTap: onTap, child: row);
   }
+}
+
+String _formatDuration(int durationMs) {
+  final totalSeconds = (durationMs / 1000).round();
+  final minutes = totalSeconds ~/ 60;
+  final seconds = totalSeconds % 60;
+  return '$minutes:${seconds.toString().padLeft(2, '0')}';
+}
+
+String _formatTimestamp(DateTime time) {
+  final hour = time.hour.toString().padLeft(2, '0');
+  final minute = time.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
 }
 
 class _GroupSettingsScreen extends StatelessWidget {

@@ -281,6 +281,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'You will stop seeing each other in DM sends and shared group messages until you unblock.';
 
   @override
+  String chatBlockUserSuccess(String user) {
+    return '$user has been blocked.';
+  }
+
+  @override
+  String get chatBlockUserFailed =>
+      'Could not block this user. Please try again.';
+
+  @override
   String get chatDeleteDmTitle => 'Delete this DM?';
 
   @override

@@ -106,6 +106,15 @@
     }
   },
   "chatBlockUserBody": "在解除屏蔽前，你们不会在私信发送和共享群组消息中看到彼此。",
+  "chatBlockUserSuccess": "已屏蔽 {user}。",
+  "@chatBlockUserSuccess": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatBlockUserFailed": "无法屏蔽此用户，请重试。",
   "chatDeleteDmTitle": "删除这条私信？",
   "chatDeleteDmBody": "这只会把它从列表中移除。之后有新消息时可能会重新出现。",
   "chatMicrophoneRequiredTitle": "需要麦克风",

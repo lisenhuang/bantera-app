@@ -106,6 +106,15 @@
     }
   },
   "chatBlockUserBody": "ブロックを解除するまで、DM送信や共有グループメッセージで互いに表示されなくなります。",
+  "chatBlockUserSuccess": "{user}をブロックしました。",
+  "@chatBlockUserSuccess": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "chatBlockUserFailed": "このユーザーをブロックできませんでした。もう一度お試しください。",
   "chatDeleteDmTitle": "このDMを削除しますか？",
   "chatDeleteDmBody": "これはリストから削除するだけです。新しいメッセージで後から戻ることがあります。",
   "chatMicrophoneRequiredTitle": "マイクが必要です",
