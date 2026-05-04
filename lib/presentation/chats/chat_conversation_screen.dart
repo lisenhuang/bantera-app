@@ -16,6 +16,7 @@ import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
+import 'chat_menu_item_row.dart';
 
 class ChatConversationScreen extends StatefulWidget {
   const ChatConversationScreen.thread({super.key, required this.thread})
@@ -142,20 +143,29 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   itemBuilder: (context) => [
                     PopupMenuItem(
                       value: _DirectMenuAction.toggleMute,
-                      child: Text(
-                        (widget.thread?.isMuted ?? false)
+                      child: ChatMenuItemRow(
+                        icon: (widget.thread?.isMuted ?? false)
+                            ? Icons.notifications_active_outlined
+                            : Icons.notifications_off_outlined,
+                        label: (widget.thread?.isMuted ?? false)
                             ? l10n.chatEnableNotifications
                             : l10n.chatMuteNotifications,
                       ),
                     ),
                     PopupMenuItem(
                       value: _DirectMenuAction.block,
-                      child: Text(l10n.chatBlockUser),
+                      child: ChatMenuItemRow(
+                        icon: Icons.block,
+                        label: l10n.chatBlockUser,
+                      ),
                     ),
                     if (_threadId != null)
                       PopupMenuItem(
                         value: _DirectMenuAction.deleteDm,
-                        child: Text(l10n.chatDeleteDm),
+                        child: ChatMenuItemRow(
+                          icon: Icons.delete_outline,
+                          label: l10n.chatDeleteDm,
+                        ),
                       ),
                   ],
                 ),
