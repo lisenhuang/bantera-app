@@ -106,6 +106,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                               ),
                               _ChatThreadItem() => _ThreadCard(
                                 thread: item.thread,
+                                isOnline: item.isOnline,
                                 onTap: () => Navigator.of(context).push(
                                   MaterialPageRoute<void>(
                                     builder: (_) =>
@@ -157,13 +158,38 @@ class _ChatsScreenState extends State<ChatsScreen> {
     List<ChatUserSummary> onlineUsers,
     List<ChatThreadSummary> dms,
   ) {
+    final onlineUserIds = onlineUsers.map((user) => user.id).toSet();
+    final dmUserIds = dms
+        .map((thread) => thread.otherUser?.id)
+        .whereType<String>()
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    final visibleOnlineUsers = onlineUsers
+        .where((user) => !dmUserIds.contains(user.id))
+        .toList();
+    final onlineDms = dms.where((thread) => _isDmOnline(thread, onlineUserIds));
+    final offlineDms = dms.where(
+      (thread) => !_isDmOnline(thread, onlineUserIds),
+    );
+    final sortedDms = [...onlineDms, ...offlineDms];
+
     return <_ChatHomeItem>[
       _ChatSectionHeaderItem(l10n.chatOnlineSection),
       ...groups.map((thread) => _ChatThreadItem(thread)),
-      ...onlineUsers.map((user) => _ChatUserItem(user)),
+      ...visibleOnlineUsers.map((user) => _ChatUserItem(user)),
       _ChatSectionHeaderItem(l10n.chatDirectMessagesSection),
-      ...dms.map((thread) => _ChatThreadItem(thread)),
+      ...sortedDms.map(
+        (thread) => _ChatThreadItem(
+          thread,
+          isOnline: _isDmOnline(thread, onlineUserIds),
+        ),
+      ),
     ];
+  }
+
+  bool _isDmOnline(ChatThreadSummary thread, Set<String> onlineUserIds) {
+    final userId = thread.otherUser?.id;
+    return userId != null && onlineUserIds.contains(userId);
   }
 }
 
@@ -180,9 +206,10 @@ class _ChatSectionHeaderItem extends _ChatHomeItem {
 }
 
 class _ChatThreadItem extends _ChatHomeItem {
-  const _ChatThreadItem(this.thread);
+  const _ChatThreadItem(this.thread, {this.isOnline = false});
 
   final ChatThreadSummary thread;
+  final bool isOnline;
 }
 
 class _ChatUserItem extends _ChatHomeItem {
@@ -192,9 +219,14 @@ class _ChatUserItem extends _ChatHomeItem {
 }
 
 class _ThreadCard extends StatelessWidget {
-  const _ThreadCard({required this.thread, required this.onTap});
+  const _ThreadCard({
+    required this.thread,
+    required this.isOnline,
+    required this.onTap,
+  });
 
   final ChatThreadSummary thread;
+  final bool isOnline;
   final VoidCallback onTap;
 
   @override
@@ -224,7 +256,20 @@ class _ThreadCard extends StatelessWidget {
                 ),
                 child: const Icon(Icons.groups_rounded),
               )
-            : ProfileAvatar(radius: 22, imageUrl: thread.avatarUrl),
+            : Stack(
+                children: [
+                  ProfileAvatar(radius: 22, imageUrl: thread.avatarUrl),
+                  if (isOnline)
+                    const Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: CircleAvatar(
+                        radius: 6,
+                        backgroundColor: Colors.green,
+                      ),
+                    ),
+                ],
+              ),
         title: Row(
           children: [
             Expanded(
