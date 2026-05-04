@@ -483,25 +483,10 @@ private final class BanteraVideoProcessingBridge {
     Task {
       do {
         let inputURL = URL(fileURLWithPath: inputPath)
-        let response: [String: Any]
-        if BanteraIosVersionRouting.useSpeechTranscriberRoutingPath {
-          if #available(iOS 26.0, *) {
-            response = try await BanteraVideoPreparationService().transcribeRecordedAudio(
-              inputURL: inputURL,
-              localeIdentifier: localeIdentifier
-            )
-          } else {
-            response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
-              inputURL: inputURL,
-              localeIdentifier: localeIdentifier
-            )
-          }
-        } else {
-          response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
-            inputURL: inputURL,
-            localeIdentifier: localeIdentifier
-          )
-        }
+        let response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
+          inputURL: inputURL,
+          localeIdentifier: localeIdentifier
+        )
         DispatchQueue.main.async {
           result(response)
         }

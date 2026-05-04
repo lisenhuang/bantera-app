@@ -30,7 +30,8 @@ enum BanteraIosVersionRouting {
     devMockIosMajorVersion ?? realIosMajorVersion
   }
 
-  /// `BanteraVideoPreparationService` / SpeechTranscriber path (iOS 26+ product behavior).
+  /// `BanteraVideoPreparationService` / SpeechTranscriber path for upload preparation.
+  /// Short recorded audio transcription uses SFSpeechRecognizer for stability.
   static var useSpeechTranscriberRoutingPath: Bool {
     effectiveIosMajorVersion >= 26 && realIosMajorVersion >= 26
   }
