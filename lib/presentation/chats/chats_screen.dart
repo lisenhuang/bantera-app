@@ -7,6 +7,7 @@ import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_conversation_screen.dart';
+import 'chat_menu_item_row.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -40,7 +41,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: _ChatsMenuAction.blockedUsers,
-                child: Text(l10n.chatBlockedUsersMenu),
+                child: ChatMenuItemRow(
+                  icon: Icons.person_off_outlined,
+                  label: l10n.chatBlockedUsersMenu,
+                ),
               ),
             ],
           ),
