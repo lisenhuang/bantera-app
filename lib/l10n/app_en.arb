@@ -527,6 +527,8 @@
   "savedCuesDeleteAllConfirmBody": "All saved cues will be permanently removed.",
   "updateAlertTitle": "Update Available",
   "updateAlertMessage": "A new version of Bantera is available. Update now to get the latest features and improvements.",
+  "updateCurrentVersionLabel": "Current version",
+  "updateAppStoreVersionLabel": "App Store version",
   "updateAlertUpdate": "Update",
   "updateAlertLater": "Later",
   "checkForUpdateButton": "Check for Updates",

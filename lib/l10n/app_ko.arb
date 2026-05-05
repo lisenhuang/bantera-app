@@ -421,6 +421,8 @@
   "savedCuesDeleteAllConfirmBody": "저장된 구간이 모두 영구적으로 삭제됩니다.",
   "updateAlertTitle": "업데이트 가능",
   "updateAlertMessage": "새로운 버전의 Bantera가 출시되었습니다. 지금 업데이트하여 최신 기능과 개선 사항을 누려보세요.",
+  "updateCurrentVersionLabel": "현재 버전",
+  "updateAppStoreVersionLabel": "App Store 버전",
   "updateAlertUpdate": "업데이트",
   "updateAlertLater": "나중에",
   "checkForUpdateButton": "업데이트 확인",

@@ -1304,6 +1304,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'A new version of Bantera is available. Update now to get the latest features and improvements.';
 
   @override
+  String get updateCurrentVersionLabel => 'Current version';
+
+  @override
+  String get updateAppStoreVersionLabel => 'App Store version';
+
+  @override
   String get updateAlertUpdate => 'Update';
 
   @override

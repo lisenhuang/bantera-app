@@ -7,10 +7,17 @@ class AppUpdateService {
   AppUpdateService._();
 
   static const String _appStoreId = '6761799720';
-  static const String _storeUrl =
-      'https://apps.apple.com/app/id$_appStoreId';
+  static const String _storeUrl = 'https://apps.apple.com/app/id$_appStoreId';
 
-  static Future<({bool needsUpdate, String storeUrl, String currentVersion, String? storeVersion})?> checkForUpdate() async {
+  static Future<
+    ({
+      bool needsUpdate,
+      String storeUrl,
+      String currentVersion,
+      String storeVersion,
+    })?
+  >
+  checkForUpdate() async {
     try {
       final info = await PackageInfo.fromPlatform();
       final currentVersion = info.version;
@@ -43,10 +50,14 @@ class AppUpdateService {
   }
 
   static bool _isNewer(String storeVersion, String currentVersion) {
-    final storeParts =
-        storeVersion.split('.').map((s) => int.tryParse(s) ?? 0).toList();
-    final currentParts =
-        currentVersion.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+    final storeParts = storeVersion
+        .split('.')
+        .map((s) => int.tryParse(s) ?? 0)
+        .toList();
+    final currentParts = currentVersion
+        .split('.')
+        .map((s) => int.tryParse(s) ?? 0)
+        .toList();
     final len = storeParts.length > currentParts.length
         ? storeParts.length
         : currentParts.length;

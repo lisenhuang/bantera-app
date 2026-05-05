@@ -1224,6 +1224,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateAlertMessage => 'Bantera 有新版本可用。立即更新以获取最新功能和改进。';
 
   @override
+  String get updateCurrentVersionLabel => '当前版本';
+
+  @override
+  String get updateAppStoreVersionLabel => 'App Store 版本';
+
+  @override
   String get updateAlertUpdate => '更新';
 
   @override

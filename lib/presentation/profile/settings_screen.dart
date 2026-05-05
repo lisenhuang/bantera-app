@@ -83,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
       if (!result.needsUpdate) {
-        _showUpToDateDialog(result.currentVersion);
+        _showUpToDateDialog(result.currentVersion, result.storeVersion);
       } else {
         _showUpdateDialog(
           result.storeUrl,
@@ -98,13 +98,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showUpToDateDialog(String version) {
+  void _showUpToDateDialog(String currentVersion, String storeVersion) {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.upToDateAlertTitle),
-        content: Text(l10n.upToDateAlertMessage(version)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.upToDateAlertMessage(currentVersion)),
+            _buildVersionDetails(l10n, currentVersion, storeVersion),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -118,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showUpdateDialog(
     String storeUrl,
     String currentVersion,
-    String? storeVersion,
+    String storeVersion,
   ) {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
@@ -130,14 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.updateAlertMessage),
-            if (storeVersion != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'v$currentVersion → v$storeVersion',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
+            _buildVersionDetails(l10n, currentVersion, storeVersion),
           ],
         ),
         actions: [
@@ -154,6 +154,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
             child: Text(l10n.updateAlertUpdate),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionDetails(
+    AppLocalizations l10n,
+    String currentVersion,
+    String storeVersion,
+  ) {
+    final style = Theme.of(context).textTheme.bodySmall;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${l10n.updateCurrentVersionLabel}: v$currentVersion',
+            style: style,
+          ),
+          Text(
+            '${l10n.updateAppStoreVersionLabel}: v$storeVersion',
+            style: style,
           ),
         ],
       ),

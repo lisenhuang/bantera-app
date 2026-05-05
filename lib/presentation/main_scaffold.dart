@@ -71,6 +71,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.updateAlertTitle),
         content: Text(l10n.updateAlertMessage),

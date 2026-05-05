@@ -2418,6 +2418,18 @@ abstract class AppLocalizations {
   /// **'A new version of Bantera is available. Update now to get the latest features and improvements.'**
   String get updateAlertMessage;
 
+  /// No description provided for @updateCurrentVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current version'**
+  String get updateCurrentVersionLabel;
+
+  /// No description provided for @updateAppStoreVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store version'**
+  String get updateAppStoreVersionLabel;
+
   /// No description provided for @updateAlertUpdate.
   ///
   /// In en, this message translates to:

@@ -1246,6 +1246,12 @@ class AppLocalizationsKo extends AppLocalizations {
       '새로운 버전의 Bantera가 출시되었습니다. 지금 업데이트하여 최신 기능과 개선 사항을 누려보세요.';
 
   @override
+  String get updateCurrentVersionLabel => '현재 버전';
+
+  @override
+  String get updateAppStoreVersionLabel => 'App Store 버전';
+
+  @override
   String get updateAlertUpdate => '업데이트';
 
   @override

@@ -421,6 +421,8 @@
   "savedCuesDeleteAllConfirmBody": "所有已保存的片段将被永久删除。",
   "updateAlertTitle": "有新版本可用",
   "updateAlertMessage": "Bantera 有新版本可用。立即更新以获取最新功能和改进。",
+  "updateCurrentVersionLabel": "当前版本",
+  "updateAppStoreVersionLabel": "App Store 版本",
   "updateAlertUpdate": "更新",
   "updateAlertLater": "稍后",
   "checkForUpdateButton": "检查更新",

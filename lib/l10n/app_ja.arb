@@ -421,6 +421,8 @@
   "savedCuesDeleteAllConfirmBody": "保存したキューがすべて完全に削除されます。",
   "updateAlertTitle": "アップデートがあります",
   "updateAlertMessage": "Bantera の新しいバージョンが利用可能です。今すぐアップデートして最新の機能と改善をお楽しみください。",
+  "updateCurrentVersionLabel": "現在のバージョン",
+  "updateAppStoreVersionLabel": "App Store のバージョン",
   "updateAlertUpdate": "アップデート",
   "updateAlertLater": "後で",
   "checkForUpdateButton": "アップデートを確認",

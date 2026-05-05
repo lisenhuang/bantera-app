@@ -1240,6 +1240,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'Bantera の新しいバージョンが利用可能です。今すぐアップデートして最新の機能と改善をお楽しみください。';
 
   @override
+  String get updateCurrentVersionLabel => '現在のバージョン';
+
+  @override
+  String get updateAppStoreVersionLabel => 'App Store のバージョン';
+
+  @override
   String get updateAlertUpdate => 'アップデート';
 
   @override
