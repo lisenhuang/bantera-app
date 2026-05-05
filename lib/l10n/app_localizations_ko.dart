@@ -48,10 +48,65 @@ class AppLocalizationsKo extends AppLocalizations {
   String get validationEnterPassword => '비밀번호를 입력하세요.';
 
   @override
-  String get onboardingTitle => '어떤 언어를\n배우고 있나요?';
+  String get onboardingTitle => '프로필 설정';
 
   @override
-  String get onboardingSubtitle => '맞춤 콘텐츠를 보여 드리기 위해 사용합니다.';
+  String get onboardingSubtitle => 'Bantera가 연습과 채팅을 맞춤 설정하는 데 사용합니다.';
+
+  @override
+  String get onboardingNameTitle => '어떤 이름으로 표시할까요?';
+
+  @override
+  String get onboardingNameSubtitle =>
+      'Apple에서 이름을 제공한 경우 미리 입력했습니다. 지금 변경할 수 있습니다.';
+
+  @override
+  String get onboardingClearName => '이름 지우기';
+
+  @override
+  String get onboardingNativeLanguageTitle => '모국어는 무엇인가요?';
+
+  @override
+  String get onboardingNativeLanguageSubtitle => '번역과 언어 그룹에 사용합니다.';
+
+  @override
+  String get onboardingLearningLanguageTitle => '어떤 언어를 배우고 있나요?';
+
+  @override
+  String get onboardingLearningLanguageSubtitle => '연습 콘텐츠와 학습 그룹에 사용합니다.';
+
+  @override
+  String get onboardingAvatarTitle => '프로필 이미지 추가';
+
+  @override
+  String get onboardingAvatarSubtitle => '사진을 선택하거나 계속 진행하면 Bantera가 생성합니다.';
+
+  @override
+  String get onboardingChoosePhoto => '사진 선택';
+
+  @override
+  String get onboardingChangePhoto => '사진 변경';
+
+  @override
+  String get onboardingUseGeneratedAvatar => '생성된 아바타 사용';
+
+  @override
+  String get onboardingChooseLanguage => '언어 선택';
+
+  @override
+  String get onboardingBack => '뒤로';
+
+  @override
+  String get onboardingFinish => '완료';
+
+  @override
+  String get onboardingLoadingProfile => '프로필 불러오는 중...';
+
+  @override
+  String get onboardingSavingProfile => '프로필 저장 중...';
+
+  @override
+  String get onboardingLoadFailed => '문제가 발생했습니다. 다시 시도하세요.';
 
   @override
   String get onboardingSearchHint => '언어 검색…';

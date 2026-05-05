@@ -49,11 +49,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationEnterPassword => 'Enter your password.';
 
   @override
-  String get onboardingTitle => 'What language are\nyou learning?';
+  String get onboardingTitle => 'Set up your profile';
 
   @override
   String get onboardingSubtitle =>
-      'We\'ll use this to show you the right content.';
+      'This helps Bantera personalize practice and chat.';
+
+  @override
+  String get onboardingNameTitle => 'What should people call you?';
+
+  @override
+  String get onboardingNameSubtitle =>
+      'We filled this from your account when Apple provided it. You can change it now.';
+
+  @override
+  String get onboardingClearName => 'Clear name';
+
+  @override
+  String get onboardingNativeLanguageTitle => 'What is your native language?';
+
+  @override
+  String get onboardingNativeLanguageSubtitle =>
+      'Bantera uses this for translation and language groups.';
+
+  @override
+  String get onboardingLearningLanguageTitle =>
+      'What language are you learning?';
+
+  @override
+  String get onboardingLearningLanguageSubtitle =>
+      'This controls practice content and learning groups.';
+
+  @override
+  String get onboardingAvatarTitle => 'Add a profile image';
+
+  @override
+  String get onboardingAvatarSubtitle =>
+      'Choose a photo, or continue and Bantera will generate one for you.';
+
+  @override
+  String get onboardingChoosePhoto => 'Choose Photo';
+
+  @override
+  String get onboardingChangePhoto => 'Change Photo';
+
+  @override
+  String get onboardingUseGeneratedAvatar => 'Use generated avatar instead';
+
+  @override
+  String get onboardingChooseLanguage => 'Choose language';
+
+  @override
+  String get onboardingBack => 'Back';
+
+  @override
+  String get onboardingFinish => 'Finish';
+
+  @override
+  String get onboardingLoadingProfile => 'Loading profile...';
+
+  @override
+  String get onboardingSavingProfile => 'Saving profile...';
+
+  @override
+  String get onboardingLoadFailed => 'Something went wrong. Please try again.';
 
   @override
   String get onboardingSearchHint => 'Search languages…';

@@ -183,14 +183,122 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTitle.
   ///
   /// In en, this message translates to:
-  /// **'What language are\nyou learning?'**
+  /// **'Set up your profile'**
   String get onboardingTitle;
 
   /// No description provided for @onboardingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We\'ll use this to show you the right content.'**
+  /// **'This helps Bantera personalize practice and chat.'**
   String get onboardingSubtitle;
+
+  /// No description provided for @onboardingNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What should people call you?'**
+  String get onboardingNameTitle;
+
+  /// No description provided for @onboardingNameSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We filled this from your account when Apple provided it. You can change it now.'**
+  String get onboardingNameSubtitle;
+
+  /// No description provided for @onboardingClearName.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear name'**
+  String get onboardingClearName;
+
+  /// No description provided for @onboardingNativeLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your native language?'**
+  String get onboardingNativeLanguageTitle;
+
+  /// No description provided for @onboardingNativeLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera uses this for translation and language groups.'**
+  String get onboardingNativeLanguageSubtitle;
+
+  /// No description provided for @onboardingLearningLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What language are you learning?'**
+  String get onboardingLearningLanguageTitle;
+
+  /// No description provided for @onboardingLearningLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This controls practice content and learning groups.'**
+  String get onboardingLearningLanguageSubtitle;
+
+  /// No description provided for @onboardingAvatarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a profile image'**
+  String get onboardingAvatarTitle;
+
+  /// No description provided for @onboardingAvatarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo, or continue and Bantera will generate one for you.'**
+  String get onboardingAvatarSubtitle;
+
+  /// No description provided for @onboardingChoosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Photo'**
+  String get onboardingChoosePhoto;
+
+  /// No description provided for @onboardingChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Photo'**
+  String get onboardingChangePhoto;
+
+  /// No description provided for @onboardingUseGeneratedAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Use generated avatar instead'**
+  String get onboardingUseGeneratedAvatar;
+
+  /// No description provided for @onboardingChooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose language'**
+  String get onboardingChooseLanguage;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get onboardingFinish;
+
+  /// No description provided for @onboardingLoadingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading profile...'**
+  String get onboardingLoadingProfile;
+
+  /// No description provided for @onboardingSavingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving profile...'**
+  String get onboardingSavingProfile;
+
+  /// No description provided for @onboardingLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get onboardingLoadFailed;
 
   /// No description provided for @onboardingSearchHint.
   ///

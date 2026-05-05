@@ -233,6 +233,77 @@ class UserProfileNotifier extends ChangeNotifier {
     }
   }
 
+  Future<bool> completeInitialProfile({
+    required String name,
+    required String nativeLanguage,
+    required String learningLanguage,
+  }) async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) {
+      _setError('Sign in again to save your profile.');
+      return false;
+    }
+
+    final normalizedName = name.trim();
+    final normalizedNativeLanguage = nativeLanguage.trim();
+    final normalizedLearningLanguage = learningLanguage.trim();
+    if (normalizedName.isEmpty ||
+        normalizedName.length > 80 ||
+        normalizedNativeLanguage.isEmpty ||
+        normalizedNativeLanguage.length > 35 ||
+        normalizedLearningLanguage.isEmpty ||
+        normalizedLearningLanguage.length > 35) {
+      _setError('Complete your name, native language, and learning language.');
+      return false;
+    }
+
+    _isSavingProfile = true;
+    _plainErrorMessage = null;
+    _authApiError = null;
+    notifyListeners();
+
+    try {
+      final updatedProfile = await _apiClient.updateMyProfile(
+        accessToken: session.accessToken,
+        name: normalizedName,
+        nativeLanguage: normalizedNativeLanguage,
+        learningLanguage: normalizedLearningLanguage,
+      );
+      await _applyRemoteProfile(session.cacheKey, updatedProfile);
+      return true;
+    } on AuthApiException catch (error) {
+      _authApiError = error;
+      _plainErrorMessage = null;
+      return false;
+    } finally {
+      _isSavingProfile = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> requestGeneratedAvatar() async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null) {
+      _setError('Sign in again to update your profile image.');
+      return false;
+    }
+
+    _plainErrorMessage = null;
+    _authApiError = null;
+    try {
+      await _apiClient.requestGeneratedProfileImage(
+        accessToken: session.accessToken,
+      );
+      unawaited(_pollForGeneratedAvatar(session.cacheKey));
+      return true;
+    } on AuthApiException catch (error) {
+      _authApiError = error;
+      _plainErrorMessage = null;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> updateTranslationLanguage(String translationLanguage) async {
     final session = AuthSessionNotifier.instance.session;
     if (session == null) {
@@ -365,6 +436,22 @@ class UserProfileNotifier extends ChangeNotifier {
     }
 
     await loadProfile(force: true, showLoadingState: _profile == null);
+  }
+
+  Future<void> _pollForGeneratedAvatar(String cacheKey) async {
+    for (var attempt = 0; attempt < 12; attempt++) {
+      await Future<void>.delayed(const Duration(seconds: 5));
+      if (!_isCurrentCacheKey(cacheKey)) {
+        return;
+      }
+
+      final previousAvatarUrl = _profile?.avatarUrl?.trim() ?? '';
+      await loadProfile(force: true, showLoadingState: false);
+      final nextAvatarUrl = _profile?.avatarUrl?.trim() ?? '';
+      if (nextAvatarUrl.isNotEmpty && nextAvatarUrl != previousAvatarUrl) {
+        return;
+      }
+    }
   }
 
   Future<void> _applyRemoteProfile(

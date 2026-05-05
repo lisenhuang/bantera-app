@@ -48,10 +48,64 @@ class AppLocalizationsZh extends AppLocalizations {
   String get validationEnterPassword => '请输入密码。';
 
   @override
-  String get onboardingTitle => '你在学习\n哪种语言？';
+  String get onboardingTitle => '设置你的资料';
 
   @override
-  String get onboardingSubtitle => '我们将据此为你展示合适的内容。';
+  String get onboardingSubtitle => '这会帮助 Bantera 个性化练习和聊天体验。';
+
+  @override
+  String get onboardingNameTitle => '别人应该怎么称呼你？';
+
+  @override
+  String get onboardingNameSubtitle => '如果 Apple 提供了姓名，我们已经为你填好。你现在可以修改。';
+
+  @override
+  String get onboardingClearName => '清空姓名';
+
+  @override
+  String get onboardingNativeLanguageTitle => '你的母语是什么？';
+
+  @override
+  String get onboardingNativeLanguageSubtitle => 'Bantera 会用它来处理翻译和语言群组。';
+
+  @override
+  String get onboardingLearningLanguageTitle => '你正在学习哪种语言？';
+
+  @override
+  String get onboardingLearningLanguageSubtitle => '这会决定练习内容和学习群组。';
+
+  @override
+  String get onboardingAvatarTitle => '添加头像';
+
+  @override
+  String get onboardingAvatarSubtitle => '你可以选择照片，也可以继续，让 Bantera 为你生成一个头像。';
+
+  @override
+  String get onboardingChoosePhoto => '选择照片';
+
+  @override
+  String get onboardingChangePhoto => '更换照片';
+
+  @override
+  String get onboardingUseGeneratedAvatar => '改用生成头像';
+
+  @override
+  String get onboardingChooseLanguage => '选择语言';
+
+  @override
+  String get onboardingBack => '返回';
+
+  @override
+  String get onboardingFinish => '完成';
+
+  @override
+  String get onboardingLoadingProfile => '正在加载资料...';
+
+  @override
+  String get onboardingSavingProfile => '正在保存资料...';
+
+  @override
+  String get onboardingLoadFailed => '出了点问题，请重试。';
 
   @override
   String get onboardingSearchHint => '搜索语言…';

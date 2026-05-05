@@ -48,10 +48,64 @@ class AppLocalizationsJa extends AppLocalizations {
   String get validationEnterPassword => 'パスワードを入力してください。';
 
   @override
-  String get onboardingTitle => '学習中の言語は\n何ですか？';
+  String get onboardingTitle => 'プロフィールを設定';
 
   @override
-  String get onboardingSubtitle => '適切なコンテンツを表示するために使います。';
+  String get onboardingSubtitle => 'Banteraの練習とチャットをあなたに合わせます。';
+
+  @override
+  String get onboardingNameTitle => '表示名を設定しましょう';
+
+  @override
+  String get onboardingNameSubtitle => 'Appleから名前が提供された場合は入力済みです。ここで変更できます。';
+
+  @override
+  String get onboardingClearName => '名前をクリア';
+
+  @override
+  String get onboardingNativeLanguageTitle => '母語は何ですか？';
+
+  @override
+  String get onboardingNativeLanguageSubtitle => '翻訳と言語グループに使います。';
+
+  @override
+  String get onboardingLearningLanguageTitle => '学習中の言語は何ですか？';
+
+  @override
+  String get onboardingLearningLanguageSubtitle => '練習コンテンツと学習グループに使います。';
+
+  @override
+  String get onboardingAvatarTitle => 'プロフィール画像を追加';
+
+  @override
+  String get onboardingAvatarSubtitle => '写真を選ぶか、このまま進むとBanteraが生成します。';
+
+  @override
+  String get onboardingChoosePhoto => '写真を選択';
+
+  @override
+  String get onboardingChangePhoto => '写真を変更';
+
+  @override
+  String get onboardingUseGeneratedAvatar => '生成アバターを使う';
+
+  @override
+  String get onboardingChooseLanguage => '言語を選択';
+
+  @override
+  String get onboardingBack => '戻る';
+
+  @override
+  String get onboardingFinish => '完了';
+
+  @override
+  String get onboardingLoadingProfile => 'プロフィールを読み込み中...';
+
+  @override
+  String get onboardingSavingProfile => 'プロフィールを保存中...';
+
+  @override
+  String get onboardingLoadFailed => '問題が発生しました。もう一度お試しください。';
 
   @override
   String get onboardingSearchHint => '言語を検索…';

@@ -134,8 +134,10 @@ class AppRoot extends StatelessWidget {
           );
         }
 
-        final lang = profile.learningLanguage?.trim() ?? '';
-        if (lang.isEmpty) {
+        final profileName = profile.profile?.name.trim() ?? '';
+        final nativeLang = profile.nativeLanguage?.trim() ?? '';
+        final learningLang = profile.learningLanguage?.trim() ?? '';
+        if (profileName.isEmpty || nativeLang.isEmpty || learningLang.isEmpty) {
           return const LearningLanguageSetupScreen();
         }
 

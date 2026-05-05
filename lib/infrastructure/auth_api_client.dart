@@ -183,6 +183,17 @@ class AuthApiClient {
     return _profileFromJson(json);
   }
 
+  Future<void> requestGeneratedProfileImage({
+    required String accessToken,
+  }) async {
+    await _sendJsonRequest(
+      method: 'POST',
+      path: '/api/me/profile-image/generate',
+      accessToken: accessToken,
+      payload: const <String, dynamic>{},
+    );
+  }
+
   Future<UserProfile> uploadMyProfileImage({
     required String accessToken,
     required File imageFile,
