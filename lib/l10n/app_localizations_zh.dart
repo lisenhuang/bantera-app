@@ -81,6 +81,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingAvatarSubtitle => '你可以选择照片，也可以继续，让 Bantera 为你生成一个头像。';
 
   @override
+  String get onboardingAvatarGenderTitle => '生成你的头像';
+
+  @override
+  String get onboardingAvatarGenderBody =>
+      '请选择 Bantera 生成头像的方式。我们不会保存这个选择，它只用于生成这张头像。';
+
+  @override
+  String get onboardingAvatarGenderMale => '男';
+
+  @override
+  String get onboardingAvatarGenderFemale => '女';
+
+  @override
   String get onboardingChoosePhoto => '选择照片';
 
   @override

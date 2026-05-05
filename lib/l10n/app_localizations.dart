@@ -246,6 +246,30 @@ abstract class AppLocalizations {
   /// **'Choose a photo, or continue and Bantera will generate one for you.'**
   String get onboardingAvatarSubtitle;
 
+  /// No description provided for @onboardingAvatarGenderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate your profile image'**
+  String get onboardingAvatarGenderTitle;
+
+  /// No description provided for @onboardingAvatarGenderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how Bantera should generate your profile image. We do not store this choice; it is only used for this image.'**
+  String get onboardingAvatarGenderBody;
+
+  /// No description provided for @onboardingAvatarGenderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get onboardingAvatarGenderMale;
+
+  /// No description provided for @onboardingAvatarGenderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get onboardingAvatarGenderFemale;
+
   /// No description provided for @onboardingChoosePhoto.
   ///
   /// In en, this message translates to:

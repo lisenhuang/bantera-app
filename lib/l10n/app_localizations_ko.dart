@@ -82,6 +82,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onboardingAvatarSubtitle => '사진을 선택하거나 계속 진행하면 Bantera가 생성합니다.';
 
   @override
+  String get onboardingAvatarGenderTitle => '프로필 이미지 생성';
+
+  @override
+  String get onboardingAvatarGenderBody =>
+      'Bantera가 프로필 이미지를 생성할 방식을 선택하세요. 이 선택은 저장되지 않으며 이 이미지 생성에만 사용됩니다.';
+
+  @override
+  String get onboardingAvatarGenderMale => '남성';
+
+  @override
+  String get onboardingAvatarGenderFemale => '여성';
+
+  @override
   String get onboardingChoosePhoto => '사진 선택';
 
   @override

@@ -88,6 +88,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose a photo, or continue and Bantera will generate one for you.';
 
   @override
+  String get onboardingAvatarGenderTitle => 'Generate your profile image';
+
+  @override
+  String get onboardingAvatarGenderBody =>
+      'Choose how Bantera should generate your profile image. We do not store this choice; it is only used for this image.';
+
+  @override
+  String get onboardingAvatarGenderMale => 'Male';
+
+  @override
+  String get onboardingAvatarGenderFemale => 'Female';
+
+  @override
   String get onboardingChoosePhoto => 'Choose Photo';
 
   @override

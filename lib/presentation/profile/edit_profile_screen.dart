@@ -174,6 +174,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           excludeZhTwForLearning: false,
                           currentIdentifier: _profile.nativeLanguage,
                           onSelected: _saveNativeLanguage,
+                          showClearOption: false,
                           showComingSoonFooter: false,
                         ),
                 ),

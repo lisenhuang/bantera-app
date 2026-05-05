@@ -281,7 +281,7 @@ class UserProfileNotifier extends ChangeNotifier {
     }
   }
 
-  Future<bool> requestGeneratedAvatar() async {
+  Future<bool> requestGeneratedAvatar({required String avatarGender}) async {
     final session = AuthSessionNotifier.instance.session;
     if (session == null) {
       _setError('Sign in again to update your profile image.');
@@ -293,6 +293,7 @@ class UserProfileNotifier extends ChangeNotifier {
     try {
       await _apiClient.requestGeneratedProfileImage(
         accessToken: session.accessToken,
+        avatarGender: avatarGender,
       );
       unawaited(_pollForGeneratedAvatar(session.cacheKey));
       return true;

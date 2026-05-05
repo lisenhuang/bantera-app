@@ -124,6 +124,12 @@ class _LearningLanguageSetupScreenState
     final learningLocale = _learningLocale;
     if (nativeLocale == null || learningLocale == null) return;
 
+    final image = _selectedImage;
+    final avatarGender = image == null
+        ? await _chooseGeneratedAvatarGender()
+        : null;
+    if (!mounted || (image == null && avatarGender == null)) return;
+
     setState(() {
       _isSaving = true;
       _error = null;
@@ -131,7 +137,6 @@ class _LearningLanguageSetupScreenState
 
     final profile = UserProfileNotifier.instance;
     profile.clearError();
-    final image = _selectedImage;
     if (image != null) {
       final uploaded = await profile.uploadAvatar(image);
       if (!uploaded) {
@@ -163,12 +168,43 @@ class _LearningLanguageSetupScreenState
     }
 
     if (image == null) {
-      await profile.requestGeneratedAvatar();
+      await profile.requestGeneratedAvatar(
+        avatarGender: avatarGender!.apiValue,
+      );
     }
 
     if (mounted) {
       setState(() => _isSaving = false);
     }
+  }
+
+  Future<_GeneratedAvatarGender?> _chooseGeneratedAvatarGender() {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<_GeneratedAvatarGender>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Text(l10n.onboardingAvatarGenderTitle),
+            content: Text(l10n.onboardingAvatarGenderBody),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(_GeneratedAvatarGender.male),
+                child: Text(l10n.onboardingAvatarGenderMale),
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(_GeneratedAvatarGender.female),
+                child: Text(l10n.onboardingAvatarGenderFemale),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _pickImage() async {
@@ -303,6 +339,15 @@ class _LearningLanguageSetupScreenState
       ),
     };
   }
+}
+
+enum _GeneratedAvatarGender {
+  male('male'),
+  female('female');
+
+  const _GeneratedAvatarGender(this.apiValue);
+
+  final String apiValue;
 }
 
 class _ProgressHeader extends StatelessWidget {

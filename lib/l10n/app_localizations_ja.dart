@@ -81,6 +81,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingAvatarSubtitle => '写真を選ぶか、このまま進むとBanteraが生成します。';
 
   @override
+  String get onboardingAvatarGenderTitle => 'プロフィール画像を生成';
+
+  @override
+  String get onboardingAvatarGenderBody =>
+      'Banteraがプロフィール画像を生成する方法を選んでください。この選択は保存されず、この画像の生成にのみ使われます。';
+
+  @override
+  String get onboardingAvatarGenderMale => '男性';
+
+  @override
+  String get onboardingAvatarGenderFemale => '女性';
+
+  @override
   String get onboardingChoosePhoto => '写真を選択';
 
   @override

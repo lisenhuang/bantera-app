@@ -185,12 +185,13 @@ class AuthApiClient {
 
   Future<void> requestGeneratedProfileImage({
     required String accessToken,
+    required String avatarGender,
   }) async {
     await _sendJsonRequest(
       method: 'POST',
       path: '/api/me/profile-image/generate',
       accessToken: accessToken,
-      payload: const <String, dynamic>{},
+      payload: <String, dynamic>{'avatarGender': avatarGender},
     );
   }
 
