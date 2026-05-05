@@ -1410,6 +1410,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await _deleteCueTempRecordingFile(prev);
     }
 
+    setState(() {
+      _cueRecordingTempPath = path;
+      _isCueRecording = true;
+    });
+
     try {
       await _cueRecorder.start(
         const RecordConfig(
@@ -1432,12 +1437,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           unawaited(_stopCueRecordingAndProcess());
         }
       });
-      setState(() {
-        _cueRecordingTempPath = path;
-        _isCueRecording = true;
-      });
     } catch (_) {
       if (!mounted) return;
+      setState(() {
+        _cueRecordingTempPath = null;
+        _isCueRecording = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_l10n.compareCouldNotStartRecording)),
       );

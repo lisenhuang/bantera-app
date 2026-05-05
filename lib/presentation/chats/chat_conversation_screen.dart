@@ -44,6 +44,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   final Set<String> _translatingIds = <String>{};
   bool _isRecording = false;
   bool _isSending = false;
+  bool _isPressing = false;
   String? _currentPlayingMessageId;
   Duration _currentPlaybackPosition = Duration.zero;
   StreamSubscription<void>? _playerCompleteSubscription;
@@ -323,19 +324,23 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           children: [
             Expanded(
               child: GestureDetector(
-                onLongPressStart: _isSending ? null : (_) => _startRecording(),
+                onLongPressDown: _isSending ? null : (_) {
+                  setState(() => _isPressing = true);
+                  _startRecording();
+                },
+                onLongPressStart: null,
                 onLongPressEnd: _isSending ? null : (_) => _stopRecording(),
                 onLongPressCancel: _isSending ? null : _cancelRecording,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _isRecording
+                    color: (_isRecording || _isPressing)
                         ? Colors.red.withValues(alpha: 0.1)
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: _isRecording
+                      color: (_isRecording || _isPressing)
                           ? Colors.redAccent
                           : Theme.of(context).colorScheme.outlineVariant,
                     ),
@@ -344,14 +349,14 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   child: Text(
                     _isSending
                         ? l10n.chatSendingAudio
-                        : _isRecording
+                        : (_isRecording || _isPressing)
                         ? l10n.chatRecordingReleaseToSend
                         : l10n.chatHoldToRecordAudio,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: _isRecording
+                      color: (_isRecording || _isPressing)
                           ? Colors.redAccent
                           : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: _isRecording
+                      fontWeight: (_isRecording || _isPressing)
                           ? FontWeight.w600
                           : FontWeight.w500,
                     ),
@@ -362,7 +367,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             const SizedBox(width: 12),
             CircleAvatar(
               radius: 24,
-              backgroundColor: _isRecording
+              backgroundColor: (_isRecording || _isPressing)
                   ? Colors.redAccent
                   : Theme.of(context).colorScheme.primary,
               child: const Icon(CupertinoIcons.mic_fill, color: Colors.white),
@@ -546,14 +551,22 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     final dir = await getTemporaryDirectory();
     final path =
         '${dir.path}/bantera-chat-${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _recorder.start(
-      const RecordConfig(
-        encoder: AudioEncoder.aacLc,
-        bitRate: 96000,
-        sampleRate: 44100,
-      ),
-      path: path,
-    );
+
+    if (mounted) setState(() => _isRecording = true);
+
+    try {
+      await _recorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          bitRate: 96000,
+          sampleRate: 44100,
+        ),
+        path: path,
+      );
+    } catch (_) {
+      if (mounted) setState(() => _isRecording = false);
+      return;
+    }
 
     _recordingStartedAt = DateTime.now();
     _maxRecordingTimer?.cancel();
@@ -563,15 +576,10 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         _chat.sendRecordingEvent(threadId: _threadId!, isRecording: true),
       );
     }
-
-    if (mounted) {
-      setState(() {
-        _isRecording = true;
-      });
-    }
   }
 
   Future<void> _cancelRecording() async {
+    if (mounted) setState(() => _isPressing = false);
     if (!_isRecording) {
       return;
     }
@@ -615,6 +623,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     if (mounted) {
       setState(() {
         _isRecording = false;
+        _isPressing = false;
       });
     }
 
