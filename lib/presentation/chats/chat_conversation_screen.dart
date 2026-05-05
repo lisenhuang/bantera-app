@@ -155,36 +155,44 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                         ),
                 )
               else
-                PopupMenuButton<_DirectMenuAction>(
-                  onSelected: _handleDirectMenuAction,
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: _DirectMenuAction.toggleMute,
-                      child: ChatMenuItemRow(
-                        icon: (widget.thread?.isMuted ?? false)
-                            ? Icons.notifications_active_outlined
-                            : Icons.notifications_off_outlined,
-                        label: (widget.thread?.isMuted ?? false)
-                            ? l10n.chatEnableNotifications
-                            : l10n.chatMuteNotifications,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: _DirectMenuAction.block,
-                      child: ChatMenuItemRow(
-                        icon: Icons.block,
-                        label: l10n.chatBlockUser,
-                      ),
-                    ),
-                    if (_threadId != null)
-                      PopupMenuItem(
-                        value: _DirectMenuAction.deleteDm,
-                        child: ChatMenuItemRow(
-                          icon: Icons.delete_outline,
-                          label: l10n.chatDeleteDm,
+                StreamBuilder<List<ChatThreadSummary>>(
+                  stream: _chat.watchDirectMessages(),
+                  builder: (context, snapshot) {
+                    final currentThread = _currentDirectThread(snapshot.data);
+                    final isMuted = currentThread?.isMuted ?? false;
+                    return PopupMenuButton<_DirectMenuAction>(
+                      onSelected: (action) =>
+                          _handleDirectMenuAction(action, currentThread),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: _DirectMenuAction.toggleMute,
+                          child: ChatMenuItemRow(
+                            icon: isMuted
+                                ? Icons.notifications_active_outlined
+                                : Icons.notifications_off_outlined,
+                            label: isMuted
+                                ? l10n.chatEnableNotifications
+                                : l10n.chatMuteNotifications,
+                          ),
                         ),
-                      ),
-                  ],
+                        PopupMenuItem(
+                          value: _DirectMenuAction.block,
+                          child: ChatMenuItemRow(
+                            icon: Icons.block,
+                            label: l10n.chatBlockUser,
+                          ),
+                        ),
+                        if (_threadId != null)
+                          PopupMenuItem(
+                            value: _DirectMenuAction.deleteDm,
+                            child: ChatMenuItemRow(
+                              icon: Icons.delete_outline,
+                              label: l10n.chatDeleteDm,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
             ],
           ),
@@ -238,7 +246,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   : Duration.zero,
               isTranscribing: _transcribingIds.contains(message.messageId),
               isTranslating: _translatingIds.contains(message.messageId),
-              viewerNativeLanguageCode: UserProfileNotifier.instance.nativeLanguage,
+              viewerNativeLanguageCode:
+                  UserProfileNotifier.instance.nativeLanguage,
               onPlay: () => _playMessage(message),
               onTranscribe: () => _transcribeMessage(message),
               onTranslate: () => _translateMessage(message),
@@ -359,9 +368,27 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     return 'learning';
   }
 
-  Future<void> _handleDirectMenuAction(_DirectMenuAction action) async {
+  ChatThreadSummary? _currentDirectThread(List<ChatThreadSummary>? threads) {
+    if (threads != null) {
+      for (final thread in threads) {
+        if (_threadId != null && thread.threadId == _threadId) {
+          return thread;
+        }
+        if (_partner != null && thread.otherUser?.id == _partner!.id) {
+          return thread;
+        }
+      }
+    }
+    final initialThread = widget.thread;
+    return initialThread?.isGroup == true ? null : initialThread;
+  }
+
+  Future<void> _handleDirectMenuAction(
+    _DirectMenuAction action,
+    ChatThreadSummary? currentThread,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final threadId = _threadId;
+    final threadId = currentThread?.threadId ?? _threadId;
     final partner = _partner;
     if (partner == null) {
       return;
@@ -372,7 +399,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         if (threadId == null) {
           return;
         }
-        final nextEnabled = !(widget.thread?.isMuted ?? false);
+        final nextEnabled = currentThread?.isMuted ?? false;
         await _chat.updateThreadNotifications(
           threadId: threadId,
           enabled: nextEnabled,
@@ -832,21 +859,21 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     try {
       await _chat.deleteOwnMessage(message);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.chatDeleteMessageSuccess)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.chatDeleteMessageSuccess)));
       }
     } on AuthApiException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.chatDeleteMessageFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.chatDeleteMessageFailed)));
       }
     }
   }
@@ -1025,138 +1052,143 @@ class _MessageBubble extends StatelessWidget {
       child: GestureDetector(
         onLongPress: onLongPress,
         child: Container(
-        constraints: const BoxConstraints(maxWidth: 340),
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isGroup)
-              _SenderHeader(
-                user: message.senderUser,
-                onTap: onTapSender,
-                color: onTapSender == null
-                    ? theme.colorScheme.onSurfaceVariant
-                    : theme.colorScheme.primary,
-              ),
-            Row(
-              children: [
-                IconButton.filled(
-                  onPressed: onPlay,
-                  icon: Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  ),
+          constraints: const BoxConstraints(maxWidth: 340),
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: bubbleColor,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isGroup)
+                _SenderHeader(
+                  user: message.senderUser,
+                  onTap: onTapSender,
+                  color: onTapSender == null
+                      ? theme.colorScheme.onSurfaceVariant
+                      : theme.colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _RoundedAudioProgressBar(
-                    value: progress,
-                    backgroundColor: theme.colorScheme.outlineVariant,
-                    foregroundColor: theme.colorScheme.primary,
+              Row(
+                children: [
+                  IconButton.filled(
+                    onPressed: onPlay,
+                    icon: Icon(
+                      isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(_formatDuration(message.durationMs)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                if (showTranscribeButton)
-                  OutlinedButton.icon(
-                    onPressed: isTranscribing ? null : onTranscribe,
-                    icon: isTranscribing
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.subtitles_outlined),
-                    label: Text(l10n.chatTranscribe),
-                  ),
-                if (showTranslateButton) ...[
                   const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: isTranslating ? null : onTranslate,
-                    icon: isTranslating
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.translate),
-                    label: Text(l10n.chatTranslate),
+                  Expanded(
+                    child: _RoundedAudioProgressBar(
+                      value: progress,
+                      backgroundColor: theme.colorScheme.outlineVariant,
+                      foregroundColor: theme.colorScheme.primary,
+                    ),
                   ),
+                  const SizedBox(width: 12),
+                  Text(_formatDuration(message.durationMs)),
                 ],
-                const Spacer(),
-                Text(
-                  _formatTimestamp(message.createdAt),
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-            ),
-            if (message.localTranscriptStatus == 'processing')
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(l10n.chatTranscribingOnDevice),
               ),
-            if (message.localTranscriptStatus == 'failed')
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  l10n.chatTranscriptionFailed,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ),
-            if (message.hasTranscript)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: SelectableText(
-                  message.localTranscriptText!,
-                  style: theme.textTheme.bodyLarge,
-                ),
-              ),
-            if (message.localTranslationStatus == 'processing')
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(l10n.chatTranslating),
-              ),
-            if (message.localTranslationStatus == 'failed')
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  l10n.chatTranslationFailed,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ),
-            if (message.localTranslationText != null &&
-                message.localTranslationText!.trim().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Divider(color: theme.colorScheme.outlineVariant, height: 1),
-                    const SizedBox(height: 8),
-                    SelectableText(
-                      message.localTranslationText!,
-                      style: theme.textTheme.bodyLarge,
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  if (showTranscribeButton)
+                    OutlinedButton.icon(
+                      onPressed: isTranscribing ? null : onTranscribe,
+                      icon: isTranscribing
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.subtitles_outlined),
+                      label: Text(l10n.chatTranscribe),
+                    ),
+                  if (showTranslateButton) ...[
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: isTranslating ? null : onTranslate,
+                      icon: isTranslating
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.translate),
+                      label: Text(l10n.chatTranslate),
                     ),
                   ],
-                ),
+                  const Spacer(),
+                  Text(
+                    _formatTimestamp(message.createdAt),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
               ),
-          ],
+              if (message.localTranscriptStatus == 'processing')
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(l10n.chatTranscribingOnDevice),
+                ),
+              if (message.localTranscriptStatus == 'failed')
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    l10n.chatTranscriptionFailed,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              if (message.hasTranscript)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: SelectableText(
+                    message.localTranscriptText!,
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                ),
+              if (message.localTranslationStatus == 'processing')
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(l10n.chatTranslating),
+                ),
+              if (message.localTranslationStatus == 'failed')
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    l10n.chatTranslationFailed,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              if (message.localTranslationText != null &&
+                  message.localTranslationText!.trim().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Divider(
+                        color: theme.colorScheme.outlineVariant,
+                        height: 1,
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        message.localTranslationText!,
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
