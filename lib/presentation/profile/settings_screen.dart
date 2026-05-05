@@ -26,7 +26,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   static final Uri _contactEmailUri = Uri(
     scheme: 'mailto',
-    path: 'bantera.app@gmail.com',
+    path: 'contact@bantera.app',
   );
 
   int _titleTapCount = 0;
@@ -555,7 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ListTile(
                       leading: const Icon(Icons.mail_outline),
                       title: Text(l10n.settingsContactButton),
-                      subtitle: const Text('bantera.app@gmail.com'),
+                      subtitle: const Text('contact@bantera.app'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () async {
                         await launchUrl(_contactEmailUri);
