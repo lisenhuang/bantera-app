@@ -39,6 +39,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   final ChatSessionNotifier _chat = ChatSessionNotifier.instance;
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
+  final ScrollController _messageScrollController = ScrollController();
   final Set<String> _transcribingIds = <String>{};
   final Set<String> _translatingIds = <String>{};
   bool _isRecording = false;
@@ -52,6 +53,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   ChatUserSummary? _partner;
   DateTime? _recordingStartedAt;
   Timer? _maxRecordingTimer;
+  String? _lastAutoScrolledMessageId;
+  int _lastAutoScrolledMessageCount = 0;
 
   @override
   void initState() {
@@ -91,6 +94,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
     _recorder.dispose();
     _player.dispose();
+    _messageScrollController.dispose();
     super.dispose();
   }
 
@@ -232,7 +236,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           );
         }
 
+        _scheduleScrollToNewest(
+          newestMessageId: messages.last.messageId,
+          messageCount: messages.length,
+        );
+
         return ListView.builder(
+          controller: _messageScrollController,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           itemCount: messages.length,
           itemBuilder: (context, index) {
@@ -262,6 +272,38 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         );
       },
     );
+  }
+
+  void _scheduleScrollToNewest({
+    required String newestMessageId,
+    required int messageCount,
+  }) {
+    if (_lastAutoScrolledMessageId == newestMessageId &&
+        _lastAutoScrolledMessageCount == messageCount) {
+      return;
+    }
+
+    final shouldJump = _lastAutoScrolledMessageId == null;
+    _lastAutoScrolledMessageId = newestMessageId;
+    _lastAutoScrolledMessageCount = messageCount;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_messageScrollController.hasClients) {
+        return;
+      }
+
+      final target = _messageScrollController.position.maxScrollExtent;
+      if (shouldJump) {
+        _messageScrollController.jumpTo(target);
+        return;
+      }
+
+      _messageScrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   Widget _buildComposer(BuildContext context, AppLocalizations l10n) {
