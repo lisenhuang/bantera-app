@@ -327,8 +327,17 @@ class AuthSessionNotifier extends ChangeNotifier {
       _persistSession();
       _scheduleRefresh();
       return response.accessToken;
+    } on AuthApiException catch (e) {
+      // Only sign out when the server explicitly rejects the session.
+      // Network/connectivity errors are transient — the refresh token is still
+      // valid and the timer will retry on the next cycle.
+      const _authRejectionCodes = {'session_expired', 'unauthorized'};
+      if (_authRejectionCodes.contains(e.code)) {
+        signOut();
+      }
+      return null;
     } catch (_) {
-      signOut();
+      // Unknown/unexpected errors (e.g. parse failures) — don't sign out.
       return null;
     }
   }
