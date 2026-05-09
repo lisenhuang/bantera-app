@@ -314,7 +314,11 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     UploadedVideo? video;
     try {
       final nativeLanguageCode = UserProfileNotifier.instance.nativeLanguage;
-      await AuthApiClient.instance.generateAiAudioStreamingV2(
+      final isCustom = _selectedScenario?.isCustom ?? false;
+      final generateFn = isCustom
+          ? AuthApiClient.instance.generateAiAudioStreamingV3
+          : AuthApiClient.instance.generateAiAudioStreamingV2;
+      await generateFn(
         accessToken: session.accessToken,
         language: locale.displayName,
         languageCode: locale.identifier,

@@ -593,7 +593,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceStop => '停止';
 
   @override
-  String get practicePlayAll => '连续播放';
+  String get practicePlayAll => '影子跟读';
 
   @override
   String get practiceCompare => '对比';
@@ -656,7 +656,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceNoTranslationLanguagesFound => '找不到可用于此字幕稿的翻译语言。';
 
   @override
-  String get practicePlayAllTitle => '连续播放';
+  String get practicePlayAllTitle => '影子跟读';
 
   @override
   String get practicePlayAllDescription => '分句之间暂停，便于跟读：';

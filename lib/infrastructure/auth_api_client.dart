@@ -569,6 +569,7 @@ class AuthApiClient {
     required void Function() onDialogueDone,
     required void Function(UploadedVideo video, List<String> lines) onAudioDone,
     bool useV2 = false,
+    bool useV3 = false,
     void Function(String jobId)? onStarted,
     void Function()? onAudioGenerated,
     void Function()? onAligning,
@@ -587,11 +588,12 @@ class AuthApiClient {
           'nativeLanguageCode': nativeLanguageCode,
         'durationSeconds': durationSeconds,
       });
-      final request = await _httpClient.postUrl(
-        _resolve(
-          useV2 ? '/api/me/audio/generate/v2' : '/api/me/audio/generate',
-        ),
-      );
+      final endpointPath = useV3
+          ? '/api/me/audio/generate/v3'
+          : useV2
+              ? '/api/me/audio/generate/v2'
+              : '/api/me/audio/generate';
+      final request = await _httpClient.postUrl(_resolve(endpointPath));
       request.headers.set(
         HttpHeaders.authorizationHeader,
         'Bearer $accessToken',
@@ -625,6 +627,7 @@ class AuthApiClient {
               onDialogueDone: onDialogueDone,
               onAudioDone: onAudioDone,
               useV2: useV2,
+              useV3: useV3,
               onStarted: onStarted,
               onAudioGenerated: onAudioGenerated,
               onAligning: onAligning,
@@ -721,6 +724,39 @@ class AuthApiClient {
       onDialogueDone: onDialogueDone,
       onAudioDone: onDone,
       useV2: true,
+      onAudioGenerated: onAudioGenerated,
+      onAligning: onAligning,
+    );
+  }
+
+  Future<void> generateAiAudioStreamingV3({
+    required String accessToken,
+    required String language,
+    required String languageCode,
+    required String scenario,
+    String? scenarioId,
+    required int durationSeconds,
+    String? nativeLanguage,
+    String? nativeLanguageCode,
+    void Function(String jobId)? onStarted,
+    required void Function() onDialogueDone,
+    required void Function() onAudioGenerated,
+    required void Function() onAligning,
+    required void Function(UploadedVideo video, List<String> lines) onDone,
+  }) {
+    return generateAiAudioStreaming(
+      accessToken: accessToken,
+      language: language,
+      languageCode: languageCode,
+      scenario: scenario,
+      scenarioId: scenarioId,
+      durationSeconds: durationSeconds,
+      nativeLanguage: nativeLanguage,
+      nativeLanguageCode: nativeLanguageCode,
+      onStarted: onStarted,
+      onDialogueDone: onDialogueDone,
+      onAudioDone: onDone,
+      useV3: true,
       onAudioGenerated: onAudioGenerated,
       onAligning: onAligning,
     );

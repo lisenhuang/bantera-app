@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/apple_system_version.dart';
 import '../core/app_resume_notifier.dart';
+import '../domain/models/chat_models.dart';
 import '../infrastructure/app_update_service.dart';
+import '../infrastructure/local_chat_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
 import 'create/create_hub_screen.dart';
@@ -21,6 +25,11 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
   bool _checkingUpdate = false;
+  bool _hasUnreadChats = false;
+  StreamSubscription<List<ChatThreadSummary>>? _groupsSub;
+  StreamSubscription<List<ChatThreadSummary>>? _dmsSub;
+  List<ChatThreadSummary> _groups = [];
+  List<ChatThreadSummary> _dms = [];
 
   static const List<Widget> _fourTabs = [
     DiscoverScreen(),
@@ -43,10 +52,29 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
     AppResumeNotifier.instance.addListener(_onResume);
+    _groupsSub = LocalChatRepository.instance.watchGroups().listen((groups) {
+      _groups = groups;
+      _updateUnread();
+    });
+    _dmsSub = LocalChatRepository.instance.watchDirectMessages().listen((dms) {
+      _dms = dms;
+      _updateUnread();
+    });
+  }
+
+  void _updateUnread() {
+    final hasUnread =
+        _groups.any((t) => t.unreadCount > 0) ||
+        _dms.any((t) => t.unreadCount > 0);
+    if (hasUnread != _hasUnreadChats) {
+      setState(() => _hasUnreadChats = hasUnread);
+    }
   }
 
   @override
   void dispose() {
+    _groupsSub?.cancel();
+    _dmsSub?.cancel();
     AppResumeNotifier.instance.removeListener(_onResume);
     super.dispose();
   }
@@ -136,7 +164,25 @@ class _MainScaffoldState extends State<MainScaffold> {
             ),
           ],
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.chat_bubble_text_fill),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(CupertinoIcons.chat_bubble_text_fill),
+                if (_hasUnreadChats)
+                  Positioned(
+                    top: -2,
+                    right: -4,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             label: l10n.chatsTitle,
           ),
           BottomNavigationBarItem(

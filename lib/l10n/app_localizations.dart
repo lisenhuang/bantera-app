@@ -1239,7 +1239,7 @@ abstract class AppLocalizations {
   /// No description provided for @practicePlayAll.
   ///
   /// In en, this message translates to:
-  /// **'Play All'**
+  /// **'Shadowing'**
   String get practicePlayAll;
 
   /// No description provided for @practiceCompare.
@@ -1359,7 +1359,7 @@ abstract class AppLocalizations {
   /// No description provided for @practicePlayAllTitle.
   ///
   /// In en, this message translates to:
-  /// **'Play all'**
+  /// **'Shadowing'**
   String get practicePlayAllTitle;
 
   /// No description provided for @practicePlayAllDescription.

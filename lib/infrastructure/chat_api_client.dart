@@ -199,6 +199,14 @@ class ChatApiClient {
     );
   }
 
+  Future<void> sendTestNotification({required String accessToken}) async {
+    await _sendEmptyRequest(
+      method: 'POST',
+      path: '/api/chat/notifications/test',
+      accessToken: accessToken,
+    );
+  }
+
   Future<void> registerApnsToken({
     required String accessToken,
     required String token,

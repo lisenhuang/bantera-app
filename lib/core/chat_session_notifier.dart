@@ -383,6 +383,7 @@ class ChatSessionNotifier extends ChangeNotifier {
     SettingsNotifier.instance.toggleNotifications(enabled);
     if (enabled) {
       unawaited(_syncPushToken(promptForPermission: true));
+      unawaited(_sendTestNotification());
     }
     notifyListeners();
   }
@@ -558,6 +559,12 @@ class ChatSessionNotifier extends ChangeNotifier {
     } catch (_) {
       _handleSocketClosed();
     }
+  }
+
+  Future<void> _sendTestNotification() async {
+    await _withRetry<void>(
+      (token) => _apiClient.sendTestNotification(accessToken: token),
+    );
   }
 
   Future<void> _syncPushToken({required bool promptForPermission}) async {

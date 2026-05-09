@@ -625,7 +625,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceStop => 'Stop';
 
   @override
-  String get practicePlayAll => 'Play All';
+  String get practicePlayAll => 'Shadowing';
 
   @override
   String get practiceCompare => 'Compare';
@@ -696,7 +696,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Bantera could not find any translation languages for this transcript.';
 
   @override
-  String get practicePlayAllTitle => 'Play all';
+  String get practicePlayAllTitle => 'Shadowing';
 
   @override
   String get practicePlayAllDescription => 'Pause between cues for shadowing:';

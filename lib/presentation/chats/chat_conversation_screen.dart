@@ -1298,7 +1298,26 @@ String _formatDuration(int durationMs) {
 String _formatTimestamp(DateTime time) {
   final hour = time.hour.toString().padLeft(2, '0');
   final minute = time.minute.toString().padLeft(2, '0');
-  return '$hour:$minute';
+  final timeStr = '$hour:$minute';
+
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final msgDay = DateTime(time.year, time.month, time.day);
+  final diff = today.difference(msgDay).inDays;
+
+  if (diff == 0) return timeStr;
+
+  if (diff < 7) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return '${days[time.weekday - 1]} $timeStr';
+  }
+
+  // Older: "9 May 14:30"
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return '${time.day} ${months[time.month - 1]} $timeStr';
 }
 
 class _GroupSettingsScreen extends StatelessWidget {
