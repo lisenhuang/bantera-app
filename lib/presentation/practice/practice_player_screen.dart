@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:video_player/video_player.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/apple_system_version.dart';
@@ -1751,9 +1752,32 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     ),
                   );
 
+                  final shareButton = OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.all(12),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      SharePlus.instance.share(
+                        ShareParams(
+                          uri: Uri.parse(
+                            'https://bantera.app/webapp/shadowing/${widget.mediaItem.id}',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(CupertinoIcons.share, size: 18),
+                  );
+
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [transcriptButton],
+                    children: [
+                      transcriptButton,
+                      const SizedBox(width: 8),
+                      shareButton,
+                    ],
                   );
                 },
               ),
