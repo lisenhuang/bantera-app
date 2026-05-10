@@ -140,16 +140,49 @@ private final class BanteraPushNotificationsBridge {
       return nil
     }
 
-    #if DEBUG
-    let isSandbox = true
-    #else
-    let isSandbox = false
-    #endif
-
     return [
       "token": cachedToken,
-      "isSandbox": isSandbox,
+      "isSandbox": Self.isApnsSandboxEnvironment(),
     ]
+  }
+
+  private static func isApnsSandboxEnvironment() -> Bool {
+    if let environment = embeddedProvisioningApnsEnvironment() {
+      return environment == "development"
+    }
+
+    #if DEBUG
+    return true
+    #else
+    return false
+    #endif
+  }
+
+  private static func embeddedProvisioningApnsEnvironment() -> String? {
+    guard let url = Bundle.main.url(
+      forResource: "embedded",
+      withExtension: "mobileprovision"
+    ), let data = try? Data(contentsOf: url) else {
+      return nil
+    }
+
+    let profile = String(data: data, encoding: .isoLatin1)
+      ?? String(data: data, encoding: .utf8)
+    guard let profile else {
+      return nil
+    }
+
+    let pattern = #"<key>aps-environment</key>\s*<string>([^<]+)</string>"#
+    guard let regex = try? NSRegularExpression(pattern: pattern),
+          let match = regex.firstMatch(
+            in: profile,
+            range: NSRange(profile.startIndex..., in: profile)
+          ),
+          let range = Range(match.range(at: 1), in: profile) else {
+      return nil
+    }
+
+    return String(profile[range])
   }
 }
 
