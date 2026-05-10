@@ -183,36 +183,6 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
               _buildLocalPracticeSection(context, colorScheme, l10n),
             ],
             const SizedBox(height: 48),
-            ListenableBuilder(
-              listenable: _generationJobNotifier,
-              builder: (context, _) {
-                if (!_generationJobNotifier.hasProcessingJob) {
-                  return const SizedBox.shrink();
-                }
-                return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: colorScheme.primary.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Text(
-                    'Generating audio in background...',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
-              },
-            ),
             Row(
               children: [
                 Text(
