@@ -735,7 +735,7 @@ class ChatSessionNotifier extends ChangeNotifier {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
     _partnerRecordingByThread.clear();
-    _lastRegisteredPushToken = null;
+    _lastRegisteredPushTokenKey = null;
 
     if (session == null) {
       _ownerCacheKey = null;
