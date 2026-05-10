@@ -45,7 +45,7 @@ class ChatSessionNotifier extends ChangeNotifier {
   String? _plainErrorMessage;
   AuthApiException? _authApiError;
   String? _ownerCacheKey;
-  String? _lastRegisteredPushToken;
+  String? _lastRegisteredPushTokenKey;
 
   bool get isLoading => _isLoading;
   bool get isRefreshingMessages => _isRefreshingMessages;
@@ -68,6 +68,10 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   Future<ChatThreadSummary?> directMessageThreadForUser(String userId) {
     return _localRepository.directMessageThreadForUser(userId);
+  }
+
+  Future<void> ensureRealtimeConnected() async {
+    await _connectWebSocket();
   }
 
   String? localizedErrorText(dynamic l10n) {
@@ -589,11 +593,13 @@ class ChatSessionNotifier extends ChangeNotifier {
     final token = promptForPermission
         ? await PushNotificationsService.instance
               .requestAuthorizationAndRegister()
-        : await PushNotificationsService.instance.getCachedToken();
+        : await PushNotificationsService.instance.registerIfAuthorized();
     if (token == null || token.token.trim().isEmpty) {
       return;
     }
-    if (_lastRegisteredPushToken == token.token) {
+    const supportsCalls = true;
+    final registrationKey = '${token.token}:$supportsCalls';
+    if (_lastRegisteredPushTokenKey == registrationKey) {
       return;
     }
 
@@ -603,9 +609,10 @@ class ChatSessionNotifier extends ChangeNotifier {
           accessToken: accessToken,
           token: token.token,
           isSandbox: token.isSandbox,
+          supportsCalls: supportsCalls,
         ),
       );
-      _lastRegisteredPushToken = token.token;
+      _lastRegisteredPushTokenKey = registrationKey;
     } on AuthApiException {
       // Keep local state; next bootstrap or toggle can retry token sync.
     }

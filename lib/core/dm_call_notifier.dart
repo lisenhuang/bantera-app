@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../domain/models/chat_models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
+import '../infrastructure/push_notifications_service.dart';
 import 'auth_session_notifier.dart';
 import 'chat_session_notifier.dart';
 
@@ -27,7 +28,12 @@ enum DmCallErrorCode {
 
 class DmCallNotifier extends ChangeNotifier {
   DmCallNotifier._() {
+    AuthSessionNotifier.instance.addListener(_handleAuthChanged);
     ChatSessionNotifier.instance.realtimeEvents.listen(_handleRealtimeEvent);
+    PushNotificationsService.instance.latestNotificationTap.addListener(
+      _handleLatestNotificationTap,
+    );
+    unawaited(_loadInitialNotificationTap());
     unawaited(_ensureRenderersReady());
   }
 
@@ -55,6 +61,7 @@ class DmCallNotifier extends ChangeNotifier {
   Duration _connectedDuration = Duration.zero;
   DateTime? _connectedAt;
   DmCallErrorCode? _errorCode;
+  Map<String, String>? _pendingNotificationPayload;
 
   DmCallPhase get phase => _phase;
   DmCallMediaKind? get mediaKind => _mediaKind;
@@ -125,10 +132,14 @@ class DmCallNotifier extends ChangeNotifier {
       _phase = DmCallPhase.connecting;
       _startConnectTimeout();
       notifyListeners();
-      await ChatSessionNotifier.instance.sendRealtimeEvent(
+      await ChatSessionNotifier.instance.ensureRealtimeConnected();
+      final sent = await ChatSessionNotifier.instance.sendRealtimeEvent(
         'call.accept',
         <String, Object?>{'callId': _callId},
       );
+      if (!sent) {
+        await _setError(DmCallErrorCode.unavailable);
+      }
     } catch (_) {
       await _sendEndIfNeeded();
       await _setError(DmCallErrorCode.failed);
@@ -214,6 +225,76 @@ class DmCallNotifier extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadInitialNotificationTap() async {
+    final payload = await PushNotificationsService.instance
+        .takeInitialNotificationTap();
+    if (payload != null) {
+      await _handleNotificationTap(payload);
+    }
+  }
+
+  void _handleLatestNotificationTap() {
+    final payload = PushNotificationsService.instance.latestNotificationTap.value;
+    if (payload != null) {
+      unawaited(_handleNotificationTap(payload));
+    }
+  }
+
+  Future<void> _handleNotificationTap(Map<String, String> payload) async {
+    if (payload['type'] != 'incoming_call') {
+      return;
+    }
+    if (!AuthSessionNotifier.instance.isAuthenticated) {
+      _pendingNotificationPayload = payload;
+      return;
+    }
+    if (_phase != DmCallPhase.idle) {
+      return;
+    }
+
+    final callId = payload['callId'];
+    final callerUserId = payload['callerUserId'];
+    if (callId == null ||
+        callId.isEmpty ||
+        callerUserId == null ||
+        callerUserId.isEmpty) {
+      return;
+    }
+
+    _callId = callId;
+    _mediaKind = payload['mediaKind'] == DmCallMediaKind.video.name
+        ? DmCallMediaKind.video
+        : DmCallMediaKind.audio;
+    _peerUser = ChatUserSummary(
+      id: callerUserId,
+      name: (payload['callerName']?.trim().isNotEmpty ?? false)
+          ? payload['callerName']!.trim()
+          : 'Bantera user',
+      avatarUrl: (payload['callerAvatarUrl']?.trim().isNotEmpty ?? false)
+          ? payload['callerAvatarUrl']!.trim()
+          : null,
+      learningLanguage: null,
+      learningLanguageDisplay: null,
+      nativeLanguage: null,
+      nativeLanguageDisplay: null,
+      isOnline: true,
+    );
+    _phase = DmCallPhase.incoming;
+    _isIncoming = true;
+    _errorCode = null;
+    notifyListeners();
+  }
+
+  void _handleAuthChanged() {
+    if (!AuthSessionNotifier.instance.isAuthenticated ||
+        _pendingNotificationPayload == null) {
+      return;
+    }
+    final payload = _pendingNotificationPayload!;
+    _pendingNotificationPayload = null;
+    unawaited(_handleNotificationTap(payload));
+  }
+
   Future<void> _handleRealtimeEvent(Map<String, dynamic> event) async {
     final type = event['type']?.toString() ?? '';
     final payload = event['payload'];
@@ -285,7 +366,8 @@ class DmCallNotifier extends ChangeNotifier {
         }
         return;
       case 'call.unavailable':
-        if (_phase == DmCallPhase.outgoing) {
+        if (_phase == DmCallPhase.outgoing ||
+            _callId == map['callId']?.toString()) {
           await _setError(DmCallErrorCode.unavailable);
         }
         return;
@@ -558,6 +640,7 @@ class DmCallNotifier extends ChangeNotifier {
   Future<void> _sendRejectAndReset() async {
     final currentCallId = _callId;
     if (currentCallId != null) {
+      await ChatSessionNotifier.instance.ensureRealtimeConnected();
       await ChatSessionNotifier.instance.sendRealtimeEvent(
         'call.reject',
         <String, Object?>{'callId': currentCallId},

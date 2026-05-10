@@ -222,12 +222,17 @@ class ChatApiClient {
     required String accessToken,
     required String token,
     required bool isSandbox,
+    required bool supportsCalls,
   }) async {
     await _sendRequestAllowingNoContent(
       method: 'PUT',
       path: '/api/chat/push/apns-token',
       accessToken: accessToken,
-      payload: <String, Object?>{'token': token, 'isSandbox': isSandbox},
+      payload: <String, Object?>{
+        'token': token,
+        'isSandbox': isSandbox,
+        'supportsCalls': supportsCalls,
+      },
     );
   }
 

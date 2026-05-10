@@ -12,6 +12,7 @@ import 'core/dm_call_notifier.dart';
 import 'core/settings_notifier.dart';
 import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
+import 'infrastructure/push_notifications_service.dart';
 import 'infrastructure/video_processing_service.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/auth_screen.dart';
@@ -28,6 +29,7 @@ Future<void> main() async {
   ]);
   UserProfileNotifier.instance;
   ChatSessionNotifier.instance;
+  PushNotificationsService.instance;
   DmCallNotifier.instance;
   // Preload language lists in the background so pickers are fast on first open.
   unawaited(

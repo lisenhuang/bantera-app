@@ -13,13 +13,33 @@ import UserNotifications
   private var translationBridge: BanteraTranslationBridge?
   private var iosVersionBridge: BanteraIosVersionBridge?
   private var pushNotificationsBridge: BanteraPushNotificationsBridge?
+  private var pendingNotificationTap: [String: String]?
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     UNUserNotificationCenter.current().delegate = self
+    if let userInfo = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
+      pendingNotificationTap = Self.notificationPayload(from: userInfo)
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    let payload = Self.notificationPayload(
+      from: response.notification.request.content.userInfo
+    )
+    if let pushNotificationsBridge {
+      pushNotificationsBridge.handleNotificationTap(payload)
+    } else {
+      pendingNotificationTap = payload
+    }
+    completionHandler()
   }
 
   override func application(
@@ -53,8 +73,25 @@ import UserNotifications
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
     pushNotificationsBridge = BanteraPushNotificationsBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+      binaryMessenger: engineBridge.applicationRegistrar.messenger(),
+      initialNotification: pendingNotificationTap
     )
+    pendingNotificationTap = nil
+  }
+
+  private static func notificationPayload(from userInfo: [AnyHashable: Any]) -> [String: String] {
+    var payload: [String: String] = [:]
+    for (key, value) in userInfo {
+      guard let key = key as? String, key != "aps" else {
+        continue
+      }
+      if let stringValue = value as? String {
+        payload[key] = stringValue
+      } else {
+        payload[key] = "\(value)"
+      }
+    }
+    return payload
   }
 }
 
@@ -62,8 +99,13 @@ private final class BanteraPushNotificationsBridge {
   private let channel: FlutterMethodChannel
   private var cachedToken: String?
   private var pendingResult: FlutterResult?
+  private var initialNotification: [String: String]?
 
-  init(binaryMessenger: FlutterBinaryMessenger) {
+  init(
+    binaryMessenger: FlutterBinaryMessenger,
+    initialNotification: [String: String]?
+  ) {
+    self.initialNotification = initialNotification
     channel = FlutterMethodChannel(
       name: "bantera/push_notifications",
       binaryMessenger: binaryMessenger
@@ -75,10 +117,33 @@ private final class BanteraPushNotificationsBridge {
     switch call.method {
     case "getCachedPushToken":
       result(tokenPayload())
+    case "registerIfAuthorized":
+      registerIfAuthorized(result: result)
+    case "takeInitialNotification":
+      result(initialNotification)
+      initialNotification = nil
     case "requestAuthorizationAndRegister":
       requestAuthorizationAndRegister(result: result)
     default:
       result(FlutterMethodNotImplemented)
+    }
+  }
+
+  private func registerIfAuthorized(result: @escaping FlutterResult) {
+    UNUserNotificationCenter.current().getNotificationSettings { settings in
+      DispatchQueue.main.async {
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+          UIApplication.shared.registerForRemoteNotifications()
+          if let payload = self.tokenPayload() {
+            result(payload)
+            return
+          }
+          self.pendingResult = result
+        default:
+          result(nil)
+        }
+      }
     }
   }
 
@@ -133,6 +198,10 @@ private final class BanteraPushNotificationsBridge {
       )
       self.pendingResult = nil
     }
+  }
+
+  func handleNotificationTap(_ payload: [String: String]) {
+    channel.invokeMethod("notificationTapped", arguments: payload)
   }
 
   private func tokenPayload() -> [String: Any]? {
