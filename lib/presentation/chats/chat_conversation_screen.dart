@@ -10,6 +10,7 @@ import 'package:record/record.dart';
 
 import '../../core/apple_system_version.dart';
 import '../../core/chat_session_notifier.dart';
+import '../../core/dm_call_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/chat_models.dart';
 import '../../infrastructure/auth_api_client.dart';
@@ -165,36 +166,49 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   builder: (context, snapshot) {
                     final currentThread = _currentDirectThread(snapshot.data);
                     final isMuted = currentThread?.isMuted ?? false;
-                    return PopupMenuButton<_DirectMenuAction>(
-                      onSelected: (action) =>
-                          _handleDirectMenuAction(action, currentThread),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: _DirectMenuAction.toggleMute,
-                          child: ChatMenuItemRow(
-                            icon: isMuted
-                                ? Icons.notifications_active_outlined
-                                : Icons.notifications_off_outlined,
-                            label: isMuted
-                                ? l10n.chatEnableNotifications
-                                : l10n.chatMuteNotifications,
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_partner != null)
+                          IconButton(
+                            icon: const Icon(Icons.call_outlined),
+                            tooltip: l10n.chatCall,
+                            onPressed: DmCallNotifier.instance.isActive
+                                ? null
+                                : () => _showCallOptions(_partner!),
                           ),
-                        ),
-                        PopupMenuItem(
-                          value: _DirectMenuAction.block,
-                          child: ChatMenuItemRow(
-                            icon: Icons.block,
-                            label: l10n.chatBlockUser,
-                          ),
-                        ),
-                        if (_threadId != null)
-                          PopupMenuItem(
-                            value: _DirectMenuAction.deleteDm,
-                            child: ChatMenuItemRow(
-                              icon: Icons.delete_outline,
-                              label: l10n.chatDeleteDm,
+                        PopupMenuButton<_DirectMenuAction>(
+                          onSelected: (action) =>
+                              _handleDirectMenuAction(action, currentThread),
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: _DirectMenuAction.toggleMute,
+                              child: ChatMenuItemRow(
+                                icon: isMuted
+                                    ? Icons.notifications_active_outlined
+                                    : Icons.notifications_off_outlined,
+                                label: isMuted
+                                    ? l10n.chatEnableNotifications
+                                    : l10n.chatMuteNotifications,
+                              ),
                             ),
-                          ),
+                            PopupMenuItem(
+                              value: _DirectMenuAction.block,
+                              child: ChatMenuItemRow(
+                                icon: Icons.block,
+                                label: l10n.chatBlockUser,
+                              ),
+                            ),
+                            if (_threadId != null)
+                              PopupMenuItem(
+                                value: _DirectMenuAction.deleteDm,
+                                child: ChatMenuItemRow(
+                                  icon: Icons.delete_outline,
+                                  label: l10n.chatDeleteDm,
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
                     );
                   },
@@ -324,10 +338,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           children: [
             Expanded(
               child: GestureDetector(
-                onLongPressDown: _isSending ? null : (_) {
-                  setState(() => _isPressing = true);
-                  _startRecording();
-                },
+                onLongPressDown: _isSending
+                    ? null
+                    : (_) {
+                        setState(() => _isPressing = true);
+                        _startRecording();
+                      },
                 onLongPressStart: null,
                 onLongPressEnd: _isSending ? null : (_) => _stopRecording(),
                 onLongPressCancel: _isSending ? null : _cancelRecording,
@@ -428,6 +444,62 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
     final initialThread = widget.thread;
     return initialThread?.isGroup == true ? null : initialThread;
+  }
+
+  Future<void> _showCallOptions(ChatUserSummary partner) async {
+    final l10n = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.call_outlined),
+              title: Text(l10n.chatStartAudioCall),
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(_startCall(partner, DmCallMediaKind.audio));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined),
+              title: Text(l10n.chatStartVideoCall),
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(_startCall(partner, DmCallMediaKind.video));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: Text(l10n.cancel),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startCall(
+    ChatUserSummary partner,
+    DmCallMediaKind mediaKind,
+  ) async {
+    if (_isRecording) {
+      await _cancelRecording();
+    }
+    await _player.stop();
+    if (mounted) {
+      setState(() {
+        _currentPlayingMessageId = null;
+        _currentPlaybackPosition = Duration.zero;
+      });
+    }
+    await DmCallNotifier.instance.startOutgoingCall(
+      recipient: partner,
+      mediaKind: mediaKind,
+    );
   }
 
   Future<void> _handleDirectMenuAction(
@@ -1314,8 +1386,18 @@ String _formatTimestamp(DateTime time) {
 
   // Older: "9 May 14:30"
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '${time.day} ${months[time.month - 1]} $timeStr';
 }

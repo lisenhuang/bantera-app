@@ -32,6 +32,8 @@ class ChatSessionNotifier extends ChangeNotifier {
   final Set<String> _activeThreadIds = <String>{};
   final Set<String> _updatingThreadNotificationIds = <String>{};
   final Map<String, bool> _partnerRecordingByThread = <String, bool>{};
+  final StreamController<Map<String, dynamic>> _realtimeEventsController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   AuthSession? _observedSession;
   WebSocket? _socket;
@@ -61,6 +63,8 @@ class ChatSessionNotifier extends ChangeNotifier {
       _localRepository.watchBlockedUsers();
   Stream<List<ChatMessageItem>> watchMessages(String threadId) =>
       _localRepository.watchMessages(threadId);
+  Stream<Map<String, dynamic>> get realtimeEvents =>
+      _realtimeEventsController.stream;
 
   Future<ChatThreadSummary?> directMessageThreadForUser(String userId) {
     return _localRepository.directMessageThreadForUser(userId);
@@ -495,19 +499,28 @@ class ChatSessionNotifier extends ChangeNotifier {
     required String threadId,
     required bool isRecording,
   }) async {
+    await sendRealtimeEvent(
+      isRecording ? 'dm.recording.started' : 'dm.recording.stopped',
+      <String, Object?>{'threadId': threadId},
+    );
+  }
+
+  Future<bool> sendRealtimeEvent(
+    String type,
+    Map<String, Object?> payload,
+  ) async {
     final socket = _socket;
     if (socket == null || socket.readyState != WebSocket.open) {
-      return;
+      return false;
     }
 
-    final payload = jsonEncode(<String, Object?>{
-      'type': isRecording ? 'dm.recording.started' : 'dm.recording.stopped',
-      'payload': <String, Object?>{'threadId': threadId},
-    });
+    final raw = jsonEncode(<String, Object?>{'type': type, 'payload': payload});
     try {
-      socket.add(payload);
+      socket.add(raw);
+      return true;
     } catch (_) {
       // Ignore transient websocket write failures.
+      return false;
     }
   }
 
@@ -610,6 +623,7 @@ class ChatSessionNotifier extends ChangeNotifier {
       }
       final type = decoded['type']?.toString() ?? '';
       final payload = decoded['payload'];
+      _realtimeEventsController.add(decoded);
 
       switch (type) {
         case 'ready':

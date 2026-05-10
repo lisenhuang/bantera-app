@@ -82,6 +82,17 @@ class ChatApiClient {
     }
   }
 
+  Future<ChatIceServersConfig> fetchIceServers({
+    required String accessToken,
+  }) async {
+    final json = await _sendJsonRequest(
+      method: 'GET',
+      path: '/api/chat/calls/ice-servers',
+      accessToken: accessToken,
+    );
+    return ChatIceServersConfig.fromJson(json);
+  }
+
   Future<ChatMessageItem> sendDirectMessageAudio({
     required String accessToken,
     required String otherUserId,

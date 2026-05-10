@@ -297,6 +297,81 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatDeleteDm => '删除私信';
 
   @override
+  String get chatCall => '通话';
+
+  @override
+  String get chatStartAudioCall => '语音通话';
+
+  @override
+  String get chatStartVideoCall => '视频通话';
+
+  @override
+  String get chatAudioCalling => '正在语音呼叫...';
+
+  @override
+  String get chatVideoCalling => '正在视频呼叫...';
+
+  @override
+  String get chatAudioIncoming => '语音来电';
+
+  @override
+  String get chatVideoIncoming => '视频来电';
+
+  @override
+  String get chatCallConnecting => '连接中...';
+
+  @override
+  String get chatCallAccept => '接听';
+
+  @override
+  String get chatCallDecline => '拒绝';
+
+  @override
+  String get chatCallEnd => '结束';
+
+  @override
+  String get chatCallMute => '静音';
+
+  @override
+  String get chatCallUnmute => '取消静音';
+
+  @override
+  String get chatCallSpeaker => '扬声器';
+
+  @override
+  String get chatCallCamera => '摄像头';
+
+  @override
+  String get chatCallSwitchCamera => '切换';
+
+  @override
+  String get chatCallIssueTitle => '通话问题';
+
+  @override
+  String get chatCallMicrophoneDenied => '开始通话前，Bantera 需要麦克风权限。';
+
+  @override
+  String get chatCallMicrophoneSettings => 'Bantera 的麦克风权限已关闭。请打开设置并允许通话使用。';
+
+  @override
+  String get chatCallCameraDenied => '开始视频通话前，Bantera 需要摄像头权限。';
+
+  @override
+  String get chatCallCameraSettings => 'Bantera 的摄像头权限已关闭。请打开设置并允许视频通话使用。';
+
+  @override
+  String get chatCallBusy => '对方正在进行其他通话。';
+
+  @override
+  String get chatCallUnavailable => '对方当前无法接听通话。';
+
+  @override
+  String get chatCallNetworkRestricted => '当前网络无法建立通话，请尝试 Wi-Fi 或其他网络。';
+
+  @override
+  String get chatCallFailed => '无法开始通话，请重试。';
+
+  @override
   String get chatGroupReady => '这个群组可以发送语音消息。';
 
   @override

@@ -8,6 +8,7 @@ import 'core/app_locale.dart';
 import 'core/app_resume_notifier.dart';
 import 'core/auth_session_notifier.dart';
 import 'core/chat_session_notifier.dart';
+import 'core/dm_call_notifier.dart';
 import 'core/settings_notifier.dart';
 import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
@@ -15,6 +16,7 @@ import 'infrastructure/video_processing_service.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
+import 'presentation/chats/dm_call_overlay_host.dart';
 import 'presentation/onboarding/learning_language_setup_screen.dart';
 
 Future<void> main() async {
@@ -26,6 +28,7 @@ Future<void> main() async {
   ]);
   UserProfileNotifier.instance;
   ChatSessionNotifier.instance;
+  DmCallNotifier.instance;
   // Preload language lists in the background so pickers are fast on first open.
   unawaited(
     Future.wait([
@@ -84,6 +87,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         );
         return MaterialApp(
           title: 'Bantera',
+          builder: (context, child) {
+            return Stack(
+              children: [
+                child ?? const SizedBox.shrink(),
+                const DmCallOverlayHost(),
+              ],
+            );
+          },
           locale: locale,
           localizationsDelegates: const [
             AppLocalizations.delegate,

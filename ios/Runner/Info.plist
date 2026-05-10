@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Bantera requires microphone access to record practice audio and chat messages.</string>
+	<string>Bantera requires microphone access to record practice audio, chat messages, and live calls.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Bantera requires camera access for live video calls.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Bantera uses speech recognition to transcribe practice recordings and uploaded audio.</string>
 	<key>NSAppTransportSecurity</key>
@@ -60,6 +62,7 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>audio</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

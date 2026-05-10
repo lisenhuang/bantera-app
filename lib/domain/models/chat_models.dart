@@ -33,6 +33,49 @@ class ChatUserSummary {
   final bool isOnline;
 }
 
+class ChatIceServersConfig {
+  const ChatIceServersConfig({required this.iceServers});
+
+  factory ChatIceServersConfig.fromJson(Map<String, dynamic> json) {
+    final servers = (json['iceServers'] as List?) ?? const [];
+    return ChatIceServersConfig(
+      iceServers: servers
+          .whereType<Map>()
+          .map(
+            (server) => ChatIceServerEntry.fromJson(
+              server.map((key, value) => MapEntry(key.toString(), value)),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  final List<ChatIceServerEntry> iceServers;
+}
+
+class ChatIceServerEntry {
+  const ChatIceServerEntry({
+    required this.urls,
+    required this.username,
+    required this.credential,
+  });
+
+  factory ChatIceServerEntry.fromJson(Map<String, dynamic> json) {
+    return ChatIceServerEntry(
+      urls: ((json['urls'] as List?) ?? const [])
+          .map((url) => url.toString())
+          .where((url) => url.trim().isNotEmpty)
+          .toList(),
+      username: json['username']?.toString(),
+      credential: json['credential']?.toString(),
+    );
+  }
+
+  final List<String> urls;
+  final String? username;
+  final String? credential;
+}
+
 class ChatMessageItem {
   const ChatMessageItem({
     required this.messageId,

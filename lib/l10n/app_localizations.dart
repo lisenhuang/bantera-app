@@ -666,6 +666,156 @@ abstract class AppLocalizations {
   /// **'Delete DM'**
   String get chatDeleteDm;
 
+  /// No description provided for @chatCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get chatCall;
+
+  /// No description provided for @chatStartAudioCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Call'**
+  String get chatStartAudioCall;
+
+  /// No description provided for @chatStartVideoCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Video Call'**
+  String get chatStartVideoCall;
+
+  /// No description provided for @chatAudioCalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio calling...'**
+  String get chatAudioCalling;
+
+  /// No description provided for @chatVideoCalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Video calling...'**
+  String get chatVideoCalling;
+
+  /// No description provided for @chatAudioIncoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming audio call'**
+  String get chatAudioIncoming;
+
+  /// No description provided for @chatVideoIncoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming video call'**
+  String get chatVideoIncoming;
+
+  /// No description provided for @chatCallConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting...'**
+  String get chatCallConnecting;
+
+  /// No description provided for @chatCallAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get chatCallAccept;
+
+  /// No description provided for @chatCallDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get chatCallDecline;
+
+  /// No description provided for @chatCallEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get chatCallEnd;
+
+  /// No description provided for @chatCallMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get chatCallMute;
+
+  /// No description provided for @chatCallUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get chatCallUnmute;
+
+  /// No description provided for @chatCallSpeaker.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaker'**
+  String get chatCallSpeaker;
+
+  /// No description provided for @chatCallCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get chatCallCamera;
+
+  /// No description provided for @chatCallSwitchCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get chatCallSwitchCamera;
+
+  /// No description provided for @chatCallIssueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Call issue'**
+  String get chatCallIssueTitle;
+
+  /// No description provided for @chatCallMicrophoneDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera needs microphone access before starting a call.'**
+  String get chatCallMicrophoneDenied;
+
+  /// No description provided for @chatCallMicrophoneSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is turned off for Bantera. Open Settings and enable it for calls.'**
+  String get chatCallMicrophoneSettings;
+
+  /// No description provided for @chatCallCameraDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera needs camera access before starting a video call.'**
+  String get chatCallCameraDenied;
+
+  /// No description provided for @chatCallCameraSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is turned off for Bantera. Open Settings and enable it for video calls.'**
+  String get chatCallCameraSettings;
+
+  /// No description provided for @chatCallBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'This user is already on another call.'**
+  String get chatCallBusy;
+
+  /// No description provided for @chatCallUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This user is not available for a call right now.'**
+  String get chatCallUnavailable;
+
+  /// No description provided for @chatCallNetworkRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'This network can\'t connect the call. Try Wi-Fi or another network.'**
+  String get chatCallNetworkRestricted;
+
+  /// No description provided for @chatCallFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The call couldn\'t be started. Please try again.'**
+  String get chatCallFailed;
+
   /// No description provided for @chatGroupReady.
   ///
   /// In en, this message translates to:

@@ -310,6 +310,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatDeleteDm => 'Delete DM';
 
   @override
+  String get chatCall => 'Call';
+
+  @override
+  String get chatStartAudioCall => 'Audio Call';
+
+  @override
+  String get chatStartVideoCall => 'Video Call';
+
+  @override
+  String get chatAudioCalling => 'Audio calling...';
+
+  @override
+  String get chatVideoCalling => 'Video calling...';
+
+  @override
+  String get chatAudioIncoming => 'Incoming audio call';
+
+  @override
+  String get chatVideoIncoming => 'Incoming video call';
+
+  @override
+  String get chatCallConnecting => 'Connecting...';
+
+  @override
+  String get chatCallAccept => 'Accept';
+
+  @override
+  String get chatCallDecline => 'Decline';
+
+  @override
+  String get chatCallEnd => 'End';
+
+  @override
+  String get chatCallMute => 'Mute';
+
+  @override
+  String get chatCallUnmute => 'Unmute';
+
+  @override
+  String get chatCallSpeaker => 'Speaker';
+
+  @override
+  String get chatCallCamera => 'Camera';
+
+  @override
+  String get chatCallSwitchCamera => 'Switch';
+
+  @override
+  String get chatCallIssueTitle => 'Call issue';
+
+  @override
+  String get chatCallMicrophoneDenied =>
+      'Bantera needs microphone access before starting a call.';
+
+  @override
+  String get chatCallMicrophoneSettings =>
+      'Microphone access is turned off for Bantera. Open Settings and enable it for calls.';
+
+  @override
+  String get chatCallCameraDenied =>
+      'Bantera needs camera access before starting a video call.';
+
+  @override
+  String get chatCallCameraSettings =>
+      'Camera access is turned off for Bantera. Open Settings and enable it for video calls.';
+
+  @override
+  String get chatCallBusy => 'This user is already on another call.';
+
+  @override
+  String get chatCallUnavailable =>
+      'This user is not available for a call right now.';
+
+  @override
+  String get chatCallNetworkRestricted =>
+      'This network can\'t connect the call. Try Wi-Fi or another network.';
+
+  @override
+  String get chatCallFailed =>
+      'The call couldn\'t be started. Please try again.';
+
+  @override
   String get chatGroupReady => 'This group is ready for audio messages.';
 
   @override

@@ -299,6 +299,84 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatDeleteDm => 'DM 삭제';
 
   @override
+  String get chatCall => '통화';
+
+  @override
+  String get chatStartAudioCall => '음성 통화';
+
+  @override
+  String get chatStartVideoCall => '영상 통화';
+
+  @override
+  String get chatAudioCalling => '음성 통화 거는 중...';
+
+  @override
+  String get chatVideoCalling => '영상 통화 거는 중...';
+
+  @override
+  String get chatAudioIncoming => '음성 전화 수신';
+
+  @override
+  String get chatVideoIncoming => '영상 전화 수신';
+
+  @override
+  String get chatCallConnecting => '연결 중...';
+
+  @override
+  String get chatCallAccept => '받기';
+
+  @override
+  String get chatCallDecline => '거절';
+
+  @override
+  String get chatCallEnd => '종료';
+
+  @override
+  String get chatCallMute => '음소거';
+
+  @override
+  String get chatCallUnmute => '음소거 해제';
+
+  @override
+  String get chatCallSpeaker => '스피커';
+
+  @override
+  String get chatCallCamera => '카메라';
+
+  @override
+  String get chatCallSwitchCamera => '전환';
+
+  @override
+  String get chatCallIssueTitle => '통화 문제';
+
+  @override
+  String get chatCallMicrophoneDenied => '통화를 시작하려면 Bantera에 마이크 권한이 필요합니다.';
+
+  @override
+  String get chatCallMicrophoneSettings =>
+      'Bantera의 마이크 접근이 꺼져 있습니다. 설정에서 통화용으로 켜 주세요.';
+
+  @override
+  String get chatCallCameraDenied => '영상 통화를 시작하려면 Bantera에 카메라 권한이 필요합니다.';
+
+  @override
+  String get chatCallCameraSettings =>
+      'Bantera의 카메라 접근이 꺼져 있습니다. 설정에서 영상 통화용으로 켜 주세요.';
+
+  @override
+  String get chatCallBusy => '이 사용자는 다른 통화 중입니다.';
+
+  @override
+  String get chatCallUnavailable => '이 사용자는 지금 통화를 받을 수 없습니다.';
+
+  @override
+  String get chatCallNetworkRestricted =>
+      '현재 네트워크에서는 통화를 연결할 수 없습니다. Wi-Fi 또는 다른 네트워크를 사용해 보세요.';
+
+  @override
+  String get chatCallFailed => '통화를 시작할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
   String get chatGroupReady => '이 그룹에서 음성 메시지를 보낼 수 있습니다.';
 
   @override

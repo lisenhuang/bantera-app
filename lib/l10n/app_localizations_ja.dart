@@ -297,6 +297,84 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatDeleteDm => 'DMを削除';
 
   @override
+  String get chatCall => '通話';
+
+  @override
+  String get chatStartAudioCall => '音声通話';
+
+  @override
+  String get chatStartVideoCall => 'ビデオ通話';
+
+  @override
+  String get chatAudioCalling => '音声通話を発信中...';
+
+  @override
+  String get chatVideoCalling => 'ビデオ通話を発信中...';
+
+  @override
+  String get chatAudioIncoming => '音声着信';
+
+  @override
+  String get chatVideoIncoming => 'ビデオ着信';
+
+  @override
+  String get chatCallConnecting => '接続中...';
+
+  @override
+  String get chatCallAccept => '応答';
+
+  @override
+  String get chatCallDecline => '拒否';
+
+  @override
+  String get chatCallEnd => '終了';
+
+  @override
+  String get chatCallMute => 'ミュート';
+
+  @override
+  String get chatCallUnmute => 'ミュート解除';
+
+  @override
+  String get chatCallSpeaker => 'スピーカー';
+
+  @override
+  String get chatCallCamera => 'カメラ';
+
+  @override
+  String get chatCallSwitchCamera => '切替';
+
+  @override
+  String get chatCallIssueTitle => '通話の問題';
+
+  @override
+  String get chatCallMicrophoneDenied => '通話を開始するには、Bantera にマイクへのアクセスが必要です。';
+
+  @override
+  String get chatCallMicrophoneSettings =>
+      'Bantera のマイクアクセスがオフです。設定で通話用に有効にしてください。';
+
+  @override
+  String get chatCallCameraDenied => 'ビデオ通話を開始するには、Bantera にカメラへのアクセスが必要です。';
+
+  @override
+  String get chatCallCameraSettings =>
+      'Bantera のカメラアクセスがオフです。設定でビデオ通話用に有効にしてください。';
+
+  @override
+  String get chatCallBusy => 'このユーザーは別の通話中です。';
+
+  @override
+  String get chatCallUnavailable => 'このユーザーは現在通話できません。';
+
+  @override
+  String get chatCallNetworkRestricted =>
+      'このネットワークでは通話を接続できません。Wi-Fi または別のネットワークを試してください。';
+
+  @override
+  String get chatCallFailed => '通話を開始できませんでした。もう一度お試しください。';
+
+  @override
   String get chatGroupReady => 'このグループは音声メッセージを送信できます。';
 
   @override
