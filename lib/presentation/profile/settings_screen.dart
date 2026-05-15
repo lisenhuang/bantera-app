@@ -66,7 +66,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    AuthSessionNotifier.instance.signOut();
+    await AuthSessionNotifier.instance.signOut();
+    if (!mounted) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
@@ -196,7 +197,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ).push<bool>(MaterialPageRoute(builder: (context) => const DevScreen()));
 
     if (changed == true && mounted) {
-      auth.signOut();
+      await auth.signOut();
+      if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }

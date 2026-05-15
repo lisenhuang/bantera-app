@@ -79,7 +79,7 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
       await PracticePlaybackSpeedStore.instance.clear();
       await UserProfileCacheStore.instance.removeAllForCacheKey(cacheKey);
       ProfileStatsNotifier.instance.reset();
-      AuthSessionNotifier.instance.signOut();
+      await AuthSessionNotifier.instance.signOut();
       if (!mounted) {
         return;
       }
@@ -87,16 +87,16 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
     } on AuthApiException catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(localizeAuthApiError(l10n, e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(localizeAuthApiError(l10n, e))));
       }
     } catch (_) {
       if (mounted) {
         final loc = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.couldNotDeleteAccount)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.couldNotDeleteAccount)));
       }
     } finally {
       if (mounted) {
@@ -110,9 +110,7 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.accountMoreTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.accountMoreTitle)),
       body: Stack(
         children: [
           ListenableBuilder(
@@ -151,9 +149,7 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
             Positioned.fill(
               child: ColoredBox(
                 color: Colors.black.withValues(alpha: 0.35),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
             ),
         ],

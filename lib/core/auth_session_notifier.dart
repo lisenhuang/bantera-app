@@ -154,7 +154,7 @@ class AuthSessionNotifier extends ChangeNotifier {
           if (decoded is Map<String, dynamic>) {
             _session = AuthSession.fromJson(decoded);
             if (_accessTokenNeedsRefreshNow(_session!)) {
-              await _silentRefresh();
+              unawaited(_apiClient.requestRefresh());
             } else {
               _scheduleRefresh();
             }
@@ -248,7 +248,7 @@ class AuthSessionNotifier extends ChangeNotifier {
         refreshToken: response.refreshToken,
         issuedAt: DateTime.now(),
       );
-      _persistSession();
+      await _persistSession();
       _scheduleRefresh();
     } on SignInWithAppleAuthorizationException catch (error) {
       if (error.code != AuthorizationErrorCode.canceled) {
@@ -263,14 +263,14 @@ class AuthSessionNotifier extends ChangeNotifier {
     }
   }
 
-  void signOut() {
+  Future<void> signOut() async {
     _refreshTimer?.cancel();
     _refreshTimer = null;
     _session = null;
     _plainErrorMessage = null;
     _authApiError = null;
+    await _persistSession();
     notifyListeners();
-    _persistSession();
   }
 
   /// Matches [_scheduleRefresh] timing: refresh when within [_refreshLeadTime] of access token expiry.
@@ -297,11 +297,14 @@ class AuthSessionNotifier extends ChangeNotifier {
     final remaining = refreshAt.difference(DateTime.now());
 
     if (remaining <= Duration.zero) {
-      _silentRefresh();
+      unawaited(_apiClient.requestRefresh());
       return;
     }
 
-    _refreshTimer = Timer(remaining, _silentRefresh);
+    _refreshTimer = Timer(
+      remaining,
+      () => unawaited(_apiClient.requestRefresh()),
+    );
   }
 
   /// Called automatically by AuthApiClient when a request returns token_expired.
@@ -323,17 +326,17 @@ class AuthSessionNotifier extends ChangeNotifier {
         refreshToken: response.refreshToken,
         issuedAt: DateTime.now(),
       );
-      notifyListeners();
-      _persistSession();
+      await _persistSession();
       _scheduleRefresh();
+      notifyListeners();
       return response.accessToken;
     } on AuthApiException catch (e) {
       // Only sign out when the server explicitly rejects the session.
       // Network/connectivity errors are transient — the refresh token is still
       // valid and the timer will retry on the next cycle.
-      const _authRejectionCodes = {'session_expired', 'unauthorized'};
-      if (_authRejectionCodes.contains(e.code)) {
-        signOut();
+      const authRejectionCodes = {'session_expired', 'unauthorized'};
+      if (authRejectionCodes.contains(e.code)) {
+        await signOut();
       }
       return null;
     } catch (_) {
@@ -353,7 +356,7 @@ class AuthSessionNotifier extends ChangeNotifier {
   }
 
   Future<String?> refreshAccessTokenForApi() {
-    return _silentRefresh();
+    return _apiClient.requestRefresh();
   }
 
   Future<void> _runAuthAction(
@@ -377,7 +380,7 @@ class AuthSessionNotifier extends ChangeNotifier {
         refreshToken: response.refreshToken,
         issuedAt: DateTime.now(),
       );
-      _persistSession();
+      await _persistSession();
       _scheduleRefresh();
     } on AuthApiException catch (error) {
       _authApiError = error;

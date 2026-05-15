@@ -12,6 +12,7 @@ class AuthApiClient {
   AuthApiClient._();
 
   static final AuthApiClient instance = AuthApiClient._();
+  static const _authRequestTimeout = Duration(seconds: 10);
 
   final HttpClient _httpClient = HttpClient();
   List<String> _dialogueLines = [];
@@ -29,6 +30,8 @@ class AuthApiClient {
   void setTokenRefresher(Future<String?> Function() refresher) {
     _onRefreshToken = refresher;
   }
+
+  Future<String?> requestRefresh() => _doRefresh();
 
   Future<String?> _doRefresh() async {
     if (_refreshInProgress != null) return _refreshInProgress!.future;
@@ -591,8 +594,8 @@ class AuthApiClient {
       final endpointPath = useV3
           ? '/api/me/audio/generate/v3'
           : useV2
-              ? '/api/me/audio/generate/v2'
-              : '/api/me/audio/generate';
+          ? '/api/me/audio/generate/v2'
+          : '/api/me/audio/generate';
       final request = await _httpClient.postUrl(_resolve(endpointPath));
       request.headers.set(
         HttpHeaders.authorizationHeader,
@@ -1295,9 +1298,11 @@ class AuthApiClient {
         method: 'POST',
         path: path,
         payload: payload,
-      );
+      ).timeout(_authRequestTimeout);
       return AuthTokenResponse.fromJson(json);
     } on SocketException {
+      await _throwNetworkFailure();
+    } on TimeoutException {
       await _throwNetworkFailure();
     } on HandshakeException {
       throw const AuthApiException(
