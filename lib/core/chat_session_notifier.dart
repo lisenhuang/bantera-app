@@ -252,6 +252,15 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   Future<ChatMessageItem?> transcribeMessage(ChatMessageItem message) async {
     final audioFile = await ensureLocalAudio(message);
+    // Clear any stale translation so it doesn't mismatch the new transcript.
+    if (message.localTranscriptStatus == 'ready') {
+      await _localRepository.updateMessageTranslation(
+        messageId: message.messageId,
+        translationText: '',
+        translationLanguageCode: '',
+        status: '',
+      );
+    }
     await _localRepository.updateMessageTranscript(
       messageId: message.messageId,
       transcriptText: message.localTranscriptText ?? '',

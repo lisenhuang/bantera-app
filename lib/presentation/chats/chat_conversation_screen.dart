@@ -1167,6 +1167,7 @@ class _MessageBubble extends StatelessWidget {
     final hasReadyTranscript = message.localTranscriptStatus == 'ready';
     final hasReadyTranslation = message.localTranslationStatus == 'ready';
     final showTranscribeButton = !hasReadyTranscript;
+    final showRetranscribeButton = hasReadyTranscript;
     final showTranslateButton =
         hasReadyTranscript && !hasReadyTranslation && canTranslate;
 
@@ -1205,6 +1206,11 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
+                  Text(
+                    _formatDuration(message.durationMs),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _RoundedAudioProgressBar(
                       value: progress,
@@ -1212,8 +1218,11 @@ class _MessageBubble extends StatelessWidget {
                       foregroundColor: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Text(_formatDuration(message.durationMs)),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatTimestamp(message.createdAt),
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -1231,6 +1240,18 @@ class _MessageBubble extends StatelessWidget {
                           : const Icon(Icons.subtitles_outlined),
                       label: Text(l10n.chatTranscribe),
                     ),
+                  if (showRetranscribeButton)
+                    OutlinedButton.icon(
+                      onPressed: isTranscribing ? null : onTranscribe,
+                      icon: isTranscribing
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.replay),
+                      label: Text(l10n.chatRetranscribe),
+                    ),
                   if (showTranslateButton) ...[
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
@@ -1245,11 +1266,6 @@ class _MessageBubble extends StatelessWidget {
                       label: Text(l10n.chatTranslate),
                     ),
                   ],
-                  const Spacer(),
-                  Text(
-                    _formatTimestamp(message.createdAt),
-                    style: theme.textTheme.bodySmall,
-                  ),
                 ],
               ),
               if (message.localTranscriptStatus == 'processing')
