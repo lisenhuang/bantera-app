@@ -58,6 +58,13 @@ class _SavedScreenState extends State<SavedScreen> {
         _isLoading = false;
         _error = localizeAuthApiError(l10n, e);
       });
+    } on SessionExpiredException {
+      // Session was revoked — AuthSessionNotifier already called signOut(),
+      // which routes the app to login. Just stop showing the spinner.
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 

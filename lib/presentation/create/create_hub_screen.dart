@@ -342,6 +342,12 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         _isLoadingVideos = false;
         _loadError = localizeAuthApiError(l10n, error);
       });
+    } on SessionExpiredException {
+      // AuthSessionNotifier already signed the user out — stop the spinner.
+      if (!mounted) return;
+      setState(() {
+        _isLoadingVideos = false;
+      });
     }
   }
 

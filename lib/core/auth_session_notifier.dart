@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_config_notifier.dart';
+import 'app_resume_notifier.dart';
 import 'auth_api_error_localizations.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../l10n/app_localizations.dart';
@@ -97,6 +98,14 @@ class AuthSession {
 class AuthSessionNotifier extends ChangeNotifier {
   AuthSessionNotifier._() {
     AuthApiClient.instance.setTokenRefresher(_silentRefresh);
+    AppResumeNotifier.instance.addListener(_onResume);
+  }
+
+  void _onResume() {
+    final session = _session;
+    if (session != null && _accessTokenNeedsRefreshNow(session)) {
+      unawaited(_apiClient.requestRefresh());
+    }
   }
 
   static final AuthSessionNotifier instance = AuthSessionNotifier._();
@@ -154,7 +163,17 @@ class AuthSessionNotifier extends ChangeNotifier {
           if (decoded is Map<String, dynamic>) {
             _session = AuthSession.fromJson(decoded);
             if (_accessTokenNeedsRefreshNow(_session!)) {
-              unawaited(_apiClient.requestRefresh());
+              final newToken = await _apiClient.requestRefresh();
+              // Safety net: if the refresh didn't produce a new token (timeout,
+              // network error, parse error) AND the stored access token is
+              // truly past expiry, the session is unusable. Sign out so the
+              // user lands on the login screen instead of being stuck with a
+              // broken authenticated state.
+              if (newToken == null &&
+                  _session != null &&
+                  _accessTokenIsExpired(_session!)) {
+                await signOut();
+              }
             } else {
               _scheduleRefresh();
             }
@@ -164,6 +183,14 @@ class AuthSessionNotifier extends ChangeNotifier {
     } catch (_) {}
     _isInitialized = true;
     notifyListeners();
+  }
+
+  bool _accessTokenIsExpired(AuthSession session) {
+    if (session.expiresIn <= 0) return true;
+    final expiresAt = session.issuedAt.add(
+      Duration(seconds: session.expiresIn),
+    );
+    return DateTime.now().isAfter(expiresAt);
   }
 
   Future<File> get _sessionFile async {
@@ -337,6 +364,9 @@ class AuthSessionNotifier extends ChangeNotifier {
       const authRejectionCodes = {'session_expired', 'unauthorized'};
       if (authRejectionCodes.contains(e.code)) {
         await signOut();
+        // Throw so _doRefresh propagates this to API callers, letting them
+        // know the session is truly gone (not just a transient failure).
+        throw const SessionExpiredException();
       }
       return null;
     } catch (_) {

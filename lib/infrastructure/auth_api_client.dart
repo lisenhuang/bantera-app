@@ -44,8 +44,12 @@ class AuthApiClient {
       final token = await refresher();
       completer.complete(token);
       return token;
-    } catch (_) {
+    } catch (e) {
+      // Complete in-flight dedup callers with null so they don't hang, then
+      // propagate SessionExpiredException so the primary caller knows the user
+      // was signed out (not just a transient network failure).
       completer.complete(null);
+      if (e is SessionExpiredException) rethrow;
       return null;
     } finally {
       _refreshInProgress = null;
@@ -53,9 +57,9 @@ class AuthApiClient {
   }
 
   /// Runs [action] with the given [accessToken]. If the call throws an
-  /// [AuthApiException] whose code is `token_expired`, silently refreshes and
-  /// retries once. This covers every authenticated method that doesn't go
-  /// through [_sendJsonRequest].
+  /// [AuthApiException] with code `token_expired` or status 401, silently
+  /// refreshes and retries once. [_doRefresh] may throw [SessionExpiredException]
+  /// if the server permanently rejected the session (user is signed out).
   Future<T> _retryWithRefresh<T>(
     String? accessToken,
     Future<T> Function(String? token) action,
@@ -63,10 +67,14 @@ class AuthApiClient {
     try {
       return await action(accessToken);
     } on AuthApiException catch (e) {
-      if (e.code == 'token_expired' && accessToken != null) {
+      if (accessToken != null &&
+          (e.code == 'token_expired' || e.statusCode == 401)) {
         final newToken = await _doRefresh();
         if (newToken != null) return action(newToken);
-        throw const SessionExpiredException();
+        throw const AuthApiException(
+          code: 'token_expired',
+          message: 'Your session could not be renewed. Please try again.',
+        );
       }
       rethrow;
     }
@@ -543,6 +551,7 @@ class AuthApiClient {
         throw AuthApiException(
           code: 'request_failed',
           message: 'The Bantera API request failed (${response.statusCode}).',
+          statusCode: response.statusCode,
         );
       } on AuthApiException {
         rethrow;
@@ -613,9 +622,7 @@ class AuthApiClient {
           errJson = jsonDecode(body) as Map<String, dynamic>;
         } catch (_) {}
 
-        if (!retried &&
-            response.statusCode == 401 &&
-            errJson['code']?.toString() == 'token_expired') {
+        if (!retried && response.statusCode == 401) {
           final newToken = await _doRefresh();
           if (newToken != null) {
             return generateAiAudioStreaming(
@@ -637,7 +644,10 @@ class AuthApiClient {
               retried: true,
             );
           }
-          throw const SessionExpiredException();
+          throw const AuthApiException(
+            code: 'token_expired',
+            message: 'Your session could not be renewed. Please try again.',
+          );
         }
 
         _throwApiException(errJson, response.statusCode);
@@ -935,11 +945,7 @@ class AuthApiClient {
         final response = await request.close();
         final body = await response.transform(utf8.decoder).join();
         if (response.statusCode == 401) {
-          final decoded = jsonDecode(body);
-          if (decoded is Map &&
-              decoded['code']?.toString() == 'token_expired') {
-            throw const AuthApiException(code: 'token_expired', message: '');
-          }
+          throw const AuthApiException(code: 'token_expired', message: '');
         }
         if (response.statusCode != 200) return false;
         final decoded = jsonDecode(body);
@@ -968,12 +974,8 @@ class AuthApiClient {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
         final response = await request.close();
         if (response.statusCode == 401) {
-          final body = await response.transform(utf8.decoder).join();
-          final json = _tryDecodeJson(body);
-          if (json != null && json['code']?.toString() == 'token_expired') {
-            throw const AuthApiException(code: 'token_expired', message: '');
-          }
-          return;
+          await response.drain<void>();
+          throw const AuthApiException(code: 'token_expired', message: '');
         }
         await response.drain<void>();
       } on AuthApiException {
@@ -1002,12 +1004,8 @@ class AuthApiClient {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
         final response = await request.close();
         if (response.statusCode == 401) {
-          final body = await response.transform(utf8.decoder).join();
-          final json = _tryDecodeJson(body);
-          if (json != null && json['code']?.toString() == 'token_expired') {
-            throw const AuthApiException(code: 'token_expired', message: '');
-          }
-          return;
+          await response.drain<void>();
+          throw const AuthApiException(code: 'token_expired', message: '');
         }
         await response.drain<void>();
       } on AuthApiException {
@@ -1192,6 +1190,14 @@ class AuthApiClient {
         if (decoded is Map<String, dynamic>) {
           _throwApiException(decoded, response.statusCode);
         }
+        // Ensure a bare 401 (e.g. from a proxy) still triggers refresh.
+        if (response.statusCode == 401) {
+          throw AuthApiException(
+            code: 'token_expired',
+            message: 'Your session could not be renewed. Please try again.',
+            statusCode: 401,
+          );
+        }
         return [];
       } on AuthApiException {
         rethrow;
@@ -1217,10 +1223,7 @@ class AuthApiClient {
         final response = await request.close();
         final responseText = await response.transform(utf8.decoder).join();
         if (response.statusCode == 401) {
-          final json = _tryDecodeJson(responseText);
-          if (json != null && json['code']?.toString() == 'token_expired') {
-            throw const AuthApiException(code: 'token_expired', message: '');
-          }
+          throw const AuthApiException(code: 'token_expired', message: '');
         }
         final decoded = jsonDecode(responseText) as Map<String, dynamic>;
         return (
@@ -1338,9 +1341,10 @@ class AuthApiClient {
       return json;
     }
 
-    if (!retried &&
-        response.statusCode == 401 &&
-        json['code']?.toString() == 'token_expired') {
+    // Only retry with refresh for authenticated requests (accessToken != null).
+    // Unauthenticated requests like /api/auth/refresh may also return 401
+    // (e.g. session_expired) and must not trigger another refresh loop.
+    if (!retried && response.statusCode == 401 && accessToken != null) {
       final newToken = await _doRefresh();
       if (newToken != null) {
         return _sendJsonRequest(
@@ -1351,7 +1355,10 @@ class AuthApiClient {
           retried: true,
         );
       }
-      throw const SessionExpiredException();
+      throw const AuthApiException(
+        code: 'token_expired',
+        message: 'Your session could not be renewed. Please try again.',
+      );
     }
 
     _throwApiException(json, response.statusCode);
@@ -1383,12 +1390,13 @@ class AuthApiClient {
     final code = json['code']?.toString();
     final message = json['message']?.toString();
     if (code != null && message != null) {
-      throw AuthApiException(code: code, message: message);
+      throw AuthApiException(code: code, message: message, statusCode: statusCode);
     }
 
     throw AuthApiException(
       code: 'request_failed',
       message: 'The Bantera API request failed ($statusCode).',
+      statusCode: statusCode,
     );
   }
 
@@ -1536,10 +1544,15 @@ class AuthTokenResponse {
 }
 
 class AuthApiException implements Exception {
-  const AuthApiException({required this.code, required this.message});
+  const AuthApiException({
+    required this.code,
+    required this.message,
+    this.statusCode,
+  });
 
   final String code;
   final String message;
+  final int? statusCode;
 }
 
 /// Thrown when the session could not be renewed and the user has been signed

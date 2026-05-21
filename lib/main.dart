@@ -128,7 +128,8 @@ class AppRoot extends StatelessWidget {
         UserProfileNotifier.instance,
       ]),
       builder: (context, child) {
-        if (!ApiConfigNotifier.instance.isInitialized) {
+        if (!ApiConfigNotifier.instance.isInitialized ||
+            !AuthSessionNotifier.instance.isInitialized) {
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: const Center(child: CircularProgressIndicator()),
