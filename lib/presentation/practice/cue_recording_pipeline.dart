@@ -46,6 +46,14 @@ Future<ProcessedCueAttempt> processRecordingFile({
   final comparison = buildAttemptComparison(
     expectedText: expectedCueText,
     actualText: recognizedText,
+    actualWordConfidences: transcription.words
+        .map(
+          (word) => AttemptWordConfidence(
+            text: word.text,
+            confidence: word.confidence,
+          ),
+        )
+        .toList(growable: false),
   );
 
   LocalCuePracticeAttempt? savedAttempt;

@@ -1328,6 +1328,13 @@ private final class BanteraLegacySpeechRecognitionService {
     }
   }
 
+  /// Per-word recognition output plus the engine path that produced it.
+  private struct TranscriptionOutcome {
+    let text: String
+    let segments: [[String: Any]]
+    let onDevice: Bool
+  }
+
   func transcribeRecordedAudio(
     inputURL: URL,
     localeIdentifier: String
@@ -1338,8 +1345,8 @@ private final class BanteraLegacySpeechRecognitionService {
       throw BanteraVideoProcessingError.speechUnavailable
     }
 
-    let transcript = try await transcribe(url: inputURL, recognizer: resolved.recognizer)
-    let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+    let outcome = try await transcribe(url: inputURL, recognizer: resolved.recognizer)
+    let text = outcome.text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !text.isEmpty else {
       throw BanteraVideoProcessingError.transcriptionFailed(
         "No transcript could be generated. Check that the audio matches the chosen language."
@@ -1350,6 +1357,10 @@ private final class BanteraLegacySpeechRecognitionService {
       "transcriptText": text,
       "transcriptLanguage": Self.bcp47Identifier(for: resolved.locale),
       "transcriptLanguageCode": Self.languageCode(for: resolved.locale),
+      // Per-word confidence + which engine produced it, so the comparison layer can
+      // flag words the recognizer was unsure about instead of scoring them correct.
+      "segments": outcome.segments,
+      "recognitionMode": outcome.onDevice ? "onDevice" : "network",
     ]
   }
 
@@ -1398,31 +1409,28 @@ private final class BanteraLegacySpeechRecognitionService {
     return (locale, recognizer)
   }
 
-  private func transcribe(url: URL, recognizer: SFSpeechRecognizer) async throws -> String {
-    do {
-      return try await transcribe(
-        url: url,
-        recognizer: recognizer,
-        requiresOnDeviceRecognition: recognizer.supportsOnDeviceRecognition
-      )
-    } catch {
-      guard recognizer.supportsOnDeviceRecognition else {
-        throw error
-      }
-
-      return try await transcribe(
-        url: url,
-        recognizer: recognizer,
-        requiresOnDeviceRecognition: false
-      )
-    }
+  /// Honest-transcript policy: when the locale has an on-device model, transcribe
+  /// strictly on-device. The network recognizer applies heavier language-model
+  /// "smoothing" that snaps a learner's mistakes back to the expected words, so we
+  /// deliberately do NOT fall back to it when on-device is available. Locales
+  /// without an on-device model use the network recognizer and are tagged so the
+  /// caller can treat the result as lower fidelity.
+  private func transcribe(
+    url: URL,
+    recognizer: SFSpeechRecognizer
+  ) async throws -> TranscriptionOutcome {
+    try await transcribe(
+      url: url,
+      recognizer: recognizer,
+      requiresOnDeviceRecognition: recognizer.supportsOnDeviceRecognition
+    )
   }
 
   private func transcribe(
     url: URL,
     recognizer: SFSpeechRecognizer,
     requiresOnDeviceRecognition: Bool
-  ) async throws -> String {
+  ) async throws -> TranscriptionOutcome {
     try await withCheckedThrowingContinuation { continuation in
       let request = SFSpeechURLRecognitionRequest(url: url)
       request.shouldReportPartialResults = false
@@ -1431,14 +1439,14 @@ private final class BanteraLegacySpeechRecognitionService {
       let lock = NSLock()
       var didResume = false
 
-      func finish(_ result: Result<String, Error>) {
+      func finish(_ result: Result<TranscriptionOutcome, Error>) {
         lock.lock()
         defer { lock.unlock() }
         guard !didResume else { return }
         didResume = true
         switch result {
-        case let .success(text):
-          continuation.resume(returning: text)
+        case let .success(outcome):
+          continuation.resume(returning: outcome)
         case let .failure(error):
           continuation.resume(throwing: error)
         }
@@ -1452,7 +1460,22 @@ private final class BanteraLegacySpeechRecognitionService {
 
         guard let result else { return }
         if result.isFinal {
-          finish(.success(result.bestTranscription.formattedString))
+          let best = result.bestTranscription
+          let segments = best.segments.map { segment -> [String: Any] in
+            [
+              "text": segment.substring,
+              "confidence": Double(segment.confidence),
+            ]
+          }
+          finish(
+            .success(
+              TranscriptionOutcome(
+                text: best.formattedString,
+                segments: segments,
+                onDevice: requiresOnDeviceRecognition
+              )
+            )
+          )
         }
       }
     }

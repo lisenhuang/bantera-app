@@ -822,6 +822,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get compareHighlightHint => 'Bantera 识别不同的词会高亮显示。';
 
   @override
+  String get compareUncertainHint => '虚线词已识别但不太确定 — 请检查你的发音。';
+
+  @override
   String get compareTryAgain => '重试';
 
   @override
@@ -870,6 +873,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String compareMissingCount(int count) {
     return '$count 处缺失';
+  }
+
+  @override
+  String compareUncertainCount(int count) {
+    return '$count 处不确定';
   }
 
   @override

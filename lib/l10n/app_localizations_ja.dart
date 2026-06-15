@@ -828,6 +828,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get compareHighlightHint => 'Banteraが異なると認識した語は強調表示されます。';
 
   @override
+  String get compareUncertainHint => '点線の語は認識されましたが確信は低めです。発音を確認しましょう。';
+
+  @override
   String get compareTryAgain => 'やり直す';
 
   @override
@@ -878,6 +881,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String compareMissingCount(int count) {
     return '欠落 $count';
+  }
+
+  @override
+  String compareUncertainCount(int count) {
+    return '不明瞭 $count';
   }
 
   @override

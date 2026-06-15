@@ -833,6 +833,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get compareHighlightHint => 'Bantera가 다르게 인식한 단어는 강조됩니다.';
 
   @override
+  String get compareUncertainHint => '점선 단어는 인식되었지만 확신이 낮습니다 — 발음을 확인하세요.';
+
+  @override
   String get compareTryAgain => '다시 시도';
 
   @override
@@ -884,6 +887,11 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String compareMissingCount(int count) {
     return '누락 $count개';
+  }
+
+  @override
+  String compareUncertainCount(int count) {
+    return '불명확 $count개';
   }
 
   @override

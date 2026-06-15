@@ -189,6 +189,31 @@ class _SessionCompareResultSheetState extends State<SessionCompareResultSheet> {
                   ),
                 ],
               ),
+              if (widget.result.uncertainCount > 0) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.help_outline,
+                      color: Colors.amber[800],
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        l10n.compareUncertainHint,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.amber[800],
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -250,6 +275,12 @@ class _SummaryChipsRow extends StatelessWidget {
           color: Colors.orange,
           textStyle: theme.textTheme.labelLarge,
         ),
+        if (result.uncertainCount > 0)
+          _SummaryChip(
+            label: l10n.compareUncertainCount(result.uncertainCount),
+            color: Colors.amber.shade800,
+            textStyle: theme.textTheme.labelLarge,
+          ),
         if (result.missingCount > 0)
           _SummaryChip(
             label: l10n.compareMissingCount(result.missingCount),
@@ -306,16 +337,24 @@ class _AttemptTranscriptRichText extends StatelessWidget {
       fontWeight: FontWeight.bold,
       decoration: TextDecoration.underline,
     );
+    final uncertainStyle = baseStyle?.copyWith(
+      color: Colors.amber[800],
+      decoration: TextDecoration.underline,
+      decorationStyle: TextDecorationStyle.dotted,
+    );
 
     final spans = <InlineSpan>[];
     for (var i = 0; i < result.segments.length; i += 1) {
       final segment = result.segments[i];
-      spans.add(
-        TextSpan(
-          text: segment.text,
-          style: segment.isMatch ? baseStyle : mismatchStyle,
-        ),
-      );
+      final TextStyle? style;
+      if (!segment.isMatch) {
+        style = mismatchStyle;
+      } else if (segment.isUncertain) {
+        style = uncertainStyle;
+      } else {
+        style = baseStyle;
+      }
+      spans.add(TextSpan(text: segment.text, style: style));
       if (result.joinSegmentsWithSpace && i != result.segments.length - 1) {
         spans.add(const TextSpan(text: ' '));
       }

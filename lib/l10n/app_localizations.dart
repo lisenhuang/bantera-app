@@ -1680,6 +1680,12 @@ abstract class AppLocalizations {
   /// **'Words that Bantera recognised differently are highlighted.'**
   String get compareHighlightHint;
 
+  /// No description provided for @compareUncertainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Dotted words were recognised but Bantera wasn\'t sure — check your pronunciation.'**
+  String get compareUncertainHint;
+
   /// No description provided for @compareTryAgain.
   ///
   /// In en, this message translates to:
@@ -1769,6 +1775,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} missing'**
   String compareMissingCount(int count);
+
+  /// No description provided for @compareUncertainCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unclear'**
+  String compareUncertainCount(int count);
 
   /// No description provided for @compareMicrophoneDeniedPermanent.
   ///

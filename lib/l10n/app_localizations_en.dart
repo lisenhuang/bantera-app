@@ -872,6 +872,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Words that Bantera recognised differently are highlighted.';
 
   @override
+  String get compareUncertainHint =>
+      'Dotted words were recognised but Bantera wasn\'t sure — check your pronunciation.';
+
+  @override
   String get compareTryAgain => 'Try Again';
 
   @override
@@ -928,6 +932,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String compareMissingCount(int count) {
     return '$count missing';
+  }
+
+  @override
+  String compareUncertainCount(int count) {
+    return '$count unclear';
   }
 
   @override

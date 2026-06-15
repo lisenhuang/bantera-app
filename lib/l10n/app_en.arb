@@ -327,6 +327,7 @@
   "comparePlayAttempt": "Play Attempt",
   "compareYourTranscribedAttempt": "Your transcribed attempt",
   "compareHighlightHint": "Words that Bantera recognised differently are highlighted.",
+  "compareUncertainHint": "Dotted words were recognised but Bantera wasn't sure — check your pronunciation.",
   "compareTryAgain": "Try Again",
   "compareDone": "Done",
   "compareStatusTranscribing": "Transcribing your attempt on iPhone…",
@@ -357,6 +358,14 @@
   },
   "compareMissingCount": "{count} missing",
   "@compareMissingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareUncertainCount": "{count} unclear",
+  "@compareUncertainCount": {
     "placeholders": {
       "count": {
         "type": "int"

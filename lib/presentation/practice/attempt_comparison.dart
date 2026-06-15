@@ -8,6 +8,7 @@ class AttemptComparisonResult {
     required this.matchedCount,
     required this.unexpectedCount,
     required this.missingCount,
+    this.uncertainCount = 0,
     this.joinSegmentsWithSpace = true,
   });
 
@@ -17,15 +18,32 @@ class AttemptComparisonResult {
   final int unexpectedCount;
   final int missingCount;
 
+  /// Matched words the recognizer was unsure about (low confidence). Still
+  /// counted as matched, but flagged so a likely auto-corrected mistake is not
+  /// presented as a clean match.
+  final int uncertainCount;
+
   /// False for CJK character-level diff — inserting spaces would break Chinese.
   final bool joinSegmentsWithSpace;
 }
 
 class DiffSegment {
-  const DiffSegment({required this.text, required this.isMatch});
+  const DiffSegment({
+    required this.text,
+    required this.isMatch,
+    this.isUncertain = false,
+    this.confidence,
+  });
 
   final String text;
   final bool isMatch;
+
+  /// True when [isMatch] but the engine's confidence for this word was low — the
+  /// recognizer may have "auto-corrected" a mispronounced word back to the cue.
+  final bool isUncertain;
+
+  /// Per-word recognition confidence (0–1), or null when unavailable.
+  final double? confidence;
 }
 
 class DiffToken {
@@ -35,10 +53,30 @@ class DiffToken {
   final String normalized;
 }
 
+/// One recognized word + confidence, used to flag low-confidence matches.
+class AttemptWordConfidence {
+  const AttemptWordConfidence({required this.text, required this.confidence});
+
+  final String text;
+  final double confidence;
+}
+
+/// Matched words with confidence above 0 and below this value are flagged
+/// uncertain. A confidence of 0 is treated as "no signal" (some on-device
+/// engines do not report confidence) and never flags.
+const double kAttemptUncertaintyThreshold = 0.5;
+
 /// Builds token-level / character-level diff for shadowing feedback.
+///
+/// When [actualWordConfidences] is supplied (per-word recognition confidence in
+/// spoken order), matched words whose confidence is above 0 and below
+/// [uncertaintyThreshold] are flagged [DiffSegment.isUncertain] so a likely
+/// auto-corrected mistake is not presented as a clean match.
 AttemptComparisonResult buildAttemptComparison({
   required String expectedText,
   required String actualText,
+  List<AttemptWordConfidence>? actualWordConfidences,
+  double uncertaintyThreshold = kAttemptUncertaintyThreshold,
 }) {
   final expectedClean = _stripInvisibleSeparators(expectedText.trim());
   final actualClean = _stripInvisibleSeparators(actualText.trim());
@@ -54,6 +92,12 @@ AttemptComparisonResult buildAttemptComparison({
     useCharacterTokens: useCharacterTokens,
   );
 
+  final tokenConfidences = _alignConfidencesToTokens(
+    actualWordConfidences,
+    actualTokens.length,
+    useCharacterTokens: useCharacterTokens,
+  );
+
   final expComp = _comparableTokensForLcs(expectedTokens);
   final actComp = _comparableTokensForLcs(actualTokens);
   final lcs = _longestCommonSubsequence(expComp.norms, actComp.norms);
@@ -64,12 +108,25 @@ AttemptComparisonResult buildAttemptComparison({
   }
 
   final segments = <DiffSegment>[];
+  var uncertainCount = 0;
   for (var i = 0; i < actualTokens.length; i += 1) {
     final punctOnly = actualTokens[i].normalized.isEmpty;
+    final isMatch = punctOnly || matchedActualOriginalIndexes.contains(i);
+    final confidence = tokenConfidences[i];
+    final isUncertain = isMatch &&
+        !punctOnly &&
+        confidence != null &&
+        confidence > 0 &&
+        confidence < uncertaintyThreshold;
+    if (isUncertain) {
+      uncertainCount += 1;
+    }
     segments.add(
       DiffSegment(
         text: actualTokens[i].display,
-        isMatch: punctOnly || matchedActualOriginalIndexes.contains(i),
+        isMatch: isMatch,
+        isUncertain: isUncertain,
+        confidence: confidence,
       ),
     );
   }
@@ -84,8 +141,49 @@ AttemptComparisonResult buildAttemptComparison({
     matchedCount: contentMatches,
     unexpectedCount: contentUnexpected,
     missingCount: contentMissing,
+    uncertainCount: uncertainCount,
     joinSegmentsWithSpace: !useCharacterTokens,
   );
+}
+
+/// Maps per-word recognition confidence onto the diff's token list. Returns a
+/// list aligned to [tokenCount]; entries are null when no confidence is known.
+///
+/// Alignment is positional and only applied when the expanded confidence list
+/// lines up exactly with the tokens — otherwise (formatting/punctuation drift)
+/// all entries stay null so a word is never mislabeled from a misaligned score.
+List<double?> _alignConfidencesToTokens(
+  List<AttemptWordConfidence>? words,
+  int tokenCount, {
+  required bool useCharacterTokens,
+}) {
+  final confidences = List<double?>.filled(tokenCount, null);
+  if (words == null || words.isEmpty) {
+    return confidences;
+  }
+
+  final expanded = <double>[];
+  for (final word in words) {
+    if (useCharacterTokens) {
+      for (final _ in Characters(word.text)) {
+        expanded.add(word.confidence);
+      }
+    } else {
+      for (final part in word.text.trim().split(RegExp(r'\s+'))) {
+        if (part.trim().isNotEmpty) {
+          expanded.add(word.confidence);
+        }
+      }
+    }
+  }
+
+  if (expanded.length != tokenCount) {
+    return confidences;
+  }
+  for (var i = 0; i < tokenCount; i += 1) {
+    confidences[i] = expanded[i];
+  }
+  return confidences;
 }
 
 List<DiffToken> _tokenize(

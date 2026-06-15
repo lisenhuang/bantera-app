@@ -41,16 +41,36 @@ class PreparedVideoUpload {
   final bool shouldDeleteAfterUse;
 }
 
+/// One recognized word and how confident the speech engine was about it
+/// (0–1). Confidence may be 0 when the engine does not report it.
+class RecordedAttemptWord {
+  const RecordedAttemptWord({required this.text, required this.confidence});
+
+  final String text;
+  final double confidence;
+}
+
 class RecordedAttemptTranscription {
   const RecordedAttemptTranscription({
     required this.transcriptText,
     required this.transcriptLanguage,
     required this.transcriptLanguageCode,
+    this.words = const [],
+    this.recognitionMode = 'unknown',
   });
 
   final String transcriptText;
   final String transcriptLanguage;
   final String transcriptLanguageCode;
+
+  /// Per-word recognition confidence, in spoken order. Empty when the native
+  /// layer did not return segment data.
+  final List<RecordedAttemptWord> words;
+
+  /// Which engine produced this transcript: `onDevice`, `network`, or `unknown`.
+  /// Network results are smoothed more heavily and are lower fidelity for
+  /// surfacing a learner's mistakes.
+  final String recognitionMode;
 }
 
 class VideoProcessingException implements Exception {
@@ -425,6 +445,8 @@ class VideoProcessingService {
         transcriptLanguageCode:
             map['transcriptLanguageCode']?.toString() ??
             localeIdentifier.split(RegExp(r'[-_]')).first.toLowerCase(),
+        words: _parseRecordedAttemptWords(map['segments']),
+        recognitionMode: map['recognitionMode']?.toString() ?? 'unknown',
       );
     } on PlatformException catch (error) {
       throw VideoProcessingException(
@@ -439,6 +461,30 @@ class VideoProcessingService {
         message: 'The Bantera iOS video bridge is not available in this build.',
       );
     }
+  }
+
+  static List<RecordedAttemptWord> _parseRecordedAttemptWords(Object? value) {
+    if (value is! List) {
+      return const [];
+    }
+    final words = <RecordedAttemptWord>[];
+    for (final entry in value) {
+      if (entry is! Map) {
+        continue;
+      }
+      final text = entry['text']?.toString() ?? '';
+      if (text.isEmpty) {
+        continue;
+      }
+      final confidence = entry['confidence'];
+      words.add(
+        RecordedAttemptWord(
+          text: text,
+          confidence: confidence is num ? confidence.toDouble() : 0.0,
+        ),
+      );
+    }
+    return words;
   }
 
   static int _toInt(Object? value) {
