@@ -216,6 +216,11 @@ String _normalizeToken(String token) {
     RegExp(r'^[\.,!?:;"“”‘’()\[\]{}]+|[\.,!?:;"“”‘’()\[\]{}]+$'),
     '',
   );
+  // A leading/trailing apostrophe is a quote delimiter (e.g. the cue wrapping
+  // a phrase in 'excuse me.'), not a contraction — strip it so quoted words
+  // still match the unquoted recognized words. Internal apostrophes (don't,
+  // it's) are between letters and are left untouched.
+  t = t.replaceAll(RegExp(r"^'+|'+$"), '');
   return _stripIgnorableForComparison(t);
 }
 

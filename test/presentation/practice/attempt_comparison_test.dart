@@ -65,6 +65,54 @@ void main() {
     });
   });
 
+  group('buildAttemptComparison — quote delimiters', () {
+    test('quoted phrase in the cue matches the unquoted recognized words', () {
+      final result = buildAttemptComparison(
+        expectedText: "we should always say 'excuse me.' Can you try saying that?",
+        actualText: 'we should always say excuse me can you try saying that',
+      );
+
+      // Every content word should match — no different/missing from the quotes.
+      expect(result.unexpectedCount, 0);
+      expect(result.missingCount, 0);
+      final excuse = result.segments.firstWhere((s) => s.text == 'excuse');
+      final me = result.segments.firstWhere((s) => s.text == 'me');
+      expect(excuse.isMatch, isTrue);
+      expect(me.isMatch, isTrue);
+    });
+
+    test('curly-quoted phrase also matches', () {
+      final result = buildAttemptComparison(
+        expectedText: 'say ‘excuse me.’ now',
+        actualText: 'say excuse me now',
+      );
+
+      expect(result.unexpectedCount, 0);
+      expect(result.missingCount, 0);
+    });
+
+    test('internal apostrophes (contractions) are preserved and still match', () {
+      final result = buildAttemptComparison(
+        expectedText: "don't say it's wrong",
+        actualText: "don't say it's wrong",
+      );
+
+      expect(result.matchedCount, 4);
+      expect(result.unexpectedCount, 0);
+      expect(result.missingCount, 0);
+    });
+
+    test('contraction does not match its non-contracted form', () {
+      final result = buildAttemptComparison(
+        expectedText: "don't",
+        actualText: 'do not',
+      );
+
+      // "don't" != "do" and != "not" -> nothing matches.
+      expect(result.matchedCount, 0);
+    });
+  });
+
   group('buildAttemptComparison — uncertainty', () {
     test('low-confidence matched word is flagged uncertain', () {
       final result = buildAttemptComparison(
