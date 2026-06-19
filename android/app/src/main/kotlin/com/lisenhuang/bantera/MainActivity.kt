@@ -16,16 +16,26 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.android.gms.tasks.Tasks
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.TranslateRemoteModel
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.TranslatorOptions
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.Locale
 
 private const val SPEECH_TAG = "BanteraSpeech"
+private const val TRANSLATE_TAG = "BanteraTranslate"
 private const val TARGET_RATE = 16000
 
 /**
@@ -52,6 +62,20 @@ class MainActivity : FlutterActivity() {
                         call.argument<String>("localeIdentifier"),
                         result,
                     )
+                    else -> result.notImplemented()
+                }
+            }
+
+        // On-device text translation (Google ML Kit) — mirrors the iOS Apple-Translation channel.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/translation")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "translateTranscriptCues" -> TranslationBridge.translateCues(call, result)
+                    "prepareTranslationAssets" -> TranslationBridge.prepareAssets(call, result)
+                    "getSupportedTranslationLocales" ->
+                        TranslationBridge.supportedLocales(call.argument<String>("sourceLocaleIdentifier"), result)
+                    "getAllSupportedTranslationLocales" ->
+                        TranslationBridge.supportedLocales(null, result)
                     else -> result.notImplemented()
                 }
             }
@@ -463,5 +487,112 @@ private class RecordedAudioTranscriber(private val context: Context) {
         SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "LANGUAGE_UNAVAILABLE"
         SpeechRecognizer.ERROR_CANNOT_CHECK_SUPPORT -> "CANNOT_CHECK_SUPPORT"
         else -> "UNKNOWN"
+    }
+}
+
+/**
+ * On-device text translation via Google ML Kit. Fully on-device after a one-time per-language
+ * model download (no API key, no server). Mirrors the iOS `bantera/translation` contract:
+ * unsupported pairs reply `unsupported_locale`; missing models reply
+ * `translation_assets_not_installed` so the Dart caller downloads via prepareTranslationAssets.
+ */
+private object TranslationBridge {
+    private val main = Handler(Looper.getMainLooper())
+
+    /** App locale identifier (e.g. "zh-CN", "en_US") → ML Kit language code, or null if unsupported. */
+    private fun code(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+        val base = raw.trim().replace('_', '-').split('-')[0].lowercase()
+        return TranslateLanguage.fromLanguageTag(base)
+    }
+
+    fun translateCues(call: MethodCall, result: MethodChannel.Result) {
+        val source = code(call.argument<String>("sourceLocaleIdentifier"))
+        val target = code(call.argument<String>("targetLocaleIdentifier"))
+        val cues = call.argument<List<Map<String, Any?>>>("cues") ?: emptyList()
+        if (source == null || target == null) {
+            result.error("unsupported_locale", "This language isn’t supported for on-device translation.", null)
+            return
+        }
+        Thread {
+            try {
+                val mgr = RemoteModelManager.getInstance()
+                val srcOk = Tasks.await(mgr.isModelDownloaded(TranslateRemoteModel.Builder(source).build()))
+                val tgtOk = Tasks.await(mgr.isModelDownloaded(TranslateRemoteModel.Builder(target).build()))
+                if (!srcOk || !tgtOk) {
+                    main.post {
+                        result.error("translation_assets_not_installed", "Translation models need to be downloaded.", null)
+                    }
+                    return@Thread
+                }
+                val translator = Translation.getClient(
+                    TranslatorOptions.Builder().setSourceLanguage(source).setTargetLanguage(target).build(),
+                )
+                try {
+                    val out = ArrayList<Map<String, Any?>>(cues.size)
+                    for (cue in cues) {
+                        val id = cue["id"]?.toString() ?: continue
+                        val text = cue["text"]?.toString().orEmpty()
+                        val translated = if (text.isBlank()) "" else Tasks.await(translator.translate(text))
+                        out.add(mapOf("id" to id, "translatedText" to translated))
+                    }
+                    main.post { result.success(out) }
+                } finally {
+                    translator.close()
+                }
+            } catch (e: Exception) {
+                Log.e(TRANSLATE_TAG, "translateCues failed", e)
+                main.post { result.error("translation_failed", "The app could not translate this text.", null) }
+            }
+        }.start()
+    }
+
+    fun prepareAssets(call: MethodCall, result: MethodChannel.Result) {
+        val source = code(call.argument<String>("sourceLocaleIdentifier"))
+        val target = code(call.argument<String>("targetLocaleIdentifier"))
+        if (source == null || target == null) {
+            result.error("unsupported_locale", "This language isn’t supported for on-device translation.", null)
+            return
+        }
+        Thread {
+            try {
+                val translator = Translation.getClient(
+                    TranslatorOptions.Builder().setSourceLanguage(source).setTargetLanguage(target).build(),
+                )
+                try {
+                    Tasks.await(translator.downloadModelIfNeeded(DownloadConditions.Builder().build()))
+                    main.post { result.success(null) }
+                } finally {
+                    translator.close()
+                }
+            } catch (e: Exception) {
+                Log.e(TRANSLATE_TAG, "prepareAssets failed", e)
+                main.post { result.error("translation_download_failed", "Translation models could not be downloaded.", null) }
+            }
+        }.start()
+    }
+
+    fun supportedLocales(sourceRaw: String?, result: MethodChannel.Result) {
+        val sourceCode = code(sourceRaw)
+        Thread {
+            try {
+                val downloaded = Tasks.await(
+                    RemoteModelManager.getInstance().getDownloadedModels(TranslateRemoteModel::class.java),
+                ).map { it.language }.toSet()
+                val items = TranslateLanguage.getAllLanguages()
+                    .filter { sourceCode == null || it != sourceCode }
+                    .map { lang ->
+                        mapOf(
+                            "identifier" to lang,
+                            "displayName" to Locale.forLanguageTag(lang).getDisplayLanguage(Locale.getDefault()),
+                            "isInstalled" to downloaded.contains(lang),
+                        )
+                    }
+                main.post { result.success(items) }
+            } catch (e: Exception) {
+                Log.e(TRANSLATE_TAG, "supportedLocales failed", e)
+                main.post { result.success(emptyList<Map<String, Any?>>()) }
+            }
+        }.start()
     }
 }

@@ -71,9 +71,11 @@ int? get appleOperatingSystemMajorVersion {
   return _majorVersionFromPlatformString(Platform.operatingSystemVersion);
 }
 
-/// True when Apple's Translation framework is available (iOS / iPadOS 18+).
+/// True when on-device translation is available: Apple's Translation framework
+/// (iOS / iPadOS 18+) or Google ML Kit on-device translation (Android).
 /// Use this to gate translation UI — do not use [isLegacyAppleOsPre26] for translation checks.
 bool get supportsBuiltInTranslation {
+  if (Platform.isAndroid) return true; // ML Kit on-device translation
   if (!Platform.isIOS) return false;
   final major = appleOperatingSystemMajorVersion;
   if (major == null) return false;

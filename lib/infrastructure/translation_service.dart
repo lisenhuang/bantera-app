@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
@@ -44,13 +42,7 @@ class TranslationService {
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
   }) async {
-    if (!Platform.isIOS) {
-      throw const TranslationException(
-        code: 'unsupported_platform',
-        message: 'Cue translation is currently available on iPhone only.',
-      );
-    }
-
+    // iOS: Apple Translation framework. Android: Google ML Kit (both on-device).
     try {
       await _channel.invokeMethod<void>(
         'prepareTranslationAssets',
@@ -78,7 +70,6 @@ class TranslationService {
   /// Used for native-language pickers that need the full translation language list.
   /// Returns empty list on non-iOS or when unavailable.
   Future<List<TranslationLocaleOption>> fetchAllTranslationLocales() async {
-    if (!Platform.isIOS) return const [];
     try {
       final locales =
           await _channel.invokeListMethod<dynamic>(
@@ -100,13 +91,6 @@ class TranslationService {
   Future<List<TranslationLocaleOption>> fetchSupportedLocales({
     required String sourceLocaleIdentifier,
   }) async {
-    if (!Platform.isIOS) {
-      throw const TranslationException(
-        code: 'unsupported_platform',
-        message: 'Cue translation is currently available on iPhone only.',
-      );
-    }
-
     try {
       final locales =
           await _channel.invokeListMethod<dynamic>(
@@ -140,13 +124,6 @@ class TranslationService {
     required String targetLocaleIdentifier,
     required List<Cue> cues,
   }) async {
-    if (!Platform.isIOS) {
-      throw const TranslationException(
-        code: 'unsupported_platform',
-        message: 'Cue translation is currently available on iPhone only.',
-      );
-    }
-
     final inputCues = cues
         .where((cue) => cue.originalText.trim().isNotEmpty)
         .map((cue) => <String, Object?>{'id': cue.id, 'text': cue.originalText})
