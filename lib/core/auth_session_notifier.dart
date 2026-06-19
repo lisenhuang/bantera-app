@@ -4,7 +4,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
 import 'api_config_notifier.dart';
 import 'app_resume_notifier.dart';
@@ -12,7 +14,7 @@ import 'auth_api_error_localizations.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../l10n/app_localizations.dart';
 
-enum AuthProviderType { email, apple }
+enum AuthProviderType { email, apple, google }
 
 class AuthSession {
   const AuthSession({
@@ -36,6 +38,7 @@ class AuthSession {
   String get providerLabel => switch (provider) {
     AuthProviderType.email => 'Email',
     AuthProviderType.apple => 'Apple',
+    AuthProviderType.google => 'Google',
   };
 
   Map<String, dynamic> toJson() => {
@@ -120,6 +123,11 @@ class AuthSessionNotifier extends ChangeNotifier {
   Timer? _refreshTimer;
 
   static const _refreshMargin = Duration(minutes: 5);
+
+  /// Custom URL scheme the backend deep-links back to after Google sign-in.
+  /// Must match the flutter_web_auth_2 intent-filter in AndroidManifest.xml and
+  /// GoogleSignIn:AppRedirectUri on the backend.
+  static const _googleCallbackScheme = 'bantera';
 
   /// How long before access token expiry we refresh. Capped to at most half the
   /// token lifetime so short-lived dev JWTs (e.g. 2 min) never make
@@ -280,6 +288,65 @@ class AuthSessionNotifier extends ChangeNotifier {
     } on SignInWithAppleAuthorizationException catch (error) {
       if (error.code != AuthorizationErrorCode.canceled) {
         _plainErrorMessage = 'Apple sign-in could not be completed.';
+        _authApiError = null;
+      }
+    } on AuthApiException catch (error) {
+      _authApiError = error;
+      _plainErrorMessage = null;
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  /// Server-mediated Google sign-in: open the backend's /start in a Custom Tab
+  /// (ASWebAuthenticationSession on iOS, Chrome Custom Tab on Android), receive a
+  /// one-time code on the [_googleCallbackScheme] deep link, then redeem it for
+  /// the Bantera token pair. No Google client IDs live in the app.
+  Future<void> continueWithGoogle() async {
+    _setBusy(true);
+    _plainErrorMessage = null;
+    _authApiError = null;
+    notifyListeners();
+
+    try {
+      final result = await FlutterWebAuth2.authenticate(
+        url: _apiClient.googleAuthStartUrl(),
+        callbackUrlScheme: _googleCallbackScheme,
+      );
+
+      final uri = Uri.parse(result);
+      if ((uri.queryParameters['error'] ?? '').isNotEmpty) {
+        throw const AuthApiException(
+          code: 'google_failed',
+          message: 'Google sign-in could not be completed.',
+        );
+      }
+
+      final code = uri.queryParameters['code'];
+      if (code == null || code.isEmpty) {
+        throw const AuthApiException(
+          code: 'google_failed',
+          message: 'Google sign-in did not return a code.',
+        );
+      }
+
+      final response = await _apiClient.exchangeGoogleCode(code: code);
+
+      _session = AuthSession(
+        provider: AuthProviderType.google,
+        accountLabel: 'Google account',
+        accessToken: response.accessToken,
+        tokenType: response.tokenType,
+        expiresIn: response.expiresIn,
+        refreshToken: response.refreshToken,
+        issuedAt: DateTime.now(),
+      );
+      await _persistSession();
+      _scheduleRefresh();
+    } on PlatformException catch (error) {
+      // User dismissed the Custom Tab / auth sheet — not an error to surface.
+      if (error.code != 'CANCELED') {
+        _plainErrorMessage = 'Google sign-in could not be completed.';
         _authApiError = null;
       }
     } on AuthApiException catch (error) {

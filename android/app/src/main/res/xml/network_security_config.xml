@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Secure by default: production (https://api.bantera.app) needs no exception. -->
+    <base-config cleartextTrafficPermitted="false" />
+
+    <!-- Plain HTTP allowed only for local/dev API hosts (see lib/core/api_config_notifier.dart).
+         Add any other LAN dev IPs you point the in-app base URL at. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>      <!-- Android emulator -> host machine -->
+        <domain includeSubdomains="true">192.168.8.153</domain> <!-- current dev LAN server -->
+    </domain-config>
+</network-security-config>

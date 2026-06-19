@@ -228,11 +228,9 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
                                   );
                                 }
                                 if (snapshot.data != true) {
-                                  return Text(
-                                    l10n.authAppleUnavailable,
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodyMedium,
-                                  );
+                                  // Apple sign-in is unavailable (e.g. Android).
+                                  // Fall through to the Google button below.
+                                  return const SizedBox.shrink();
                                 }
                                 return SignInWithAppleButton(
                                   onPressed: _auth.isBusy
@@ -245,6 +243,26 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
                                 );
                               },
                             ),
+
+                            // ── Google button (Android only) ──────────────
+                            if (Platform.isAndroid) ...[
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 50,
+                                child: OutlinedButton.icon(
+                                  onPressed: _auth.isBusy
+                                      ? null
+                                      : () => _auth.continueWithGoogle(),
+                                  icon: const Icon(Icons.g_mobiledata, size: 32),
+                                  label: Text(l10n.authContinueWithGoogle),
+                                  style: OutlinedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
 
                             // ── Email sign-in (expandable) ─────────────────
                             if (_showEmailForm) ...[

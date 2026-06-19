@@ -18,6 +18,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authContinueWithApple => 'Apple로 계속';
 
   @override
+  String get authContinueWithGoogle => 'Google로 계속';
+
+  @override
   String get authAppleUnavailable => '이 기기에서는 Apple로 로그인을 사용할 수 없습니다.';
 
   @override

@@ -18,6 +18,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authContinueWithApple => '通过 Apple 继续';
 
   @override
+  String get authContinueWithGoogle => '通过 Google 继续';
+
+  @override
   String get authAppleUnavailable => '此设备无法使用“通过 Apple 登录”。';
 
   @override

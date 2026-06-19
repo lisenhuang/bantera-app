@@ -3,6 +3,7 @@
   "appName": "Bantera",
   "appTagline": "语言练习，逐句进行。",
   "authContinueWithApple": "通过 Apple 继续",
+  "authContinueWithGoogle": "通过 Google 继续",
   "authAppleUnavailable": "此设备无法使用“通过 Apple 登录”。",
   "authOrSignInEmail": "或使用邮箱登录",
   "authEmail": "邮箱",

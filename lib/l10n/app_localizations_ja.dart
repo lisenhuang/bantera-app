@@ -18,6 +18,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authContinueWithApple => 'Appleで続行';
 
   @override
+  String get authContinueWithGoogle => 'Googleで続行';
+
+  @override
   String get authAppleUnavailable => 'このデバイスではAppleでサインインを利用できません。';
 
   @override

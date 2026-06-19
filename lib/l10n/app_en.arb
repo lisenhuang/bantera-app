@@ -3,6 +3,7 @@
   "appName": "Bantera",
   "appTagline": "Language practice, cue by cue.",
   "authContinueWithApple": "Continue with Apple",
+  "authContinueWithGoogle": "Continue with Google",
   "authAppleUnavailable": "Sign in with Apple is unavailable on this device.",
   "authOrSignInEmail": "or sign in with email",
   "authEmail": "Email",

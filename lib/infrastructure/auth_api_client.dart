@@ -149,6 +149,18 @@ class AuthApiClient {
     });
   }
 
+  /// Full URL the app opens in a Custom Tab to begin the Google web flow.
+  String googleAuthStartUrl() => _resolve('/api/auth/google/start').toString();
+
+  /// Redeems the one-time code from the callback deep link for the token pair.
+  Future<AuthTokenResponse> exchangeGoogleCode({
+    required String code,
+  }) {
+    return _postAuth('/api/auth/google/exchange', <String, dynamic>{
+      'code': code,
+    });
+  }
+
   Future<UserProfile> fetchMyProfile({required String accessToken}) async {
     final json = await _sendJsonRequest(
       method: 'GET',

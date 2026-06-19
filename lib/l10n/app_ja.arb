@@ -3,6 +3,7 @@
   "appName": "Bantera",
   "appTagline": "言語練習を、キューごとに。",
   "authContinueWithApple": "Appleで続行",
+  "authContinueWithGoogle": "Googleで続行",
   "authAppleUnavailable": "このデバイスではAppleでサインインを利用できません。",
   "authOrSignInEmail": "またはメールでサインイン",
   "authEmail": "メール",
