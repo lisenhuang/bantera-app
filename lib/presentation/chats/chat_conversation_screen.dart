@@ -463,14 +463,16 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                 unawaited(_startCall(partner, DmCallMediaKind.audio));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.videocam_outlined),
-              title: Text(l10n.chatStartVideoCall),
-              onTap: () {
-                Navigator.of(context).pop();
-                unawaited(_startCall(partner, DmCallMediaKind.video));
-              },
-            ),
+            // Video calls are iOS-only for now; Android shows audio call only.
+            if (Platform.isIOS)
+              ListTile(
+                leading: const Icon(Icons.videocam_outlined),
+                title: Text(l10n.chatStartVideoCall),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  unawaited(_startCall(partner, DmCallMediaKind.video));
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.close),
               title: Text(l10n.cancel),
