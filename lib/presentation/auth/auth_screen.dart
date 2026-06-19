@@ -212,37 +212,36 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
                               const SizedBox(height: 16),
                             ],
 
-                            // ── Apple button (always visible) ──────────────
-                            FutureBuilder<bool>(
-                              future: SignInWithApple.isAvailable(),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const SizedBox(
-                                    height: 50,
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                            // ── Apple button (iOS only) ───────────────────
+                            if (Platform.isIOS)
+                              FutureBuilder<bool>(
+                                future: SignInWithApple.isAvailable(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const SizedBox(
+                                      height: 50,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
                                       ),
+                                    );
+                                  }
+                                  if (snapshot.data != true) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return SignInWithAppleButton(
+                                    onPressed: _auth.isBusy
+                                        ? null
+                                        : () => _auth.continueWithApple(),
+                                    text: l10n.authContinueWithApple,
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
                                     ),
                                   );
-                                }
-                                if (snapshot.data != true) {
-                                  // Apple sign-in is unavailable (e.g. Android).
-                                  // Fall through to the Google button below.
-                                  return const SizedBox.shrink();
-                                }
-                                return SignInWithAppleButton(
-                                  onPressed: _auth.isBusy
-                                      ? null
-                                      : () => _auth.continueWithApple(),
-                                  text: l10n.authContinueWithApple,
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                );
-                              },
-                            ),
+                                },
+                              ),
 
                             // ── Google button (Android only) ──────────────
                             if (Platform.isAndroid) ...[

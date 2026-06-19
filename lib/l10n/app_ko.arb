@@ -32,6 +32,7 @@
   "onboardingChoosePhoto": "사진 선택",
   "onboardingChangePhoto": "사진 변경",
   "onboardingUseGeneratedAvatar": "생성된 아바타 사용",
+  "onboardingUseCurrentPhoto": "현재 사진 사용",
   "onboardingChooseLanguage": "언어 선택",
   "onboardingBack": "뒤로",
   "onboardingFinish": "완료",

@@ -113,6 +113,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingUseGeneratedAvatar => 'Use generated avatar instead';
 
   @override
+  String get onboardingUseCurrentPhoto => 'Use current photo';
+
+  @override
   String get onboardingChooseLanguage => 'Choose language';
 
   @override

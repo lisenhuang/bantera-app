@@ -106,6 +106,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingUseGeneratedAvatar => '改用生成头像';
 
   @override
+  String get onboardingUseCurrentPhoto => '使用当前照片';
+
+  @override
   String get onboardingChooseLanguage => '选择语言';
 
   @override

@@ -312,6 +312,8 @@ class AuthSessionNotifier extends ChangeNotifier {
       final result = await FlutterWebAuth2.authenticate(
         url: _apiClient.googleAuthStartUrl(),
         callbackUrlScheme: _googleCallbackScheme,
+        // NO_HISTORY so the Custom Tab closes itself once control returns to the app.
+        options: const FlutterWebAuth2Options(intentFlags: ephemeralIntentFlags),
       );
 
       final uri = Uri.parse(result);

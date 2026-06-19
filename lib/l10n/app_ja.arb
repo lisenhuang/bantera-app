@@ -32,6 +32,7 @@
   "onboardingChoosePhoto": "写真を選択",
   "onboardingChangePhoto": "写真を変更",
   "onboardingUseGeneratedAvatar": "生成アバターを使う",
+  "onboardingUseCurrentPhoto": "現在の写真を使う",
   "onboardingChooseLanguage": "言語を選択",
   "onboardingBack": "戻る",
   "onboardingFinish": "完了",

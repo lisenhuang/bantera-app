@@ -32,6 +32,7 @@
   "onboardingChoosePhoto": "Choose Photo",
   "onboardingChangePhoto": "Change Photo",
   "onboardingUseGeneratedAvatar": "Use generated avatar instead",
+  "onboardingUseCurrentPhoto": "Use current photo",
   "onboardingChooseLanguage": "Choose language",
   "onboardingBack": "Back",
   "onboardingFinish": "Finish",

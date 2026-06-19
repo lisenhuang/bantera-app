@@ -32,6 +32,7 @@
   "onboardingChoosePhoto": "选择照片",
   "onboardingChangePhoto": "更换照片",
   "onboardingUseGeneratedAvatar": "改用生成头像",
+  "onboardingUseCurrentPhoto": "使用当前照片",
   "onboardingChooseLanguage": "选择语言",
   "onboardingBack": "返回",
   "onboardingFinish": "完成",

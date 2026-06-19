@@ -106,6 +106,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingUseGeneratedAvatar => '生成アバターを使う';
 
   @override
+  String get onboardingUseCurrentPhoto => '現在の写真を使う';
+
+  @override
   String get onboardingChooseLanguage => '言語を選択';
 
   @override

@@ -125,10 +125,15 @@ class _LearningLanguageSetupScreenState
     if (nativeLocale == null || learningLocale == null) return;
 
     final image = _selectedImage;
-    final avatarGender = image == null
+    final hasExistingAvatar =
+        (UserProfileNotifier.instance.avatarUrl ?? '').trim().isNotEmpty;
+    // Only generate an AI avatar when the user neither picked a photo nor
+    // already has one (e.g. a Google profile photo set at sign-up).
+    final needsGeneratedAvatar = image == null && !hasExistingAvatar;
+    final avatarGender = needsGeneratedAvatar
         ? await _chooseGeneratedAvatarGender()
         : null;
-    if (!mounted || (image == null && avatarGender == null)) return;
+    if (!mounted || (needsGeneratedAvatar && avatarGender == null)) return;
 
     setState(() {
       _isSaving = true;
@@ -167,7 +172,7 @@ class _LearningLanguageSetupScreenState
       return;
     }
 
-    if (image == null) {
+    if (needsGeneratedAvatar) {
       await profile.requestGeneratedAvatar(
         avatarGender: avatarGender!.apiValue,
       );
@@ -334,6 +339,7 @@ class _LearningLanguageSetupScreenState
       ),
       _ => _AvatarStep(
         image: _selectedImage,
+        existingAvatarUrl: UserProfileNotifier.instance.avatarUrl,
         onPickImage: _pickImage,
         onClearImage: () => setState(() => _selectedImage = null),
       ),
@@ -468,11 +474,13 @@ class _LanguageStep extends StatelessWidget {
 class _AvatarStep extends StatelessWidget {
   const _AvatarStep({
     required this.image,
+    required this.existingAvatarUrl,
     required this.onPickImage,
     required this.onClearImage,
   });
 
   final File? image;
+  final String? existingAvatarUrl;
   final VoidCallback onPickImage;
   final VoidCallback onClearImage;
 
@@ -480,6 +488,7 @@ class _AvatarStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final hasExistingAvatar = (existingAvatarUrl ?? '').trim().isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -487,7 +496,13 @@ class _AvatarStep extends StatelessWidget {
         const SizedBox(height: 8),
         Text(l10n.onboardingAvatarSubtitle, style: theme.textTheme.bodyMedium),
         const SizedBox(height: 32),
-        Center(child: ProfileAvatar(radius: 56, imagePath: image?.path)),
+        Center(
+          child: ProfileAvatar(
+            radius: 56,
+            imagePath: image?.path,
+            imageUrl: image == null ? existingAvatarUrl : null,
+          ),
+        ),
         const SizedBox(height: 18),
         Center(
           child: OutlinedButton.icon(
@@ -505,7 +520,11 @@ class _AvatarStep extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: onClearImage,
-              child: Text(l10n.onboardingUseGeneratedAvatar),
+              child: Text(
+                hasExistingAvatar
+                    ? l10n.onboardingUseCurrentPhoto
+                    : l10n.onboardingUseGeneratedAvatar,
+              ),
             ),
           ),
         ],

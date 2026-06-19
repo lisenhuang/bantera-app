@@ -107,6 +107,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onboardingUseGeneratedAvatar => '생성된 아바타 사용';
 
   @override
+  String get onboardingUseCurrentPhoto => '현재 사진 사용';
+
+  @override
   String get onboardingChooseLanguage => '언어 선택';
 
   @override

@@ -294,6 +294,12 @@ abstract class AppLocalizations {
   /// **'Use generated avatar instead'**
   String get onboardingUseGeneratedAvatar;
 
+  /// No description provided for @onboardingUseCurrentPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current photo'**
+  String get onboardingUseCurrentPhoto;
+
   /// No description provided for @onboardingChooseLanguage.
   ///
   /// In en, this message translates to:
