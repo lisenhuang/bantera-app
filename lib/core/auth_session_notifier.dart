@@ -309,11 +309,11 @@ class AuthSessionNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // flutter_web_auth_2 v5 uses the Android Auth Tab and closes itself once it
+      // sees the [_googleCallbackScheme] deep link, so no custom intent flags here.
       final result = await FlutterWebAuth2.authenticate(
         url: _apiClient.googleAuthStartUrl(),
         callbackUrlScheme: _googleCallbackScheme,
-        // NO_HISTORY so the Custom Tab closes itself once control returns to the app.
-        options: const FlutterWebAuth2Options(intentFlags: ephemeralIntentFlags),
       );
 
       final uri = Uri.parse(result);
