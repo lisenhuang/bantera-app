@@ -68,6 +68,10 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- SpeechRecognizer (Android 13+) for practice-page audio transcription -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
         <!-- url_launcher (Android 11+ package visibility): web, tel, mailto -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>

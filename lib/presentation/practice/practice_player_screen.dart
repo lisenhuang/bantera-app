@@ -1320,24 +1320,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<bool> _ensureMicrophonePermissionForCue() async {
+    // Ask the OS directly first so a fresh install reliably shows the system
+    // microphone dialog. (record.hasPermission() can return early on Android
+    // and short-circuit the request, so it must not gate this.)
+    var status = await Permission.microphone.status;
+    if (!status.isGranted &&
+        !status.isPermanentlyDenied &&
+        !status.isRestricted) {
+      status = await Permission.microphone.request();
+    }
+    if (status.isGranted) {
+      return true;
+    }
+
+    // Fallback to the recorder's own check (covers iOS edge cases).
     try {
       if (await _cueRecorder.hasPermission()) {
         return true;
       }
     } catch (_) {
-      // Fall through to permission_handler.
-    }
-
-    var status = await Permission.microphone.status;
-    if (status.isGranted) {
-      return true;
-    }
-
-    if (status.isDenied) {
-      status = await Permission.microphone.request();
-      if (status.isGranted) {
-        return true;
-      }
+      // Ignore and fall through to the denied message.
     }
 
     if (!mounted) {

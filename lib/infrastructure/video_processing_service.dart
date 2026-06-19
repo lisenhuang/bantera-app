@@ -125,13 +125,8 @@ class VideoProcessingService {
   Future<void> ensureRecordedAudioTranscriptionReady({
     required String localeIdentifier,
   }) async {
-    if (!Platform.isIOS) {
-      throw const VideoProcessingException(
-        code: 'unsupported_platform',
-        message: 'Audio comparison is currently available on iPhone only.',
-      );
-    }
-
+    // iOS: Apple Speech (file-based). Android 13+: system SpeechRecognizer via the
+    // native bridge. The native side reports unsupported devices (e.g. < Android 13).
     try {
       await _channel.invokeMethod<void>(
         'ensureRecordedAudioTranscriptionReady',
@@ -421,13 +416,8 @@ class VideoProcessingService {
     required File inputFile,
     required String localeIdentifier,
   }) async {
-    if (!Platform.isIOS) {
-      throw const VideoProcessingException(
-        code: 'unsupported_platform',
-        message: 'Audio comparison is currently available on iPhone only.',
-      );
-    }
-
+    // Supported on iOS (Apple Speech) and Android 13+ (system SpeechRecognizer,
+    // file-based via EXTRA_AUDIO_SOURCE). The native bridge handles each platform.
     try {
       final response = await _channel.invokeMapMethod<Object?, Object?>(
         'transcribeRecordedAudio',
