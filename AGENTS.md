@@ -46,3 +46,19 @@ Output: `build/app/outputs/bundle/release/app-release.aab` (upload this to Play 
   (the `+NNN`), so the standard version bump above covers it.
 - Verify the bundle is signed with the upload key (not debug) via
   `keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab` → owner should be `CN=Bantera`.
+
+## Publish Android to the website (direct APK download)
+
+The marketing site (`../website`) hosts a downloadable APK (since the repos are private, this is
+how testers/users get Android). To cut a new Android download:
+
+1. Bump the version (see **Version bumps** above).
+2. Run **`./scripts/publish_android.sh`** — it builds + signs the **arm64-v8a** release APK
+   (signing from `android/key.properties`), copies it to `../website/public/bantera.apk`, and
+   stamps the shown version into `../website/src/lib/android-release.ts`.
+3. In `../website`, commit + push `public/bantera.apk` **and** `src/lib/android-release.ts`
+   (the deploy serves the new APK and shows the new version on `/download`).
+
+So "publish the Android app" = bump version + run the one script + push the website. arm64-v8a
+(~36 MB) covers all modern phones; switch the script to a universal build only if you need the
+rare 32-bit/x86 device.
