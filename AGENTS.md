@@ -21,3 +21,28 @@ version: 1.2.1+112  →  version: 1.2.2+113
 - Increment the build number (number after `+`)
 - Do this as part of the same edit batch — not only before commits
 - After changing the version, run `flutter build ios --debug --no-codesign` so `ios/Flutter/Generated.xcconfig` is regenerated with the new version before opening Xcode
+
+## Release build for Play Store (AAB)
+
+To produce a signed bundle for the Play Store, just run (after the usual version bump):
+
+```
+flutter build appbundle --release
+```
+
+Output: `build/app/outputs/bundle/release/app-release.aab` (upload this to Play Console).
+
+- **Signing is automatic.** The release `signingConfig` in `android/app/build.gradle.kts` loads
+  the upload key from **`android/key.properties`** (key alias `upload`, keystore
+  `android/upload-keystore.jks`). No password needs to be entered at build time.
+- **Secrets are gitignored and must stay that way.** `key.properties`, `*.jks`, and `*.keystore`
+  are in `.gitignore`. **Never** commit the keystore or paste the keystore password into any
+  tracked file (including this `AGENTS.md`) — the password lives only in `android/key.properties`
+  on the dev machine. To find/build, read that file; do not echo the password into git.
+- **Play App Signing** is used: Google holds the app-signing key and re-signs for distribution;
+  our keystore is only the *upload* key. The same upload key must be reused for every update
+  (Google can reset it if lost).
+- Play requires `versionCode` to increase each upload — it comes from the pubspec build number
+  (the `+NNN`), so the standard version bump above covers it.
+- Verify the bundle is signed with the upload key (not debug) via
+  `keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab` → owner should be `CN=Bantera`.
