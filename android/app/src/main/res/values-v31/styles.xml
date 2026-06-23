@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (API 31+) uses the system splash screen, which overrides the
+         windowBackground splash. Drive it explicitly so cold start shows the
+         "Bantera" wordmark centered on the dark background, matching iOS.
+         (The system centers the splash icon, so we use the wordmark as the icon.) -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/launchBackground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/bantera_wordmark</item>
+    </style>
+</resources>
