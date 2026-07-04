@@ -276,6 +276,10 @@ class ChatSessionNotifier extends ChangeNotifier {
           .transcribeRecordedAudio(
             inputFile: audioFile,
             localeIdentifier: message.spokenLanguageCode,
+            // Chat DMs / group messages use the default (auto-corrected) level so
+            // the reader can understand what the other person said. Unlike the
+            // practice flow, we are not surfacing pronunciation mistakes here.
+            allowAutoCorrection: true,
           );
       await _localRepository.updateMessageTranscript(
         messageId: message.messageId,

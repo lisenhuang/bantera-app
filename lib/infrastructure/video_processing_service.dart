@@ -412,9 +412,18 @@ class VideoProcessingService {
     }
   }
 
+  /// Transcribes a recorded audio file.
+  ///
+  /// [allowAutoCorrection] controls how aggressively the speech engine smooths the
+  /// result. Chat (DMs / group messages) uses the default `true` so the recognizer's
+  /// language model can correct the wording — readers need to understand what was said.
+  /// The practice / cue-play flow passes `false` for an honest transcript that preserves
+  /// the learner's actual pronunciation mistakes (iOS pins recognition on-device so the
+  /// network language model can't snap mistakes back to the expected words).
   Future<RecordedAttemptTranscription> transcribeRecordedAudio({
     required File inputFile,
     required String localeIdentifier,
+    bool allowAutoCorrection = true,
   }) async {
     // Supported on iOS (Apple Speech) and Android 13+ (system SpeechRecognizer,
     // file-based via EXTRA_AUDIO_SOURCE). The native bridge handles each platform.
@@ -424,6 +433,7 @@ class VideoProcessingService {
         <String, Object?>{
           'inputPath': inputFile.path,
           'localeIdentifier': localeIdentifier,
+          'allowAutoCorrection': allowAutoCorrection,
         },
       );
 

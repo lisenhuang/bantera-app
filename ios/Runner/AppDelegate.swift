@@ -580,12 +580,17 @@ private final class BanteraVideoProcessingBridge {
       return
     }
 
+    // Default to the normal (auto-corrected) level so an older Flutter bridge that
+    // omits the flag still gets a readable transcript; practice opts out explicitly.
+    let allowAutoCorrection = (args["allowAutoCorrection"] as? Bool) ?? true
+
     Task {
       do {
         let inputURL = URL(fileURLWithPath: inputPath)
         let response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
           inputURL: inputURL,
-          localeIdentifier: localeIdentifier
+          localeIdentifier: localeIdentifier,
+          allowAutoCorrection: allowAutoCorrection
         )
         DispatchQueue.main.async {
           result(response)
@@ -1335,9 +1340,14 @@ private final class BanteraLegacySpeechRecognitionService {
     let onDevice: Bool
   }
 
+  /// - Parameter allowAutoCorrection: `true` (chat DMs / group messages) lets Apple's
+  ///   network language model smooth the speaker's wording so the reader can understand
+  ///   them — the normal, default transcription level. `false` (practice / cue play) keeps
+  ///   an HONEST transcript that preserves the learner's actual pronunciation mistakes.
   func transcribeRecordedAudio(
     inputURL: URL,
-    localeIdentifier: String
+    localeIdentifier: String,
+    allowAutoCorrection: Bool
   ) async throws -> [String: Any] {
     try await ensureSpeechAuthorization()
     let resolved = try resolveRecognizer(localeIdentifier: localeIdentifier)
@@ -1345,7 +1355,11 @@ private final class BanteraLegacySpeechRecognitionService {
       throw BanteraVideoProcessingError.speechUnavailable
     }
 
-    let outcome = try await transcribe(url: inputURL, recognizer: resolved.recognizer)
+    let outcome = try await transcribe(
+      url: inputURL,
+      recognizer: resolved.recognizer,
+      allowAutoCorrection: allowAutoCorrection
+    )
     let text = outcome.text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !text.isEmpty else {
       throw BanteraVideoProcessingError.transcriptionFailed(
@@ -1409,20 +1423,30 @@ private final class BanteraLegacySpeechRecognitionService {
     return (locale, recognizer)
   }
 
-  /// Honest-transcript policy: when the locale has an on-device model, transcribe
-  /// strictly on-device. The network recognizer applies heavier language-model
-  /// "smoothing" that snaps a learner's mistakes back to the expected words, so we
-  /// deliberately do NOT fall back to it when on-device is available. Locales
-  /// without an on-device model use the network recognizer and are tagged so the
-  /// caller can treat the result as lower fidelity.
+  /// Auto-correction policy, keyed on the caller's intent:
+  ///
+  /// - `allowAutoCorrection == true` (chat DMs / group messages): use the default
+  ///   recognizer path so Apple's network language model can smooth the speaker's
+  ///   wording — readers need to understand what the other person said.
+  /// - `allowAutoCorrection == false` (practice / cue play): when the locale has an
+  ///   on-device model, transcribe strictly on-device. The network recognizer applies
+  ///   heavier language-model "smoothing" that snaps a learner's mistakes back to the
+  ///   expected words, so for an honest transcript we deliberately do NOT fall back to
+  ///   it when on-device is available.
+  ///
+  /// Locales without an on-device model always use the network recognizer regardless,
+  /// and the result is tagged so the caller can treat it as lower fidelity.
   private func transcribe(
     url: URL,
-    recognizer: SFSpeechRecognizer
+    recognizer: SFSpeechRecognizer,
+    allowAutoCorrection: Bool
   ) async throws -> TranscriptionOutcome {
-    try await transcribe(
+    let requiresOnDeviceRecognition =
+      allowAutoCorrection ? false : recognizer.supportsOnDeviceRecognition
+    return try await transcribe(
       url: url,
       recognizer: recognizer,
-      requiresOnDeviceRecognition: recognizer.supportsOnDeviceRecognition
+      requiresOnDeviceRecognition: requiresOnDeviceRecognition
     )
   }
 

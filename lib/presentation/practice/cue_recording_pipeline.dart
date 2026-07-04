@@ -33,6 +33,9 @@ Future<ProcessedCueAttempt> processRecordingFile({
       .transcribeRecordedAudio(
     inputFile: audioFile,
     localeIdentifier: sourceLocaleIdentifier,
+    // Honest transcript: don't auto-correct, so the learner sees their real
+    // pronunciation mistakes instead of the engine snapping words back.
+    allowAutoCorrection: false,
   );
   final recognizedText = transcription.transcriptText.trim();
   if (recognizedText.isEmpty) {
