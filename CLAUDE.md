@@ -60,8 +60,10 @@ how testers/users get Android). To cut a new Android download:
 1. Bump the version (see **Version bumps** above).
 2. Run **`./scripts/publish_android.sh`** — it builds + signs the **arm64-v8a** release APK
    (signing from `android/key.properties`), copies it to `../website/public/bantera.apk`, and
-   stamps the shown version into `../website/src/lib/android-release.ts`.
-3. In `../website`, commit + push `public/bantera.apk` **and** `src/lib/android-release.ts`
+   stamps the version into `../website/src/lib/android-release.ts` and
+   `../website/public/android-release.json`.
+3. In `../website`, commit + push `public/bantera.apk`, `public/android-release.json`,
+   **and** `src/lib/android-release.ts`
    (the deploy serves the new APK and shows the new version on `/download`).
 
 So "publish the Android app" = bump version + run the one script + push the website. arm64-v8a

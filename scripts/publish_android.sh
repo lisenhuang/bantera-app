@@ -31,8 +31,17 @@ cat > "$WEBSITE/src/lib/android-release.ts" <<EOF
 export const androidRelease = { version: '$NAME', build: $BUILD } as const;
 EOF
 
+cat > "$WEBSITE/public/android-release.json" <<EOF
+{
+  "version": "$NAME",
+  "build": $BUILD,
+  "url": "https://bantera.app/bantera.apk"
+}
+EOF
+
 SIZE="$(du -h "$WEBSITE/public/bantera.apk" | cut -f1)"
 echo "✓ Published bantera.apk v$NAME ($BUILD) — $SIZE"
 echo "  -> $WEBSITE/public/bantera.apk"
 echo "  -> $WEBSITE/src/lib/android-release.ts"
-echo "Next: commit & push public/bantera.apk + src/lib/android-release.ts in ./website to deploy."
+echo "  -> $WEBSITE/public/android-release.json"
+echo "Next: commit & push public/bantera.apk + public/android-release.json + src/lib/android-release.ts in ./website to deploy."
