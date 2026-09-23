@@ -54,19 +54,38 @@ class WordTiming {
   final int endMs;
   final double? confidence;
 
+  /// Per-character timing inside a Chinese / Japanese word (the app's word
+  /// pattern treats a whole run of those characters as one word). Null for
+  /// other words and for videos generated before the backend sent it.
+  final List<WordTiming>? parts;
+
   const WordTiming({
     required this.word,
     required this.startMs,
     required this.endMs,
     this.confidence,
+    this.parts,
   });
 
   factory WordTiming.fromJson(Map<String, dynamic> json) {
+    final rawParts = json['parts'];
+    final parts = rawParts is List
+        ? rawParts
+              .whereType<Map>()
+              .map(
+                (p) => WordTiming.fromJson(
+                  p.map((k, v) => MapEntry(k.toString(), v)),
+                ),
+              )
+              .where((p) => p.word.isNotEmpty && p.endMs > p.startMs)
+              .toList()
+        : null;
     return WordTiming(
       word: json['word']?.toString() ?? '',
       startMs: (json['startMs'] as num?)?.toInt() ?? 0,
       endMs: (json['endMs'] as num?)?.toInt() ?? 0,
       confidence: (json['confidence'] as num?)?.toDouble(),
+      parts: parts == null || parts.isEmpty ? null : parts,
     );
   }
 
@@ -76,6 +95,7 @@ class WordTiming {
       'startMs': startMs,
       'endMs': endMs,
       if (confidence != null) 'confidence': confidence,
+      if (parts != null) 'parts': parts!.map((p) => p.toJson()).toList(),
     };
   }
 }

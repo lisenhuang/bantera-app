@@ -6,6 +6,7 @@ import '../domain/models/models.dart';
 import '../core/settings_notifier.dart';
 import 'auth_api_client.dart';
 import 'learning_language_catalog.dart';
+import 'region_service.dart';
 import 'transcription_locale_option.dart';
 import 'translation_service.dart';
 
@@ -147,10 +148,6 @@ class VideoProcessingService {
     }
   }
 
-  static List<TranscriptionLocaleOption> _withoutZhTw(
-    List<TranscriptionLocaleOption> options,
-  ) => options.where((o) => o.identifier != 'zh-TW').toList();
-
   Future<List<TranscriptionLocaleOption>>
   _fetchNativeTranscriptionLocales() async {
     final raw =
@@ -167,8 +164,14 @@ class VideoProcessingService {
 
   /// Resolves locales for the native-language picker: combines iOS transcription locales
   /// and iOS translation locales (deduped by identifier). Falls back to both API catalogs,
-  /// then to embedded lists.
-  Future<List<TranscriptionLocaleOption>> fetchNativeLanguageOptions() async {
+  /// then to embedded lists. Chinese (Taiwan) is shown only once the IP is confirmed outside mainland China.
+  Future<List<TranscriptionLocaleOption>> fetchNativeLanguageOptions() async =>
+      RegionService.instance.filterLanguageOptions(
+        await _fetchAllNativeLanguageOptions(),
+      );
+
+  Future<List<TranscriptionLocaleOption>>
+  _fetchAllNativeLanguageOptions() async {
     if (Platform.isIOS) {
       try {
         // a) iOS transcription locales
@@ -237,43 +240,36 @@ class VideoProcessingService {
   /// Resolves locales for UI: public API first, then embedded [kFallbackLearningLanguages].
   /// Listing languages is supported on all platforms; transcription features remain
   /// iOS-only elsewhere.
-  ///
-  /// When [excludeZhTwForLearning] is true, drops `zh-TW` (product learning language
-  /// uses Mandarin `zh` / zh-CN only). Native language pickers should pass false.
-  Future<List<TranscriptionLocaleOption>> fetchSupportedLocales({
-    bool excludeZhTwForLearning = false,
-  }) async {
-    List<TranscriptionLocaleOption> maybeFilter(
-      List<TranscriptionLocaleOption> list,
-    ) => excludeZhTwForLearning ? _withoutZhTw(list) : list;
-
+  Future<List<TranscriptionLocaleOption>> fetchSupportedLocales() async {
     final fromApi = await AuthApiClient.instance
         .fetchLearningLanguagesCatalog();
     if (fromApi != null && fromApi.isNotEmpty) {
-      return maybeFilter(
-        fromApi
-            .where((row) => row.identifier.isNotEmpty)
-            .map(
-              (row) => TranscriptionLocaleOption(
-                identifier: row.identifier,
-                displayName: row.displayName,
-                isInstalled: false,
-                flagEmoji: row.flagEmoji,
-              ),
-            )
-            .toList(),
-      );
+      return fromApi
+          .where((row) => row.identifier.isNotEmpty)
+          .map(
+            (row) => TranscriptionLocaleOption(
+              identifier: row.identifier,
+              displayName: row.displayName,
+              isInstalled: false,
+              flagEmoji: row.flagEmoji,
+            ),
+          )
+          .toList();
     }
 
-    return maybeFilter(
-      List<TranscriptionLocaleOption>.from(kFallbackLearningLanguages),
-    );
+    return List<TranscriptionLocaleOption>.from(kFallbackLearningLanguages);
   }
 
   /// Resolves locales for learning-language pickers. In normal product mode this
   /// uses the API learning-language catalog. A Dev-only in-memory toggle can
   /// switch the picker to the full native iOS transcription locale list.
-  Future<List<TranscriptionLocaleOption>> fetchLearningLanguageOptions() async {
+  /// Chinese (Taiwan) is shown only once the IP is confirmed outside mainland China.
+  Future<List<TranscriptionLocaleOption>>
+  fetchLearningLanguageOptions() async => RegionService.instance
+      .filterLanguageOptions(await _fetchAllLearningLanguageOptions());
+
+  Future<List<TranscriptionLocaleOption>>
+  _fetchAllLearningLanguageOptions() async {
     if (Platform.isIOS &&
         SettingsNotifier.instance.devShowAllLearningLanguages) {
       try {
@@ -290,7 +286,7 @@ class VideoProcessingService {
       }
     }
 
-    return fetchSupportedLocales(excludeZhTwForLearning: true);
+    return fetchSupportedLocales();
   }
 
   Future<PreparedVideoUpload> prepareVideoForUpload({

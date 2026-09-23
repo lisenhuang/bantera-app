@@ -252,7 +252,9 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                l10n.compareTranscriptionLanguage(widget.sourceLocaleIdentifier),
+                l10n.compareTranscriptionLanguage(
+                  widget.sourceLocaleIdentifier,
+                ),
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -286,8 +288,11 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
                       attempt: attempt,
                       isSelected: _selectedAttempt?.id == attempt.id,
                       isPlaying:
-                          _isPlayingAttempt && _selectedAttempt?.id == attempt.id,
-                      timestampLabel: _formatAttemptTimestamp(attempt.createdAt),
+                          _isPlayingAttempt &&
+                          _selectedAttempt?.id == attempt.id,
+                      timestampLabel: _formatAttemptTimestamp(
+                        attempt.createdAt,
+                      ),
                       l10n: l10n,
                       onSelect: () => _selectAttempt(attempt),
                       onPlay: () => unawaited(_playSavedAttempt(attempt)),
@@ -443,10 +448,7 @@ class _AttemptHistoryCard extends StatelessWidget {
 }
 
 class _SummaryChipsRow extends StatelessWidget {
-  const _SummaryChipsRow({
-    required this.l10n,
-    required this.result,
-  });
+  const _SummaryChipsRow({required this.l10n, required this.result});
 
   final AppLocalizations l10n;
   final AttemptComparisonResult result;
@@ -506,10 +508,7 @@ class _SummaryChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: textStyle?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+        style: textStyle?.copyWith(color: color, fontWeight: FontWeight.w700),
       ),
     );
   }

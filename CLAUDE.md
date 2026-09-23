@@ -25,7 +25,7 @@
 
 ## Locales
 
-- **Taiwan Chinese (`zh-TW`):** Hidden only for **Learning language** flows (`fetchSupportedLocales(excludeZhTwForLearning: true)`, and the learning picker on edit profile). **Native language** selection uses the full locale list (including `zh-TW` when available from the native/API list).
+- **Taiwan Chinese (`zh-TW`):** Hidden by default from both the **native** and **learning** pickers (onboarding and edit profile), and shown only once the user's IP is confirmed to be **outside mainland China**. `RegionService` (`lib/infrastructure/region_service.dart`) reads the country from Cloudflare's `https://api.bantera.app/cdn-cgi/trace` (`loc=XX`); a failed lookup keeps it hidden and is retried next time. `fetchNativeLanguageOptions` / `fetchLearningLanguageOptions` apply the filter. The check is app-only; the backend accepts `zh-TW` everywhere.
 
 ## Version bumps
 

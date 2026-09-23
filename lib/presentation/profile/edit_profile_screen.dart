@@ -171,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? null
                       : () => _showLanguagePicker(
                           title: l10n.editProfileMyNativeLanguage,
-                          excludeZhTwForLearning: false,
+                          isLearningPicker: false,
                           currentIdentifier: _profile.nativeLanguage,
                           onSelected: _saveNativeLanguage,
                           showClearOption: false,
@@ -191,7 +191,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? null
                       : () => _showLanguagePicker(
                           title: l10n.editProfileLearningLanguage,
-                          excludeZhTwForLearning: true,
+                          isLearningPicker: true,
                           currentIdentifier: _profile.learningLanguage,
                           onSelected: _saveLearningLanguage,
                           showClearOption: false,
@@ -315,10 +315,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   String? _selectedIdentifierForPicker({
-    required bool excludeZhTwForLearning,
+    required bool isLearningPicker,
     required String? currentIdentifier,
   }) {
-    if (!excludeZhTwForLearning ||
+    if (!isLearningPicker ||
         currentIdentifier == null ||
         currentIdentifier.isEmpty) {
       return currentIdentifier;
@@ -328,16 +328,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _showLanguagePicker({
     required String title,
-    required bool excludeZhTwForLearning,
+    required bool isLearningPicker,
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
     bool showComingSoonFooter = false,
   }) async {
     // Learning picker uses transcription-only list; native picker uses combined list.
-    final options = excludeZhTwForLearning
-        ? _learningLocaleOptions
-        : _localeOptions;
+    final options = isLearningPicker ? _learningLocaleOptions : _localeOptions;
     if (options == null) {
       if (_localeLoadError != null) {
         ScaffoldMessenger.of(
@@ -349,7 +347,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final filteredOptions = options;
     final selectedIdentifier = _selectedIdentifierForPicker(
-      excludeZhTwForLearning: excludeZhTwForLearning,
+      isLearningPicker: isLearningPicker,
       currentIdentifier: currentIdentifier,
     );
 

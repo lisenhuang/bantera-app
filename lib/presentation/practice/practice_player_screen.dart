@@ -32,15 +32,7 @@ import '../../l10n/app_localizations.dart';
 import 'cue_recording_pipeline.dart';
 import 'record_compare_sheet.dart';
 import 'session_compare_result_sheet.dart';
-
-String _practiceSubtitleHighlightKey(String word) {
-  return word.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\u4e00-\u9fff]'), '');
-}
-
-final RegExp _kWordTokenRe = RegExp(
-  r"[\p{L}\p{N}]+(?:['\u2019\u02bc][\p{L}\p{N}]+)*",
-  unicode: true,
-);
+import 'subtitle_word_tokens.dart';
 
 enum SubtitleState { hidden, original, translated }
 
@@ -81,7 +73,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   StreamSubscription<Duration>? _audioPositionSub;
   bool _audioPlayerReady = false;
   List<Cue> _shortCues = const [];
-  List<int?> _wordTimingCharStarts = const [];
+
+  /// Timed units mapped onto subtitle tokens, per cue. A unit is a word, or one
+  /// character of a Chinese / Japanese word when the backend sent `parts`.
+  List<({String cueId, int startMs, int endMs, List<int> charStarts})>
+  _timedUnits = const [];
   Map<String, ({int startMs, int endMs})> _charStartToWordMs = const {};
   int? _wordTapPlayUntilMs;
   CueSentenceMode _sentenceMode = CueSentenceMode.short;
@@ -210,7 +206,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   void initState() {
     super.initState();
     _shortCues = widget.mediaItem.shortCues;
-    _wordTimingCharStarts = _buildWordTimingCharStarts();
+    _timedUnits = _buildTimedUnits();
     unawaited(_initSentenceModeAndSeed());
     unawaited(SavedCueRepository.instance.load());
   }
@@ -223,7 +219,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     setState(() {
       _sentenceMode = startupMode;
-      _wordTimingCharStarts = _buildWordTimingCharStarts();
+      _timedUnits = _buildTimedUnits();
     });
     _seedPreloadedTranslations();
     unawaited(_startupPracticeSession());
@@ -267,7 +263,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return storedMode;
   }
 
-  List<int?> _buildWordTimingCharStarts() {
+  List<({String cueId, int startMs, int endMs, List<int> charStarts})>
+  _buildTimedUnits() {
     final wt = widget.mediaItem.wordTiming;
     if (wt == null || wt.isEmpty) {
       _charStartToWordMs = const {};
@@ -277,46 +274,64 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return const [];
     }
 
-    final result = List<int?>.filled(wt.length, null);
-    final normalize = _practiceSubtitleHighlightKey;
+    // Per-character parts when present; otherwise the word itself (a whole
+    // Chinese run then highlights all its characters at once, as before).
+    final units = [
+      for (final w in wt) ...(w.parts ?? [w]),
+    ];
+    final result =
+        <({String cueId, int startMs, int endMs, List<int> charStarts})>[];
     final charMap = <String, ({int startMs, int endMs})>{};
 
     var totalTokens = 0;
     var totalMatched = 0;
     var overwrittenStarts = 0;
     for (final cue in _activeCues) {
-      final cueEntries = <({int idx, WordTiming word})>[];
-      for (var i = 0; i < wt.length; i++) {
-        final wordStartMs = wt[i].startMs;
-        if (wordStartMs >= cue.startTimeMs &&
-            wordStartMs < cue.endTimeMs + 500) {
-          cueEntries.add((idx: i, word: wt[i]));
-        }
-      }
-      if (cueEntries.isEmpty) continue;
-
-      final tokens = _kWordTokenRe.allMatches(cue.originalText).toList();
+      final tokens = subtitleWordTokens(cue.originalText);
+      if (tokens.isEmpty) continue;
+      final keys = tokens.map((t) => subtitleWordKey(t.text)).toList();
       totalTokens += tokens.length;
       var tokenCursor = 0;
-      for (final entry in cueEntries) {
-        final normWord = normalize(entry.word.word);
-        if (normWord.isEmpty) continue;
+      for (final unit in units) {
+        if (unit.startMs < cue.startTimeMs ||
+            unit.startMs >= cue.endTimeMs + 500) {
+          continue;
+        }
+        final unitKey = subtitleWordKey(unit.word);
+        if (unitKey.isEmpty) continue;
         while (tokenCursor < tokens.length) {
-          final token = tokens[tokenCursor];
+          final first = tokenCursor;
           tokenCursor++;
-          if (normalize(token.group(0)!) == normWord) {
-            result[entry.idx] = token.start;
-            totalMatched++;
-            final key = _wordTapKey(cue.id, token.start);
+          // A unit can span several tokens (a whole Chinese run without parts).
+          var spelled = keys[first];
+          var last = first;
+          while (spelled.length < unitKey.length &&
+              unitKey.startsWith(spelled) &&
+              last + 1 < tokens.length) {
+            last++;
+            spelled += keys[last];
+          }
+          if (spelled != unitKey) continue;
+
+          tokenCursor = last + 1;
+          final charStarts = [
+            for (var k = first; k <= last; k++) tokens[k].start,
+          ];
+          result.add((
+            cueId: cue.id,
+            startMs: unit.startMs,
+            endMs: unit.endMs,
+            charStarts: charStarts,
+          ));
+          totalMatched += charStarts.length;
+          for (final charStart in charStarts) {
+            final key = _wordTapKey(cue.id, charStart);
             if (charMap.containsKey(key)) {
               overwrittenStarts++;
             }
-            charMap[key] = (
-              startMs: entry.word.startMs,
-              endMs: entry.word.endMs,
-            );
-            break;
+            charMap[key] = (startMs: unit.startMs, endMs: unit.endMs);
           }
+          break;
         }
       }
     }
@@ -324,8 +339,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _logWordTap(
       'build map done: mediaId=${widget.mediaItem.id} cueMode=$_activeCueMode '
       'cueCount=${_activeCues.length} wordTimingCount=${wt.length} '
-      'tokenCount=$totalTokens matchedTokens=$totalMatched '
-      'mappedCueStarts=${charMap.length} overwrittenStarts=$overwrittenStarts',
+      'unitCount=${units.length} tokenCount=$totalTokens '
+      'matchedTokens=$totalMatched mappedCueStarts=${charMap.length} '
+      'overwrittenStarts=$overwrittenStarts',
     );
     return result;
   }
@@ -2267,24 +2283,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     return null;
   }
 
-  Set<int>? _subtitleHighlightCharStartsAtPlayhead() {
+  Set<int>? _subtitleHighlightCharStartsAtPlayhead(Cue cue) {
     if (!_hasWordTiming || !_isPlaying) {
-      return null;
-    }
-    final wt = widget.mediaItem.wordTiming;
-    if (wt == null || wt.isEmpty) {
       return null;
     }
     final pos = _currentPositionMs;
     final charStarts = <int>{};
-    for (var i = 0; i < wt.length; i++) {
-      if (pos >= wt[i].startMs && pos < wt[i].endMs) {
-        final charStart = _wordTimingCharStarts.length > i
-            ? _wordTimingCharStarts[i]
-            : null;
-        if (charStart != null) {
-          charStarts.add(charStart);
-        }
+    for (final unit in _timedUnits) {
+      if (unit.cueId == cue.id && pos >= unit.startMs && pos < unit.endMs) {
+        charStarts.addAll(unit.charStarts);
       }
     }
     return charStarts.isEmpty ? null : charStarts;
@@ -2300,9 +2307,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     final cue = cues[_currentCueIndex];
     String? tappedWord;
-    for (final match in _kWordTokenRe.allMatches(cue.originalText)) {
-      if (match.start == charStart) {
-        tappedWord = match.group(0);
+    for (final token in subtitleWordTokens(cue.originalText)) {
+      if (token.start == charStart) {
+        tappedWord = token.text;
         break;
       }
     }
@@ -2321,10 +2328,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
     if (entry == null) {
-      final cueStarts = _kWordTokenRe
-          .allMatches(cue.originalText)
-          .map((m) => m.start)
-          .toList();
+      final cueStarts = subtitleWordTokens(
+        cue.originalText,
+      ).map((t) => t.start).toList();
       final mappedInCue = cueStarts
           .where(
             (start) =>
@@ -2433,7 +2439,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             minFontSize: hasPlayableMedia ? 16 : 18,
             maxFontSize: hasPlayableMedia ? 30 : 34,
             maxHeight: math.max(56, panelHeight - 32),
-            highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
+            highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(cue),
             onWordTap: _hasWordTiming ? _onWordTap : null,
           ),
         );
@@ -2505,7 +2511,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   minFontSize: hasPlayableMedia ? 14 : 18,
                   maxFontSize: hasPlayableMedia ? 28 : 34,
                   maxHeight: originalHeight,
-                  highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(),
+                  highlightCharStarts: _subtitleHighlightCharStartsAtPlayhead(
+                    cue,
+                  ),
                   onWordTap: _hasWordTiming ? _onWordTap : null,
                 ),
               ),
@@ -3116,7 +3124,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     setState(() {
       _sentenceMode = mode;
-      _wordTimingCharStarts = _buildWordTimingCharStarts();
+      _timedUnits = _buildTimedUnits();
       final newMode = _activeCueSentenceMode;
       final currentCue = _activeCues.isEmpty ? null : _activeCues.first;
       final hasTranslation = currentCue == null
@@ -4206,7 +4214,6 @@ class _AdaptiveSubtitleText extends StatefulWidget {
 
 class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
   static const double _scrollBottomPadding = 14;
-  static final RegExp _wordTokenRe = _kWordTokenRe;
   final List<TapGestureRecognizer> _recognizers = [];
 
   @override
@@ -4239,7 +4246,7 @@ class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
         final useRich =
             ((charStarts != null && charStarts.isNotEmpty) ||
                 widget.onWordTap != null) &&
-            _wordTokenRe.hasMatch(widget.text);
+            kSubtitleWordRe.hasMatch(widget.text);
 
         return SizedBox(
           height: resolvedHeight,
@@ -4283,14 +4290,20 @@ class _AdaptiveSubtitleTextState extends State<_AdaptiveSubtitleText> {
     final children = <InlineSpan>[];
     final highlightRanges = <TextRange>[];
     var last = 0;
-    for (final m in _wordTokenRe.allMatches(widget.text)) {
+    for (final m in subtitleWordTokens(widget.text)) {
       if (m.start > last) {
         children.add(TextSpan(text: widget.text.substring(last, m.start)));
       }
       final slice = widget.text.substring(m.start, m.end);
       final highlighted = charStarts.contains(m.start);
       if (highlighted) {
-        highlightRanges.add(TextRange(start: m.start, end: m.end));
+        // Touching tokens (characters of one Chinese word) share one highlight.
+        if (highlightRanges.isNotEmpty && highlightRanges.last.end == m.start) {
+          final previous = highlightRanges.removeLast();
+          highlightRanges.add(TextRange(start: previous.start, end: m.end));
+        } else {
+          highlightRanges.add(TextRange(start: m.start, end: m.end));
+        }
         TapGestureRecognizer? recognizer;
         if (widget.onWordTap != null) {
           final charStart = m.start;

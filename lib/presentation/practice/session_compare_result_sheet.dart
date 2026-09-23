@@ -106,7 +106,9 @@ class _SessionCompareResultSheetState extends State<SessionCompareResultSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                l10n.compareTranscriptionLanguage(widget.sourceLocaleIdentifier),
+                l10n.compareTranscriptionLanguage(
+                  widget.sourceLocaleIdentifier,
+                ),
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -170,11 +172,7 @@ class _SessionCompareResultSheetState extends State<SessionCompareResultSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: Colors.orange[800],
-                    size: 16,
-                  ),
+                  Icon(Icons.info_outline, color: Colors.orange[800], size: 16),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
@@ -250,10 +248,7 @@ class _SessionCompareResultSheetState extends State<SessionCompareResultSheet> {
 }
 
 class _SummaryChipsRow extends StatelessWidget {
-  const _SummaryChipsRow({
-    required this.l10n,
-    required this.result,
-  });
+  const _SummaryChipsRow({required this.l10n, required this.result});
 
   final AppLocalizations l10n;
   final AttemptComparisonResult result;
@@ -313,10 +308,7 @@ class _SummaryChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: textStyle?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+        style: textStyle?.copyWith(color: color, fontWeight: FontWeight.w700),
       ),
     );
   }

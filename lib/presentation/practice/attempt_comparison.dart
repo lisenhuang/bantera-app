@@ -113,7 +113,8 @@ AttemptComparisonResult buildAttemptComparison({
     final punctOnly = actualTokens[i].normalized.isEmpty;
     final isMatch = punctOnly || matchedActualOriginalIndexes.contains(i);
     final confidence = tokenConfidences[i];
-    final isUncertain = isMatch &&
+    final isUncertain =
+        isMatch &&
         !punctOnly &&
         confidence != null &&
         confidence > 0 &&
@@ -186,10 +187,7 @@ List<double?> _alignConfidencesToTokens(
   return confidences;
 }
 
-List<DiffToken> _tokenize(
-  String text, {
-  required bool useCharacterTokens,
-}) {
+List<DiffToken> _tokenize(String text, {required bool useCharacterTokens}) {
   if (useCharacterTokens) {
     return Characters(text)
         .map(
@@ -205,7 +203,10 @@ List<DiffToken> _tokenize(
       .trim()
       .split(RegExp(r'\s+'))
       .where((token) => token.trim().isNotEmpty)
-      .map((token) => DiffToken(display: token, normalized: _normalizeToken(token)))
+      .map(
+        (token) =>
+            DiffToken(display: token, normalized: _normalizeToken(token)),
+      )
       .toList(growable: false);
 }
 
@@ -253,9 +254,7 @@ List<(int, int)> _longestCommonSubsequence(
       if (expected[i] == actual[j]) {
         dp[i][j] = dp[i + 1][j + 1] + 1;
       } else {
-        dp[i][j] = dp[i + 1][j] >= dp[i][j + 1]
-            ? dp[i + 1][j]
-            : dp[i][j + 1];
+        dp[i][j] = dp[i + 1][j] >= dp[i][j + 1] ? dp[i + 1][j] : dp[i][j + 1];
       }
     }
   }
@@ -327,11 +326,7 @@ bool _isIgnorableForComparisonGrapheme(String g) {
   if (g.isEmpty) {
     return true;
   }
-  if (g == "'" ||
-      g == '-' ||
-      g == '\u2010' ||
-      g == '\u2011' ||
-      g == '\u2013') {
+  if (g == "'" || g == '-' || g == '\u2010' || g == '\u2011' || g == '\u2013') {
     return false;
   }
   for (final r in g.runes) {
@@ -442,9 +437,6 @@ String _normalizeConfusableQuotesForTokenCompare(String input) {
     RegExp(r"[\u2018\u2019\u201B\u0060\u00B4\u02BC\u02BB\uFF07\u2032]"),
     "'",
   );
-  s = s.replaceAll(
-    RegExp(r'[\u201C\u201D\u201E\u00AB\u00BB]'),
-    '"',
-  );
+  s = s.replaceAll(RegExp(r'[\u201C\u201D\u201E\u00AB\u00BB]'), '"');
   return s;
 }
