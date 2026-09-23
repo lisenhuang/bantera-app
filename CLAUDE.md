@@ -26,6 +26,7 @@
 ## Locales
 
 - **Taiwan Chinese (`zh-TW`):** Hidden by default from both the **native** and **learning** pickers (onboarding and edit profile), and shown only once the user's IP is confirmed to be **outside mainland China**. `RegionService` (`lib/infrastructure/region_service.dart`) reads the country from Cloudflare's `https://api.bantera.app/cdn-cgi/trace` (`loc=XX`); a failed lookup keeps it hidden and is retried next time. `fetchNativeLanguageOptions` / `fetchLearningLanguageOptions` apply the filter. The check is app-only; the backend accepts `zh-TW` everywhere.
+- **App UI languages (17):** defined once in `AppLocalePreference` (`lib/core/app_locale.dart`: stored value, locale, native name, flag; Traditional Chinese uses the 🇭🇰 flag). To add one: add `lib/l10n/app_<locale>.arb` with every key from `app_en.arb`, an enum entry, and the code in `CFBundleLocalizations` (`ios/Runner/Info.plist`). Never change existing stored values (`en`, `zh_CN`, `ko`, `ja`). Keep the literal `DELETE` in `typeDeleteLabel` — account deletion checks for that exact word.
 
 ## Version bumps
 

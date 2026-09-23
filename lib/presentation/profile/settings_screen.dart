@@ -381,36 +381,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   padding: EdgeInsets.zero,
                                   alignment: AlignmentDirectional.centerStart,
                                   items: [
-                                    DropdownMenuItem(
-                                      value: AppLocalePreference.system,
-                                      child: const Text(
-                                        AppLocaleAutonyms.systemDefault,
+                                    for (final option
+                                        in AppLocalePreference.values)
+                                      DropdownMenuItem(
+                                        value: option,
+                                        child: Text(option.label),
                                       ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: AppLocalePreference.en,
-                                      child: const Text(
-                                        AppLocaleAutonyms.english,
-                                      ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: AppLocalePreference.zhCn,
-                                      child: const Text(
-                                        AppLocaleAutonyms.chineseSimplified,
-                                      ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: AppLocalePreference.ko,
-                                      child: const Text(
-                                        AppLocaleAutonyms.korean,
-                                      ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: AppLocalePreference.ja,
-                                      child: const Text(
-                                        AppLocaleAutonyms.japanese,
-                                      ),
-                                    ),
                                   ],
                                   onChanged: (v) {
                                     if (v != null) {
