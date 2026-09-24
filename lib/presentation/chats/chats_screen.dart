@@ -8,6 +8,7 @@ import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_conversation_screen.dart';
 import 'chat_menu_item_row.dart';
+import 'group_chat_presentation.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -258,7 +259,10 @@ class _ThreadCard extends StatelessWidget {
                 backgroundColor: theme.colorScheme.primary.withValues(
                   alpha: 0.12,
                 ),
-                child: const Icon(Icons.groups_rounded),
+                child: Text(
+                  groupChatEmoji(thread),
+                  style: const TextStyle(fontSize: 24),
+                ),
               )
             : Stack(
                 children: [
@@ -278,7 +282,7 @@ class _ThreadCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                thread.title,
+                thread.isGroup ? groupChatTitle(thread, l10n) : thread.title,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium,
               ),

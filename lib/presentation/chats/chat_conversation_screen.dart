@@ -21,6 +21,7 @@ import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_menu_item_row.dart';
+import 'group_chat_presentation.dart';
 
 class ChatConversationScreen extends StatefulWidget {
   const ChatConversationScreen.thread({super.key, required this.thread})
@@ -106,7 +107,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final title = _isGroup
-        ? (widget.thread?.title ?? l10n.chatsTitle)
+        ? (widget.thread == null
+              ? l10n.chatsTitle
+              : groupChatTitle(widget.thread!, l10n))
         : (_partner?.name ?? widget.thread?.title ?? l10n.chatsTitle);
 
     return ListenableBuilder(
@@ -121,10 +124,18 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   : null,
               child: Row(
                 children: [
-                  ProfileAvatar(
-                    radius: 18,
-                    imageUrl: _isGroup ? null : _partner?.avatarUrl,
-                  ),
+                  _isGroup
+                      ? CircleAvatar(
+                          radius: 18,
+                          child: Text(
+                            groupChatEmoji(widget.thread!),
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                        )
+                      : ProfileAvatar(
+                          radius: 18,
+                          imageUrl: _partner?.avatarUrl,
+                        ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -1447,7 +1458,7 @@ class _GroupSettingsScreen extends StatelessWidget {
                 children: [
                   SwitchListTile(
                     title: Text(l10n.chatNotifications),
-                    subtitle: Text(currentThread.title),
+                    subtitle: Text(groupChatTitle(currentThread, l10n)),
                     value: !currentThread.isMuted,
                     onChanged: isUpdating
                         ? null
