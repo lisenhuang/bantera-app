@@ -87,10 +87,10 @@ const kAiScenarios = [
   ),
   AiScenario(
     id: 'restaurant_order',
-    emoji: '🍕',
+    emoji: '🍽️',
     label: 'Restaurant order',
     scenarioText:
-        'Two friends argue lightheartedly about what to order at a pizza restaurant.',
+        'Two friends discuss what to order at a restaurant. Choose a plausible cuisine and dishes that fit the target locale, and make their choices feel specific to this visit.',
   ),
   AiScenario(
     id: 'book_rec',
