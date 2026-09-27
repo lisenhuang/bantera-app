@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:developer' show log;
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
+
 import '../core/api_config_notifier.dart';
 import '../domain/models/models.dart';
 import 'learning_language_catalog.dart';
@@ -11,11 +14,23 @@ import 'network_reachability.dart';
 class AuthApiClient {
   AuthApiClient._();
 
+  @visibleForTesting
+  AuthApiClient.forTesting({
+    required Uri baseUrl,
+    Duration recoveryPollInterval = Duration.zero,
+    Duration recoveryTimeout = const Duration(seconds: 2),
+  }) : _baseUrlOverride = baseUrl,
+       _recoveryPollInterval = recoveryPollInterval,
+       _recoveryTimeout = recoveryTimeout;
+
+  Uri? _baseUrlOverride;
+  Duration _recoveryPollInterval = const Duration(seconds: 5);
+  Duration _recoveryTimeout = const Duration(minutes: 12);
+
   static final AuthApiClient instance = AuthApiClient._();
   static const _authRequestTimeout = Duration(seconds: 10);
 
   final HttpClient _httpClient = HttpClient();
-  List<String> _dialogueLines = [];
 
   String get displayBaseUrl => ApiConfigNotifier.instance.baseUrl;
 
@@ -153,9 +168,7 @@ class AuthApiClient {
   String googleAuthStartUrl() => _resolve('/api/auth/google/start').toString();
 
   /// Redeems the one-time code from the callback deep link for the token pair.
-  Future<AuthTokenResponse> exchangeGoogleCode({
-    required String code,
-  }) {
+  Future<AuthTokenResponse> exchangeGoogleCode({required String code}) {
     return _postAuth('/api/auth/google/exchange', <String, dynamic>{
       'code': code,
     });
@@ -597,10 +610,18 @@ class AuthApiClient {
     void Function()? onAudioGenerated,
     void Function()? onAligning,
     bool retried = false,
+    String? clientJobId,
   }) async {
+    final supportsRecovery = useV2 || useV3;
+    var jobId = clientJobId ?? const Uuid().v4();
+    var started = false;
+    var dialogueLines = <String>[];
+    HttpClientRequest? generationRequest;
+    if (supportsRecovery) onStarted?.call(jobId);
     try {
       final payload = jsonEncode({
         'language': language,
+        if (supportsRecovery) 'clientJobId': jobId,
         'languageCode': languageCode,
         'scenario': scenario,
         if (scenarioId != null && scenarioId.isNotEmpty)
@@ -616,7 +637,10 @@ class AuthApiClient {
           : useV2
           ? '/api/me/audio/generate/v2'
           : '/api/me/audio/generate';
-      final request = await _httpClient.postUrl(_resolve(endpointPath));
+      final request = await _httpClient
+          .postUrl(_resolve(endpointPath))
+          .timeout(_authRequestTimeout);
+      generationRequest = request;
       request.headers.set(
         HttpHeaders.authorizationHeader,
         'Bearer $accessToken',
@@ -624,10 +648,15 @@ class AuthApiClient {
       request.headers.contentType = ContentType.json;
       request.add(utf8.encode(payload));
 
-      final response = await request.close();
+      final response = await request.close().timeout(
+        const Duration(seconds: 45),
+      );
 
       if (response.statusCode != 200) {
-        final body = await response.transform(utf8.decoder).join();
+        final body = await response
+            .transform(utf8.decoder)
+            .join()
+            .timeout(_authRequestTimeout);
         Map<String, dynamic> errJson = {};
         try {
           errJson = jsonDecode(body) as Map<String, dynamic>;
@@ -653,6 +682,7 @@ class AuthApiClient {
               onAudioGenerated: onAudioGenerated,
               onAligning: onAligning,
               retried: true,
+              clientJobId: jobId,
             );
           }
           throw const AuthApiException(
@@ -665,6 +695,7 @@ class AuthApiClient {
       }
 
       final lines = response
+          .timeout(const Duration(seconds: 45))
           .transform(utf8.decoder)
           .transform(const LineSplitter());
 
@@ -681,12 +712,14 @@ class AuthApiClient {
 
         final step = data['step'];
         if (step == 'started') {
-          final jobId = data['jobId']?.toString();
-          if (jobId != null && jobId.isNotEmpty) {
+          final receivedJobId = data['jobId']?.toString();
+          if (receivedJobId != null && receivedJobId.isNotEmpty) {
+            jobId = receivedJobId;
+            started = true;
             onStarted?.call(jobId);
           }
         } else if (step == 'dialogue') {
-          _dialogueLines =
+          dialogueLines =
               (data['lines'] as List?)?.map((e) => e.toString()).toList() ?? [];
           onDialogueDone();
         } else if (step == 'audio') {
@@ -695,8 +728,8 @@ class AuthApiClient {
           onAligning?.call();
         } else if (step == 'done') {
           final videoMap = data['video'] as Map<String, dynamic>;
-          onAudioDone(_uploadedVideoFromJson(videoMap), _dialogueLines);
-          _dialogueLines = [];
+          onAudioDone(_uploadedVideoFromJson(videoMap), dialogueLines);
+          return; // A later stream close cannot turn a completed job into a failure.
         } else if (step == 'error') {
           throw AuthApiException(
             code: 'generation_failed',
@@ -704,20 +737,118 @@ class AuthApiClient {
           );
         }
       }
-    } on AuthApiException {
-      rethrow;
+      // A clean EOF without "done" is also a dropped progress stream.
+      if (!supportsRecovery) {
+        throw const AuthApiException(
+          code: 'generation_failed',
+          message: 'Generation did not finish.',
+        );
+      }
+    } on AuthApiException catch (error) {
+      if (!supportsRecovery || (error.statusCode ?? 0) < 500) rethrow;
     } on SocketException {
-      await _throwNetworkFailure();
+      if (!supportsRecovery) await _throwNetworkFailure();
     } on HandshakeException {
-      throw const AuthApiException(
-        code: 'tls_error',
-        message: 'The app could not establish a secure connection.',
-      );
+      if (!supportsRecovery) {
+        throw const AuthApiException(
+          code: 'tls_error',
+          message: 'The app could not establish a secure connection.',
+        );
+      }
     } on HttpException {
-      await _throwNetworkFailure();
+      if (!supportsRecovery) await _throwNetworkFailure();
     } on TimeoutException {
-      await _throwNetworkFailure();
+      generationRequest?.abort();
+      if (!supportsRecovery) await _throwNetworkFailure();
     }
+    final video = await _recoverAudioGeneration(
+      accessToken,
+      jobId,
+      started: started,
+    );
+    onAudioDone(video, video.dialogueLines ?? dialogueLines);
+  }
+
+  /// Reconnect to the same persisted job. Never repeat the generation POST.
+  Future<UploadedVideo> _recoverAudioGeneration(
+    String accessToken,
+    String jobId, {
+    required bool started,
+  }) async {
+    final deadline = DateTime.now().add(_recoveryTimeout);
+    final notFoundDeadline = DateTime.now().add(const Duration(seconds: 30));
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final data = await _retryWithRefresh(accessToken, (token) async {
+          final request = await _httpClient
+              .getUrl(_resolve('/api/me/audio/jobs/$jobId'))
+              .timeout(_authRequestTimeout);
+          request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+          request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+          try {
+            final response = await request.close().timeout(_authRequestTimeout);
+            final text = await response
+                .transform(utf8.decoder)
+                .join()
+                .timeout(_authRequestTimeout);
+            if (response.statusCode == 404) {
+              return <String, dynamic>{'status': 'not_found'};
+            }
+            final json = text.isEmpty
+                ? <String, dynamic>{}
+                : jsonDecode(text) as Map<String, dynamic>;
+            if (response.statusCode != 200) {
+              _throwApiException(json, response.statusCode);
+            }
+            return json;
+          } on TimeoutException {
+            request.abort();
+            rethrow;
+          }
+        });
+        if (data['status'] == 'done' && data['video'] is Map<String, dynamic>) {
+          return _uploadedVideoFromJson(data['video'] as Map<String, dynamic>);
+        }
+        if (data['status'] == 'failed') {
+          throw AuthApiException(
+            code: 'generation_failed',
+            message:
+                data['errorMessage']?.toString() ?? 'Audio generation failed.',
+          );
+        }
+        if (data['status'] != 'not_found') started = true;
+        if (!started && DateTime.now().isAfter(notFoundDeadline)) {
+          throw const AuthApiException(
+            code: 'network_unreachable',
+            message: 'Could not confirm that audio generation started.',
+          );
+        }
+      } on AuthApiException catch (error) {
+        if (error.code == 'generation_failed' ||
+            error.code == 'network_unreachable' ||
+            error.code == 'token_expired' ||
+            error.statusCode == 401 ||
+            error.statusCode == 403) {
+          rethrow;
+        }
+      } on SocketException {
+        // Keep the job pending through temporary offline periods.
+      } on HttpException {
+        // The job may still be running behind a disconnected proxy.
+      } on HandshakeException {
+        // Retry the status check after a temporary TLS failure.
+      } on TimeoutException {
+        // A status timeout does not mean the generation failed.
+      } on FormatException {
+        // A proxy may temporarily return HTML instead of a job response.
+      }
+      await Future<void>.delayed(_recoveryPollInterval);
+    }
+    throw const AuthApiException(
+      code: 'generation_pending',
+      message:
+          'Your audio may still be generating. Check Your Audio for the result.',
+    );
   }
 
   Future<void> generateAiAudioStreamingV2({
@@ -1401,7 +1532,11 @@ class AuthApiClient {
     final code = json['code']?.toString();
     final message = json['message']?.toString();
     if (code != null && message != null) {
-      throw AuthApiException(code: code, message: message, statusCode: statusCode);
+      throw AuthApiException(
+        code: code,
+        message: message,
+        statusCode: statusCode,
+      );
     }
 
     throw AuthApiException(
@@ -1496,7 +1631,8 @@ class AuthApiClient {
   }
 
   Uri _resolve(String path) {
-    final baseUrl = ApiConfigNotifier.instance.baseUrl;
+    final baseUrl =
+        _baseUrlOverride?.toString() ?? ApiConfigNotifier.instance.baseUrl;
     final baseUri = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/');
     final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     return baseUri.resolve(normalizedPath);

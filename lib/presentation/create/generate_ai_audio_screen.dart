@@ -76,6 +76,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   static const _durationOptions = [60, 120, 180, 240];
 
   bool get _canGenerate {
+    if (GenerationJobNotifier.instance.hasProcessingJob) return false;
     final learningLang =
         UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
     if (learningLang.isEmpty) return false;
@@ -359,6 +360,19 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       GenerationJobNotifier.instance.clear();
       if (mounted) setState(() => _errorMessage = e.message);
     } on AuthApiException catch (e) {
+      if (e.code == 'generation_pending') {
+        // A lost connection is not evidence that the server job failed.
+        widget.onYourMediaChanged?.call();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.aiGenLoadingTitle),
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+        return;
+      }
       GenerationJobNotifier.instance.clear();
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
