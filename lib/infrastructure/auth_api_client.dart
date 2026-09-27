@@ -349,10 +349,9 @@ class AuthApiClient {
     });
   }
 
-  /// Fetches recent public videos (not owned by the caller) optionally
-  /// filtered by [languageCode] (e.g. "en", "ja"). [limit] defaults to 5.
-  /// Passing [accessToken] is optional — when provided the server excludes
-  /// videos owned by that user.
+  /// Fetches recent public videos, including the caller's own public audio,
+  /// optionally filtered by [languageCode] (e.g. "en", "ja").
+  /// Passing [accessToken] is optional.
   Future<List<UploadedVideo>> fetchPublicVideos({
     String? accessToken,
     String? languageCode,
