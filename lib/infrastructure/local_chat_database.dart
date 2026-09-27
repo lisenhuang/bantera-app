@@ -130,6 +130,8 @@ LazyDatabase _openConnection() {
 class LocalChatDatabase extends _$LocalChatDatabase {
   LocalChatDatabase._internal() : super(_openConnection());
 
+  LocalChatDatabase.forTesting(super.executor);
+
   static final LocalChatDatabase instance = LocalChatDatabase._internal();
 
   @override

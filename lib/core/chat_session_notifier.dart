@@ -12,6 +12,7 @@ import '../infrastructure/local_chat_repository.dart';
 import '../infrastructure/push_notifications_service.dart';
 import '../infrastructure/translation_service.dart';
 import '../infrastructure/video_processing_service.dart';
+import 'app_resume_notifier.dart';
 import 'auth_api_error_localizations.dart';
 import 'auth_session_notifier.dart';
 import 'settings_notifier.dart';
@@ -20,6 +21,7 @@ import 'user_profile_notifier.dart';
 class ChatSessionNotifier extends ChangeNotifier {
   ChatSessionNotifier._() {
     AuthSessionNotifier.instance.addListener(_handleAuthChanged);
+    AppResumeNotifier.instance.addListener(_handleAppResumed);
     if (AuthSessionNotifier.instance.isAuthenticated) {
       _handleAuthChanged();
     }
@@ -46,6 +48,11 @@ class ChatSessionNotifier extends ChangeNotifier {
   AuthApiException? _authApiError;
   String? _ownerCacheKey;
   String? _lastRegisteredPushTokenKey;
+  final Map<String, Future<File>> _audioDownloads = {};
+  final Map<String, String> _pendingDmSync = {};
+  bool _isSyncingDmAudio = false;
+  int _cacheEpoch = 0;
+  final Set<String> _deletedMessageIds = {};
 
   bool get isLoading => _isLoading;
   bool get isRefreshingMessages => _isRefreshingMessages;
@@ -106,6 +113,21 @@ class ChatSessionNotifier extends ChangeNotifier {
       final bootstrap = await _withRetry(
         (token) => _apiClient.fetchBootstrap(accessToken: token),
       );
+      if (AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey) {
+        return;
+      }
+      if (bootstrap.deletedMessageIds.any(
+        (id) => !_deletedMessageIds.contains(id),
+      )) {
+        _cacheEpoch++;
+      }
+      _deletedMessageIds.addAll(bootstrap.deletedMessageIds);
+      for (final id in bootstrap.deletedMessageIds) {
+        await _localRepository.deleteMessage(
+          id,
+          ownerCacheKey: session.cacheKey,
+        );
+      }
       _ownerCacheKey = session.cacheKey;
       _globalNotificationsEnabled = bootstrap.globalNotificationsEnabled;
       SettingsNotifier.instance.toggleNotifications(
@@ -120,6 +142,12 @@ class ChatSessionNotifier extends ChangeNotifier {
         unawaited(_syncPushToken(promptForPermission: false));
       }
       unawaited(_connectWebSocket());
+      if (AuthSessionNotifier.instance.session?.cacheKey == session.cacheKey) {
+        _queueDmSync(
+          bootstrap.directMessages.map((thread) => thread.threadId),
+          session.cacheKey,
+        );
+      }
     } on AuthApiException catch (error) {
       _authApiError = error;
       _plainErrorMessage = null;
@@ -154,6 +182,7 @@ class ChatSessionNotifier extends ChangeNotifier {
       return;
     }
 
+    final cacheEpoch = _cacheEpoch;
     _isRefreshingMessages = true;
     notifyListeners();
     try {
@@ -161,11 +190,21 @@ class ChatSessionNotifier extends ChangeNotifier {
         (token) =>
             _apiClient.fetchMessages(accessToken: token, threadId: threadId),
       );
+      if (AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey ||
+          cacheEpoch != _cacheEpoch) {
+        return;
+      }
       await _localRepository.replaceMessages(
-        ownerCacheKey: _ownerCacheKey!,
+        ownerCacheKey: session.cacheKey,
         threadId: threadId,
-        messages: messages,
+        messages: messages
+            .where((m) => !_deletedMessageIds.contains(m.messageId))
+            .toList(),
+        replaceServerSnapshot: messages.length < 100,
       );
+      if (messages.any((message) => message.isDirectMessage)) {
+        _queueDmSync([threadId], session.cacheKey);
+      }
     } on AuthApiException catch (error) {
       _authApiError = error;
       _plainErrorMessage = null;
@@ -180,6 +219,17 @@ class ChatSessionNotifier extends ChangeNotifier {
     required File audioFile,
     required int durationMs,
   }) async {
+    final owner = AuthSessionNotifier.instance.session?.cacheKey;
+    if (owner == null) throw const SessionExpiredException();
+    final savedAudio = await _localRepository.storeAudioBytes(
+      messageId: 'outgoing-${DateTime.now().microsecondsSinceEpoch}',
+      bytes: await audioFile.readAsBytes(),
+      contentType: 'audio/mp4',
+      ownerCacheKey: owner,
+    );
+    if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      throw const SessionExpiredException();
+    }
     final message = await _withRetry(
       (token) => _apiClient.sendDirectMessageAudio(
         accessToken: token,
@@ -187,6 +237,17 @@ class ChatSessionNotifier extends ChangeNotifier {
         audioFile: audioFile,
         durationMs: durationMs,
       ),
+    );
+    await _localRepository.replaceMessages(
+      ownerCacheKey: owner,
+      threadId: message.threadId,
+      messages: [message],
+      replaceServerSnapshot: false,
+    );
+    await _localRepository.updateMessageLocalAudioPath(
+      messageId: message.messageId,
+      storedReference: savedAudio,
+      ownerCacheKey: owner,
     );
     await refreshBootstrap(showLoadingState: false);
     await loadMessages(message.threadId);
@@ -211,43 +272,174 @@ class ChatSessionNotifier extends ChangeNotifier {
     return message;
   }
 
-  Future<File> ensureLocalAudio(ChatMessageItem message) async {
-    final existingPath = await _localRepository.resolveAudioPath(
-      message.localAudioPath,
-    );
-    if (existingPath != null && await File(existingPath).exists()) {
-      return File(existingPath);
+  void _queueDmSync(Iterable<String> threadIds, String owner) {
+    for (final threadId in threadIds) {
+      _pendingDmSync[threadId] = owner;
     }
+    if (!_isSyncingDmAudio) unawaited(_syncDmAudio());
+  }
 
-    final downloaded = await _withRetry(
-      (token) => _apiClient.downloadMessageAudio(
-        accessToken: token,
+  Future<void> _syncDmAudio() async {
+    _isSyncingDmAudio = true;
+    try {
+      while (_pendingDmSync.isNotEmpty) {
+        final entry = _pendingDmSync.entries.first;
+        final threadId = entry.key;
+        final owner = entry.value;
+        final cacheEpoch = _cacheEpoch;
+        _pendingDmSync.remove(threadId);
+        try {
+          var offset = 0;
+          while (AuthSessionNotifier.instance.session?.cacheKey == owner &&
+              cacheEpoch == _cacheEpoch) {
+            final messages = await _withRetry(
+              (token) => _apiClient.fetchMessages(
+                accessToken: token,
+                threadId: threadId,
+                offset: offset,
+              ),
+            );
+            if (AuthSessionNotifier.instance.session?.cacheKey != owner ||
+                cacheEpoch != _cacheEpoch) {
+              break;
+            }
+            await _localRepository.replaceMessages(
+              ownerCacheKey: owner,
+              threadId: threadId,
+              messages: messages
+                  .where((m) => !_deletedMessageIds.contains(m.messageId))
+                  .toList(),
+              replaceServerSnapshot: false,
+            );
+            for (final message in messages.where((m) => m.isDirectMessage)) {
+              if (AuthSessionNotifier.instance.session?.cacheKey != owner ||
+                  cacheEpoch != _cacheEpoch) {
+                break;
+              }
+              if (_deletedMessageIds.contains(message.messageId)) continue;
+              try {
+                await ensureLocalAudio(message);
+              } catch (error) {
+                debugPrint(
+                  '[ChatCache] Download deferred: ${error.runtimeType}',
+                );
+              }
+            }
+            if (messages.length < 100) break;
+            offset += messages.length;
+          }
+        } catch (error) {
+          debugPrint('[ChatCache] Sync deferred: ${error.runtimeType}');
+        }
+      }
+    } finally {
+      _isSyncingDmAudio = false;
+    }
+  }
+
+  Future<File> ensureLocalAudio(ChatMessageItem message) async {
+    final owner = AuthSessionNotifier.instance.session?.cacheKey;
+    if (owner == null) throw const SessionExpiredException();
+    if (_deletedMessageIds.contains(message.messageId)) {
+      throw const AuthApiException(
+        code: 'chat_not_found',
+        message: 'This message was deleted.',
+      );
+    }
+    final key = '$owner:${message.messageId}';
+    final existing = _audioDownloads[key];
+    if (existing != null) return existing;
+    final task = _downloadAndCacheAudio(message, owner);
+    _audioDownloads[key] = task;
+    try {
+      return await task;
+    } finally {
+      _audioDownloads.remove(key);
+    }
+  }
+
+  Future<File> _downloadAndCacheAudio(
+    ChatMessageItem message,
+    String owner,
+  ) async {
+    final current = await _localRepository.getMessage(
+      message.messageId,
+      ownerCacheKey: owner,
+    );
+    final existingPath = await _localRepository.resolveAudioPath(
+      current?.localAudioPath ?? message.localAudioPath,
+    );
+    File? file;
+    if (existingPath != null && await File(existingPath).exists()) {
+      file = File(existingPath);
+    }
+    if (file == null) {
+      if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        throw const SessionExpiredException();
+      }
+      final downloaded = await _withRetry(
+        (token) => _apiClient.downloadMessageAudio(
+          accessToken: token,
+          messageId: message.messageId,
+        ),
+      );
+      if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        throw const SessionExpiredException();
+      }
+      if (_deletedMessageIds.contains(message.messageId)) {
+        throw const AuthApiException(
+          code: 'chat_not_found',
+          message: 'This message was deleted.',
+        );
+      }
+      final storedReference = await _localRepository.storeAudioBytes(
         messageId: message.messageId,
-      ),
-    );
-    final storedReference = await _localRepository.storeAudioBytes(
-      messageId: message.messageId,
-      bytes: downloaded.bytes,
-      contentType: downloaded.contentType,
-    );
-    await _localRepository.updateMessageLocalAudioPath(
-      messageId: message.messageId,
-      storedReference: storedReference,
-    );
-
-    if (!message.isMine && message.isDirectMessage) {
-      unawaited(
-        _withRetry<void>(
+        bytes: downloaded.bytes,
+        contentType: downloaded.contentType,
+        ownerCacheKey: owner,
+      );
+      if (_deletedMessageIds.contains(message.messageId)) {
+        final path = await _localRepository.resolveAudioPath(storedReference);
+        if (path != null) {
+          try {
+            await File(path).delete();
+          } on FileSystemException {
+            /* Already removed. */
+          }
+        }
+        throw const AuthApiException(
+          code: 'chat_not_found',
+          message: 'This message was deleted.',
+        );
+      }
+      await _localRepository.updateMessageLocalAudioPath(
+        messageId: message.messageId,
+        storedReference: storedReference,
+        ownerCacheKey: owner,
+      );
+      file = File((await _localRepository.resolveAudioPath(storedReference))!);
+    }
+    // Acknowledge only after durable storage. Retry a failed receipt even when
+    // the file was already cached on an earlier pass.
+    if (!message.isMine &&
+        message.isDirectMessage &&
+        message.expiresAt == null &&
+        AuthSessionNotifier.instance.session?.cacheKey == owner) {
+      try {
+        await _withRetry<void>(
           (token) => _apiClient.acknowledgeMessageReceived(
             accessToken: token,
             messageId: message.messageId,
           ),
-        ),
-      );
+        );
+      } catch (error) {
+        debugPrint('[ChatCache] Receipt deferred: ${error.runtimeType}');
+      }
     }
-
-    final resolved = await _localRepository.resolveAudioPath(storedReference);
-    return File(resolved!);
+    if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      throw const SessionExpiredException();
+    }
+    return file;
   }
 
   Future<ChatMessageItem?> transcribeMessage(ChatMessageItem message) async {
@@ -403,7 +595,8 @@ class ChatSessionNotifier extends ChangeNotifier {
     _globalNotificationsEnabled = enabled;
     SettingsNotifier.instance.toggleNotifications(enabled);
     if (enabled) {
-      unawaited(_syncPushToken(promptForPermission: true));
+      await _syncPushToken(promptForPermission: true);
+      // Register first so a newly authorized device receives the test alert.
       unawaited(_sendTestNotification());
     }
     notifyListeners();
@@ -473,6 +666,8 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   Future<void> deleteOwnMessage(ChatMessageItem message) async {
     if (!message.isMine) return;
+    _cacheEpoch++;
+    _deletedMessageIds.add(message.messageId);
     await _localRepository.deleteMessage(message.messageId);
     try {
       await _withRetry<void>(
@@ -482,9 +677,12 @@ class ChatSessionNotifier extends ChangeNotifier {
         ),
       );
       await refreshBootstrap(showLoadingState: false);
-    } catch (_) {
+    } on AuthApiException catch (error) {
       await refreshBootstrap(showLoadingState: false);
-      rethrow;
+      if (error.code != 'chat_not_found') {
+        _deletedMessageIds.remove(message.messageId);
+        rethrow;
+      }
     }
   }
 
@@ -495,6 +693,9 @@ class ChatSessionNotifier extends ChangeNotifier {
         threadId: threadId,
       ),
     );
+    _cacheEpoch++;
+    _pendingDmSync.remove(threadId);
+    await _localRepository.deleteLocalThread(threadId);
     await refreshBootstrap(showLoadingState: false);
   }
 
@@ -597,26 +798,38 @@ class ChatSessionNotifier extends ChangeNotifier {
     );
   }
 
+  void _handleAppResumed() {
+    // Permission may have changed in iOS Settings while the app was away.
+    unawaited(_syncPushToken(promptForPermission: false));
+    unawaited(refreshBootstrap(showLoadingState: false));
+  }
+
   Future<void> _syncPushToken({required bool promptForPermission}) async {
     final session = AuthSessionNotifier.instance.session;
     if (session == null || !_globalNotificationsEnabled) {
       return;
     }
 
-    final token = promptForPermission
-        ? await PushNotificationsService.instance
-              .requestAuthorizationAndRegister()
-        : await PushNotificationsService.instance.registerIfAuthorized();
-    if (token == null || token.token.trim().isEmpty) {
-      return;
-    }
-    const supportsCalls = true;
-    final registrationKey = '${token.token}:$supportsCalls';
-    if (_lastRegisteredPushTokenKey == registrationKey) {
-      return;
-    }
-
     try {
+      final token =
+          await (promptForPermission
+                  ? PushNotificationsService.instance
+                        .requestAuthorizationAndRegister()
+                  : PushNotificationsService.instance.registerIfAuthorized())
+              .timeout(const Duration(seconds: 20));
+      if (token == null ||
+          token.token.trim().isEmpty ||
+          AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey ||
+          !_globalNotificationsEnabled) {
+        return;
+      }
+      const supportsCalls = true;
+      final registrationKey =
+          '${session.cacheKey}:${token.token}:${token.isSandbox}:$supportsCalls';
+      if (_lastRegisteredPushTokenKey == registrationKey) {
+        return;
+      }
+
       await _withRetry<void>(
         (accessToken) => _apiClient.registerApnsToken(
           accessToken: accessToken,
@@ -625,9 +838,13 @@ class ChatSessionNotifier extends ChangeNotifier {
           supportsCalls: supportsCalls,
         ),
       );
-      _lastRegisteredPushTokenKey = registrationKey;
-    } on AuthApiException {
-      // Keep local state; next bootstrap or toggle can retry token sync.
+      if (AuthSessionNotifier.instance.session?.cacheKey == session.cacheKey) {
+        _lastRegisteredPushTokenKey = registrationKey;
+      }
+    } catch (error) {
+      // Native permission/registration failures must not become unhandled
+      // background errors. Retry on the next bootstrap, resume, or toggle.
+      debugPrint('[ChatPush] Token registration failed: ${error.runtimeType}');
     }
   }
 
@@ -740,6 +957,11 @@ class ChatSessionNotifier extends ChangeNotifier {
       return;
     }
 
+    if (_observedSession?.cacheKey != session?.cacheKey) {
+      _cacheEpoch++;
+      _pendingDmSync.clear();
+      _deletedMessageIds.clear();
+    }
     _observedSession = session;
     unawaited(_socketSubscription?.cancel());
     _socketSubscription = null;

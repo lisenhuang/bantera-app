@@ -10,13 +10,17 @@ import '../domain/models/chat_models.dart';
 import 'local_chat_database.dart';
 
 class LocalChatRepository {
-  LocalChatRepository._();
+  LocalChatRepository._() : _database = LocalChatDatabase.instance;
+  LocalChatRepository.forTesting(this._database, this._ownerOverride);
+
+  String? Function()? _ownerOverride;
 
   static final LocalChatRepository instance = LocalChatRepository._();
 
-  final LocalChatDatabase _database = LocalChatDatabase.instance;
+  final LocalChatDatabase _database;
 
   String? get _currentOwnerCacheKey {
+    if (_ownerOverride != null) return _ownerOverride!();
     final normalized = AuthSessionNotifier.instance.session?.cacheKey.trim();
     if (normalized == null || normalized.isEmpty) {
       return null;
@@ -121,7 +125,11 @@ class LocalChatRepository {
     final query = (_database.select(_database.chatMessageEntries)
       ..where((table) => table.ownerCacheKey.equals(ownerKey))
       ..where((table) => table.threadId.equals(threadId))
-      ..where((table) => table.isServerVisible.equals(true))
+      ..where(
+        (table) =>
+            table.isServerVisible.equals(true) |
+            (table.threadType.equals('dm') & table.localAudioPath.isNotNull()),
+      )
       ..orderBy([(table) => drift.OrderingTerm.asc(table.createdAtMillis)]));
     return query.watch().map((rows) => rows.map(_messageFromRow).toList());
   }
@@ -249,6 +257,7 @@ class LocalChatRepository {
     required String ownerCacheKey,
     required String threadId,
     required List<ChatMessageItem> messages,
+    bool replaceServerSnapshot = true,
   }) async {
     final existingRows =
         await (_database.select(_database.chatMessageEntries)
@@ -259,14 +268,16 @@ class LocalChatRepository {
     final nowMillis = DateTime.now().millisecondsSinceEpoch;
 
     await _database.transaction(() async {
-      await (_database.update(_database.chatMessageEntries)
-            ..where((table) => table.ownerCacheKey.equals(ownerCacheKey))
-            ..where((table) => table.threadId.equals(threadId)))
-          .write(
-            const ChatMessageEntriesCompanion(
-              isServerVisible: drift.Value(false),
-            ),
-          );
+      if (replaceServerSnapshot) {
+        await (_database.update(_database.chatMessageEntries)
+              ..where((table) => table.ownerCacheKey.equals(ownerCacheKey))
+              ..where((table) => table.threadId.equals(threadId)))
+            .write(
+              const ChatMessageEntriesCompanion(
+                isServerVisible: drift.Value(false),
+              ),
+            );
+      }
 
       for (final message in messages) {
         final previous = existingById[message.messageId];
@@ -321,7 +332,8 @@ class LocalChatRepository {
                       message.localTranscriptLanguageCode,
                 ),
                 localTranslationText: drift.Value(
-                  previous?.localTranslationText ?? message.localTranslationText,
+                  previous?.localTranslationText ??
+                      message.localTranslationText,
                 ),
                 localTranslationStatus: drift.Value(
                   previous?.localTranslationStatus ??
@@ -339,8 +351,11 @@ class LocalChatRepository {
     });
   }
 
-  Future<ChatMessageItem?> getMessage(String messageId) async {
-    final ownerKey = _currentOwnerCacheKey;
+  Future<ChatMessageItem?> getMessage(
+    String messageId, {
+    String? ownerCacheKey,
+  }) async {
+    final ownerKey = ownerCacheKey ?? _currentOwnerCacheKey;
     if (ownerKey == null) {
       return null;
     }
@@ -353,16 +368,51 @@ class LocalChatRepository {
     return row == null ? null : _messageFromRow(row);
   }
 
-  Future<void> deleteMessage(String messageId) async {
-    final ownerKey = _currentOwnerCacheKey;
+  Future<void> deleteMessage(String messageId, {String? ownerCacheKey}) async {
+    final ownerKey = ownerCacheKey ?? _currentOwnerCacheKey;
     if (ownerKey == null) {
       return;
     }
 
+    final message = await getMessage(messageId, ownerCacheKey: ownerKey);
     await (_database.delete(_database.chatMessageEntries)
           ..where((table) => table.ownerCacheKey.equals(ownerKey))
           ..where((table) => table.messageId.equals(messageId)))
         .go();
+    final path = await resolveAudioPath(message?.localAudioPath);
+    if (path != null) {
+      try {
+        await File(path).delete();
+      } on FileSystemException {
+        /* Already removed. */
+      }
+    }
+  }
+
+  Future<void> deleteLocalThread(String threadId) async {
+    final ownerKey = _currentOwnerCacheKey;
+    if (ownerKey == null) return;
+    final rows =
+        await (_database.select(_database.chatMessageEntries)..where(
+              (t) =>
+                  t.ownerCacheKey.equals(ownerKey) &
+                  t.threadId.equals(threadId),
+            ))
+            .get();
+    await (_database.delete(_database.chatMessageEntries)..where(
+          (t) => t.ownerCacheKey.equals(ownerKey) & t.threadId.equals(threadId),
+        ))
+        .go();
+    for (final row in rows) {
+      final path = await resolveAudioPath(row.localAudioPath);
+      if (path != null) {
+        try {
+          await File(path).delete();
+        } on FileSystemException {
+          /* Already removed. */
+        }
+      }
+    }
   }
 
   Future<void> markMessageExpired(String messageId) async {
@@ -385,8 +435,9 @@ class LocalChatRepository {
   Future<void> updateMessageLocalAudioPath({
     required String messageId,
     required String storedReference,
+    String? ownerCacheKey,
   }) async {
-    final ownerKey = _currentOwnerCacheKey;
+    final ownerKey = ownerCacheKey ?? _currentOwnerCacheKey;
     if (ownerKey == null) {
       return;
     }
@@ -507,13 +558,17 @@ class LocalChatRepository {
     required String messageId,
     required List<int> bytes,
     required String contentType,
+    String? ownerCacheKey,
   }) async {
-    final ownerKey = _currentOwnerCacheKey ?? 'anonymous';
+    final ownerKey = ownerCacheKey ?? _currentOwnerCacheKey;
+    if (ownerKey == null) throw StateError('Sign in before saving chat audio.');
     final directory = await _chatAudioDirectory(ownerKey);
     await directory.create(recursive: true);
     final extension = _audioExtensionForContentType(contentType);
     final file = File(p.join(directory.path, '$messageId.$extension'));
-    await file.writeAsBytes(bytes, flush: true);
+    final pendingFile = File('${file.path}.pending');
+    await pendingFile.writeAsBytes(bytes, flush: true);
+    await pendingFile.rename(file.path);
     return _storedReferenceForPath(file.path);
   }
 

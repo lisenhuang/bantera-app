@@ -270,6 +270,7 @@ class ChatThreadSummary {
 
 class ChatBootstrap {
   const ChatBootstrap({
+    this.deletedMessageIds = const [],
     required this.globalNotificationsEnabled,
     required this.groups,
     required this.onlineUsers,
@@ -282,6 +283,9 @@ class ChatBootstrap {
     final dmsJson = (json['directMessages'] as List?) ?? const [];
 
     return ChatBootstrap(
+      deletedMessageIds: (json['deletedMessageIds'] as List? ?? [])
+          .map((id) => id.toString())
+          .toList(),
       globalNotificationsEnabled: json['globalNotificationsEnabled'] == true,
       groups: groupsJson
           .whereType<Map>()
@@ -320,6 +324,7 @@ class ChatBootstrap {
     );
   }
 
+  final List<String> deletedMessageIds;
   final bool globalNotificationsEnabled;
   final List<ChatThreadSummary> groups;
   final List<ChatUserSummary> onlineUsers;

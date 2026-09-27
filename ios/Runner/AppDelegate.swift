@@ -42,6 +42,19 @@ import UserNotifications
     completionHandler()
   }
 
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    let payload = Self.notificationPayload(from: notification.request.content.userInfo)
+    if payload["threadType"] == "dm" {
+      completionHandler([.banner, .list, .sound])
+      return
+    }
+    super.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
+  }
+
   override func application(
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -98,7 +111,7 @@ import UserNotifications
 private final class BanteraPushNotificationsBridge {
   private let channel: FlutterMethodChannel
   private var cachedToken: String?
-  private var pendingResult: FlutterResult?
+  private var pendingResults: [FlutterResult] = []
   private var initialNotification: [String: String]?
 
   init(
@@ -139,7 +152,7 @@ private final class BanteraPushNotificationsBridge {
             result(payload)
             return
           }
-          self.pendingResult = result
+          self.pendingResults.append(result)
         default:
           result(nil)
         }
@@ -174,29 +187,29 @@ private final class BanteraPushNotificationsBridge {
           return
         }
 
-        self.pendingResult = result
+        self.pendingResults.append(result)
       }
     }
   }
 
   func handleRegisteredDeviceToken(_ deviceToken: Data) {
     cachedToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-    if let pendingResult {
-      pendingResult(tokenPayload())
-      self.pendingResult = nil
+    let results = pendingResults
+    pendingResults.removeAll()
+    for result in results {
+      result(tokenPayload())
     }
   }
 
   func handleRegistrationFailure(_ error: Error) {
-    if let pendingResult {
-      pendingResult(
-        FlutterError(
-          code: "push_registration_failed",
-          message: error.localizedDescription,
-          details: nil
-        )
-      )
-      self.pendingResult = nil
+    let results = pendingResults
+    pendingResults.removeAll()
+    for result in results {
+      result(FlutterError(
+        code: "push_registration_failed",
+        message: error.localizedDescription,
+        details: nil
+      ))
     }
   }
 
