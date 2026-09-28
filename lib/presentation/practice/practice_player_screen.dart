@@ -1772,13 +1772,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     ),
                   );
 
+                  final actionButtonStyle = OutlinedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.all(12),
+                    minimumSize: const Size(48, 48),
+                    tapTargetSize: MaterialTapTargetSize.padded,
+                  );
                   final shareButton = OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.all(12),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                    style: actionButtonStyle,
                     onPressed: () {
                       SharePlus.instance.share(
                         ShareParams(
@@ -1791,12 +1792,48 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     child: const Icon(CupertinoIcons.share, size: 18),
                   );
 
+                  final saveButton = ListenableBuilder(
+                    listenable: SavedCueRepository.instance,
+                    builder: (context, _) {
+                      final isSaved = SavedCueRepository.instance.isSaved(
+                        widget.mediaItem.id,
+                        cue.id,
+                      );
+                      return Tooltip(
+                        message: isSaved
+                            ? _l10n.lessonUnsaveTooltip
+                            : _l10n.lessonSaveTooltip,
+                        child: OutlinedButton(
+                          style: actionButtonStyle,
+                          onPressed: () {
+                            unawaited(
+                              SavedCueRepository.instance.toggleSaveCue(
+                                mediaItem: widget.mediaItem,
+                                cue: cue,
+                                cueIndex: _currentCueIndex,
+                                metadata: _savedCueMetadataFor(cue),
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            isSaved
+                                ? CupertinoIcons.bookmark_fill
+                                : CupertinoIcons.bookmark,
+                            size: 18,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      transcriptButton,
+                      Flexible(child: transcriptButton),
                       const SizedBox(width: 8),
                       shareButton,
+                      const SizedBox(width: 8),
+                      saveButton,
                     ],
                   );
                 },
@@ -2195,46 +2232,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               fontWeight: FontWeight.w600,
               color: colorScheme.primary,
             ),
-          ),
-          const SizedBox(width: 4),
-          Builder(
-            builder: (context) {
-              final isSaved = SavedCueRepository.instance.isSaved(
-                widget.mediaItem.id,
-                cue.id,
-              );
-              return GestureDetector(
-                onTap: () {
-                  unawaited(
-                    SavedCueRepository.instance
-                        .toggleSaveCue(
-                          mediaItem: widget.mediaItem,
-                          cue: cue,
-                          cueIndex: _currentCueIndex,
-                          metadata: _savedCueMetadataFor(cue),
-                        )
-                        .then((_) {
-                          if (mounted) setState(() {});
-                        }),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 8,
-                  ),
-                  child: Icon(
-                    isSaved
-                        ? CupertinoIcons.bookmark_fill
-                        : CupertinoIcons.bookmark,
-                    size: 18,
-                    color: isSaved
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.4),
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),
