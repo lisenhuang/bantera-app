@@ -8,6 +8,7 @@ import '../domain/models/chat_models.dart';
 import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
+import '../infrastructure/callkit_service.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../infrastructure/push_notifications_service.dart';
 import '../infrastructure/translation_service.dart';
@@ -22,6 +23,21 @@ class ChatSessionNotifier extends ChangeNotifier {
   ChatSessionNotifier._() {
     AuthSessionNotifier.instance.addListener(_handleAuthChanged);
     AppResumeNotifier.instance.addListener(_handleAppResumed);
+    CallKitService.instance.tokenChanges.addListener(_voipTokenChanged);
+    CallKitService.instance.events.listen((event) {
+      if (event['event'] == 'tokenInvalidated') {
+        final token = event['token']?.toString();
+        if (token != null &&
+            token.isNotEmpty &&
+            AuthSessionNotifier.instance.isAuthenticated) {
+          unawaited(
+            _withRetry<void>(
+              (access) => _apiClient.unregisterVoipToken(access, token),
+            ).catchError((Object _) {}),
+          );
+        }
+      }
+    });
     if (AuthSessionNotifier.instance.isAuthenticated) {
       _handleAuthChanged();
     }
@@ -39,6 +55,7 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   AuthSession? _observedSession;
   WebSocket? _socket;
+  Future<void>? _connecting;
   StreamSubscription<dynamic>? _socketSubscription;
   Timer? _reconnectTimer;
   bool _isLoading = false;
@@ -48,6 +65,8 @@ class ChatSessionNotifier extends ChangeNotifier {
   AuthApiException? _authApiError;
   String? _ownerCacheKey;
   String? _lastRegisteredPushTokenKey;
+  String? _lastRegisteredVoipTokenKey;
+  Future<void>? _voipSync;
   final Map<String, Future<File>> _audioDownloads = {};
   final Map<String, String> _pendingDmSync = {};
   bool _isSyncingDmAudio = false;
@@ -765,6 +784,17 @@ class ChatSessionNotifier extends ChangeNotifier {
   }
 
   Future<void> _connectWebSocket() async {
+    if (_connecting != null) return _connecting;
+    final task = _openWebSocket();
+    _connecting = task;
+    try {
+      await task;
+    } finally {
+      _connecting = null;
+    }
+  }
+
+  Future<void> _openWebSocket() async {
     final session = AuthSessionNotifier.instance.session;
     if (session == null || _socket != null || _socketSubscription != null) {
       return;
@@ -778,6 +808,11 @@ class ChatSessionNotifier extends ChangeNotifier {
           HttpHeaders.authorizationHeader: 'Bearer ${session.accessToken}',
         },
       );
+      if (AuthSessionNotifier.instance.session?.accessToken !=
+          session.accessToken) {
+        await socket.close();
+        return;
+      }
       _socket = socket;
       _socketSubscription = socket.listen(
         _handleSocketMessage,
@@ -845,6 +880,52 @@ class ChatSessionNotifier extends ChangeNotifier {
       // Native permission/registration failures must not become unhandled
       // background errors. Retry on the next bootstrap, resume, or toggle.
       debugPrint('[ChatPush] Token registration failed: ${error.runtimeType}');
+    } finally {
+      await _syncVoipToken();
+    }
+  }
+
+  void _voipTokenChanged() {
+    unawaited(_syncVoipToken());
+  }
+
+  Future<void> _syncVoipToken() async {
+    if (_voipSync != null) return _voipSync;
+    final task = _registerVoipToken();
+    _voipSync = task;
+    try {
+      await task;
+    } finally {
+      _voipSync = null;
+    }
+  }
+
+  Future<void> _registerVoipToken() async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null || !_globalNotificationsEnabled) return;
+    try {
+      final token = await CallKitService.instance.token();
+      if (token == null) return;
+      final alert = await PushNotificationsService.instance.getCachedToken();
+      final key =
+          '${session.cacheKey}:${token.token}:${token.isSandbox}:${alert?.token}';
+      if (key == _lastRegisteredVoipTokenKey) return;
+      if (AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey) {
+        return;
+      }
+      await _withRetry<void>(
+        (accessToken) => _apiClient.registerVoipToken(
+          accessToken: accessToken,
+          token: token.token,
+          isSandbox: token.isSandbox,
+          alertToken: alert?.token,
+        ),
+      );
+      if (AuthSessionNotifier.instance.session?.cacheKey == session.cacheKey) {
+        _lastRegisteredVoipTokenKey = key;
+      }
+    } catch (error) {
+      debugPrint('[CallKit] Registration failed: ${error.runtimeType}');
     }
   }
 
@@ -971,6 +1052,7 @@ class ChatSessionNotifier extends ChangeNotifier {
     _reconnectTimer = null;
     _partnerRecordingByThread.clear();
     _lastRegisteredPushTokenKey = null;
+    _lastRegisteredVoipTokenKey = null;
 
     if (session == null) {
       _ownerCacheKey = null;

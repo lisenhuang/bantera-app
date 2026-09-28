@@ -12,6 +12,8 @@ import 'api_config_notifier.dart';
 import 'app_resume_notifier.dart';
 import 'auth_api_error_localizations.dart';
 import '../infrastructure/auth_api_client.dart';
+import '../infrastructure/callkit_service.dart';
+import '../infrastructure/chat_api_client.dart';
 import '../l10n/app_localizations.dart';
 
 enum AuthProviderType { email, apple, google }
@@ -67,6 +69,8 @@ class AuthSession {
           : DateTime.now(),
     );
   }
+
+  String? get userId => _jwtSubject(accessToken);
 
   String get cacheKey {
     final subject = _jwtSubject(accessToken);
@@ -360,6 +364,19 @@ class AuthSessionNotifier extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    final previous = _session;
+    try {
+      await CallKitService.instance.setUser(null);
+      final token = await CallKitService.instance.token();
+      if (token != null && previous != null) {
+        await ChatApiClient.instance
+            .unregisterVoipToken(previous.accessToken, token.token)
+            .timeout(const Duration(seconds: 3));
+      }
+    } catch (_) {
+      /* Native identity is cleared even if offline token removal fails. */
+    }
+
     _refreshTimer?.cancel();
     _refreshTimer = null;
     _session = null;

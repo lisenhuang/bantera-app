@@ -218,6 +218,34 @@ class ChatApiClient {
     );
   }
 
+  Future<String> callState(String accessToken, String callId) async {
+    final json = await _sendJsonRequest(
+      method: 'GET',
+      path: '/api/chat/calls/$callId',
+      accessToken: accessToken,
+    );
+    return json['state'] as String? ?? 'ended';
+  }
+
+  Future<void> registerVoipToken({
+    required String accessToken,
+    required String token,
+    required bool isSandbox,
+    String? alertToken,
+  }) => _sendRequestAllowingNoContent(
+    method: 'PUT',
+    path: '/api/chat/push/voip-token',
+    accessToken: accessToken,
+    payload: {'token': token, 'isSandbox': isSandbox, 'alertToken': alertToken},
+  );
+
+  Future<void> unregisterVoipToken(String accessToken, String token) =>
+      _sendEmptyRequest(
+        method: 'DELETE',
+        path: '/api/chat/push/voip-token/${Uri.encodeComponent(token)}',
+        accessToken: accessToken,
+      );
+
   Future<void> registerApnsToken({
     required String accessToken,
     required String token,

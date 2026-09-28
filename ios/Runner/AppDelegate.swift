@@ -8,7 +8,9 @@ import UIKit
 import UserNotifications
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
+  let callKit = BanteraCallKitBridge()
+  lazy var callEngine = FlutterEngine(name: "bantera", project: nil, allowHeadlessExecution: true)
   private var videoProcessingBridge: BanteraVideoProcessingBridge?
   private var translationBridge: BanteraTranslationBridge?
   private var iosVersionBridge: BanteraIosVersionBridge?
@@ -23,6 +25,8 @@ import UserNotifications
     if let userInfo = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
       pendingNotificationTap = Self.notificationPayload(from: userInfo)
     }
+    callEngine.run()
+    configureEngine()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -71,22 +75,23 @@ import UserNotifications
     super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
   }
 
-  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+  private func configureEngine() {
+    GeneratedPluginRegistrant.register(with: callEngine)
+    callKit.attach(messenger: callEngine.binaryMessenger)
     videoProcessingBridge = BanteraVideoProcessingBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+      binaryMessenger: callEngine.binaryMessenger
     )
     translationBridge = BanteraTranslationBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+      binaryMessenger: callEngine.binaryMessenger
     )
     iosVersionBridge = BanteraIosVersionBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+      binaryMessenger: callEngine.binaryMessenger
     )
     _ = BanteraNetworkReachabilityBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+      binaryMessenger: callEngine.binaryMessenger
     )
     pushNotificationsBridge = BanteraPushNotificationsBridge(
-      binaryMessenger: engineBridge.applicationRegistrar.messenger(),
+      binaryMessenger: callEngine.binaryMessenger,
       initialNotification: pendingNotificationTap
     )
     pendingNotificationTap = nil
@@ -108,7 +113,7 @@ import UserNotifications
   }
 }
 
-private final class BanteraPushNotificationsBridge {
+final class BanteraPushNotificationsBridge {
   private let channel: FlutterMethodChannel
   private var cachedToken: String?
   private var pendingResults: [FlutterResult] = []
@@ -228,7 +233,7 @@ private final class BanteraPushNotificationsBridge {
     ]
   }
 
-  private static func isApnsSandboxEnvironment() -> Bool {
+  static func isApnsSandboxEnvironment() -> Bool {
     if let environment = embeddedProvisioningApnsEnvironment() {
       return environment == "development"
     }

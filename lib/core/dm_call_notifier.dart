@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../domain/models/chat_models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
+import '../infrastructure/callkit_service.dart';
 import '../infrastructure/push_notifications_service.dart';
 import 'auth_session_notifier.dart';
 import 'chat_session_notifier.dart';
@@ -29,9 +30,26 @@ enum DmCallErrorCode {
 class DmCallNotifier extends ChangeNotifier {
   DmCallNotifier._() {
     AuthSessionNotifier.instance.addListener(_handleAuthChanged);
-    ChatSessionNotifier.instance.realtimeEvents.listen(_handleRealtimeEvent);
+    ChatSessionNotifier.instance.realtimeEvents.listen((event) {
+      final generation = _generation;
+      unawaited(
+        _handleRealtimeEvent(event).catchError((Object error) async {
+          if (generation == _generation && isActive) {
+            await _failActiveCall(DmCallErrorCode.failed);
+          }
+        }),
+      );
+    });
     PushNotificationsService.instance.latestNotificationTap.addListener(
       _handleLatestNotificationTap,
+    );
+    CallKitService.instance.events.listen((event) {
+      unawaited(_handleCallKitEvent(event));
+    });
+    unawaited(
+      CallKitService.instance.initialize(
+        AuthSessionNotifier.instance.session?.userId,
+      ),
     );
     unawaited(_loadInitialNotificationTap());
     unawaited(_ensureRenderersReady());
@@ -48,6 +66,14 @@ class DmCallNotifier extends ChangeNotifier {
   MediaStream? _remoteStream;
   Timer? _callTimer;
   Timer? _connectTimer;
+  Timer? _incomingStatusTimer;
+  bool _checkingIncoming = false;
+  bool _accepting = false;
+  int _generation = 0;
+  Future<void>? _resetting;
+  final List<RTCIceCandidate> _pendingIce = [];
+  bool _remoteDescriptionReady = false;
+  Completer<void>? _acceptConfirmation;
 
   DmCallPhase _phase = DmCallPhase.idle;
   DmCallMediaKind? _mediaKind;
@@ -87,11 +113,13 @@ class DmCallNotifier extends ChangeNotifier {
       return;
     }
 
+    final generation = _generation;
     if (!await _ensurePermissions(mediaKind)) {
       notifyListeners();
       return;
     }
 
+    if (_generation != generation || _phase != DmCallPhase.idle) return;
     _phase = DmCallPhase.outgoing;
     _mediaKind = mediaKind;
     _peerUser = recipient;
@@ -101,6 +129,8 @@ class DmCallNotifier extends ChangeNotifier {
     _connectedDuration = Duration.zero;
     notifyListeners();
 
+    await ChatSessionNotifier.instance.ensureRealtimeConnected();
+    if (_generation != generation || _phase != DmCallPhase.outgoing) return;
     final sent = await ChatSessionNotifier.instance.sendRealtimeEvent(
       'call.invite',
       <String, Object?>{
@@ -113,36 +143,63 @@ class DmCallNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> acceptIncomingCall() async {
+  Future<void> acceptIncomingCall({bool fromSystem = false}) async {
     if (_phase != DmCallPhase.incoming ||
         _callId == null ||
         _mediaKind == null) {
       return;
     }
 
+    if (CallKitService.instance.supported && !fromSystem) {
+      await CallKitService.instance.report('requestAnswer', {
+        'callId': _callId,
+      });
+      return;
+    }
+    if (_accepting) return;
+    _accepting = true;
+    final acceptingId = _callId;
     if (!await _ensurePermissions(_mediaKind!)) {
+      _accepting = false;
       await _sendRejectAndReset();
       notifyListeners();
       return;
     }
 
     try {
+      if (_callId != acceptingId) return;
+      await ChatSessionNotifier.instance.ensureRealtimeConnected();
+      if (_callId != acceptingId) return;
       await _createLocalMedia();
       await _ensurePeerConnection();
+      if (_callId != acceptingId) return;
       _phase = DmCallPhase.connecting;
       _startConnectTimeout();
       notifyListeners();
+      _acceptConfirmation = Completer<void>();
       await ChatSessionNotifier.instance.ensureRealtimeConnected();
       final sent = await ChatSessionNotifier.instance.sendRealtimeEvent(
         'call.accept',
-        <String, Object?>{'callId': _callId},
+        <String, Object?>{
+          'callId': _callId,
+          'deviceId': CallKitService.instance.deviceId,
+        },
       );
       if (!sent) {
         await _setError(DmCallErrorCode.unavailable);
+      } else if (CallKitService.instance.supported) {
+        await _acceptConfirmation!.future.timeout(const Duration(seconds: 10));
+        if (_callId == acceptingId) {
+          await CallKitService.instance.update('answerReady', acceptingId);
+        }
       }
     } catch (_) {
-      await _sendEndIfNeeded();
-      await _setError(DmCallErrorCode.failed);
+      if (_callId == acceptingId) {
+        await _sendEndIfNeeded();
+        await _setError(DmCallErrorCode.failed);
+      }
+    } finally {
+      _accepting = false;
     }
   }
 
@@ -151,8 +208,9 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   Future<void> endCurrentCall() async {
-    await _sendEndIfNeeded();
+    final ending = _sendEndIfNeeded();
     await _resetState();
+    await ending;
   }
 
   Future<void> toggleMute() async {
@@ -234,13 +292,17 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   void _handleLatestNotificationTap() {
-    final payload = PushNotificationsService.instance.latestNotificationTap.value;
+    final payload =
+        PushNotificationsService.instance.latestNotificationTap.value;
     if (payload != null) {
       unawaited(_handleNotificationTap(payload));
     }
   }
 
-  Future<void> _handleNotificationTap(Map<String, String> payload) async {
+  Future<void> _handleNotificationTap(
+    Map<String, String> payload, {
+    bool fromSystem = false,
+  }) async {
     if (payload['type'] != 'incoming_call') {
       return;
     }
@@ -283,9 +345,93 @@ class DmCallNotifier extends ChangeNotifier {
     _isIncoming = true;
     _errorCode = null;
     notifyListeners();
+    if (!fromSystem) await CallKitService.instance.report('incoming', payload);
+    _watchIncomingStatus();
+  }
+
+  Future<void> _handleCallKitEvent(Map<String, dynamic> event) async {
+    final id = event['callId']?.toString().toLowerCase();
+    try {
+      switch (event['event']) {
+        case 'incoming':
+          await _handleNotificationTap({
+            ...event.map((key, value) => MapEntry(key, value.toString())),
+            'type': 'incoming_call',
+          }, fromSystem: true);
+          await ChatSessionNotifier.instance.ensureRealtimeConnected();
+          await _checkIncomingStatus();
+        case 'answer':
+          if (_callId == id) {
+            await acceptIncomingCall(fromSystem: true);
+          } else {
+            await CallKitService.instance.update('end', id);
+          }
+        case 'ended':
+          if (_callId == id) {
+            if (_phase == DmCallPhase.incoming) {
+              await declineIncomingCall();
+            } else {
+              await endCurrentCall();
+            }
+          }
+        case 'mute':
+          if (_callId == id && _isMuted != (event['muted'] == true)) {
+            await toggleMute();
+          }
+      }
+    } catch (_) {
+      if (id != null && _callId == id) await _resetState();
+      await CallKitService.instance.update('end', id);
+    }
+  }
+
+  void _watchIncomingStatus() {
+    _incomingStatusTimer?.cancel();
+    if (!CallKitService.instance.supported) return;
+    _incomingStatusTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      unawaited(_checkIncomingStatus());
+    });
+  }
+
+  Future<void> _checkIncomingStatus() async {
+    final id = _callId;
+    if (id == null ||
+        _phase != DmCallPhase.incoming ||
+        _accepting ||
+        _checkingIncoming) {
+      return;
+    }
+    _checkingIncoming = true;
+    try {
+      final state = await _withRetry(
+        (token) => _apiClient.callState(token, id),
+      ).timeout(const Duration(seconds: 5));
+      if (_callId == id &&
+          _phase == DmCallPhase.incoming &&
+          !_accepting &&
+          state != 'pending') {
+        await _resetState();
+      }
+    } on AuthApiException catch (error) {
+      if (error.statusCode == 404 && _callId == id && !_accepting) {
+        await _resetState();
+      }
+    } catch (_) {
+      /* Native expiry timer bounds ringing when the network is unavailable. */
+    } finally {
+      _checkingIncoming = false;
+    }
   }
 
   void _handleAuthChanged() {
+    unawaited(
+      CallKitService.instance.setUser(
+        AuthSessionNotifier.instance.session?.userId,
+      ),
+    );
+    if (!AuthSessionNotifier.instance.isAuthenticated && isActive) {
+      unawaited(_resetState());
+    }
     if (!AuthSessionNotifier.instance.isAuthenticated ||
         _pendingNotificationPayload == null) {
       return;
@@ -306,12 +452,22 @@ class DmCallNotifier extends ChangeNotifier {
     switch (type) {
       case 'call.outgoing.created':
         if (_phase != DmCallPhase.outgoing) {
+          await ChatSessionNotifier.instance.sendRealtimeEvent('call.cancel', {
+            'callId': map['callId'],
+          });
           return;
         }
         _callId = map['callId']?.toString();
+        final reported = await CallKitService.instance.report('outgoing', {
+          'callId': _callId,
+          'callerName': _peerUser?.name,
+          'mediaKind': _mediaKind?.name,
+        });
+        if (!reported) await endCurrentCall();
         notifyListeners();
         return;
       case 'call.incoming':
+        if (_callId == map['callId']?.toString()) return;
         if (_phase != DmCallPhase.idle) {
           final callId = map['callId']?.toString();
           if (callId != null) {
@@ -337,12 +493,34 @@ class DmCallNotifier extends ChangeNotifier {
         _isIncoming = true;
         _errorCode = null;
         notifyListeners();
+        final incomingId = _callId;
+        final reported = await CallKitService.instance.report('incoming', {
+          'callId': incomingId,
+          'callerUserId': _peerUser?.id,
+          'callerName': _peerUser?.name,
+          'mediaKind': _mediaKind?.name,
+        });
+        if (!reported && _callId == incomingId) await declineIncomingCall();
+        _watchIncomingStatus();
+        return;
+      case 'call.accepted.self':
+        if (_callId == map['callId']?.toString()) {
+          if (map['deviceId'] != CallKitService.instance.deviceId) {
+            await _resetState();
+          } else {
+            final confirmation = _acceptConfirmation;
+            if (confirmation != null && !confirmation.isCompleted) {
+              confirmation.complete();
+            }
+          }
+        }
         return;
       case 'call.accepted':
         if (_phase != DmCallPhase.outgoing ||
             _callId != map['callId']?.toString()) {
           return;
         }
+        final acceptedId = _callId;
         try {
           _phase = DmCallPhase.connecting;
           _startConnectTimeout();
@@ -351,8 +529,10 @@ class DmCallNotifier extends ChangeNotifier {
           await _ensurePeerConnection();
           await _createAndSendOffer();
         } catch (_) {
-          await _sendEndIfNeeded();
-          await _setError(DmCallErrorCode.failed);
+          if (_callId == acceptedId) {
+            await _sendEndIfNeeded();
+            await _setError(DmCallErrorCode.failed);
+          }
         }
         return;
       case 'call.rejected':
@@ -439,10 +619,13 @@ class DmCallNotifier extends ChangeNotifier {
       return;
     }
 
+    final generation = _generation;
+    final mediaKind = _mediaKind;
     await _ensureRenderersReady();
+    if (generation != _generation) throw StateError('Call ended');
     final stream = await navigator.mediaDevices.getUserMedia(<String, dynamic>{
       'audio': true,
-      'video': _mediaKind == DmCallMediaKind.video
+      'video': mediaKind == DmCallMediaKind.video
           ? <String, dynamic>{
               'facingMode': 'user',
               'width': 960,
@@ -451,6 +634,13 @@ class DmCallNotifier extends ChangeNotifier {
             }
           : false,
     });
+    if (generation != _generation) {
+      for (final track in stream.getTracks()) {
+        await track.stop();
+      }
+      await stream.dispose();
+      throw StateError('Call ended');
+    }
     _localStream = stream;
     localRenderer.srcObject = stream;
     _isMuted = false;
@@ -463,12 +653,18 @@ class DmCallNotifier extends ChangeNotifier {
       return;
     }
 
+    final generation = _generation;
     final iceConfig = await _withRetry(
       (accessToken) => _apiClient.fetchIceServers(accessToken: accessToken),
     );
+    if (generation != _generation) throw StateError('Call ended');
     final configuration = iceConfig.toPeerConnectionConfiguration();
 
     final peerConnection = await createPeerConnection(configuration);
+    if (generation != _generation) {
+      await peerConnection.close();
+      throw StateError('Call ended');
+    }
     _peerConnection = peerConnection;
 
     final localStream = _localStream;
@@ -478,8 +674,9 @@ class DmCallNotifier extends ChangeNotifier {
       }
     }
 
+    if (generation != _generation) throw StateError('Call ended');
     peerConnection.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isEmpty) {
+      if (_peerConnection != peerConnection || event.streams.isEmpty) {
         return;
       }
       _remoteStream = event.streams.first;
@@ -487,7 +684,9 @@ class DmCallNotifier extends ChangeNotifier {
       notifyListeners();
     };
     peerConnection.onIceCandidate = (RTCIceCandidate candidate) {
-      if (_callId == null || candidate.candidate == null) {
+      if (_peerConnection != peerConnection ||
+          _callId == null ||
+          candidate.candidate == null) {
         return;
       }
       unawaited(
@@ -501,6 +700,7 @@ class DmCallNotifier extends ChangeNotifier {
       );
     };
     peerConnection.onConnectionState = (RTCPeerConnectionState state) {
+      if (_peerConnection != peerConnection || !isActive) return;
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _markConnected();
       } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
@@ -542,6 +742,7 @@ class DmCallNotifier extends ChangeNotifier {
     await peerConnection.setRemoteDescription(
       RTCSessionDescription(sdp, 'offer'),
     );
+    await _flushIceCandidates(peerConnection);
     final answer = await peerConnection.createAnswer(<String, dynamic>{
       'offerToReceiveAudio': true,
       'offerToReceiveVideo': hasVideo,
@@ -563,6 +764,7 @@ class DmCallNotifier extends ChangeNotifier {
     await peerConnection.setRemoteDescription(
       RTCSessionDescription(sdp, 'answer'),
     );
+    await _flushIceCandidates(peerConnection);
   }
 
   Future<void> _handleIceCandidate(Map<String, dynamic> payload) async {
@@ -576,9 +778,22 @@ class DmCallNotifier extends ChangeNotifier {
 
     final sdpMid = payload['sdpMid']?.toString();
     final sdpMLineIndex = (payload['sdpMLineIndex'] as num?)?.toInt();
-    await peerConnection.addCandidate(
-      RTCIceCandidate(candidate, sdpMid, sdpMLineIndex),
-    );
+    final ice = RTCIceCandidate(candidate, sdpMid, sdpMLineIndex);
+    if (!_remoteDescriptionReady) {
+      _pendingIce.add(ice);
+      return;
+    }
+    await peerConnection.addCandidate(ice);
+  }
+
+  Future<void> _flushIceCandidates(RTCPeerConnection peer) async {
+    if (peer != _peerConnection) return;
+    _remoteDescriptionReady = true;
+    final candidates = List<RTCIceCandidate>.from(_pendingIce);
+    _pendingIce.clear();
+    for (final ice in candidates) {
+      if (peer == _peerConnection) await peer.addCandidate(ice);
+    }
   }
 
   void _markConnected() {
@@ -588,6 +803,8 @@ class DmCallNotifier extends ChangeNotifier {
     _connectTimer?.cancel();
     _connectTimer = null;
     _phase = DmCallPhase.connected;
+    _incomingStatusTimer?.cancel();
+    unawaited(CallKitService.instance.update('connected', _callId));
     _connectedAt = DateTime.now();
     _connectedDuration = Duration.zero;
     _callTimer?.cancel();
@@ -626,30 +843,32 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   Future<void> _sendRejectAndReset() async {
-    final currentCallId = _callId;
-    if (currentCallId != null) {
-      await ChatSessionNotifier.instance.ensureRealtimeConnected();
-      await ChatSessionNotifier.instance.sendRealtimeEvent(
-        'call.reject',
-        <String, Object?>{'callId': currentCallId},
-      );
-    }
+    final id = _callId;
+    final sending = id == null
+        ? Future<void>.value()
+        : _sendCallEnd('call.reject', id);
     await _resetState();
+    await sending;
   }
 
   Future<void> _sendEndIfNeeded() async {
-    final currentCallId = _callId;
-    if (currentCallId == null) {
-      return;
-    }
+    final id = _callId;
+    if (id == null) return;
+    final type = _phase == DmCallPhase.outgoing ? 'call.cancel' : 'call.end';
+    await _sendCallEnd(type, id);
+  }
 
-    final eventType = _phase == DmCallPhase.outgoing
-        ? 'call.cancel'
-        : 'call.end';
-    await ChatSessionNotifier.instance.sendRealtimeEvent(
-      eventType,
-      <String, Object?>{'callId': currentCallId},
-    );
+  Future<void> _sendCallEnd(String type, String id) async {
+    try {
+      await ChatSessionNotifier.instance.ensureRealtimeConnected().timeout(
+        const Duration(seconds: 5),
+      );
+      await ChatSessionNotifier.instance.sendRealtimeEvent(type, {
+        'callId': id,
+      });
+    } catch (_) {
+      /* Local hang-up must always finish, even without signalling. */
+    }
   }
 
   Future<void> _ensureRenderersReady() async {
@@ -662,18 +881,36 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   Future<void> _setError(DmCallErrorCode code) async {
+    if (_resetting != null || _phase == DmCallPhase.idle) return;
+    final generation = ++_generation;
+    await CallKitService.instance.update('end', _callId);
     await _teardownMedia();
+    if (generation != _generation) return;
     _phase = DmCallPhase.error;
     _errorCode = code;
     notifyListeners();
   }
 
   Future<void> _failActiveCall(DmCallErrorCode code) async {
-    await _sendEndIfNeeded();
+    final ending = _sendEndIfNeeded();
     await _setError(code);
+    await ending;
   }
 
   Future<void> _resetState() async {
+    if (_resetting != null) return _resetting;
+    final reset = _doResetState();
+    _resetting = reset;
+    try {
+      await reset;
+    } finally {
+      _resetting = null;
+    }
+  }
+
+  Future<void> _doResetState() async {
+    _generation++;
+    await CallKitService.instance.update('end', _callId);
     await _teardownMedia();
     _phase = DmCallPhase.idle;
     _mediaKind = null;
@@ -686,32 +923,53 @@ class DmCallNotifier extends ChangeNotifier {
     _connectedDuration = Duration.zero;
     _connectedAt = null;
     _errorCode = null;
+    _accepting = false;
+    final confirmation = _acceptConfirmation;
+    if (confirmation != null && !confirmation.isCompleted) {
+      confirmation.complete();
+    }
+    _acceptConfirmation = null;
     notifyListeners();
   }
 
   Future<void> _teardownMedia() async {
+    _pendingIce.clear();
+    _remoteDescriptionReady = false;
+    _incomingStatusTimer?.cancel();
+    _incomingStatusTimer = null;
     _callTimer?.cancel();
     _callTimer = null;
     _connectTimer?.cancel();
     _connectTimer = null;
 
-    await _peerConnection?.close();
+    final peer = _peerConnection;
+    final local = _localStream;
+    final remote = _remoteStream;
     _peerConnection = null;
-
-    for (final track
-        in _localStream?.getTracks() ?? const <MediaStreamTrack>[]) {
-      track.stop();
-    }
-    for (final track
-        in _remoteStream?.getTracks() ?? const <MediaStreamTrack>[]) {
-      track.stop();
-    }
-
-    await _localStream?.dispose();
-    await _remoteStream?.dispose();
     _localStream = null;
     _remoteStream = null;
     localRenderer.srcObject = null;
     remoteRenderer.srcObject = null;
+    if (peer != null) {
+      peer.onConnectionState = null;
+      peer.onTrack = null;
+      peer.onIceCandidate = null;
+      try {
+        await peer.close();
+      } catch (_) {
+        /* Already closed natively. */
+      }
+    }
+    for (final stream in [local, remote]) {
+      if (stream == null) continue;
+      for (final track in stream.getTracks()) {
+        try {
+          await track.stop();
+        } catch (_) {}
+      }
+      try {
+        await stream.dispose();
+      } catch (_) {}
+    }
   }
 }
