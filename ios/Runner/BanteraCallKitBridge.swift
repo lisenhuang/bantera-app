@@ -23,7 +23,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   override init() {
     let config = CXProviderConfiguration()
     config.supportsVideo = true
-    config.includesCallsInRecents = false
+    config.includesCallsInRecents = true
     config.maximumCallGroups = 1
     config.maximumCallsPerCallGroup = 1
     config.supportedHandleTypes = [.generic]
