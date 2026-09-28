@@ -181,12 +181,15 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (_partner != null)
-                          IconButton(
-                            icon: const Icon(Icons.call_outlined),
-                            tooltip: l10n.chatCall,
-                            onPressed: DmCallNotifier.instance.isActive
-                                ? null
-                                : () => _showCallOptions(_partner!),
+                          ListenableBuilder(
+                            listenable: DmCallNotifier.instance,
+                            builder: (context, _) => IconButton(
+                              icon: const Icon(Icons.call_outlined),
+                              tooltip: l10n.chatCall,
+                              onPressed: DmCallNotifier.instance.isActive
+                                  ? null
+                                  : () => _showCallOptions(_partner!),
+                            ),
                           ),
                         PopupMenuButton<_DirectMenuAction>(
                           onSelected: (action) =>
