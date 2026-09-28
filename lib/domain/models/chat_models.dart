@@ -34,11 +34,17 @@ class ChatUserSummary {
 }
 
 class ChatIceServersConfig {
-  const ChatIceServersConfig({required this.iceServers});
+  const ChatIceServersConfig({
+    required this.iceServers,
+    this.iceTransportPolicy = 'all',
+  });
 
   factory ChatIceServersConfig.fromJson(Map<String, dynamic> json) {
     final servers = (json['iceServers'] as List?) ?? const [];
     return ChatIceServersConfig(
+      iceTransportPolicy: json['iceTransportPolicy'] == 'relay'
+          ? 'relay'
+          : 'all',
       iceServers: servers
           .whereType<Map>()
           .map(
@@ -51,6 +57,22 @@ class ChatIceServersConfig {
   }
 
   final List<ChatIceServerEntry> iceServers;
+  final String iceTransportPolicy;
+
+  Map<String, dynamic> toPeerConnectionConfiguration() => {
+    'sdpSemantics': 'unified-plan',
+    'iceTransportPolicy': iceTransportPolicy,
+    'iceServers': iceServers
+        .where((server) => server.urls.isNotEmpty)
+        .map(
+          (server) => <String, dynamic>{
+            'urls': server.urls,
+            if (server.username != null) 'username': server.username,
+            if (server.credential != null) 'credential': server.credential,
+          },
+        )
+        .toList(),
+  };
 }
 
 class ChatIceServerEntry {

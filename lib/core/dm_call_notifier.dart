@@ -466,19 +466,7 @@ class DmCallNotifier extends ChangeNotifier {
     final iceConfig = await _withRetry(
       (accessToken) => _apiClient.fetchIceServers(accessToken: accessToken),
     );
-    final configuration = <String, dynamic>{
-      'sdpSemantics': 'unified-plan',
-      'iceServers': iceConfig.iceServers
-          .where((server) => server.urls.isNotEmpty)
-          .map(
-            (server) => <String, dynamic>{
-              'urls': server.urls,
-              if (server.username != null) 'username': server.username,
-              if (server.credential != null) 'credential': server.credential,
-            },
-          )
-          .toList(),
-    };
+    final configuration = iceConfig.toPeerConnectionConfiguration();
 
     final peerConnection = await createPeerConnection(configuration);
     _peerConnection = peerConnection;
