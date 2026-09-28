@@ -71,6 +71,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   VoidCallback? _videoListener;
   AudioPlayer? _audioPlayer;
   StreamSubscription<Duration>? _audioPositionSub;
+  StreamSubscription<void>? _audioCompletionSub;
   bool _audioPlayerReady = false;
   List<Cue> _shortCues = const [];
 
@@ -457,6 +458,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     controller?.dispose();
     _audioPositionSub?.cancel();
+    _audioCompletionSub?.cancel();
     final ap = _audioPlayer;
     if (ap != null) unawaited(ap.dispose());
 
@@ -3645,6 +3647,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
         final player = AudioPlayer();
         _audioPlayer = player;
+        // Practice replays and seeks after EOF. The default release mode drops
+        // the native source, which leaves those seeks waiting for completion.
+        await player.setReleaseMode(ReleaseMode.stop);
+        _audioCompletionSub = player.onPlayerComplete.listen((_) {
+          if (!mounted || _isPlayingAll) return;
+          _wordTapPlayUntilMs = null;
+          setState(() => _isPlaying = false);
+          unawaited(WakelockPlus.disable());
+        });
         _audioPositionSub = player.onPositionChanged.listen((pos) {
           if (!mounted) return;
           _lastKnownAudioPositionMs = pos.inMilliseconds;
