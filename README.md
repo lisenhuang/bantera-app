@@ -1,9 +1,10 @@
-# 🎙️ Bantera — iOS Language Learning App
+# 🎙️ Bantera: iOS & Android Language Learning App
 
 > **Practice speaking a new language by repeating cues from real videos.**
 > Record yourself, compare your pronunciation side-by-side, and improve with every session.
 
 [![App Store](https://img.shields.io/badge/App_Store-Download-blue?logo=apple&logoColor=white)](https://apps.apple.com/app/id6761799720)
+[![Android APK](https://img.shields.io/badge/Android-Download_APK-3DDC84?logo=android&logoColor=white)](https://bantera.app/download)
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-%5E3.11-0175C2?logo=dart)
 ![iOS](https://img.shields.io/badge/iOS-18%2B-black?logo=apple)
@@ -13,7 +14,12 @@
 
 ## 📱 Download
 
-[**Download on the App Store →**](https://apps.apple.com/app/id6761799720)
+Bantera is available on **iOS through the App Store** and **Android as a signed APK from the Bantera website**.
+
+- **iOS:** [Download on the App Store](https://apps.apple.com/app/id6761799720) (iOS 18+).
+- **Android:** [Download page](https://bantera.app/download) or [download the APK directly](https://bantera.app/bantera.apk) (Android 7.0+, ARM64 devices).
+
+For Android, open the downloaded APK and allow installation from your browser or file manager when prompted.
 
 ---
 
@@ -21,7 +27,7 @@
 
 | Repo                                                                 | Description                                      |
 | -------------------------------------------------------------------- | ------------------------------------------------ |
-| **This repo**                                                        | Flutter iOS app (you are here)                   |
+| **This repo**                                                        | Flutter iOS and Android app (you are here)                   |
 | [**bantera-backend**](https://github.com/lisenhuang/bantera-backend) | .NET REST API backend powering `api.bantera.app` |
 | [**bantera-website**](https://github.com/lisenhuang/bantera-website) | Next.js dashboard / website                      |
 
@@ -34,7 +40,7 @@
 | 🎬 **Video Practice**               | Browse community videos, pick a cue, and practice speaking it       |
 | 🎙️ **Audio Recording & Comparison** | Record yourself and compare your pronunciation against native audio |
 | 🤖 **AI Audio Generation**          | Generate dialogue audio from custom text using AI                   |
-| 🌐 **On-Device Translation**        | Instant translations via Apple's Translation framework (iOS 18+)    |
+| 🌐 **On-Device Translation**        | On-device translation via Apple Translation (iOS) and Google ML Kit (Android)    |
 | 🗣️ **On-Device Transcription**      | Speech-to-text via Apple's SpeechTranscriber API (iOS 26+)          |
 | 💬 **Language Exchange Chat**       | Chat with native speakers directly in-app                           |
 | 🔖 **Saved Cues**                   | Bookmark cues for focused review sessions                           |
@@ -74,11 +80,12 @@ A clean, layered architecture with clear separation of concerns across three lay
 └─────────────────────┘  └───────────────────────────────┘
              │
 ┌────────────▼────────────────────────────────────────┐
-│                 NATIVE BRIDGES (iOS)                 │
+│             NATIVE BRIDGES (iOS / Android)            │
 │   MethodChannel: bantera/video_processing            │
 │   MethodChannel: bantera/translation                 │
 │   Apple SpeechTranscriber · AVFoundation             │
-│   Apple Translation Framework                        │
+│   Apple Translation Framework                       │
+│   Android SpeechRecognizer · Google ML Kit           │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -100,8 +107,8 @@ lib/
 ├── infrastructure/                  # Services, API clients, repositories
 │   ├── auth_api_client.dart         # REST API client (~1,552 LOC)
 │   ├── local_practice_database.dart # Drift ORM schema & DAOs
-│   ├── translation_service.dart     # iOS native translation bridge
-│   ├── video_processing_service.dart# iOS native transcription bridge
+│   ├── translation_service.dart     # iOS / Android native translation bridge
+│   ├── video_processing_service.dart# iOS / Android native media bridge
 │   └── ...
 ├── presentation/                    # Screens and widgets (~30 screens)
 │   ├── auth/
@@ -150,7 +157,7 @@ JWT subject extraction is used to scope cache keys per user, preventing stale st
 
 ### 📱 iOS Version-Gated Features
 
-Features are conditionally enabled based on the installed iOS version, detected at runtime via a native bridge:
+On iOS, Apple-specific features are conditionally enabled based on the installed system version, detected at runtime via a native bridge. Android uses its own native implementations; the table below applies only to iOS:
 
 | iOS Version | Feature Unlocked                                            |
 | ----------- | ----------------------------------------------------------- |
@@ -232,20 +239,38 @@ Screens subscribe via `ListenableBuilder` — no `setState` outside of ephemeral
 **Requirements:**
 
 - Flutter SDK `^3.x` with Dart `^3.11`
-- Xcode 16+ with iOS 18 simulator or device
-- CocoaPods
+- **iOS development:** macOS, Xcode with the required iOS SDK, an iOS 18+ simulator or device, and CocoaPods.
+- **Android development:** Android SDK tooling and an Android emulator or device (minimum API 24).
 
 ```bash
-# Install dependencies
+# Install shared Flutter dependencies
 flutter pub get
+
+# List available devices, then run on iOS or Android
+flutter devices
+flutter run -d <device-id>
+```
+
+### iOS build
+
+```bash
 cd ios && pod install && cd ..
-
-# Run on simulator
-flutter run
-
-# Build for distribution
 flutter build ios --release
 ```
+
+### Android APK build and website release
+
+Release signing must be configured locally in `android/key.properties`. Keep that file and the keystore out of Git.
+
+```bash
+# Build the signed ARM64 APK
+flutter build apk --release --split-per-abi --target-platform android-arm64
+
+# Or build and copy the APK plus release metadata to the sibling website repo
+./scripts/publish_android.sh
+```
+
+The script prepares `public/bantera.apk`, `public/android-release.json`, and `src/lib/android-release.ts` in `../website`. Commit and push those three files in the website repository, then deploy the website to make the download available. Before publishing a new app release, bump both the version name and build number in `pubspec.yaml`.
 
 ---
 
@@ -267,4 +292,4 @@ Private — all rights reserved.
 
 ---
 
-_README last updated: 2026-04-30_
+_README last updated: 2026-09-29_
