@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "เป็นเวอร์ชันล่าสุด",
   "upToDateAlertMessage": "Bantera {version} เป็นเวอร์ชันล่าสุดแล้ว",
   "sectionSupport": "ความช่วยเหลือ",
-  "permissionActionAllow": "อนุญาต"
+  "permissionActionAllow": "อนุญาต",
+  "audioLevelBeginner": "ระดับต้น",
+  "audioLevelIntermediate": "ระดับกลาง",
+  "audioLevelAdvanced": "ระดับสูง",
+  "audioLevelAll": "ทุกระดับ",
+  "audioLevelSelect": "เลือกระดับ",
+  "audioLevelSection": "ระดับ",
+  "audioLevelRequired": "โปรดเลือกระดับก่อนสร้างเสียง"
 }

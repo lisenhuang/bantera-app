@@ -2802,6 +2802,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow'**
   String get permissionActionAllow;
+
+  /// No description provided for @audioLevelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get audioLevelBeginner;
+
+  /// No description provided for @audioLevelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get audioLevelIntermediate;
+
+  /// No description provided for @audioLevelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get audioLevelAdvanced;
+
+  /// No description provided for @audioLevelAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All levels'**
+  String get audioLevelAll;
+
+  /// No description provided for @audioLevelSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select level'**
+  String get audioLevelSelect;
+
+  /// No description provided for @audioLevelSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get audioLevelSection;
+
+  /// No description provided for @audioLevelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a level before generating audio.'**
+  String get audioLevelRequired;
 }
 
 class _AppLocalizationsDelegate

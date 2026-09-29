@@ -5,17 +5,27 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../domain/audio_level.dart';
 import 'app_locale.dart';
 import 'ios_dev_version_bridge.dart';
 
 class SettingsNotifier extends ChangeNotifier {
-  SettingsNotifier._();
+  SettingsNotifier._() : _settingsFileOverride = null;
+
+  @visibleForTesting
+  SettingsNotifier.forTesting({required File settingsFile})
+    : _settingsFileOverride = settingsFile;
+
+  final File? _settingsFileOverride;
 
   ThemeMode _themeMode = ThemeMode.system;
   bool _notificationsEnabled = true;
   String? _lastTranscriptionLocale;
   AppLocalePreference _appLocalePreference = AppLocalePreference.system;
   bool _isInitialized = false;
+  AudioLevel? _audioLevel;
+  AudioLevel? get audioLevel => _audioLevel;
+  Future<void> _pendingWrite = Future.value();
   int? _devMockIosMajorVersion;
   bool _devShowAllLearningLanguages = false;
 
@@ -44,6 +54,9 @@ class SettingsNotifier extends ChangeNotifier {
         if (raw.isNotEmpty) {
           final decoded = jsonDecode(raw);
           if (decoded is Map<String, dynamic>) {
+            _audioLevel = AudioLevel.fromStorage(
+              decoded['audioLevel'] as String?,
+            );
             _themeMode = _themeModeFromString(decoded['themeMode']?.toString());
             _notificationsEnabled =
                 decoded['notificationsEnabled'] as bool? ?? true;
@@ -62,6 +75,7 @@ class SettingsNotifier extends ChangeNotifier {
         }
       }
     } catch (_) {
+      _audioLevel = null;
       _themeMode = ThemeMode.system;
       _notificationsEnabled = true;
       _lastTranscriptionLocale = null;
@@ -151,14 +165,27 @@ class SettingsNotifier extends ChangeNotifier {
     _persist();
   }
 
+  Future<void> setAudioLevel(AudioLevel? level) async {
+    if (_audioLevel == level) return;
+    _audioLevel = level;
+    notifyListeners();
+    await _persist();
+  }
+
   static final SettingsNotifier instance = SettingsNotifier._();
 
-  Future<void> _persist() async {
+  Future<void> _persist() {
+    // Serialize writes so quick changes cannot restore an older preference.
+    return _pendingWrite = _pendingWrite.then((_) => _writeSettings());
+  }
+
+  Future<void> _writeSettings() async {
     try {
       final file = await _settingsFile;
       await file.parent.create(recursive: true);
       await file.writeAsString(
         jsonEncode(<String, dynamic>{
+          'audioLevel': _audioLevel?.name,
           'themeMode': _themeMode.name,
           'notificationsEnabled': _notificationsEnabled,
           'lastTranscriptionLocale': _lastTranscriptionLocale,
@@ -172,6 +199,7 @@ class SettingsNotifier extends ChangeNotifier {
   }
 
   Future<File> get _settingsFile async {
+    if (_settingsFileOverride != null) return _settingsFileOverride;
     final directory = await getApplicationSupportDirectory();
     return File('${directory.path}/settings.json');
   }

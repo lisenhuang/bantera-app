@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "Đã cập nhật",
   "upToDateAlertMessage": "Bantera {version} là phiên bản mới nhất.",
   "sectionSupport": "Hỗ trợ",
-  "permissionActionAllow": "Cho phép"
+  "permissionActionAllow": "Cho phép",
+  "audioLevelBeginner": "Sơ cấp",
+  "audioLevelIntermediate": "Trung cấp",
+  "audioLevelAdvanced": "Nâng cao",
+  "audioLevelAll": "Tất cả trình độ",
+  "audioLevelSelect": "Chọn trình độ",
+  "audioLevelSection": "Trình độ",
+  "audioLevelRequired": "Hãy chọn trình độ trước khi tạo âm thanh."
 }

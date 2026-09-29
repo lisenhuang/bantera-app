@@ -480,5 +480,12 @@
   "upToDateAlertTitle": "최신 버전입니다",
   "upToDateAlertMessage": "Bantera {version}이(가) 최신 버전입니다.",
   "sectionSupport": "지원",
-  "permissionActionAllow": "허용"
+  "permissionActionAllow": "허용",
+  "audioLevelBeginner": "초급",
+  "audioLevelIntermediate": "중급",
+  "audioLevelAdvanced": "고급",
+  "audioLevelAll": "모든 수준",
+  "audioLevelSelect": "수준 선택",
+  "audioLevelSection": "수준",
+  "audioLevelRequired": "오디오를 생성하기 전에 수준을 선택하세요."
 }

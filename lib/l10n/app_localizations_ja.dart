@@ -1426,4 +1426,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get permissionActionAllow => '許可';
+
+  @override
+  String get audioLevelBeginner => '初級';
+
+  @override
+  String get audioLevelIntermediate => '中級';
+
+  @override
+  String get audioLevelAdvanced => '上級';
+
+  @override
+  String get audioLevelAll => 'すべてのレベル';
+
+  @override
+  String get audioLevelSelect => 'レベルを選択';
+
+  @override
+  String get audioLevelSection => 'レベル';
+
+  @override
+  String get audioLevelRequired => '音声を生成する前にレベルを選択してください。';
 }

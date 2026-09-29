@@ -1,3 +1,5 @@
+import 'package:app/domain/audio_level.dart';
+import 'package:app/presentation/shared/audio_level_selector.dart';
 import 'package:app/domain/models/models.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/shared/lesson_details_body.dart';
@@ -19,6 +21,7 @@ MediaItem lesson({bool empty = false}) => MediaItem(
   coverUrl: '',
   spokenLanguage: 'English',
   accent: 'en-NZ',
+  level: AudioLevel.beginner,
   durationMs: 125000,
   cues: empty
       ? []
@@ -63,6 +66,16 @@ Widget page(
 );
 
 void main() {
+  test('Saved lesson retains level and accent for practice', () {
+    final restored = MediaItem.fromJson(lesson().toJson());
+    expect(restored.level, AudioLevel.beginner);
+    expect(restored.accent, 'en-NZ');
+    final legacy = lesson().toJson()..remove('level');
+    expect(MediaItem.fromJson(legacy).level, AudioLevel.intermediate);
+    legacy['transcriptionSource'] = 'User Upload';
+    expect(MediaItem.fromJson(legacy).level, isNull);
+  });
+
   testWidgets(
     'Both detail views share duration, timed sentences, and practice action',
     (tester) async {
@@ -75,6 +88,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('2:05'), findsOneWidget);
+      expect(find.text('Beginner'), findsOneWidget);
+      expect(find.byType(AudioLevelIcon), findsOneWidget);
+      expect(find.textContaining('EN-NZ'), findsNothing);
+      expect(find.text('English'), findsNWidgets(2));
       expect(find.text('Public'), findsNothing);
       expect(find.text('AI Generated'), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);

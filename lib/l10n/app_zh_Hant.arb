@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "已是最新版本",
   "upToDateAlertMessage": "Bantera {version} 已是最新版本。",
   "sectionSupport": "支援",
-  "permissionActionAllow": "允許"
+  "permissionActionAllow": "允許",
+  "audioLevelBeginner": "初級",
+  "audioLevelIntermediate": "中級",
+  "audioLevelAdvanced": "高級",
+  "audioLevelAll": "所有級別",
+  "audioLevelSelect": "選擇級別",
+  "audioLevelSection": "級別",
+  "audioLevelRequired": "請先選擇級別，再產生音訊。"
 }

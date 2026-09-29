@@ -1486,4 +1486,25 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'อนุญาต';
+
+  @override
+  String get audioLevelBeginner => 'ระดับต้น';
+
+  @override
+  String get audioLevelIntermediate => 'ระดับกลาง';
+
+  @override
+  String get audioLevelAdvanced => 'ระดับสูง';
+
+  @override
+  String get audioLevelAll => 'ทุกระดับ';
+
+  @override
+  String get audioLevelSelect => 'เลือกระดับ';
+
+  @override
+  String get audioLevelSection => 'ระดับ';
+
+  @override
+  String get audioLevelRequired => 'โปรดเลือกระดับก่อนสร้างเสียง';
 }

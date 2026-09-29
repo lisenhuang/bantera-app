@@ -1499,4 +1499,25 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'Cho phép';
+
+  @override
+  String get audioLevelBeginner => 'Sơ cấp';
+
+  @override
+  String get audioLevelIntermediate => 'Trung cấp';
+
+  @override
+  String get audioLevelAdvanced => 'Nâng cao';
+
+  @override
+  String get audioLevelAll => 'Tất cả trình độ';
+
+  @override
+  String get audioLevelSelect => 'Chọn trình độ';
+
+  @override
+  String get audioLevelSection => 'Trình độ';
+
+  @override
+  String get audioLevelRequired => 'Hãy chọn trình độ trước khi tạo âm thanh.';
 }

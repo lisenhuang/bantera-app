@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/api_config_notifier.dart';
+import '../domain/audio_level.dart';
 import '../domain/models/models.dart';
 import 'learning_language_catalog.dart';
 import 'network_reachability.dart';
@@ -372,6 +373,7 @@ class AuthApiClient {
     int offset = 0,
     String? search,
     String? mediaType,
+    AudioLevel? level,
   }) async {
     return _retryWithRefresh(accessToken, (token) async {
       try {
@@ -379,6 +381,7 @@ class AuthApiClient {
           'limit': limit.toString(),
           'offset': offset.toString(),
           'includeV2': 'true',
+          if (level != null) 'level': level.name,
         };
         if (languageCode != null && languageCode.isNotEmpty) {
           params['languageCode'] = languageCode;
@@ -600,6 +603,7 @@ class AuthApiClient {
     required String scenario,
     String? scenarioId,
     required int durationSeconds,
+    AudioLevel? level,
     String? nativeLanguage,
     String? nativeLanguageCode,
     required void Function() onDialogueDone,
@@ -631,6 +635,7 @@ class AuthApiClient {
         if (nativeLanguageCode != null && nativeLanguageCode.isNotEmpty)
           'nativeLanguageCode': nativeLanguageCode,
         'durationSeconds': durationSeconds,
+        if (level != null) 'level': level.name,
       });
       final endpointPath = useV3
           ? '/api/me/audio/generate/v3'
@@ -672,6 +677,7 @@ class AuthApiClient {
               scenario: scenario,
               scenarioId: scenarioId,
               durationSeconds: durationSeconds,
+              level: level,
               nativeLanguage: nativeLanguage,
               nativeLanguageCode: nativeLanguageCode,
               onDialogueDone: onDialogueDone,
@@ -858,6 +864,7 @@ class AuthApiClient {
     required String scenario,
     String? scenarioId,
     required int durationSeconds,
+    AudioLevel? level,
     String? nativeLanguage,
     String? nativeLanguageCode,
     void Function(String jobId)? onStarted,
@@ -873,6 +880,7 @@ class AuthApiClient {
       scenario: scenario,
       scenarioId: scenarioId,
       durationSeconds: durationSeconds,
+      level: level,
       nativeLanguage: nativeLanguage,
       nativeLanguageCode: nativeLanguageCode,
       onStarted: onStarted,
@@ -891,6 +899,7 @@ class AuthApiClient {
     required String scenario,
     String? scenarioId,
     required int durationSeconds,
+    AudioLevel? level,
     String? nativeLanguage,
     String? nativeLanguageCode,
     void Function(String jobId)? onStarted,
@@ -906,6 +915,7 @@ class AuthApiClient {
       scenario: scenario,
       scenarioId: scenarioId,
       durationSeconds: durationSeconds,
+      level: level,
       nativeLanguage: nativeLanguage,
       nativeLanguageCode: nativeLanguageCode,
       onStarted: onStarted,
@@ -1598,6 +1608,11 @@ class AuthApiClient {
           .toList(),
       isPublic: json['isPublic'] as bool,
       isAiGenerated: json['isAiGenerated'] as bool? ?? false,
+      level:
+          AudioLevel.fromStorage(json['level'] as String?) ??
+          (json['level'] == null && json['isAiGenerated'] == true
+              ? AudioLevel.intermediate
+              : null),
       isTranscriptionEstimated:
           json['isTranscriptionEstimated'] as bool? ?? false,
       durationMs: (json['durationMs'] as num).toInt(),

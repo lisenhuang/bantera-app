@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/models/models.dart';
 import '../../l10n/app_localizations.dart';
+import 'audio_level_selector.dart';
 
 /// Shared content for Discover lessons and the user's own audio details.
 class LessonDetailsBody extends StatefulWidget {
@@ -125,6 +126,14 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
                           label: _formatDuration(media.durationMs),
                           icon: Icons.schedule_outlined,
                         ),
+                        if (media.level != null)
+                          _MetaChip(
+                            label: audioLevelLabel(l10n, media.level!),
+                            leading: AudioLevelIcon(
+                              level: media.level!,
+                              size: 16,
+                            ),
+                          ),
                       ],
                     ),
                   ],
@@ -156,9 +165,7 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
                 ),
               _InfoRow(
                 label: l10n.mediaTranscript,
-                value: media.accent.isEmpty
-                    ? media.spokenLanguage
-                    : '${media.spokenLanguage} · ${media.accent.toUpperCase()}',
+                value: media.spokenLanguage,
               ),
             ],
           ),
@@ -342,10 +349,12 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
 }
 
 class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label, required this.icon});
+  const _MetaChip({required this.label, this.icon, this.leading})
+    : assert(icon != null || leading != null);
 
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -360,9 +369,11 @@ class _MetaChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: colorScheme.primary),
+          leading ?? Icon(icon, size: 16, color: colorScheme.primary),
           const SizedBox(width: 8),
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          Flexible(
+            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+          ),
         ],
       ),
     );

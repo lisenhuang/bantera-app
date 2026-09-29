@@ -1498,4 +1498,25 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'Дозволити';
+
+  @override
+  String get audioLevelBeginner => 'Початковий';
+
+  @override
+  String get audioLevelIntermediate => 'Середній';
+
+  @override
+  String get audioLevelAdvanced => 'Просунутий';
+
+  @override
+  String get audioLevelAll => 'Усі рівні';
+
+  @override
+  String get audioLevelSelect => 'Вибрати рівень';
+
+  @override
+  String get audioLevelSection => 'Рівень';
+
+  @override
+  String get audioLevelRequired => 'Виберіть рівень перед створенням аудіо.';
 }

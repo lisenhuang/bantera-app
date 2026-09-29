@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "Güncel",
   "upToDateAlertMessage": "Bantera {version} en son sürüm.",
   "sectionSupport": "Destek",
-  "permissionActionAllow": "İzin Ver"
+  "permissionActionAllow": "İzin Ver",
+  "audioLevelBeginner": "Başlangıç",
+  "audioLevelIntermediate": "Orta",
+  "audioLevelAdvanced": "İleri",
+  "audioLevelAll": "Tüm seviyeler",
+  "audioLevelSelect": "Seviye seç",
+  "audioLevelSection": "Seviye",
+  "audioLevelRequired": "Ses oluşturmadan önce bir seviye seçin."
 }

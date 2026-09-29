@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "Актуальна версія",
   "upToDateAlertMessage": "Bantera {version} — це остання версія.",
   "sectionSupport": "Підтримка",
-  "permissionActionAllow": "Дозволити"
+  "permissionActionAllow": "Дозволити",
+  "audioLevelBeginner": "Початковий",
+  "audioLevelIntermediate": "Середній",
+  "audioLevelAdvanced": "Просунутий",
+  "audioLevelAll": "Усі рівні",
+  "audioLevelSelect": "Вибрати рівень",
+  "audioLevelSection": "Рівень",
+  "audioLevelRequired": "Виберіть рівень перед створенням аудіо."
 }

@@ -1500,4 +1500,25 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'Izinkan';
+
+  @override
+  String get audioLevelBeginner => 'Pemula';
+
+  @override
+  String get audioLevelIntermediate => 'Menengah';
+
+  @override
+  String get audioLevelAdvanced => 'Lanjutan';
+
+  @override
+  String get audioLevelAll => 'Semua tingkat';
+
+  @override
+  String get audioLevelSelect => 'Pilih tingkat';
+
+  @override
+  String get audioLevelSection => 'Tingkat';
+
+  @override
+  String get audioLevelRequired => 'Pilih tingkat sebelum membuat audio.';
 }

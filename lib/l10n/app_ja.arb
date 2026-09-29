@@ -480,5 +480,12 @@
   "upToDateAlertTitle": "最新版です",
   "upToDateAlertMessage": "Bantera {version} は最新バージョンです。",
   "sectionSupport": "サポート",
-  "permissionActionAllow": "許可"
+  "permissionActionAllow": "許可",
+  "audioLevelBeginner": "初級",
+  "audioLevelIntermediate": "中級",
+  "audioLevelAdvanced": "上級",
+  "audioLevelAll": "すべてのレベル",
+  "audioLevelSelect": "レベルを選択",
+  "audioLevelSection": "レベル",
+  "audioLevelRequired": "音声を生成する前にレベルを選択してください。"
 }

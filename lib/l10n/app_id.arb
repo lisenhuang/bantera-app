@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "Sudah Terbaru",
   "upToDateAlertMessage": "Bantera {version} adalah versi terbaru.",
   "sectionSupport": "Dukungan",
-  "permissionActionAllow": "Izinkan"
+  "permissionActionAllow": "Izinkan",
+  "audioLevelBeginner": "Pemula",
+  "audioLevelIntermediate": "Menengah",
+  "audioLevelAdvanced": "Lanjutan",
+  "audioLevelAll": "Semua tingkat",
+  "audioLevelSelect": "Pilih tingkat",
+  "audioLevelSection": "Tingkat",
+  "audioLevelRequired": "Pilih tingkat sebelum membuat audio."
 }

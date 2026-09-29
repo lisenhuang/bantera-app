@@ -1500,4 +1500,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'Разрешить';
+
+  @override
+  String get audioLevelBeginner => 'Начальный';
+
+  @override
+  String get audioLevelIntermediate => 'Средний';
+
+  @override
+  String get audioLevelAdvanced => 'Продвинутый';
+
+  @override
+  String get audioLevelAll => 'Все уровни';
+
+  @override
+  String get audioLevelSelect => 'Выбрать уровень';
+
+  @override
+  String get audioLevelSection => 'Уровень';
+
+  @override
+  String get audioLevelRequired => 'Выберите уровень перед созданием аудио.';
 }

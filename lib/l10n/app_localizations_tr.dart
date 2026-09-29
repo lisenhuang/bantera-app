@@ -1497,4 +1497,25 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'İzin Ver';
+
+  @override
+  String get audioLevelBeginner => 'Başlangıç';
+
+  @override
+  String get audioLevelIntermediate => 'Orta';
+
+  @override
+  String get audioLevelAdvanced => 'İleri';
+
+  @override
+  String get audioLevelAll => 'Tüm seviyeler';
+
+  @override
+  String get audioLevelSelect => 'Seviye seç';
+
+  @override
+  String get audioLevelSection => 'Seviye';
+
+  @override
+  String get audioLevelRequired => 'Ses oluşturmadan önce bir seviye seçin.';
 }

@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "App aggiornata",
   "upToDateAlertMessage": "Bantera {version} è la versione più recente.",
   "sectionSupport": "Supporto",
-  "permissionActionAllow": "Consenti"
+  "permissionActionAllow": "Consenti",
+  "audioLevelBeginner": "Principiante",
+  "audioLevelIntermediate": "Intermedio",
+  "audioLevelAdvanced": "Avanzato",
+  "audioLevelAll": "Tutti i livelli",
+  "audioLevelSelect": "Seleziona livello",
+  "audioLevelSection": "Livello",
+  "audioLevelRequired": "Seleziona un livello prima di generare l’audio."
 }

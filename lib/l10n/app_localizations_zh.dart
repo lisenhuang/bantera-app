@@ -1407,6 +1407,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permissionActionAllow => '允许';
+
+  @override
+  String get audioLevelBeginner => '初级';
+
+  @override
+  String get audioLevelIntermediate => '中级';
+
+  @override
+  String get audioLevelAdvanced => '高级';
+
+  @override
+  String get audioLevelAll => '所有级别';
+
+  @override
+  String get audioLevelSelect => '选择级别';
+
+  @override
+  String get audioLevelSection => '级别';
+
+  @override
+  String get audioLevelRequired => '请先选择级别，再生成音频。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2816,4 +2837,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get permissionActionAllow => '允許';
+
+  @override
+  String get audioLevelBeginner => '初級';
+
+  @override
+  String get audioLevelIntermediate => '中級';
+
+  @override
+  String get audioLevelAdvanced => '高級';
+
+  @override
+  String get audioLevelAll => '所有級別';
+
+  @override
+  String get audioLevelSelect => '選擇級別';
+
+  @override
+  String get audioLevelSection => '級別';
+
+  @override
+  String get audioLevelRequired => '請先選擇級別，再產生音訊。';
 }

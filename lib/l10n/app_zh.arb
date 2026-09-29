@@ -480,5 +480,12 @@
   "upToDateAlertTitle": "已是最新版本",
   "upToDateAlertMessage": "Bantera {version} 已是最新版本。",
   "sectionSupport": "支持",
-  "permissionActionAllow": "允许"
+  "permissionActionAllow": "允许",
+  "audioLevelBeginner": "初级",
+  "audioLevelIntermediate": "中级",
+  "audioLevelAdvanced": "高级",
+  "audioLevelAll": "所有级别",
+  "audioLevelSelect": "选择级别",
+  "audioLevelSection": "级别",
+  "audioLevelRequired": "请先选择级别，再生成音频。"
 }

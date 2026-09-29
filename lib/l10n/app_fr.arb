@@ -445,5 +445,12 @@
   "upToDateAlertTitle": "À jour",
   "upToDateAlertMessage": "Bantera {version} est la dernière version.",
   "sectionSupport": "Assistance",
-  "permissionActionAllow": "Autoriser"
+  "permissionActionAllow": "Autoriser",
+  "audioLevelBeginner": "Débutant",
+  "audioLevelIntermediate": "Intermédiaire",
+  "audioLevelAdvanced": "Avancé",
+  "audioLevelAll": "Tous les niveaux",
+  "audioLevelSelect": "Choisir un niveau",
+  "audioLevelSection": "Niveau",
+  "audioLevelRequired": "Choisissez un niveau avant de générer l’audio."
 }

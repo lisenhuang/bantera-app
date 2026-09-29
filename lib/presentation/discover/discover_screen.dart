@@ -5,6 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/settings_notifier.dart';
+import '../../domain/audio_level.dart';
+import '../shared/audio_level_selector.dart';
 import '../../core/apple_system_version.dart';
 import '../../core/api_config_notifier.dart';
 import '../../l10n/app_localizations.dart';
@@ -39,6 +42,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   bool _showAllEnglishVariants = false;
 
   Timer? _debounce;
+  AudioLevel? _lastLevel;
+  int _loadVersion = 0;
 
   bool get _canShowGenerateWithAiButton =>
       !(Platform.isIOS && isLegacyAppleOsPre26);
@@ -47,17 +52,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   void initState() {
     super.initState();
     UserProfileNotifier.instance.addListener(_onProfileChanged);
+    _lastLevel = SettingsNotifier.instance.audioLevel;
+    SettingsNotifier.instance.addListener(_onSettingsChanged);
     _scrollController.addListener(_onScroll);
     _load(reset: true);
   }
 
   @override
   void dispose() {
+    SettingsNotifier.instance.removeListener(_onSettingsChanged);
     _debounce?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     UserProfileNotifier.instance.removeListener(_onProfileChanged);
     super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    final level = SettingsNotifier.instance.audioLevel;
+    if (level == _lastLevel) return;
+    _lastLevel = level;
+    _debounce?.cancel();
+    _load(reset: true);
   }
 
   void _onProfileChanged() {
@@ -86,6 +102,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   Future<void> _load({required bool reset}) async {
+    final loadVersion = reset ? ++_loadVersion : _loadVersion;
     final lang = UserProfileNotifier.instance.learningLanguage;
 
     // No learning language set — show empty without hitting the API.
@@ -107,6 +124,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       if (mounted) {
         setState(() {
           _isLoading = true;
+          _isLoadingMore = false;
           _videos = [];
           _currentOffset = 0;
           _hasMore = true;
@@ -130,9 +148,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         offset: reset ? 0 : _currentOffset,
         search: search.isNotEmpty ? search : null,
         mediaType: 'audio',
+        level: SettingsNotifier.instance.audioLevel,
       );
 
-      if (!mounted) return;
+      if (!mounted || loadVersion != _loadVersion) return;
       setState(() {
         if (reset) {
           _videos = results;
@@ -145,7 +164,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         _isLoadingMore = false;
       });
     } catch (_) {
-      if (mounted) {
+      if (mounted && loadVersion == _loadVersion) {
         setState(() {
           _isLoading = false;
           _isLoadingMore = false;
@@ -222,6 +241,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       child: _buildLanguageHeader(context, learningLang),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: AudioLevelSelector(allowAll: true),
+                      ),
                     ),
                   ),
 
@@ -514,7 +543,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ? CachedNetworkImage(
                         imageUrl: video.coverImageUrl!,
                         fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) => _coverPlaceholder(isAudio),
+                        errorWidget: (_, _, _) => _coverPlaceholder(isAudio),
                       )
                     : _coverPlaceholder(isAudio),
               ),
@@ -537,21 +566,26 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(
-                          isAudio ? Icons.audiotrack : Icons.videocam_outlined,
-                          size: 13,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
                         Text(
-                          isAudio ? 'Audio' : 'Video',
+                          _formatDuration(video.durationMs),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '· ${_formatDuration(video.durationMs)}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                        if (video.level != null) ...[
+                          const SizedBox(width: 12),
+                          AudioLevelIcon(level: video.level!, size: 16),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              audioLevelLabel(
+                                AppLocalizations.of(context)!,
+                                video.level!,
+                              ),
+                              style: Theme.of(context).textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -606,6 +640,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       mediaHeaders: const {},
       spokenLanguage: video.transcriptLanguage,
       accent: video.transcriptLanguageCode,
+      level: video.level,
       durationMs: video.durationMs,
       cues: video.transcriptCues
           .map(

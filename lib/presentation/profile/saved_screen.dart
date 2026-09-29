@@ -244,6 +244,7 @@ class _SavedScreenState extends State<SavedScreen> {
       mediaHeaders: const {},
       spokenLanguage: video.transcriptLanguage,
       accent: video.transcriptLanguageCode,
+      level: video.level,
       durationMs: video.durationMs,
       cues: video.transcriptCues
           .map(

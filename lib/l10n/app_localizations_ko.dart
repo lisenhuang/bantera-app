@@ -1433,4 +1433,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get permissionActionAllow => '허용';
+
+  @override
+  String get audioLevelBeginner => '초급';
+
+  @override
+  String get audioLevelIntermediate => '중급';
+
+  @override
+  String get audioLevelAdvanced => '고급';
+
+  @override
+  String get audioLevelAll => '모든 수준';
+
+  @override
+  String get audioLevelSelect => '수준 선택';
+
+  @override
+  String get audioLevelSection => '수준';
+
+  @override
+  String get audioLevelRequired => '오디오를 생성하기 전에 수준을 선택하세요.';
 }

@@ -249,6 +249,7 @@ class SavedCueRepository extends ChangeNotifier {
       videoUrl: video.videoUrl,
       spokenLanguage: video.transcriptLanguage,
       accent: video.transcriptLanguageCode,
+      level: video.level,
       durationMs: video.durationMs,
       cues: video.transcriptCues
           .map(

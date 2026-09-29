@@ -1,3 +1,5 @@
+import '../audio_level.dart';
+
 class UserProfile {
   final String id;
   final String name;
@@ -111,6 +113,7 @@ class UploadedVideo {
   final List<VideoTranscriptCue> transcriptShortCues;
   final bool isPublic;
   final bool isAiGenerated;
+  final AudioLevel? level;
   final bool isTranscriptionEstimated;
   final int durationMs;
   final int fileSizeBytes;
@@ -136,6 +139,7 @@ class UploadedVideo {
     this.transcriptShortCues = const [],
     required this.isPublic,
     required this.isAiGenerated,
+    this.level,
     required this.isTranscriptionEstimated,
     required this.durationMs,
     required this.fileSizeBytes,
@@ -161,6 +165,7 @@ class UploadedVideo {
       videoUrl: videoUrl,
       spokenLanguage: transcriptLanguage,
       accent: transcriptLanguageCode,
+      level: level,
       durationMs: durationMs,
       cues: transcriptCues
           .map(
@@ -425,6 +430,7 @@ class MediaItem {
   final bool deleteLocalMediaOnDispose;
   final String spokenLanguage;
   final String accent;
+  final AudioLevel? level;
   final int durationMs;
   final List<Cue> cues;
   final List<Cue> shortCues;
@@ -450,6 +456,7 @@ class MediaItem {
     this.deleteLocalMediaOnDispose = false,
     required this.spokenLanguage,
     required this.accent,
+    this.level,
     required this.durationMs,
     required this.cues,
     this.shortCues = const [],
@@ -475,6 +482,12 @@ class MediaItem {
       localVideoPath: json['localVideoPath']?.toString(),
       spokenLanguage: json['spokenLanguage']?.toString() ?? '',
       accent: json['accent']?.toString() ?? '',
+      level:
+          AudioLevel.fromStorage(json['level']?.toString()) ??
+          (json['level'] == null &&
+                  json['transcriptionSource'] == 'AI Generated'
+              ? AudioLevel.intermediate
+              : null),
       durationMs: (json['durationMs'] as num?)?.toInt() ?? 0,
       cues:
           (json['cues'] as List<dynamic>?)
@@ -520,6 +533,7 @@ class MediaItem {
     'localVideoPath': localVideoPath,
     'spokenLanguage': spokenLanguage,
     'accent': accent,
+    'level': level?.name,
     'durationMs': durationMs,
     'cues': cues.map((c) => c.toJson()).toList(),
     'shortCues': shortCues.map((c) => c.toJson()).toList(),

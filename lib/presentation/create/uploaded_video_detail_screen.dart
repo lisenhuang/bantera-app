@@ -256,6 +256,7 @@ class _UploadedVideoDetailScreenState extends State<UploadedVideoDetailScreen> {
           ? const {}
           : <String, String>{'Authorization': 'Bearer $accessToken'},
       spokenLanguage: _video.transcriptLanguage,
+      level: _video.level,
       accent: _video.transcriptLanguageCode.isNotEmpty
           ? _video.transcriptLanguageCode
           : _video.transcriptLanguage,

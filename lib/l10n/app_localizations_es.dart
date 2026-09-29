@@ -1509,4 +1509,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get permissionActionAllow => 'Permitir';
+
+  @override
+  String get audioLevelBeginner => 'Principiante';
+
+  @override
+  String get audioLevelIntermediate => 'Intermedio';
+
+  @override
+  String get audioLevelAdvanced => 'Avanzado';
+
+  @override
+  String get audioLevelAll => 'Todos los niveles';
+
+  @override
+  String get audioLevelSelect => 'Seleccionar nivel';
+
+  @override
+  String get audioLevelSection => 'Nivel';
+
+  @override
+  String get audioLevelRequired =>
+      'Selecciona un nivel antes de generar el audio.';
 }

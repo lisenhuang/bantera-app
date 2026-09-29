@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../core/settings_notifier.dart';
+import '../shared/audio_level_selector.dart';
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/generation_job_notifier.dart';
@@ -81,6 +83,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
     if (learningLang.isEmpty) return false;
     if (_selectedLocale == null) return false;
+    if (SettingsNotifier.instance.audioLevel == null) return false;
     if ((_selectedScenario?.isCustom ?? false) &&
         _customScenarioController.text.trim().isEmpty) {
       return false;
@@ -91,13 +94,19 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   @override
   void initState() {
     super.initState();
+    SettingsNotifier.instance.addListener(_onSettingsChanged);
     _loadLocales();
   }
 
   @override
   void dispose() {
+    SettingsNotifier.instance.removeListener(_onSettingsChanged);
     _customScenarioController.dispose();
     super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<File> _prefsFile() async {
@@ -228,6 +237,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
   }
 
   Future<void> _onGenerateTapped() async {
+    if (!_canGenerate) return;
     if (_ownershipAcknowledged) {
       await _generate();
       return;
@@ -295,7 +305,8 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
   Future<void> _generate() async {
     final locale = _selectedLocale;
-    if (locale == null) return;
+    final level = SettingsNotifier.instance.audioLevel;
+    if (locale == null || level == null) return;
 
     final session = AuthSessionNotifier.instance.session;
     if (session == null) return;
@@ -326,6 +337,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
         scenarioId: _selectedScenario?.id,
         scenario: scenarioText,
         durationSeconds: _durationSeconds,
+        level: level,
         nativeLanguageCode: nativeLanguageCode,
         onStarted: (jobId) {
           GenerationJobNotifier.instance.start(jobId);
@@ -597,6 +609,23 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
               ),
             ),
 
+          const SizedBox(height: 24),
+
+          Text(l10n.audioLevelSection, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          const Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: AudioLevelSelector(),
+          ),
+          if (SettingsNotifier.instance.audioLevel == null) ...[
+            const SizedBox(height: 4),
+            Text(
+              l10n.audioLevelRequired,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
 
           // Scenario picker
