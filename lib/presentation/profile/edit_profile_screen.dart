@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
+import '../../infrastructure/region_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
@@ -345,7 +346,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    final filteredOptions = options;
+    final filteredOptions = await RegionService.instance.filterLanguageOptions(
+      options,
+    );
+    if (!mounted) return;
     final selectedIdentifier = _selectedIdentifierForPicker(
       isLearningPicker: isLearningPicker,
       currentIdentifier: currentIdentifier,

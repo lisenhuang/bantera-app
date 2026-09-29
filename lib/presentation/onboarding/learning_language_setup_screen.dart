@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
+import '../../infrastructure/region_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -125,8 +126,9 @@ class _LearningLanguageSetupScreenState
     if (nativeLocale == null || learningLocale == null) return;
 
     final image = _selectedImage;
-    final hasExistingAvatar =
-        (UserProfileNotifier.instance.avatarUrl ?? '').trim().isNotEmpty;
+    final hasExistingAvatar = (UserProfileNotifier.instance.avatarUrl ?? '')
+        .trim()
+        .isNotEmpty;
     // Only generate an AI avatar when the user neither picked a photo nor
     // already has one (e.g. a Google profile photo set at sign-up).
     final needsGeneratedAvatar = image == null && !hasExistingAvatar;
@@ -228,6 +230,10 @@ class _LearningLanguageSetupScreenState
   Future<void> _chooseLanguage({required bool learning}) async {
     final options = learning ? _learningLocales : _nativeLocales;
     if (options == null || options.isEmpty) return;
+    final visibleOptions = await RegionService.instance.filterLanguageOptions(
+      options,
+    );
+    if (!mounted) return;
     final selected = await showModalBottomSheet<TranscriptionLocaleOption>(
       context: context,
       isScrollControlled: true,
@@ -239,7 +245,7 @@ class _LearningLanguageSetupScreenState
         title: learning
             ? AppLocalizations.of(context)!.onboardingLearningLanguageTitle
             : AppLocalizations.of(context)!.onboardingNativeLanguageTitle,
-        options: options,
+        options: visibleOptions,
         currentIdentifier: learning
             ? _learningLocale?.identifier
             : _nativeLocale?.identifier,

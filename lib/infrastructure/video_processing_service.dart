@@ -164,7 +164,8 @@ class VideoProcessingService {
 
   /// Resolves locales for the native-language picker: combines iOS transcription locales
   /// and iOS translation locales (deduped by identifier). Falls back to both API catalogs,
-  /// then to embedded lists. Chinese (Taiwan) is shown only once the IP is confirmed outside mainland China.
+  /// then to embedded lists. Chinese (Taiwan) is hidden for Simplified Chinese UI,
+  /// and otherwise shown only once the IP is confirmed outside mainland China.
   Future<List<TranscriptionLocaleOption>> fetchNativeLanguageOptions() async =>
       RegionService.instance.filterLanguageOptions(
         await _fetchAllNativeLanguageOptions(),
@@ -263,7 +264,8 @@ class VideoProcessingService {
   /// Resolves locales for learning-language pickers. In normal product mode this
   /// uses the API learning-language catalog. A Dev-only in-memory toggle can
   /// switch the picker to the full native iOS transcription locale list.
-  /// Chinese (Taiwan) is shown only once the IP is confirmed outside mainland China.
+  /// Chinese (Taiwan) is hidden for Simplified Chinese UI, and otherwise shown
+  /// only once the IP is confirmed outside mainland China.
   Future<List<TranscriptionLocaleOption>>
   fetchLearningLanguageOptions() async => RegionService.instance
       .filterLanguageOptions(await _fetchAllLearningLanguageOptions());
