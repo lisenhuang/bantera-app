@@ -360,7 +360,7 @@
   "aiGenStay": "留在此頁",
   "aiGenLeave": "離開",
   "aiGenLoadingTitle": "正在建立你的音訊…",
-  "aiGenLoadingSubtitle": "這可能需時約一分鐘。\n生成期間請留在此頁面。",
+  "aiGenLoadingSubtitle": "這可能需時約一分鐘。",
   "aiGenStepPreparingSpeechModel": "正在準備裝置上的語音模型",
   "aiGenStepWritingDialogue": "撰寫對話",
   "aiGenStepGeneratingAudio": "生成音訊",

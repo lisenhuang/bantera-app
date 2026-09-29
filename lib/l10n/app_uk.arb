@@ -360,7 +360,7 @@
   "aiGenStay": "Залишитися",
   "aiGenLeave": "Вийти",
   "aiGenLoadingTitle": "Створюємо твоє аудіо…",
-  "aiGenLoadingSubtitle": "Це може тривати до хвилини.\nНе залишай цю сторінку під час генерації.",
+  "aiGenLoadingSubtitle": "Це може тривати до хвилини.",
   "aiGenStepPreparingSpeechModel": "Підготовка моделі мовлення на пристрої",
   "aiGenStepWritingDialogue": "Написання діалогу",
   "aiGenStepGeneratingAudio": "Генерування аудіо",

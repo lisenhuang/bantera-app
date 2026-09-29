@@ -1152,8 +1152,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiGenLoadingTitle => '音声を作成しています…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      '最大で1分ほどかかることがあります。\n生成中はこのページを開いたままにしてください。';
+  String get aiGenLoadingSubtitle => '最大で1分ほどかかることがあります。';
 
   @override
   String get aiGenStepPreparingSpeechModel => '端末内音声モデルを準備中';

@@ -2290,7 +2290,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiGenLoadingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'This may take up to a minute.\nPlease stay on this page while generating.'**
+  /// **'This may take up to a minute.'**
   String get aiGenLoadingSubtitle;
 
   /// No description provided for @aiGenStepPreparingSpeechModel.

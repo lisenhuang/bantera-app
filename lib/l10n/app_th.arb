@@ -360,7 +360,7 @@
   "aiGenStay": "อยู่ต่อ",
   "aiGenLeave": "ออก",
   "aiGenLoadingTitle": "กำลังสร้างเสียงของคุณ…",
-  "aiGenLoadingSubtitle": "อาจใช้เวลาถึง 1 นาที\nโปรดอยู่ที่หน้านี้ระหว่างการสร้าง",
+  "aiGenLoadingSubtitle": "อาจใช้เวลาถึง 1 นาที",
   "aiGenStepPreparingSpeechModel": "กำลังเตรียมโมเดลเสียงพูดในเครื่อง",
   "aiGenStepWritingDialogue": "กำลังเขียนบทสนทนา",
   "aiGenStepGeneratingAudio": "กำลังสร้างเสียง",

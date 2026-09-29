@@ -360,7 +360,7 @@
   "aiGenStay": "Tetap di Sini",
   "aiGenLeave": "Tinggalkan",
   "aiGenLoadingTitle": "Membuat audiomu…",
-  "aiGenLoadingSubtitle": "Ini bisa memakan waktu hingga satu menit.\nTetap di halaman ini selama proses berlangsung.",
+  "aiGenLoadingSubtitle": "Ini bisa memakan waktu hingga satu menit.",
   "aiGenStepPreparingSpeechModel": "Menyiapkan model ucapan di perangkat",
   "aiGenStepWritingDialogue": "Menulis dialog",
   "aiGenStepGeneratingAudio": "Membuat audio",

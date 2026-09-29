@@ -1140,7 +1140,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiGenLoadingTitle => '正在创建你的音频…';
 
   @override
-  String get aiGenLoadingSubtitle => '这可能需要约一分钟。\n生成期间请保持在此页面。';
+  String get aiGenLoadingSubtitle => '这可能需要约一分钟。';
 
   @override
   String get aiGenStepPreparingSpeechModel => '正在准备设备端语音模型';
@@ -2569,7 +2569,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiGenLoadingTitle => '正在建立你的音訊…';
 
   @override
-  String get aiGenLoadingSubtitle => '這可能需時約一分鐘。\n生成期間請留在此頁面。';
+  String get aiGenLoadingSubtitle => '這可能需時約一分鐘。';
 
   @override
   String get aiGenStepPreparingSpeechModel => '正在準備裝置上的語音模型';

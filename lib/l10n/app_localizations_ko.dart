@@ -1158,8 +1158,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiGenLoadingTitle => '오디오를 만드는 중…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      '최대 1분 정도 걸릴 수 있습니다.\n생성 중에는 이 페이지에 머물러 주세요.';
+  String get aiGenLoadingSubtitle => '최대 1분 정도 걸릴 수 있습니다.';
 
   @override
   String get aiGenStepPreparingSpeechModel => '온디바이스 음성 모델 준비 중';

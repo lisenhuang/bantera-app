@@ -1212,8 +1212,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get aiGenLoadingTitle => 'Створюємо твоє аудіо…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'Це може тривати до хвилини.\nНе залишай цю сторінку під час генерації.';
+  String get aiGenLoadingSubtitle => 'Це може тривати до хвилини.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

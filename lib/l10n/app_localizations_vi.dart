@@ -1213,8 +1213,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get aiGenLoadingTitle => 'Đang tạo âm thanh cho bạn…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'Quá trình này có thể mất đến một phút.\nVui lòng ở lại trang này trong khi tạo.';
+  String get aiGenLoadingSubtitle => 'Quá trình này có thể mất đến một phút.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

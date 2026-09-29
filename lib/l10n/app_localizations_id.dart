@@ -1214,7 +1214,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiGenLoadingSubtitle =>
-      'Ini bisa memakan waktu hingga satu menit.\nTetap di halaman ini selama proses berlangsung.';
+      'Ini bisa memakan waktu hingga satu menit.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

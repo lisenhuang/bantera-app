@@ -1209,8 +1209,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiGenLoadingTitle => 'Sesin oluşturuluyor…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'Bu işlem bir dakika kadar sürebilir.\nOluşturma bitene kadar lütfen bu sayfada kal.';
+  String get aiGenLoadingSubtitle => 'Bu işlem bir dakika kadar sürebilir.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

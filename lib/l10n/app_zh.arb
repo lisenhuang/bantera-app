@@ -395,7 +395,7 @@
   "aiGenStay": "留在本页",
   "aiGenLeave": "离开",
   "aiGenLoadingTitle": "正在创建你的音频…",
-  "aiGenLoadingSubtitle": "这可能需要约一分钟。\n生成期间请保持在此页面。",
+  "aiGenLoadingSubtitle": "这可能需要约一分钟。",
   "aiGenStepPreparingSpeechModel": "正在准备设备端语音模型",
   "aiGenStepWritingDialogue": "撰写对白",
   "aiGenStepGeneratingAudio": "生成音频",

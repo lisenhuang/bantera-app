@@ -1213,8 +1213,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiGenLoadingTitle => 'Creating your audio…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'This may take up to a minute.\nPlease stay on this page while generating.';
+  String get aiGenLoadingSubtitle => 'This may take up to a minute.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

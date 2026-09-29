@@ -360,7 +360,7 @@
   "aiGenStay": "Ở lại",
   "aiGenLeave": "Rời đi",
   "aiGenLoadingTitle": "Đang tạo âm thanh cho bạn…",
-  "aiGenLoadingSubtitle": "Quá trình này có thể mất đến một phút.\nVui lòng ở lại trang này trong khi tạo.",
+  "aiGenLoadingSubtitle": "Quá trình này có thể mất đến một phút.",
   "aiGenStepPreparingSpeechModel": "Chuẩn bị mô hình giọng nói trên máy",
   "aiGenStepWritingDialogue": "Viết hội thoại",
   "aiGenStepGeneratingAudio": "Tạo âm thanh",

@@ -360,7 +360,7 @@
   "aiGenStay": "Kal",
   "aiGenLeave": "Çık",
   "aiGenLoadingTitle": "Sesin oluşturuluyor…",
-  "aiGenLoadingSubtitle": "Bu işlem bir dakika kadar sürebilir.\nOluşturma bitene kadar lütfen bu sayfada kal.",
+  "aiGenLoadingSubtitle": "Bu işlem bir dakika kadar sürebilir.",
   "aiGenStepPreparingSpeechModel": "Cihaz üzerindeki konuşma modeli hazırlanıyor",
   "aiGenStepWritingDialogue": "Diyalog yazılıyor",
   "aiGenStepGeneratingAudio": "Ses oluşturuluyor",

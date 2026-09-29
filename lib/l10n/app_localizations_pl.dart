@@ -1217,8 +1217,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get aiGenLoadingTitle => 'Tworzymy Twoje audio…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'Może to potrwać do minuty.\nNie opuszczaj tej strony podczas generowania.';
+  String get aiGenLoadingSubtitle => 'Może to potrwać do minuty.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>

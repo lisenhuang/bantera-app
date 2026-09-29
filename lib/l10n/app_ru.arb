@@ -360,7 +360,7 @@
   "aiGenStay": "Остаться",
   "aiGenLeave": "Уйти",
   "aiGenLoadingTitle": "Создаём аудио…",
-  "aiGenLoadingSubtitle": "Это может занять до минуты.\nНе уходи с этой страницы, пока идёт создание.",
+  "aiGenLoadingSubtitle": "Это может занять до минуты.",
   "aiGenStepPreparingSpeechModel": "Подготовка речевой модели на устройстве",
   "aiGenStepWritingDialogue": "Пишем диалог",
   "aiGenStepGeneratingAudio": "Создаём аудио",

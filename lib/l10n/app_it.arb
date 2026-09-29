@@ -360,7 +360,7 @@
   "aiGenStay": "Resta",
   "aiGenLeave": "Esci",
   "aiGenLoadingTitle": "Creazione del tuo audio…",
-  "aiGenLoadingSubtitle": "Potrebbe volerci fino a un minuto.\nResta su questa pagina durante la generazione.",
+  "aiGenLoadingSubtitle": "Potrebbe volerci fino a un minuto.",
   "aiGenStepPreparingSpeechModel": "Preparazione del modello vocale sul dispositivo",
   "aiGenStepWritingDialogue": "Scrittura del dialogo",
   "aiGenStepGeneratingAudio": "Generazione dell'audio",

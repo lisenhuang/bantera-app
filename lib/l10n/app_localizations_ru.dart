@@ -1213,8 +1213,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiGenLoadingTitle => 'Создаём аудио…';
 
   @override
-  String get aiGenLoadingSubtitle =>
-      'Это может занять до минуты.\nНе уходи с этой страницы, пока идёт создание.';
+  String get aiGenLoadingSubtitle => 'Это может занять до минуты.';
 
   @override
   String get aiGenStepPreparingSpeechModel =>
