@@ -1,10 +1,10 @@
 class TranscriptionLocaleOption {
   const TranscriptionLocaleOption({
     required this.identifier,
-    required this.displayName,
+    required String displayName,
     required this.isInstalled,
     this.flagEmoji,
-  });
+  }) : _displayName = displayName;
 
   factory TranscriptionLocaleOption.fromMap(Map<Object?, Object?> map) {
     return TranscriptionLocaleOption(
@@ -16,9 +16,18 @@ class TranscriptionLocaleOption {
   }
 
   final String identifier;
-  final String displayName;
+  final String _displayName;
+  String get displayName => localeDisplayName(identifier, _displayName);
   final bool isInstalled;
   final String? flagEmoji;
+}
+
+/// Keep the Taiwan Mandarin accent name consistent across API/native pickers.
+String localeDisplayName(String identifier, String displayName) {
+  final code = normalizeLocaleIdentifierForLookup(identifier);
+  return code == 'zh-tw' || code == 'zh-hant-tw'
+      ? 'Mandarin (Taiwan)'
+      : displayName;
 }
 
 String normalizeLocaleIdentifierForLookup(String identifier) {

@@ -15,6 +15,8 @@ import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/transcription_locale_option.dart';
+import 'discover_filters.dart';
 import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
@@ -39,7 +41,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   bool _hasMore = true;
   int _currentOffset = 0;
   String? _lastLanguage;
-  bool _showAllEnglishVariants = false;
+  bool _showAllAccents = false;
 
   Timer? _debounce;
   AudioLevel? _lastLevel;
@@ -79,7 +81,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   void _onProfileChanged() {
     final lang = UserProfileNotifier.instance.learningLanguage;
     if (lang != _lastLanguage) {
-      _showAllEnglishVariants = false;
+      _showAllAccents = false;
       _load(reset: true);
     }
   }
@@ -236,21 +238,27 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  // Learning language chip
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: _buildLanguageHeader(context, learningLang),
-                    ),
-                  ),
-
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: AudioLevelSelector(allowAll: true),
-                      ),
+                      child: learningLang == null || learningLang.trim().isEmpty
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildSetLanguagePrompt(context),
+                                const SizedBox(height: 8),
+                                const AudioLevelSelector(allowAll: true),
+                              ],
+                            )
+                          : DiscoverFilters(
+                              learningLanguage: learningLang,
+                              allAccents: _showAllAccents,
+                              onAccentChanged: (allAccents) {
+                                setState(() => _showAllAccents = allAccents);
+                                _debounce?.cancel();
+                                _load(reset: true);
+                              },
+                            ),
                     ),
                   ),
 
@@ -326,143 +334,43 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildLanguageHeader(BuildContext context, String? learningLang) {
+  Widget _buildSetLanguagePrompt(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    if (learningLang == null || learningLang.isEmpty) {
-      return GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.35),
-            ),
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
             color: Theme.of(
               context,
-            ).colorScheme.primary.withValues(alpha: 0.05),
+            ).colorScheme.primary.withValues(alpha: 0.35),
           ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.school_outlined,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  l10n.discoverSetLearningLanguagePrompt,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ],
-          ),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
         ),
-      );
-    }
-
-    final flag = flagEmojiForLocale(learningLang);
-    final canShowAllVariants = _canShowAllVariants(learningLang);
-    final allVariantsLabel = canShowAllVariants
-        ? _allVariantsLabel(_primaryCode(learningLang)!)
-        : null;
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        _buildLanguageFilterButton(
-          context: context,
-          label: learningLang,
-          leading: Text(flag, style: const TextStyle(fontSize: 18)),
-          selected: !_showAllEnglishVariants,
-          onTap: canShowAllVariants
-              ? () {
-                  if (_showAllEnglishVariants) {
-                    setState(() => _showAllEnglishVariants = false);
-                  }
-                }
-              : null,
-        ),
-        if (canShowAllVariants)
-          _buildLanguageFilterButton(
-            context: context,
-            label: allVariantsLabel!,
-            leading: const Text('🌐', style: TextStyle(fontSize: 18)),
-            selected: _showAllEnglishVariants,
-            onTap: () {
-              if (!_showAllEnglishVariants) {
-                setState(() => _showAllEnglishVariants = true);
-              }
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageFilterButton({
-    required BuildContext context,
-    required String label,
-    required bool selected,
-    required Widget leading,
-    VoidCallback? onTap,
-  }) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    final foregroundColor = selected
-        ? primaryColor
-        : theme.colorScheme.onSurfaceVariant;
-    final backgroundColor = selected
-        ? primaryColor.withValues(alpha: 0.10)
-        : theme.colorScheme.surfaceContainerHighest;
-    final borderColor = selected
-        ? primaryColor.withValues(alpha: 0.25)
-        : theme.colorScheme.outlineVariant;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap == null
-            ? null
-            : () {
-                onTap();
-                _load(reset: true);
-              },
-        child: Ink(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: borderColor),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                leading,
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: foregroundColor,
-                  ),
-                ),
-              ],
+        child: Row(
+          children: [
+            Icon(
+              Icons.school_outlined,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.discoverSetLearningLanguagePrompt,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ],
         ),
       ),
     );
@@ -512,12 +420,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _buildVideoTile(BuildContext context, UploadedVideo video) {
     final isAudio = video.videoContentType.startsWith('audio/');
     final title = _titleFromFileName(video.originalFileName);
-    final showEnglishVariantFlag =
-        _showAllEnglishVariants &&
-        video.transcriptLanguageCode.toLowerCase().startsWith('en');
-    final transcriptLanguageLabel = showEnglishVariantFlag
-        ? '${flagEmojiForLocale(video.transcriptLanguageCode)} ${video.transcriptLanguage}'
-        : video.transcriptLanguage;
+    final languageName = localeDisplayName(
+      video.transcriptLanguageCode,
+      video.transcriptLanguage,
+    );
+    final transcriptLanguageLabel = _showAllAccents
+        ? '${flagEmojiForLocale(video.transcriptLanguageCode)} $languageName'
+        : languageName;
     final dateLabel = _formatDateLabel(context, video.createdAt);
 
     return GestureDetector(
@@ -692,49 +601,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     return '$mins:${secs.toString().padLeft(2, '0')}';
   }
 
-  static const _multiVariantPrefixes = {'en', 'fr', 'de', 'it', 'pt', 'es'};
+  String _effectiveLanguageCode(String? learningLang) =>
+      discoverAccentLanguageCode(learningLang ?? '', _showAllAccents);
 
-  String? _primaryCode(String? learningLang) {
-    final normalized = learningLang?.trim().toLowerCase() ?? '';
-    if (normalized.isEmpty) return null;
-    final primary = normalized.contains('-')
-        ? normalized.split('-').first
-        : normalized;
-    return _multiVariantPrefixes.contains(primary) ? primary : null;
-  }
-
-  bool _canShowAllVariants(String? learningLang) =>
-      _primaryCode(learningLang) != null;
-
-  String _allVariantsLabel(String primaryCode) {
-    const names = {
-      'en': 'English',
-      'fr': 'French',
-      'de': 'German',
-      'it': 'Italian',
-      'pt': 'Portuguese',
-      'es': 'Spanish',
-    };
-    return 'All ${names[primaryCode] ?? primaryCode.toUpperCase()}';
-  }
-
-  String _effectiveLanguageCode(String? learningLang) {
-    final normalized = learningLang?.trim() ?? '';
-    if (normalized.isEmpty) return '';
-    if (_showAllEnglishVariants) {
-      final primary = _primaryCode(normalized);
-      if (primary != null) return primary;
-    }
-    return normalized;
-  }
-
-  String? _displayLanguageLabel(String? learningLang) {
-    final normalized = learningLang?.trim();
-    if (normalized == null || normalized.isEmpty) return normalized;
-    if (_showAllEnglishVariants) {
-      final primary = _primaryCode(normalized);
-      if (primary != null) return _allVariantsLabel(primary);
-    }
-    return normalized;
-  }
+  String? _displayLanguageLabel(String? learningLang) => learningLang == null
+      ? null
+      : discoverAccentLabel(learningLang, _showAllAccents);
 }

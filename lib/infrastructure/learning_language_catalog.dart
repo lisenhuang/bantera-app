@@ -44,7 +44,7 @@ const kFallbackTranslationLanguages = <TranscriptionLocaleOption>[
   ),
   TranscriptionLocaleOption(
     identifier: 'zh-TW',
-    displayName: 'Chinese (Taiwan)',
+    displayName: 'Mandarin (Taiwan)',
     isInstalled: false,
     flagEmoji: '🇹🇼',
   ),
