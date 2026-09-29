@@ -74,8 +74,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _audioPlayerReady = false;
   List<Cue> _shortCues = const [];
 
-  /// Timed units mapped onto subtitle tokens, per cue. A unit is a word, or one
-  /// character of a Chinese / Japanese word when the backend sent `parts`.
+  /// Timed units mapped onto subtitle tokens, preserving each returned word's boundary.
   List<({String cueId, int startMs, int endMs, List<int> charStarts})>
   _timedUnits = const [];
   Map<String, ({int startMs, int endMs})> _charStartToWordMs = const {};
@@ -274,11 +273,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return const [];
     }
 
-    // Per-character parts when present; otherwise the word itself (a whole
-    // Chinese run then highlights all its characters at once, as before).
-    final units = [
-      for (final w in wt) ...(w.parts ?? [w]),
-    ];
+    // Use the returned timing units directly. A multi-character word highlights
+    // together; separately returned characters remain separate units.
+    final units = wt;
     final result =
         <({String cueId, int startMs, int endMs, List<int> charStarts})>[];
     final charMap = <String, ({int startMs, int endMs})>{};

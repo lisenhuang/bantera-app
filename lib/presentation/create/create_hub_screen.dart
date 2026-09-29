@@ -18,6 +18,8 @@ import '../../core/profile_stats_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/audio_language_groups.dart';
+import '../../infrastructure/transcription_locale_option.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../practice/practice_player_screen.dart';
 import '../shared/locale_flag.dart';
@@ -47,24 +49,25 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
   String? _deletingLocalVideoId;
   String? _deletingUploadedVideoId;
 
-  List<({String code, String name, int count})> get _languageGroups {
-    final map = <String, ({String name, int count})>{};
-    for (final v in _myVideos) {
-      final e = map[v.transcriptLanguageCode];
-      map[v.transcriptLanguageCode] = e == null
-          ? (name: v.transcriptLanguage, count: 1)
-          : (name: e.name, count: e.count + 1);
-    }
-    return (map.entries
-        .map((e) => (code: e.key, name: e.value.name, count: e.value.count))
-        .toList()
-      ..sort((a, b) => b.count.compareTo(a.count)));
-  }
+  List<AudioLanguageGroup> get _languageGroups => groupAudioLanguages(
+    _myVideos.map(
+      (video) => TranscriptionLocaleOption(
+        identifier: video.transcriptLanguageCode,
+        displayName: video.transcriptLanguage,
+        isInstalled: false,
+        flagEmoji: flagEmojiForLocale(video.transcriptLanguageCode),
+      ),
+    ),
+  );
 
   List<UploadedVideo> get _filteredVideos {
     if (_selectedLanguageCode == null) return _myVideos;
     return _myVideos
-        .where((v) => v.transcriptLanguageCode == _selectedLanguageCode)
+        .where(
+          (v) =>
+              audioLanguageGroupCode(v.transcriptLanguageCode) ==
+              _selectedLanguageCode,
+        )
         .toList();
   }
 
@@ -324,7 +327,9 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
         _isLoadingVideos = false;
         if (_selectedLanguageCode != null &&
             !videos.any(
-              (v) => v.transcriptLanguageCode == _selectedLanguageCode,
+              (v) =>
+                  audioLanguageGroupCode(v.transcriptLanguageCode) ==
+                  _selectedLanguageCode,
             )) {
           _selectedLanguageCode = null;
         }
@@ -678,7 +683,7 @@ class _CreateHubScreenState extends State<CreateHubScreen> {
             (g) => DropdownMenuItem<String?>(
               value: g.code,
               child: Text(
-                '${flagEmojiForLocale(g.code)} ${g.name} (${g.count})',
+                '${g.flagEmoji} ${g.name} (${g.count})',
                 overflow: TextOverflow.ellipsis,
               ),
             ),

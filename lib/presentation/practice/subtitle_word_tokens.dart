@@ -1,9 +1,9 @@
-/// Splits subtitle text into the units the player highlights and seeks to.
+/// Splits subtitle text into matching tokens with offsets for highlighting and seeking.
 ///
 /// Words follow the app's word pattern, except that Chinese and Japanese runs
 /// (which have no spaces, so the pattern returns a whole clause) are split into
-/// single characters. Mirrors `WordTimingAligner.SplitCjk` on the backend, which
-/// times each of those characters.
+/// single characters. Multiple tokens belonging to one returned timing word
+/// highlight together; this tokenizer does not decide spoken word boundaries.
 library;
 
 final RegExp kSubtitleWordRe = RegExp(
