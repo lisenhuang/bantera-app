@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../core/api_config_notifier.dart';
 import '../domain/audio_level.dart';
+import '../domain/activity/word_activity.dart';
 import '../domain/models/models.dart';
 import 'learning_language_catalog.dart';
 import 'network_reachability.dart';
@@ -1364,6 +1365,63 @@ class AuthApiClient {
     });
   }
 
+  static String? _wordActivityTokenSubject(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+      return (payload as Map)['sub']?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Map<String, WordTotals>> fetchWordActivity({
+    required String accessToken,
+  }) async {
+    final json = await _sendJsonRequest(
+      method: 'GET',
+      path: '/api/v2/me/word-stats',
+      accessToken: accessToken,
+      expectedUserId: _wordActivityTokenSubject(accessToken),
+    ).timeout(const Duration(seconds: 15));
+    return {
+      for (final raw in (json['days'] as List))
+        wordActivityBucketKey(
+          (raw as Map)['date'].toString(),
+          raw['language']?.toString(),
+        ): WordTotals.fromJson(
+          Map<String, dynamic>.from(raw),
+        ),
+    };
+  }
+
+  Future<void> saveWordActivity({
+    required String accessToken,
+    required String deviceId,
+    required Map<String, WordTotals> days,
+  }) async {
+    await _sendJsonRequest(
+      method: 'POST',
+      path: '/api/v2/me/word-stats',
+      accessToken: accessToken,
+      expectedUserId: _wordActivityTokenSubject(accessToken),
+      payload: {
+        'deviceId': deviceId,
+        'days': [
+          for (final entry in days.entries)
+            {
+              'date': wordActivityBucketDate(entry.key),
+              'language': wordActivityBucketLanguage(entry.key),
+              ...entry.value.toJson(),
+            },
+        ],
+      },
+    ).timeout(const Duration(seconds: 15));
+  }
+
   Future<({int uploadCount, int savedCount})> fetchProfileStats({
     required String accessToken,
   }) async {
@@ -1473,6 +1531,7 @@ class AuthApiClient {
     Map<String, dynamic>? payload,
     String? accessToken,
     bool retried = false,
+    String? expectedUserId,
   }) async {
     final request = await _httpClient.openUrl(method, _resolve(path));
     request.headers.set(HttpHeaders.acceptHeader, 'application/json');
@@ -1499,12 +1558,17 @@ class AuthApiClient {
     if (!retried && response.statusCode == 401 && accessToken != null) {
       final newToken = await _doRefresh();
       if (newToken != null) {
+        if (expectedUserId != null &&
+            _wordActivityTokenSubject(newToken) != expectedUserId) {
+          throw const SessionExpiredException();
+        }
         return _sendJsonRequest(
           method: method,
           path: path,
           payload: payload,
           accessToken: newToken,
           retried: true,
+          expectedUserId: expectedUserId,
         );
       }
       throw const AuthApiException(

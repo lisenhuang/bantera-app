@@ -12,6 +12,10 @@ import '../../core/apple_system_version.dart';
 import '../../core/chat_session_notifier.dart';
 import '../../core/dm_call_notifier.dart';
 import '../../core/user_profile_notifier.dart';
+import '../../core/auth_session_notifier.dart';
+import '../../core/word_activity_notifier.dart';
+import '../../domain/activity/listening_word_tracker.dart';
+import '../../domain/activity/voice_word_progress.dart';
 import '../../domain/models/chat_models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/translation_service.dart';
@@ -21,6 +25,7 @@ import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_menu_item_row.dart';
+import 'chat_image_message.dart';
 import 'group_chat_presentation.dart';
 
 class ChatConversationScreen extends StatefulWidget {
@@ -47,6 +52,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   bool _isRecording = false;
   bool _isSending = false;
   bool _isPressing = false;
+  VoiceWordProgress? _wordProgress;
   String? _currentPlayingMessageId;
   Duration _currentPlaybackPosition = Duration.zero;
   StreamSubscription<void>? _playerCompleteSubscription;
@@ -62,6 +68,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   @override
   void initState() {
     super.initState();
+    WordActivityNotifier.instance.retain();
     _threadId = widget.thread?.threadId;
     _groupKind = _inferGroupKind(widget.thread);
     _partner = widget.partner ?? widget.thread?.otherUser;
@@ -71,6 +78,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
 
     _playerCompleteSubscription = _player.onPlayerComplete.listen((_) {
+      final progress = _wordProgress;
+      progress?.advance(progress.durationMs, playing: true);
+      _wordProgress = null;
       if (mounted) {
         setState(() {
           _currentPlayingMessageId = null;
@@ -80,6 +90,10 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     });
     _playerPositionSubscription = _player.onPositionChanged.listen((position) {
       if (_currentPlayingMessageId != null && mounted) {
+        _wordProgress?.advance(
+          position.inMilliseconds,
+          playing: _player.state == PlayerState.playing,
+        );
         setState(() {
           _currentPlaybackPosition = position;
         });
@@ -89,6 +103,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
 
   @override
   void dispose() {
+    WordActivityNotifier.instance.release();
     _maxRecordingTimer?.cancel();
     _playerCompleteSubscription?.cancel();
     _playerPositionSubscription?.cancel();
@@ -97,6 +112,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
     _recorder.dispose();
     _player.dispose();
+    unawaited(WordActivityNotifier.instance.sync(fetchIfClean: false));
     _messageScrollController.dispose();
     super.dispose();
   }
@@ -294,7 +310,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   ? () => _showUserSheet(message.senderUser)
                   : null,
               onLongPress: message.isMine
-                  ? () => _showOwnMessageMenu(message)
+                  ? () => _deleteOwnMessage(message)
                   : null,
             );
           },
@@ -693,6 +709,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _stopRecording() async {
+    final activityOwnerId = AuthSessionNotifier.instance.session?.userId;
+    final activityAt = DateTime.now();
     if (!_isRecording) {
       return;
     }
@@ -760,6 +778,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         );
       }
 
+      if (activityOwnerId != null) {
+        unawaited(_countSentVoiceWords(message, activityOwnerId, activityAt));
+      }
       if (_threadId == null && mounted) {
         _threadId = message.threadId;
         _chat.registerActiveThread(_threadId!);
@@ -784,8 +805,47 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
   }
 
+  Future<void> _countSentVoiceWords(
+    ChatMessageItem message,
+    String ownerId,
+    DateTime at,
+  ) async {
+    try {
+      final transcribed = await _chat.ensureMessageTranscript(message);
+      await WordActivityNotifier.instance.record(
+        spoken: activityWordCount(transcribed?.localTranscriptText ?? ''),
+        language:
+            transcribed?.localTranscriptLanguageCode ??
+            message.spokenLanguageCode,
+        ownerId: ownerId,
+        at: at,
+      );
+    } catch (_) {
+      /* A sent message remains successful if recognition is unavailable. */
+    }
+  }
+
+  Future<void> _prepareVoiceWordCount(
+    ChatMessageItem message,
+    VoiceWordProgress progress,
+    void Function(String) setLanguage,
+  ) async {
+    try {
+      final transcribed = await _chat.ensureMessageTranscript(message);
+      setLanguage(
+        transcribed?.localTranscriptLanguageCode ?? message.spokenLanguageCode,
+      );
+      progress.setWordCount(
+        activityWordCount(transcribed?.localTranscriptText ?? ''),
+      );
+    } catch (_) {
+      /* No transcript means no word estimate. */
+    }
+  }
+
   Future<void> _playMessage(ChatMessageItem message) async {
     if (_currentPlayingMessageId == message.messageId) {
+      _wordProgress = null;
       await _player.stop();
       if (mounted) {
         setState(() {
@@ -796,6 +856,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       return;
     }
 
+    _wordProgress = null;
     try {
       final file = await _chat.ensureLocalAudio(message);
       await _player.stop();
@@ -804,6 +865,38 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           _currentPlayingMessageId = message.messageId;
           _currentPlaybackPosition = Duration.zero;
         });
+      }
+      final ownerId = AuthSessionNotifier.instance.session?.userId;
+      if (ownerId != null) {
+        var activityLanguage =
+            message.localTranscriptLanguageCode ?? message.spokenLanguageCode;
+        final progress = VoiceWordProgress(
+          durationMs: message.durationMs,
+          onWords: (words, at) {
+            unawaited(
+              WordActivityNotifier.instance.record(
+                listened: words,
+                language: activityLanguage,
+                ownerId: ownerId,
+                at: at,
+              ),
+            );
+          },
+        );
+        _wordProgress = progress;
+        if (message.localTranscriptStatus == 'ready') {
+          progress.setWordCount(
+            activityWordCount(message.localTranscriptText ?? ''),
+          );
+        } else {
+          unawaited(
+            _prepareVoiceWordCount(
+              message,
+              progress,
+              (language) => activityLanguage = language,
+            ),
+          );
+        }
       }
       await _player.play(DeviceFileSource(file.path));
     } on AuthApiException catch (error) {
@@ -954,42 +1047,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     );
   }
 
-  Future<void> _showOwnMessageMenu(ChatMessageItem message) async {
-    final l10n = AppLocalizations.of(context)!;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _deleteOwnMessage(message);
-                },
-                child: ChatMenuItemRow(
-                  icon: Icons.delete_outline,
-                  label: l10n.chatDeleteMessage,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _deleteOwnMessage(ChatMessageItem message) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await _confirmAction(
       title: l10n.chatDeleteMessageTitle,
       body: l10n.chatDeleteMessageBody,
     );
-    if (confirmed != true) {
+    if (!mounted || confirmed != true) {
       return;
     }
 
@@ -1067,6 +1131,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        alignment: Alignment.center,
         title: Text(title),
         content: Text(body),
         actions: [
@@ -1209,79 +1274,89 @@ class _MessageBubble extends StatelessWidget {
                       ? theme.colorScheme.onSurfaceVariant
                       : theme.colorScheme.primary,
                 ),
-              Row(
-                children: [
-                  IconButton.filled(
-                    onPressed: onPlay,
-                    icon: Icon(
-                      isPlaying
-                          ? Icons.pause_rounded
-                          : Icons.play_arrow_rounded,
+              if (message.isImage)
+                ChatImageMessage(message: message)
+              else ...[
+                Row(
+                  children: [
+                    IconButton.filled(
+                      onPressed: onPlay,
+                      icon: Icon(
+                        isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatDuration(message.durationMs),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _RoundedAudioProgressBar(
-                      value: progress,
-                      backgroundColor: theme.colorScheme.outlineVariant,
-                      foregroundColor: theme.colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatTimestamp(message.createdAt),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  if (showTranscribeButton)
-                    OutlinedButton.icon(
-                      onPressed: isTranscribing ? null : onTranscribe,
-                      icon: isTranscribing
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.subtitles_outlined),
-                      label: Text(l10n.chatTranscribe),
-                    ),
-                  if (showRetranscribeButton)
-                    OutlinedButton.icon(
-                      onPressed: isTranscribing ? null : onTranscribe,
-                      icon: isTranscribing
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.replay),
-                      label: Text(l10n.chatRetranscribe),
-                    ),
-                  if (showTranslateButton) ...[
                     const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      onPressed: isTranslating ? null : onTranslate,
-                      icon: isTranslating
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.translate),
-                      label: Text(l10n.chatTranslate),
+                    Text(
+                      _formatDuration(message.durationMs),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _RoundedAudioProgressBar(
+                        value: progress,
+                        backgroundColor: theme.colorScheme.outlineVariant,
+                        foregroundColor: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatTimestamp(message.createdAt),
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
-                ],
-              ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    if (showTranscribeButton)
+                      OutlinedButton.icon(
+                        onPressed: isTranscribing ? null : onTranscribe,
+                        icon: isTranscribing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.subtitles_outlined),
+                        label: Text(l10n.chatTranscribe),
+                      ),
+                    if (showRetranscribeButton)
+                      OutlinedButton.icon(
+                        onPressed: isTranscribing ? null : onTranscribe,
+                        icon: isTranscribing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.replay),
+                        label: Text(l10n.chatRetranscribe),
+                      ),
+                    if (showTranslateButton) ...[
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: isTranslating ? null : onTranslate,
+                        icon: isTranslating
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.translate),
+                        label: Text(l10n.chatTranslate),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
               if (message.localTranscriptStatus == 'processing')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

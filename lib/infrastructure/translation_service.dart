@@ -1,13 +1,14 @@
 import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
+import 'transcription_locale_option.dart';
 
 class TranslationLocaleOption {
   const TranslationLocaleOption({
     required this.identifier,
-    required this.displayName,
+    required String displayName,
     required this.isInstalled,
-  });
+  }) : _displayName = displayName;
 
   factory TranslationLocaleOption.fromMap(Map<Object?, Object?> map) {
     return TranslationLocaleOption(
@@ -18,7 +19,8 @@ class TranslationLocaleOption {
   }
 
   final String identifier;
-  final String displayName;
+  final String _displayName;
+  String get displayName => localeDisplayName(identifier, _displayName);
   final bool isInstalled;
 }
 
@@ -44,13 +46,11 @@ class TranslationService {
   }) async {
     // iOS: Apple Translation framework. Android: Google ML Kit (both on-device).
     try {
-      await _channel.invokeMethod<void>(
-        'prepareTranslationAssets',
-        <String, Object?>{
-          'sourceLocaleIdentifier': sourceLocaleIdentifier,
-          'targetLocaleIdentifier': targetLocaleIdentifier,
-        },
-      );
+      await _channel
+          .invokeMethod<void>('prepareTranslationAssets', <String, Object?>{
+            'sourceLocaleIdentifier': sourceLocaleIdentifier,
+            'targetLocaleIdentifier': targetLocaleIdentifier,
+          });
     } on PlatformException catch (error) {
       throw TranslationException(
         code: error.code,

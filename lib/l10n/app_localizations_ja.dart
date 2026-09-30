@@ -1058,7 +1058,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => '該当する言語がありません。';
 
   @override
-  String get languagePickerMoreComingSoon => '対応言語は順次拡大予定';
+  String languagePickerTotals(int languages, int accents) {
+    return '$languages言語・$accentsアクセント';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => '母語をクリアしました。';
@@ -1446,4 +1448,169 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get audioLevelRequired => '音声を生成する前にレベルを選択してください。';
+
+  @override
+  String get wordActivityTitle => '私の成果';
+
+  @override
+  String get wordActivityToday => '今日';
+
+  @override
+  String get wordActivityThisWeek => '今週';
+
+  @override
+  String get wordActivityTotal => '累計';
+
+  @override
+  String get wordActivityListened => '聞いた単語';
+
+  @override
+  String get wordActivitySpoken => '話した単語';
+
+  @override
+  String get wordActivityHint => '文字起こしに基づく推定値です。繰り返し再生も加算されます。';
+
+  @override
+  String get dailyGoalTitle => '毎日の目標';
+
+  @override
+  String get dailyGoalSet => '毎日の目標を設定';
+
+  @override
+  String get dailyGoalEdit => '目標を編集';
+
+  @override
+  String get dailyGoalChoose => '毎日の目標を選ぶ';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '1日 $minutes 分';
+  }
+
+  @override
+  String get dailyGoalCustom => 'カスタム';
+
+  @override
+  String get dailyGoalListeningTarget => '1日に聞く単語数';
+
+  @override
+  String get dailyGoalSpeakingTarget => '1日に話す単語数';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return '約 $minutes 分';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return '合計約 $minutes 分';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      '毎分聞く単語120語、話す単語60語で計算。休憩や話す速さにより時間が増えます。目標はアカウント別にこの端末に保存されます。';
+
+  @override
+  String get dailyGoalValidation => '0から100,000までの整数を入力してください。0は目標なしです。';
+
+  @override
+  String get dailyGoalRemove => '目標を削除';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      '毎日の目標とリマインダーを削除しますか？単語数の記録は保持されます。';
+
+  @override
+  String get dailyGoalReached => '今日の目標を達成';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target 語';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => '目標を保存できませんでした。再試行してください。';
+
+  @override
+  String get wordActivityShare => '共有';
+
+  @override
+  String get wordActivityPreview => 'プレビュー';
+
+  @override
+  String get wordActivityShareHeading => '今日の\nスピーキング';
+
+  @override
+  String get wordActivitySavePhotos => '写真に保存';
+
+  @override
+  String get wordActivitySaved => '写真に保存しました';
+
+  @override
+  String get wordActivitySaveFailed => '画像を保存できませんでした。再試行してください。';
+
+  @override
+  String get wordActivityShareFailed => '画像を共有できませんでした。再試行してください。';
+
+  @override
+  String get wordActivityPhotoPermission => '設定でBanteraの写真追加を許可して再試行してください。';
+
+  @override
+  String get wordActivityScanToJoin => 'スキャンして参加';
+
+  @override
+  String get dailyGoalNoRequirement => '目標なし';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return '学習中: $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => '過去のアクティビティ（言語不明）';
+
+  @override
+  String get saveLabel => '保存';
+
+  @override
+  String get wordActivityShareToNativeGroup => '母語グループに共有';
+
+  @override
+  String get wordActivitySentToGroup => 'グループに共有しました';
+
+  @override
+  String get dailyGoalNotificationLabel => '毎日の目標リマインダー';
+
+  @override
+  String get dailyGoalNotificationHint => '毎日の目標が未達成の場合に通知します。自分のタイムゾーンを使用します。';
+
+  @override
+  String get dailyGoalReminderTitle => '今日はもう少し練習しましょう';
+
+  @override
+  String get dailyGoalReminderBody => '今日の目標はまだ達成していません。聞く練習と話す練習を続けましょう。';
+
+  @override
+  String get dailyGoalNotificationTime => '通知時刻';
+
+  @override
+  String get dailyGoalRepeatLabel => '繰り返し';
+
+  @override
+  String get dailyGoalRepeatNever => 'なし';
+
+  @override
+  String get dailyGoalRepeatEveryDay => '毎日';
+
+  @override
+  String get dailyGoalRepeatWeekdays => '平日';
+
+  @override
+  String get dailyGoalRepeatWeekends => '週末';
+
+  @override
+  String get dailyGoalRepeatOnceHint => '次の設定時刻に一度だけ通知し、繰り返しません。';
+
+  @override
+  String get discoverAllAccents => 'すべてのアクセント';
 }

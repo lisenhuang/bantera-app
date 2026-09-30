@@ -50,9 +50,11 @@ private const val TARGET_RATE = 16000
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "bantera/video_processing"
+    private var photoSaveBridge: PhotoSaveBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        photoSaveBridge = PhotoSaveBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -79,6 +81,11 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        photoSaveBridge?.permissionResult(requestCode, grantResults)
     }
 
     private fun handleEnsureReady(result: MethodChannel.Result) {

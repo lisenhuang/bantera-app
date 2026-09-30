@@ -444,7 +444,13 @@
   "languagePickerNone": "None",
   "languagePickerClearSelection": "Clear selection",
   "languagePickerNoMatchingLanguages": "No languages found.",
-  "languagePickerMoreComingSoon": "More languages coming soon",
+  "languagePickerTotals": "{languages, plural, =1{1 language} other{{languages} languages}} · {accents, plural, =1{1 accent} other{{accents} accents}}",
+  "@languagePickerTotals": {
+    "placeholders": {
+      "languages": {"type": "int"},
+      "accents": {"type": "int"}
+    }
+  },
   "editProfileNativeLanguageCleared": "Native language cleared.",
   "editProfileLearningLanguageCleared": "Learning language cleared.",
   "editProfileNativeLanguageSetTo": "Native language set to {language}.",
@@ -600,5 +606,94 @@
   "audioLevelAll": "All levels",
   "audioLevelSelect": "Select level",
   "audioLevelSection": "Level",
-  "audioLevelRequired": "Select a level before generating audio."
+  "audioLevelRequired": "Select a level before generating audio.",
+  "wordActivityTitle": "My Achievements",
+  "wordActivityToday": "Today",
+  "wordActivityThisWeek": "This week",
+  "wordActivityTotal": "Total",
+  "wordActivityListened": "Words listened",
+  "wordActivitySpoken": "Words spoken",
+  "wordActivityHint": "Estimated from transcripts. Replays count again.",
+  "dailyGoalTitle": "Daily goal",
+  "dailyGoalSet": "Set daily goal",
+  "dailyGoalEdit": "Edit goal",
+  "dailyGoalChoose": "Choose your daily goal",
+  "dailyGoalPreset": "{minutes} min / day",
+  "dailyGoalCustom": "Custom",
+  "dailyGoalListeningTarget": "Listening words per day",
+  "dailyGoalSpeakingTarget": "Speaking words per day",
+  "dailyGoalEstimate": "About {minutes} min",
+  "dailyGoalTimeTotal": "About {minutes} min in total",
+  "dailyGoalTimeHint": "Estimates use 120 listening words and 60 speaking words per minute. Pauses and your pace may take longer. Goals are saved on this device for your account.",
+  "dailyGoalValidation": "Enter a whole number from 0 to 100,000. Set 0 for no requirement.",
+  "dailyGoalRemove": "Remove goal",
+  "dailyGoalRemoveConfirmation": "Remove your daily goal and its reminders? Your word counts will stay saved.",
+  "dailyGoalReached": "Today’s goals reached",
+  "dailyGoalProgress": "{count}/{target} words",
+  "dailyGoalSaveFailed": "Could not save your goal. Please try again.",
+  "wordActivityShare": "Share",
+  "wordActivityPreview": "Preview",
+  "wordActivityShareHeading": "My speaking\ntoday",
+  "wordActivitySavePhotos": "Save to Photos",
+  "wordActivitySaved": "Saved to Photos",
+  "wordActivitySaveFailed": "Could not save the image. Please try again.",
+  "wordActivityShareFailed": "Could not share the image. Please try again.",
+  "wordActivityPhotoPermission": "Allow Bantera to add photos in Settings, then try again.",
+  "wordActivityScanToJoin": "Scan to join",
+  "@dailyGoalPreset": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyGoalEstimate": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyGoalTimeTotal": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyGoalProgress": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyGoalNoRequirement": "No goal requirement",
+  "wordActivityLearningLanguage": "Learning {language}",
+  "@wordActivityLearningLanguage": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "wordActivityLegacyLabel": "Earlier activity (language unknown)",
+  "saveLabel": "Save",
+  "wordActivityShareToNativeGroup": "Share to native group",
+  "wordActivitySentToGroup": "Shared to the group",
+  "dailyGoalNotificationLabel": "Daily goal reminder",
+  "dailyGoalNotificationHint": "Remind me when my daily goals are unfinished. Uses my timezone.",
+  "dailyGoalReminderTitle": "A little more practice today",
+  "dailyGoalReminderBody": "Your daily goals are still unfinished. Keep listening and speaking.",
+  "dailyGoalNotificationTime": "Reminder time",
+  "dailyGoalRepeatLabel": "Repeat",
+  "dailyGoalRepeatNever": "Never",
+  "dailyGoalRepeatEveryDay": "Every day",
+  "dailyGoalRepeatWeekdays": "Weekdays",
+  "dailyGoalRepeatWeekends": "Weekends",
+  "dailyGoalRepeatOnceHint": "One reminder at the next chosen time, without repeating.",
+  "discoverAllAccents": "All accents"
 }

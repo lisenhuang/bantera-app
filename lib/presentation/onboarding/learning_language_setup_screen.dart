@@ -1,3 +1,4 @@
+import '../shared/language_picker_totals.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -249,7 +250,6 @@ class _LearningLanguageSetupScreenState
         currentIdentifier: learning
             ? _learningLocale?.identifier
             : _nativeLocale?.identifier,
-        showComingSoonFooter: learning,
       ),
     );
     if (selected == null || !mounted) return;
@@ -544,13 +544,11 @@ class _LanguagePickerSheet extends StatefulWidget {
     required this.title,
     required this.options,
     required this.currentIdentifier,
-    required this.showComingSoonFooter,
   });
 
   final String title;
   final List<TranscriptionLocaleOption> options;
   final String? currentIdentifier;
-  final bool showComingSoonFooter;
 
   @override
   State<_LanguagePickerSheet> createState() => _LanguagePickerSheetState();
@@ -656,18 +654,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       },
                     ),
             ),
-            if (widget.showComingSoonFooter) ...[
-              const Divider(height: 1),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  l10n.languagePickerMoreComingSoon,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                ),
-              ),
-            ],
+            LanguagePickerTotals(
+              identifiers: widget.options.map((option) => option.identifier),
+            ),
           ],
         );
       },

@@ -16,6 +16,9 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/apple_system_version.dart';
 import '../../core/user_profile_notifier.dart';
+import '../../core/auth_session_notifier.dart';
+import '../../core/word_activity_notifier.dart';
+import '../../domain/activity/listening_word_tracker.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/practice_audio_cache.dart';
@@ -53,6 +56,10 @@ class PracticePlayerScreen extends StatefulWidget {
 
 class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
+
+  late final ListeningWordTracker _wordActivityTracker;
+  String? _wordActivityOwnerId;
+  int _activitySeekDepth = 0;
 
   int _currentCueIndex = 0;
   SubtitleState _subtitleState = SubtitleState.hidden;
@@ -176,7 +183,61 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     developer.log(line, name: 'Bantera.WordTap');
   }
 
+  Future<void> _seekActivityAudio(AudioPlayer player, Duration position) async {
+    _activitySeekDepth++;
+    try {
+      await player.seek(position);
+    } finally {
+      _wordActivityTracker.seek(position.inMilliseconds);
+      _activitySeekDepth--;
+    }
+  }
+
+  Future<void> _seekActivityVideo(
+    VideoPlayerController controller,
+    Duration position,
+  ) async {
+    _activitySeekDepth++;
+    try {
+      await controller.seekTo(position);
+    } finally {
+      _wordActivityTracker.seek(position.inMilliseconds);
+      _activitySeekDepth--;
+    }
+  }
+
+  void _recordListeningPosition(int positionMs, {bool completed = false}) {
+    final stopMs =
+        _wordTapPlayUntilMs ??
+        (_isPlayingAll
+            ? _playbackStopMsForCueIndex(_activeCues.length - 1)
+            : _playbackStopMsForCueIndex(_currentCueIndex));
+    final nativePlaying =
+        _audioPlayer?.state == PlayerState.playing ||
+        (_videoController?.value.isPlaying ?? false) ||
+        (_videoController?.value.isCompleted ?? false);
+    final words = _wordActivityTracker.advance(
+      positionMs.clamp(0, stopMs),
+      playing:
+          _isPlaying &&
+          (nativePlaying || completed) &&
+          !_playAllInBetweenCueGap &&
+          _activitySeekDepth == 0,
+      speed: _playbackSpeed,
+    );
+    if (words > 0 && _wordActivityOwnerId != null) {
+      unawaited(
+        WordActivityNotifier.instance.record(
+          listened: words,
+          language: _sourceLocaleIdentifier,
+          ownerId: _wordActivityOwnerId,
+        ),
+      );
+    }
+  }
+
   void _setHighlightFromMediaMs(int positionMs) {
+    _recordListeningPosition(positionMs);
     final playUntil = _wordTapPlayUntilMs;
     if (playUntil != null && positionMs >= playUntil) {
       _logWordTap(
@@ -204,6 +265,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   void initState() {
     super.initState();
+    WordActivityNotifier.instance.retain();
+    _wordActivityOwnerId = AuthSessionNotifier.instance.session?.userId;
+    _wordActivityTracker = ListeningWordTracker.forMedia(widget.mediaItem);
+    unawaited(WordActivityNotifier.instance.sync());
     _shortCues = widget.mediaItem.shortCues;
     _timedUnits = _buildTimedUnits();
     unawaited(_initSentenceModeAndSeed());
@@ -446,7 +511,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   @override
   void dispose() {
+    WordActivityNotifier.instance.release();
     unawaited(WakelockPlus.disable());
+    unawaited(WordActivityNotifier.instance.sync(fetchIfClean: false));
     final controller = _videoController;
     final listener = _videoListener;
     if (controller != null && listener != null) {
@@ -804,7 +871,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       final next = endedCueIndex + 1;
-      await audioPlayer.seek(Duration(milliseconds: cues[next].startTimeMs));
+      await _seekActivityAudio(
+        audioPlayer,
+        Duration(milliseconds: cues[next].startTimeMs),
+      );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
@@ -846,7 +916,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       final next = endedCueIndex + 1;
-      await controller.seekTo(Duration(milliseconds: cues[next].startTimeMs));
+      await _seekActivityVideo(
+        controller,
+        Duration(milliseconds: cues[next].startTimeMs),
+      );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
@@ -887,7 +960,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      await audioPlayer.seek(
+      await _seekActivityAudio(
+        audioPlayer,
         Duration(milliseconds: cues[cueIndex].startTimeMs),
       );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
@@ -926,7 +1000,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
         return;
       }
-      await controller.seekTo(
+      await _seekActivityVideo(
+        controller,
         Duration(milliseconds: cues[cueIndex].startTimeMs),
       );
       if (!mounted || !_isPlayingAll || sessionSnapshot != _playAllSessionId) {
@@ -970,7 +1045,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         cuePlaybackStopMs: _playbackStopMsForCueIndex(_currentCueIndex),
         mediaPositionMs: current?.inMilliseconds,
       );
-      await audioPlayer.seek(Duration(milliseconds: seekMs));
+      await _seekActivityAudio(audioPlayer, Duration(milliseconds: seekMs));
       await audioPlayer.resume();
       setState(() => _isPlaying = true);
 
@@ -1071,7 +1146,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       cuePlaybackStopMs: _playbackStopMsForCueIndex(_currentCueIndex),
       mediaPositionMs: controller.value.position.inMilliseconds,
     );
-    await controller.seekTo(Duration(milliseconds: vSeekMs));
+    await _seekActivityVideo(controller, Duration(milliseconds: vSeekMs));
 
     final oldListener = _videoListener;
     if (oldListener != null) {
@@ -1522,6 +1597,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
 
       final cue = _activeCues[_currentCueIndex];
+      final recordedAt = DateTime.now();
       final processed = await processRecordingFile(
         audioFile: File(resolvedPath),
         expectedCueText: cue.originalText,
@@ -1529,6 +1605,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         cueId: cue.id,
         sourceLocaleIdentifier: _sourceLocaleIdentifier,
         recordingDurationMs: _practiceRecordingElapsed.inMilliseconds,
+        activityOwnerId: _wordActivityOwnerId,
+        activityRecordedAt: recordedAt,
       );
 
       if (!mounted) return;
@@ -2173,63 +2251,82 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${_formatTimestamp(cue.startTimeMs)} - ${_formatTimestamp(cue.endTimeMs)}',
-              style: Theme.of(context).textTheme.titleSmall,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: constraints.maxWidth * .5),
+              child: Text(
+                '${_formatTimestamp(cue.startTimeMs)} - ${_formatTimestamp(cue.endTimeMs)}',
+                key: const ValueKey('practice-cue-time'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
-          ),
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTapDown: _isPlayingAll
-                ? null
-                : (details) =>
-                      _handleTimelineDrag(details.localPosition.dx, 92),
-            onHorizontalDragStart: _isPlayingAll
-                ? null
-                : (details) =>
-                      _handleTimelineDrag(details.localPosition.dx, 92),
-            onHorizontalDragUpdate: _isPlayingAll
-                ? null
-                : (details) =>
-                      _handleTimelineDrag(details.localPosition.dx, 92),
-            child: SizedBox(
-              width: 92,
-              height: 24,
-              child: Center(
-                child: Container(
-                  width: 92,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurface.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: ((_currentCueIndex + 1) / _activeCues.length)
-                        .clamp(0.0, 1.0),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(999),
+            const SizedBox(width: 12),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, barConstraints) => GestureDetector(
+                  key: const ValueKey('practice-cue-progress'),
+                  behavior: HitTestBehavior.translucent,
+                  onTapDown: _isPlayingAll
+                      ? null
+                      : (details) => _handleTimelineDrag(
+                          details.localPosition.dx,
+                          barConstraints.maxWidth,
+                        ),
+                  onHorizontalDragStart: _isPlayingAll
+                      ? null
+                      : (details) => _handleTimelineDrag(
+                          details.localPosition.dx,
+                          barConstraints.maxWidth,
+                        ),
+                  onHorizontalDragUpdate: _isPlayingAll
+                      ? null
+                      : (details) => _handleTimelineDrag(
+                          details.localPosition.dx,
+                          barConstraints.maxWidth,
+                        ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 24,
+                    child: Center(
+                      child: Container(
+                        width: double.infinity,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: colorScheme.onSurface.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor:
+                              ((_currentCueIndex + 1) / _activeCues.length)
+                                  .clamp(0.0, 1.0),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            '${_currentCueIndex + 1}/${_activeCues.length}',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.primary,
+            const SizedBox(width: 10),
+            Text(
+              '${_currentCueIndex + 1}/${_activeCues.length}',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2365,7 +2462,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final audioPlayer = _audioPlayer;
       if (audioPlayer != null && _audioPlayerReady) {
         _logWordTap('seek via audio player: targetMs=$ms');
-        await audioPlayer.seek(target);
+        await _seekActivityAudio(audioPlayer, target);
         if (!_isPlaying) {
           await audioPlayer.resume();
           unawaited(WakelockPlus.enable());
@@ -2380,7 +2477,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final controller = _videoController;
       if (controller != null && controller.value.isInitialized) {
         _logWordTap('seek via video controller: targetMs=$ms');
-        await controller.seekTo(target);
+        await _seekActivityVideo(controller, target);
         if (!_isPlaying) {
           await controller.play();
           unawaited(WakelockPlus.enable());
@@ -3444,7 +3541,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         // the native source, which leaves those seeks waiting for completion.
         await player.setReleaseMode(ReleaseMode.stop);
         _audioCompletionSub = player.onPlayerComplete.listen((_) {
-          if (!mounted || _isPlayingAll) return;
+          if (!mounted) return;
+          final endMs = _loadedMediaDurationMs;
+          if (endMs != null) _recordListeningPosition(endMs, completed: true);
+          if (_isPlayingAll) return;
           _wordTapPlayUntilMs = null;
           setState(() => _isPlaying = false);
           unawaited(WakelockPlus.disable());
@@ -3464,7 +3564,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         await player.setSourceDeviceFile(cachedAudio.file.path);
         final audioDuration = await player.getDuration();
         _loadedMediaDurationMs = audioDuration?.inMilliseconds;
-        await player.seek(Duration(milliseconds: _activeCues[0].startTimeMs));
+        await _seekActivityAudio(
+          player,
+          Duration(milliseconds: _activeCues[0].startTimeMs),
+        );
         _lastKnownAudioPositionMs = _activeCues[0].startTimeMs;
         if (mounted) setState(() => _audioPlayerReady = true);
       } catch (e) {
@@ -3518,7 +3621,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await controller.initialize();
       _loadedMediaDurationMs = controller.value.duration.inMilliseconds;
       await controller.pause();
-      await controller.seekTo(
+      await _seekActivityVideo(
+        controller,
         Duration(milliseconds: _activeCues[_currentCueIndex].startTimeMs),
       );
       _lastKnownVideoPositionMs = _activeCues[_currentCueIndex].startTimeMs;
@@ -3560,7 +3664,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           cuePlaybackStopMs: stopMs,
           mediaPositionMs: rawMs,
         );
-        await audioPlayer.seek(Duration(milliseconds: seekMs));
+        await _seekActivityAudio(audioPlayer, Duration(milliseconds: seekMs));
         await audioPlayer.resume();
         unawaited(WakelockPlus.enable());
         if (mounted) setState(() => _isPlaying = true);
@@ -3603,7 +3707,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       cuePlaybackStopMs: stopMs,
       mediaPositionMs: rawMs,
     );
-    await controller.seekTo(Duration(milliseconds: seekMs));
+    await _seekActivityVideo(controller, Duration(milliseconds: seekMs));
     await controller.play();
     unawaited(WakelockPlus.enable());
     if (mounted) {
@@ -3624,14 +3728,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (audioPlayer != null && _audioPlayerReady) {
       await audioPlayer.pause();
       final startMs = _activeCues[nextIndex].startTimeMs;
-      await audioPlayer.seek(Duration(milliseconds: startMs));
+      await _seekActivityAudio(audioPlayer, Duration(milliseconds: startMs));
       _lastKnownAudioPositionMs = startMs;
     } else {
       final controller = _videoController;
       if (controller != null && controller.value.isInitialized) {
         await controller.pause();
         final startMs = _activeCues[nextIndex].startTimeMs;
-        await controller.seekTo(Duration(milliseconds: startMs));
+        await _seekActivityVideo(controller, Duration(milliseconds: startMs));
         _lastKnownVideoPositionMs = startMs;
       }
     }

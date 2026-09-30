@@ -15,7 +15,7 @@ Widget page({Locale locale = const Locale('en')}) => MaterialApp(
     body: Column(
       children: [
         AudioLevelSelector(key: Key('discover'), allowAll: true),
-        AudioLevelSelector(key: Key('generate')),
+        AudioLevelButtons(key: Key('generate')),
       ],
     ),
   ),
@@ -23,23 +23,22 @@ Widget page({Locale locale = const Locale('en')}) => MaterialApp(
 
 void main() {
   testWidgets(
-    'Both pickers sync; All clears generation; dismissal preserves choice',
+    'Direct generation buttons sync with Discover and preserve All behavior',
     (tester) async {
       unawaited(SettingsNotifier.instance.setAudioLevel(null));
       await tester.pumpWidget(page());
       expect(find.text('All levels'), findsOneWidget);
-      expect(find.text('Select level'), findsOneWidget);
+      expect(
+        find.byKey(const Key('audio-level-choice-beginner')),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const Key('discover')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ListTile, 'Beginner'));
       await tester.pumpAndSettle();
       expect(find.text('Beginner'), findsNWidgets(2));
       expect(SettingsNotifier.instance.audioLevel, AudioLevel.beginner);
-      await tester.tap(find.byKey(const Key('generate')));
-      await tester.pumpAndSettle();
-      expect(find.widgetWithText(ListTile, 'All levels'), findsNothing);
-      expect(find.byType(ListTile), findsNWidgets(3));
-      await tester.tap(find.widgetWithText(ListTile, 'Advanced'));
+      await tester.tap(find.byKey(const Key('audio-level-choice-advanced')));
       await tester.pumpAndSettle();
       expect(find.text('Advanced'), findsNWidgets(2));
       await tester.tap(find.byKey(const Key('discover')));
@@ -51,7 +50,16 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ListTile, 'All levels'));
       await tester.pumpAndSettle();
-      expect(find.text('Select level'), findsOneWidget);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(
+        tester
+            .widget<Semantics>(
+              find.byKey(const Key('audio-level-choice-advanced')),
+            )
+            .properties
+            .selected,
+        isFalse,
+      );
       expect(SettingsNotifier.instance.audioLevel, isNull);
     },
   );
@@ -69,7 +77,7 @@ void main() {
     await tester.pumpWidget(page(locale: const Locale('pl')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byKey(const Key('generate')));
+    await tester.tap(find.byKey(const Key('audio-level-choice-advanced')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });

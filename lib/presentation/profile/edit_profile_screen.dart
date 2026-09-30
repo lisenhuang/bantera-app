@@ -1,15 +1,18 @@
+import '../shared/language_picker_totals.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/user_profile_notifier.dart';
+import '../../core/auth_session_notifier.dart';
 import '../../l10n/app_localizations.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
 import '../../infrastructure/region_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
+import 'edit_profile_name_dialog.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -19,11 +22,8 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
 
-  bool _seededInitialName = false;
   List<TranscriptionLocaleOption>?
   _localeOptions; // native picker (transcription + translation)
   List<TranscriptionLocaleOption>?
@@ -36,18 +36,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = _profile.profile?.name ?? _profile.displayName;
-    _seededInitialName = _profile.profile != null;
     if (_profile.profile == null) {
       _profile.loadProfile(force: true);
     }
     _loadLocales();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadLocales() async {
@@ -88,77 +80,93 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           listenable: _profile,
           builder: (context, _) {
             final l10n = AppLocalizations.of(context)!;
-            final profile = _profile.profile;
-            if (!_seededInitialName &&
-                profile != null &&
-                profile.name.trim().isNotEmpty &&
-                _nameController.text.trim().isEmpty) {
-              _nameController.text = profile.name;
-              _seededInitialName = true;
-            }
-
             return ListView(
               padding: const EdgeInsets.all(24),
               children: [
                 Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      ProfileAvatar(
-                        radius: 48,
-                        imageUrl: _profile.avatarUrl,
-                        imagePath: _profile.avatarImagePath,
-                      ),
-                      if (_profile.isUploadingImage)
-                        const SizedBox(
-                          width: 112,
-                          height: 112,
-                          child: CircularProgressIndicator(),
+                  child: Semantics(
+                    button: true,
+                    label: l10n.editProfileChangeImage,
+                    child: InkWell(
+                      onTap: _profile.isUploadingImage ? null : _pickImage,
+                      borderRadius: BorderRadius.circular(64),
+                      child: SizedBox(
+                        width: 112,
+                        height: 112,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ProfileAvatar(
+                              radius: 48,
+                              imageUrl: _profile.avatarUrl,
+                              imagePath: _profile.avatarImagePath,
+                            ),
+                            if (_profile.isUploadingImage)
+                              const SizedBox(
+                                width: 112,
+                                height: 112,
+                                child: CircularProgressIndicator(),
+                              )
+                            else
+                              Positioned(
+                                right: 4,
+                                top: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer,
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.edit_outlined,
+                                    size: 16,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: OutlinedButton.icon(
-                    onPressed: _profile.isUploadingImage ? null : _pickImage,
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: Text(
-                      _profile.isUploadingImage
-                          ? l10n.editProfileUploading
-                          : l10n.editProfileChangeImage,
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 48),
+                    Flexible(
+                      child: Text(
+                        _profile.displayName,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 48,
+                      child: IconButton(
+                        onPressed: _profile.isSavingProfile
+                            ? null
+                            : _showEditName,
+                        tooltip: l10n.editProfileNameLabel,
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
-                Form(
-                  key: _formKey,
-                  child: TextFormField(
-                    controller: _nameController,
-                    textInputAction: TextInputAction.done,
-                    maxLength: 80,
-                    decoration: InputDecoration(
-                      labelText: l10n.editProfileNameLabel,
-                      hintText: l10n.editProfileNameHint,
-                      prefixIcon: const Icon(Icons.person_outline),
-                    ),
-                    validator: (value) => _validateName(l10n, value),
-                    onFieldSubmitted: (_) => _saveName(),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _profile.isSavingProfile ? null : _saveName,
-                    child: Text(
-                      _profile.isSavingProfile
-                          ? l10n.editProfileSaving
-                          : l10n.editProfileSaveNameButton,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
                 _buildSectionHeader(context, l10n.editProfileLanguagesSection),
                 const SizedBox(height: 12),
                 _buildLanguageTile(
@@ -176,7 +184,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           currentIdentifier: _profile.nativeLanguage,
                           onSelected: _saveNativeLanguage,
                           showClearOption: false,
-                          showComingSoonFooter: false,
                         ),
                 ),
                 const SizedBox(height: 12),
@@ -196,7 +203,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           currentIdentifier: _profile.learningLanguage,
                           onSelected: _saveLearningLanguage,
                           showClearOption: false,
-                          showComingSoonFooter: true,
                         ),
                 ),
                 if (_profile.localizedError(l10n) != null) ...[
@@ -333,7 +339,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String? currentIdentifier,
     required Future<void> Function(TranscriptionLocaleOption) onSelected,
     bool showClearOption = true,
-    bool showComingSoonFooter = false,
   }) async {
     // Learning picker uses transcription-only list; native picker uses combined list.
     final options = isLearningPicker ? _learningLocaleOptions : _localeOptions;
@@ -368,7 +373,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           options: filteredOptions,
           currentIdentifier: selectedIdentifier,
           showClearOption: showClearOption,
-          showComingSoonFooter: showComingSoonFooter,
+
           onSelected: (option) {
             Navigator.of(context).pop();
             onSelected(option);
@@ -414,23 +419,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Future<void> _saveName() async {
-    FocusScope.of(context).unfocus();
+  Future<void> _showEditName() async {
+    final l10n = AppLocalizations.of(context)!;
+    final owner = AuthSessionNotifier.instance.session?.cacheKey;
     _profile.clearError();
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final updated = await _profile.updateName(_nameController.text);
-    if (!mounted || !updated) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.editProfileNameUpdated),
+    final updated = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => EditProfileNameDialog(
+        initialName: _profile.profile?.name ?? _profile.displayName,
+        validateName: (value) => _validateName(l10n, value),
+        onSave: (name) async {
+          if (!mounted ||
+              AuthSessionNotifier.instance.session?.cacheKey != owner) {
+            return false;
+          }
+          _profile.clearError();
+          return _profile.updateName(name);
+        },
+        errorMessage: () => _profile.localizedError(l10n),
       ),
     );
+    if (!mounted ||
+        updated != true ||
+        AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.editProfileNameUpdated)));
   }
 
   Future<void> _saveNativeLanguage(TranscriptionLocaleOption option) async {
@@ -474,7 +491,7 @@ class _LanguagePickerSheet extends StatefulWidget {
     required this.options,
     required this.currentIdentifier,
     required this.showClearOption,
-    required this.showComingSoonFooter,
+
     required this.onSelected,
   });
 
@@ -482,7 +499,7 @@ class _LanguagePickerSheet extends StatefulWidget {
   final List<TranscriptionLocaleOption> options;
   final String? currentIdentifier;
   final bool showClearOption;
-  final bool showComingSoonFooter;
+
   final void Function(TranscriptionLocaleOption) onSelected;
 
   @override
@@ -627,23 +644,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       },
                     ),
             ),
-            if (widget.showComingSoonFooter) ...[
-              const Divider(height: 1),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                child: Center(
-                  child: Text(
-                    l10n.languagePickerMoreComingSoon,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ],
+            LanguagePickerTotals(
+              identifiers: widget.options.map((option) => option.identifier),
+            ),
           ],
         );
       },

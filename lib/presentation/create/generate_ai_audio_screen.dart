@@ -613,10 +613,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
           Text(l10n.audioLevelSection, style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
-          const Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: AudioLevelSelector(),
-          ),
+          const AudioLevelButtons(),
           if (SettingsNotifier.instance.audioLevel == null) ...[
             const SizedBox(height: 4),
             Text(
@@ -676,6 +673,7 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           Text(l10n.aiGenDurationSection, style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
           SegmentedButton<int>(
+            showSelectedIcon: false,
             segments: _durationOptions.map((s) {
               return ButtonSegment<int>(
                 value: s,

@@ -6,6 +6,7 @@ import 'package:app/infrastructure/transcription_locale_option.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/discover/discover_filters.dart';
 import 'package:app/presentation/shared/audio_level_selector.dart';
+import 'package:app/presentation/shared/language_picker_totals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -31,6 +32,46 @@ Widget page(String language, {Locale locale = const Locale('en')}) {
 }
 
 void main() {
+  testWidgets(
+    'language totals deduplicate accents and distinguish Cantonese from Mandarin',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(
+            body: LanguagePickerTotals(
+              identifiers: [
+                'en-NZ',
+                'en-US',
+                'en_NZ',
+                'zh-CN',
+                'zh-TW',
+                'zh-HK',
+                'yue-CN',
+                '',
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('3 languages · 6 accents'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('Discover badge omits level icon but selection rows include it', (
+    tester,
+  ) async {
+    unawaited(SettingsNotifier.instance.setAudioLevel(AudioLevel.beginner));
+    await tester.pumpWidget(page('en-NZ'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AudioLevelIcon), findsNothing);
+    await tester.tap(find.byType(AudioLevelSelector));
+    await tester.pumpAndSettle();
+    expect(find.byType(AudioLevelIcon), findsNWidgets(3));
+    expect(find.widgetWithText(ListTile, 'Beginner'), findsOneWidget);
+  });
   test('Accent filter uses exact learning locale until All is selected', () {
     for (final entry in {
       'en-NZ': 'en',
@@ -63,8 +104,11 @@ void main() {
       expect(option.displayName, 'Mandarin (Taiwan)');
       expect(discoverAccentLabel(code, false), code);
     }
-    expect(localeDisplayName('zh-CN', 'Chinese'), 'Chinese');
-    expect(localeDisplayName('zh-HK', 'Cantonese'), 'Cantonese');
+    expect(localeDisplayName('zh-CN', 'Chinese'), 'Mandarin (Mainland China)');
+    expect(
+      localeDisplayName('zh-HK', 'Chinese (Hong Kong)'),
+      'Cantonese (Hong Kong)',
+    );
   });
 
   for (final entry in {'en-NZ': 'en', 'fr-CA': 'fr'}.entries) {
@@ -83,13 +127,22 @@ void main() {
       expect(find.text(entry.value), findsNothing);
       await tester.tap(find.byKey(const Key('discover-accent-selector')));
       await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(DiscoverFilters)),
+      )!;
+      final exactLabel = discoverAccentOptionLabel(entry.key, false, l10n);
+      final allLabel = discoverAccentOptionLabel(entry.key, true, l10n);
+      expect(
+        exactLabel,
+        entry.key == 'en-NZ' ? 'English · New Zealand' : 'French · Canada',
+      );
       expect(
         tester
-            .widget<ListTile>(find.widgetWithText(ListTile, entry.key))
+            .widget<ListTile>(find.widgetWithText(ListTile, exactLabel))
             .selected,
         isTrue,
       );
-      await tester.tap(find.widgetWithText(ListTile, entry.value));
+      await tester.tap(find.widgetWithText(ListTile, allLabel));
       await tester.pumpAndSettle();
       expect(find.text(entry.value), findsOneWidget);
       await tester.tap(find.byKey(const Key('discover-accent-selector')));
@@ -99,7 +152,7 @@ void main() {
       expect(find.text(entry.value), findsOneWidget);
       await tester.tap(find.byKey(const Key('discover-accent-selector')));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ListTile, entry.key));
+      await tester.tap(find.widgetWithText(ListTile, exactLabel));
       await tester.pumpAndSettle();
       expect(find.text(entry.key), findsOneWidget);
       expect(tester.takeException(), isNull);

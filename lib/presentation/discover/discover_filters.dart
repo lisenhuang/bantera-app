@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../infrastructure/transcription_locale_option.dart';
+import '../../infrastructure/learning_language_catalog.dart';
+import '../../l10n/app_localizations.dart';
+import '../shared/learning_language_label.dart';
 import '../shared/audio_level_selector.dart';
 import '../shared/locale_flag.dart';
 
@@ -18,6 +21,31 @@ String discoverAccentLanguageCode(String learningLanguage, bool allAccents) =>
 
 String discoverAccentLabel(String learningLanguage, bool allAccents) =>
     discoverAccentLanguageCode(learningLanguage, allAccents);
+
+String discoverAccentOptionLabel(
+  String learningLanguage,
+  bool allAccents,
+  AppLocalizations l10n,
+) {
+  final language = learningLanguageLabel(learningLanguage).name;
+  if (allAccents) return '$language · ${l10n.discoverAllAccents}';
+  final normalized = normalizeLocaleIdentifierForLookup(learningLanguage);
+  final locale =
+      [...kFallbackLearningLanguages, ...kFallbackTranslationLanguages]
+          .where(
+            (option) =>
+                normalizeLocaleIdentifierForLookup(option.identifier) ==
+                normalized,
+          )
+          .firstOrNull;
+  final region = locale == null
+      ? (normalized == 'pt-br' ? 'Brazil' : null)
+      : RegExp(r'\((.+)\)$').firstMatch(locale.displayName)?.group(1);
+  return [
+    language,
+    if (region != null) region,
+  ].where((part) => part.isNotEmpty).join(' · ');
+}
 
 /// Accent and level share one row; only accents with alternatives are pickers.
 class DiscoverFilters extends StatelessWidget {
@@ -92,7 +120,9 @@ class DiscoverFilters extends StatelessWidget {
               ),
       ),
       const SizedBox(width: 8),
-      const Expanded(child: AudioLevelSelector(allowAll: true)),
+      const Expanded(
+        child: AudioLevelSelector(allowAll: true, showLeadingIcon: false),
+      ),
     ],
   );
 
@@ -112,7 +142,13 @@ class DiscoverFilters extends StatelessWidget {
                   flagEmojiForLocale(learningLanguage),
                   style: const TextStyle(fontSize: 22),
                 ),
-                title: Text(discoverAccentLabel(learningLanguage, false)),
+                title: Text(
+                  discoverAccentOptionLabel(
+                    learningLanguage,
+                    false,
+                    AppLocalizations.of(context)!,
+                  ),
+                ),
                 selected: !allAccents,
                 trailing: !allAccents ? const Icon(Icons.check) : null,
                 onTap: () => Navigator.pop(context, false),
@@ -120,7 +156,13 @@ class DiscoverFilters extends StatelessWidget {
               if (canSelectAll)
                 ListTile(
                   leading: const Text('🌐', style: TextStyle(fontSize: 22)),
-                  title: Text(discoverAccentLabel(learningLanguage, true)),
+                  title: Text(
+                    discoverAccentOptionLabel(
+                      learningLanguage,
+                      true,
+                      AppLocalizations.of(context)!,
+                    ),
+                  ),
                   selected: allAccents,
                   trailing: allAccents ? const Icon(Icons.check) : null,
                   onTap: () => Navigator.pop(context, true),

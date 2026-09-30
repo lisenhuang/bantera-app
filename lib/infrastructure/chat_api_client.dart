@@ -10,7 +10,11 @@ import 'auth_api_client.dart';
 import 'network_reachability.dart';
 
 class ChatApiClient {
-  ChatApiClient._();
+  ChatApiClient._() : _baseUrlOverride = null;
+
+  @visibleForTesting
+  ChatApiClient.forTesting({required Uri baseUrl}) : _baseUrlOverride = baseUrl;
+  final Uri? _baseUrlOverride;
 
   static final ChatApiClient instance = ChatApiClient._();
 
@@ -30,14 +34,18 @@ class ChatApiClient {
     required String threadId,
     int limit = 100,
     int offset = 0,
+    bool includeImages = true,
   }) async {
     try {
-      final uri = _resolve('/api/chat/threads/$threadId/messages').replace(
-        queryParameters: <String, String>{
-          'limit': '$limit',
-          'offset': '$offset',
-        },
-      );
+      final uri =
+          _resolve(
+            '${includeImages ? '/api/v2' : '/api'}/chat/threads/$threadId/messages',
+          ).replace(
+            queryParameters: <String, String>{
+              'limit': '$limit',
+              'offset': '$offset',
+            },
+          );
       final request = await _httpClient.getUrl(uri);
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set(
@@ -46,6 +54,15 @@ class ChatApiClient {
       );
       final response = await request.close();
       final responseText = await response.transform(utf8.decoder).join();
+      if (response.statusCode == 404 && includeImages) {
+        return fetchMessages(
+          accessToken: accessToken,
+          threadId: threadId,
+          limit: limit,
+          offset: offset,
+          includeImages: false,
+        );
+      }
       final decoded = jsonDecode(responseText);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         if (decoded is! List) {
@@ -121,13 +138,49 @@ class ChatApiClient {
     );
   }
 
+  Future<ChatMessageItem> sendNativeGroupImage({
+    required String accessToken,
+    required File imageFile,
+    required String nativeLanguage,
+  }) => sendGroupImage(
+    accessToken: accessToken,
+    imageFile: imageFile,
+    language: nativeLanguage,
+    groupKind: 'native',
+  );
+
+  Future<ChatMessageItem> sendGroupImage({
+    required String accessToken,
+    required File imageFile,
+    required String language,
+    required String groupKind,
+  }) {
+    if (groupKind != 'learning' && groupKind != 'native') {
+      throw ArgumentError.value(groupKind, 'groupKind');
+    }
+    return _sendAudioMessage(
+      accessToken: accessToken,
+      path: '/api/v2/chat/threads/group/$groupKind/messages/image',
+      audioFile: imageFile,
+      durationMs: 0,
+      image: true,
+      nativeLanguage: language,
+      imageGroupKind: groupKind,
+    );
+  }
+
   Future<DownloadedChatAudio> downloadMessageAudio({
     required String accessToken,
     required String messageId,
+    bool image = false,
   }) async {
     try {
       final request = await _httpClient.getUrl(
-        _resolve('/api/chat/messages/$messageId/audio'),
+        _resolve(
+          image
+              ? '/api/v2/chat/messages/$messageId/image'
+              : '/api/chat/messages/$messageId/audio',
+        ),
       );
       request.headers.set(
         HttpHeaders.authorizationHeader,
@@ -355,6 +408,9 @@ class ChatApiClient {
     required String path,
     required File audioFile,
     required int durationMs,
+    bool image = false,
+    String? nativeLanguage,
+    String imageGroupKind = 'native',
   }) async {
     try {
       final filename = audioFile.uri.pathSegments.isNotEmpty
@@ -380,13 +436,22 @@ class ChatApiClient {
         request.write('\r\n');
       }
 
-      writeField('durationMs', '$durationMs');
+      if (image) {
+        writeField(
+          imageGroupKind == 'learning'
+              ? 'expectedLearningLanguage'
+              : 'expectedNativeLanguage',
+          nativeLanguage!,
+        );
+      } else {
+        writeField('durationMs', '$durationMs');
+      }
       request.write('--$boundary\r\n');
       request.write(
         'Content-Disposition: form-data; name="file"; filename="$filename"\r\n',
       );
       request.write(
-        'Content-Type: ${_audioContentTypeForPath(filename)}\r\n\r\n',
+        'Content-Type: ${image ? 'image/jpeg' : _audioContentTypeForPath(filename)}\r\n\r\n',
       );
       await request.addStream(audioFile.openRead());
       request.write('\r\n--$boundary--\r\n');
@@ -595,7 +660,8 @@ class ChatApiClient {
   }
 
   Uri _resolve(String path) {
-    final baseUrl = ApiConfigNotifier.instance.baseUrl;
+    final baseUrl =
+        _baseUrlOverride?.toString() ?? ApiConfigNotifier.instance.baseUrl;
     final baseUri = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/');
     final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     return baseUri.resolve(normalizedPath);

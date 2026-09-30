@@ -5,14 +5,18 @@ import 'package:flutter/material.dart';
 import '../../infrastructure/saved_cue_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
-import '../../core/theme.dart';
+import '../../core/word_activity_notifier.dart';
+import '../../core/app_resume_notifier.dart';
 import '../../core/user_profile_notifier.dart';
-import '../shared/locale_flag.dart';
+import '../shared/learning_language_label.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
 import 'saved_cues_screen.dart';
 import 'saved_screen.dart';
 import 'settings_screen.dart';
+import 'word_activity_section.dart';
+import 'daily_word_goal_section.dart';
+import 'word_activity_share_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,8 +29,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    WordActivityNotifier.instance.retain();
     unawaited(ProfileStatsNotifier.instance.refresh());
     unawaited(SavedCueRepository.instance.load());
+    unawaited(WordActivityNotifier.instance.sync());
+  }
+
+  @override
+  void dispose() {
+    WordActivityNotifier.instance.release();
+    super.dispose();
   }
 
   @override
@@ -35,29 +47,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       listenable: Listenable.merge([
         UserProfileNotifier.instance,
         ProfileStatsNotifier.instance,
+        WordActivityNotifier.instance,
+        AppResumeNotifier.instance,
         SavedCueRepository.instance,
       ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
         final stats = ProfileStatsNotifier.instance;
+        final language = learningLanguageLabel(profile.learningLanguage);
         final l10n = AppLocalizations.of(context)!;
+        final activity = WordActivityNotifier.instance.summaryFor(
+          profile.learningLanguage,
+        );
 
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.navProfile),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
-                    ),
-                  );
-                },
-              ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () {
@@ -75,30 +82,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                ProfileAvatar(
-                  radius: 48,
-                  imageUrl: profile.avatarUrl,
-                  imagePath: profile.avatarImagePath,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  profile.displayName,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displayLarge?.copyWith(fontSize: 24),
-                ),
-                const SizedBox(height: 12),
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditProfileScreen(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Semantics(
+                    button: true,
+                    label: l10n.editProfile,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditProfileScreen(),
+                        ),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit_outlined),
-                  label: Text(l10n.editProfile),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            ProfileAvatar(
+                              radius: 32,
+                              imageUrl: profile.avatarUrl,
+                              imagePath: profile.avatarImagePath,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    profile.displayName,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge,
+                                  ),
+                                  if (language.name.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: l10n.wordActivityLearningLanguage(
+                                          language.name,
+                                        ),
+                                        children: [
+                                          const TextSpan(text: ' '),
+                                          TextSpan(
+                                            text: language.flag,
+                                            style: const TextStyle(
+                                              fontFamilyFallback: [
+                                                'Apple Color Emoji',
+                                                'Noto Color Emoji',
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                            wordSpacing: 0,
+                                          ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.chevron_right,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -107,9 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     GestureDetector(
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const SavedScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const SavedScreen()),
                       ),
                       child: _buildStatColumn(
                         context,
@@ -134,6 +198,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 32),
+                DailyWordGoalSection(
+                  goal: WordActivityNotifier.instance.dailyGoal,
+                  today: activity.today,
+                  onEdit: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const DailyWordGoalScreen(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                WordActivitySection(
+                  today: activity.today,
+                  week: activity.week,
+                  total: activity.total,
+                  onShare: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WordActivityShareScreen(
+                        name: profile.displayName,
+                        learningLanguage: profile.learningLanguage,
+                        avatarUrl: profile.avatarUrl,
+                        avatarPath: profile.avatarImagePath,
+                        today: activity.today,
+                        week: activity.week,
+                        total: activity.total,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -169,33 +264,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _LanguageChip extends StatelessWidget {
-  const _LanguageChip({required this.identifier, required this.bold});
-
-  final String? identifier;
-  final bool bold;
-
-  @override
-  Widget build(BuildContext context) {
-    if (identifier == null || identifier!.trim().isEmpty) {
-      return Text(
-        AppLocalizations.of(context)!.profileNotSet,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-      );
-    }
-
-    final flag = flagEmojiForLocale(identifier!);
-    return Text(
-      '$flag  $identifier',
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-      ),
     );
   }
 }

@@ -1115,7 +1115,9 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không tìm thấy ngôn ngữ nào.';
 
   @override
-  String get languagePickerMoreComingSoon => 'Sắp có thêm ngôn ngữ';
+  String languagePickerTotals(int languages, int accents) {
+    return '$languages ngôn ngữ · $accents giọng';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => 'Đã xóa tiếng mẹ đẻ.';
@@ -1519,4 +1521,177 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get audioLevelRequired => 'Hãy chọn trình độ trước khi tạo âm thanh.';
+
+  @override
+  String get wordActivityTitle => 'Thành tích của tôi';
+
+  @override
+  String get wordActivityToday => 'Hôm nay';
+
+  @override
+  String get wordActivityThisWeek => 'Tuần này';
+
+  @override
+  String get wordActivityTotal => 'Tổng cộng';
+
+  @override
+  String get wordActivityListened => 'Từ đã nghe';
+
+  @override
+  String get wordActivitySpoken => 'Từ đã nói';
+
+  @override
+  String get wordActivityHint =>
+      'Ước tính từ bản chép lời. Nghe lại được tính thêm.';
+
+  @override
+  String get dailyGoalTitle => 'Mục tiêu hằng ngày';
+
+  @override
+  String get dailyGoalSet => 'Đặt mục tiêu hằng ngày';
+
+  @override
+  String get dailyGoalEdit => 'Sửa mục tiêu';
+
+  @override
+  String get dailyGoalChoose => 'Chọn mục tiêu hằng ngày';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '$minutes phút mỗi ngày';
+  }
+
+  @override
+  String get dailyGoalCustom => 'Tùy chỉnh';
+
+  @override
+  String get dailyGoalListeningTarget => 'Số từ nghe mỗi ngày';
+
+  @override
+  String get dailyGoalSpeakingTarget => 'Số từ nói mỗi ngày';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return 'Khoảng $minutes phút';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return 'Tổng khoảng $minutes phút';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      'Ước tính: 120 từ nghe và 60 từ nói mỗi phút. Nghỉ và tốc độ của bạn có thể cần thêm thời gian. Mục tiêu được lưu trên thiết bị này cho tài khoản của bạn.';
+
+  @override
+  String get dailyGoalValidation =>
+      'Nhập số nguyên từ 0 đến 100.000. Đặt 0 nếu không yêu cầu mục tiêu.';
+
+  @override
+  String get dailyGoalRemove => 'Xóa mục tiêu';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      'Xóa mục tiêu hằng ngày và lời nhắc? Số từ của bạn vẫn sẽ được lưu.';
+
+  @override
+  String get dailyGoalReached => 'Đã đạt mục tiêu hôm nay';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target từ';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => 'Không thể lưu mục tiêu. Vui lòng thử lại.';
+
+  @override
+  String get wordActivityShare => 'Chia sẻ';
+
+  @override
+  String get wordActivityPreview => 'Xem trước';
+
+  @override
+  String get wordActivityShareHeading => 'Luyện nói của tôi\nhôm nay';
+
+  @override
+  String get wordActivitySavePhotos => 'Lưu vào Ảnh';
+
+  @override
+  String get wordActivitySaved => 'Đã lưu vào Ảnh';
+
+  @override
+  String get wordActivitySaveFailed => 'Không thể lưu ảnh. Vui lòng thử lại.';
+
+  @override
+  String get wordActivityShareFailed =>
+      'Không thể chia sẻ ảnh. Vui lòng thử lại.';
+
+  @override
+  String get wordActivityPhotoPermission =>
+      'Cho phép Bantera thêm ảnh trong Cài đặt rồi thử lại.';
+
+  @override
+  String get wordActivityScanToJoin => 'Quét để tham gia';
+
+  @override
+  String get dailyGoalNoRequirement => 'Không yêu cầu mục tiêu';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return 'Đang học $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel =>
+      'Hoạt động trước đây (không rõ ngôn ngữ)';
+
+  @override
+  String get saveLabel => 'Lưu';
+
+  @override
+  String get wordActivityShareToNativeGroup => 'Chia sẻ vào nhóm tiếng mẹ đẻ';
+
+  @override
+  String get wordActivitySentToGroup => 'Đã chia sẻ vào nhóm';
+
+  @override
+  String get dailyGoalNotificationLabel => 'Nhắc nhở mục tiêu hằng ngày';
+
+  @override
+  String get dailyGoalNotificationHint =>
+      'Nhắc tôi nếu chưa hoàn thành mục tiêu hằng ngày. Sử dụng múi giờ của tôi.';
+
+  @override
+  String get dailyGoalReminderTitle => 'Luyện tập thêm một chút hôm nay';
+
+  @override
+  String get dailyGoalReminderBody =>
+      'Bạn chưa hoàn thành mục tiêu hôm nay. Hãy tiếp tục luyện nghe và nói.';
+
+  @override
+  String get dailyGoalNotificationTime => 'Giờ nhắc nhở';
+
+  @override
+  String get dailyGoalRepeatLabel => 'Lặp lại';
+
+  @override
+  String get dailyGoalRepeatNever => 'Không bao giờ';
+
+  @override
+  String get dailyGoalRepeatEveryDay => 'Mỗi ngày';
+
+  @override
+  String get dailyGoalRepeatWeekdays => 'Ngày trong tuần';
+
+  @override
+  String get dailyGoalRepeatWeekends => 'Cuối tuần';
+
+  @override
+  String get dailyGoalRepeatOnceHint =>
+      'Nhắc một lần vào thời điểm đã chọn tiếp theo, không lặp lại.';
+
+  @override
+  String get discoverAllAccents => 'Tất cả giọng';
 }

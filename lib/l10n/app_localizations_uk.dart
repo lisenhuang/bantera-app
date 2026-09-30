@@ -1114,7 +1114,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => 'Мов не знайдено.';
 
   @override
-  String get languagePickerMoreComingSoon => 'Незабаром більше мов';
+  String languagePickerTotals(int languages, int accents) {
+    return 'Мов: $languages · Акцентів: $accents';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => 'Рідну мову скинуто.';
@@ -1518,4 +1520,178 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get audioLevelRequired => 'Виберіть рівень перед створенням аудіо.';
+
+  @override
+  String get wordActivityTitle => 'Мої досягнення';
+
+  @override
+  String get wordActivityToday => 'Сьогодні';
+
+  @override
+  String get wordActivityThisWeek => 'Цього тижня';
+
+  @override
+  String get wordActivityTotal => 'Усього';
+
+  @override
+  String get wordActivityListened => 'Прослухано слів';
+
+  @override
+  String get wordActivitySpoken => 'Промовлено слів';
+
+  @override
+  String get wordActivityHint =>
+      'Оцінка за транскриптами. Повторне прослуховування враховується знову.';
+
+  @override
+  String get dailyGoalTitle => 'Щоденна ціль';
+
+  @override
+  String get dailyGoalSet => 'Задати щоденну ціль';
+
+  @override
+  String get dailyGoalEdit => 'Змінити ціль';
+
+  @override
+  String get dailyGoalChoose => 'Оберіть щоденну ціль';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '$minutes хв на день';
+  }
+
+  @override
+  String get dailyGoalCustom => 'Власна ціль';
+
+  @override
+  String get dailyGoalListeningTarget => 'Слова для слухання на день';
+
+  @override
+  String get dailyGoalSpeakingTarget => 'Слова для говоріння на день';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return 'Близько $minutes хв';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return 'Загалом близько $minutes хв';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      'Оцінка: 120 прослуханих і 60 вимовлених слів за хвилину. Паузи й ваш темп можуть збільшити час. Цілі зберігаються на цьому пристрої для вашого облікового запису.';
+
+  @override
+  String get dailyGoalValidation =>
+      'Введіть ціле число від 0 до 100 000. 0 означає відсутність цілі.';
+
+  @override
+  String get dailyGoalRemove => 'Видалити ціль';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      'Видалити щоденну ціль і нагадування? Кількість слів залишиться збереженою.';
+
+  @override
+  String get dailyGoalReached => 'Сьогоднішні цілі досягнуто';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target слів';
+  }
+
+  @override
+  String get dailyGoalSaveFailed =>
+      'Не вдалося зберегти ціль. Спробуйте знову.';
+
+  @override
+  String get wordActivityShare => 'Поділитися';
+
+  @override
+  String get wordActivityPreview => 'Попередній перегляд';
+
+  @override
+  String get wordActivityShareHeading => 'Моє мовлення\nсьогодні';
+
+  @override
+  String get wordActivitySavePhotos => 'Зберегти у Фото';
+
+  @override
+  String get wordActivitySaved => 'Збережено у Фото';
+
+  @override
+  String get wordActivitySaveFailed =>
+      'Не вдалося зберегти зображення. Спробуйте знову.';
+
+  @override
+  String get wordActivityShareFailed =>
+      'Не вдалося поділитися зображенням. Спробуйте знову.';
+
+  @override
+  String get wordActivityPhotoPermission =>
+      'Дозвольте Bantera додавати фото в налаштуваннях і спробуйте знову.';
+
+  @override
+  String get wordActivityScanToJoin => 'Скануйте та долучайтеся';
+
+  @override
+  String get dailyGoalNoRequirement => 'Ціль не потрібна';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return 'Вивчаю $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => 'Попередня активність (мова невідома)';
+
+  @override
+  String get saveLabel => 'Зберегти';
+
+  @override
+  String get wordActivityShareToNativeGroup => 'До групи рідної мови';
+
+  @override
+  String get wordActivitySentToGroup => 'Опубліковано в групі';
+
+  @override
+  String get dailyGoalNotificationLabel => 'Нагадування про денну ціль';
+
+  @override
+  String get dailyGoalNotificationHint =>
+      'Нагадати, якщо денні цілі ще не досягнуто. Використовується мій часовий пояс.';
+
+  @override
+  String get dailyGoalReminderTitle => 'Ще трохи практики сьогодні';
+
+  @override
+  String get dailyGoalReminderBody =>
+      'Ваші денні цілі ще не досягнуто. Продовжуйте слухати й говорити.';
+
+  @override
+  String get dailyGoalNotificationTime => 'Час нагадування';
+
+  @override
+  String get dailyGoalRepeatLabel => 'Повтор';
+
+  @override
+  String get dailyGoalRepeatNever => 'Ніколи';
+
+  @override
+  String get dailyGoalRepeatEveryDay => 'Щодня';
+
+  @override
+  String get dailyGoalRepeatWeekdays => 'У будні';
+
+  @override
+  String get dailyGoalRepeatWeekends => 'У вихідні';
+
+  @override
+  String get dailyGoalRepeatOnceHint =>
+      'Одне нагадування в найближчий вибраний час, без повторення.';
+
+  @override
+  String get discoverAllAccents => 'Усі акценти';
 }

@@ -1110,7 +1110,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => 'Dil bulunamadı.';
 
   @override
-  String get languagePickerMoreComingSoon => 'Daha fazla dil yakında';
+  String languagePickerTotals(int languages, int accents) {
+    return '$languages dil · $accents aksan';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => 'Ana dil temizlendi.';
@@ -1517,4 +1519,175 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get audioLevelRequired => 'Ses oluşturmadan önce bir seviye seçin.';
+
+  @override
+  String get wordActivityTitle => 'Başarılarım';
+
+  @override
+  String get wordActivityToday => 'Bugün';
+
+  @override
+  String get wordActivityThisWeek => 'Bu hafta';
+
+  @override
+  String get wordActivityTotal => 'Toplam';
+
+  @override
+  String get wordActivityListened => 'Dinlenen kelimeler';
+
+  @override
+  String get wordActivitySpoken => 'Söylenen kelimeler';
+
+  @override
+  String get wordActivityHint =>
+      'Transkriptlerden tahmin edilir. Tekrarlar yeniden sayılır.';
+
+  @override
+  String get dailyGoalTitle => 'Günlük hedef';
+
+  @override
+  String get dailyGoalSet => 'Günlük hedef belirle';
+
+  @override
+  String get dailyGoalEdit => 'Hedefi düzenle';
+
+  @override
+  String get dailyGoalChoose => 'Günlük hedefini seç';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return 'Günde $minutes dk';
+  }
+
+  @override
+  String get dailyGoalCustom => 'Özel';
+
+  @override
+  String get dailyGoalListeningTarget => 'Günlük dinlenen kelime';
+
+  @override
+  String get dailyGoalSpeakingTarget => 'Günlük konuşulan kelime';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return 'Yaklaşık $minutes dk';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return 'Toplam yaklaşık $minutes dk';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      'Dakikada 120 dinlenen ve 60 konuşulan kelimeyle tahmin edilir. Molalar ve hızın süreyi uzatabilir. Hedefler hesabın için bu cihazda kaydedilir.';
+
+  @override
+  String get dailyGoalValidation =>
+      '0 ile 100.000 arasında tam sayı gir. Hedef istemiyorsan 0 gir.';
+
+  @override
+  String get dailyGoalRemove => 'Hedefi kaldır';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      'Günlük hedefiniz ve hatırlatıcıları kaldırılsın mı? Kelime sayılarınız kayıtlı kalacak.';
+
+  @override
+  String get dailyGoalReached => 'Bugünün hedeflerine ulaşıldı';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target kelime';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => 'Hedef kaydedilemedi. Tekrar dene.';
+
+  @override
+  String get wordActivityShare => 'Paylaş';
+
+  @override
+  String get wordActivityPreview => 'Önizleme';
+
+  @override
+  String get wordActivityShareHeading => 'Bugünkü\nkonuşmam';
+
+  @override
+  String get wordActivitySavePhotos => 'Fotoğraflara kaydet';
+
+  @override
+  String get wordActivitySaved => 'Fotoğraflara kaydedildi';
+
+  @override
+  String get wordActivitySaveFailed => 'Görsel kaydedilemedi. Tekrar dene.';
+
+  @override
+  String get wordActivityShareFailed => 'Görsel paylaşılamadı. Tekrar dene.';
+
+  @override
+  String get wordActivityPhotoPermission =>
+      'Ayarlarda Bantera’nın fotoğraf eklemesine izin verip tekrar dene.';
+
+  @override
+  String get wordActivityScanToJoin => 'Katılmak için tara';
+
+  @override
+  String get dailyGoalNoRequirement => 'Hedef gerekmiyor';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return 'Öğrendiğim dil: $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => 'Önceki etkinlik (dil bilinmiyor)';
+
+  @override
+  String get saveLabel => 'Kaydet';
+
+  @override
+  String get wordActivityShareToNativeGroup => 'Ana dil grubunda paylaş';
+
+  @override
+  String get wordActivitySentToGroup => 'Grupta paylaşıldı';
+
+  @override
+  String get dailyGoalNotificationLabel => 'Günlük hedef hatırlatıcısı';
+
+  @override
+  String get dailyGoalNotificationHint =>
+      'Günlük hedeflerim tamamlanmadıysa hatırlat. Saat dilimimi kullanır.';
+
+  @override
+  String get dailyGoalReminderTitle => 'Bugün biraz daha pratik yap';
+
+  @override
+  String get dailyGoalReminderBody =>
+      'Günlük hedeflerin henüz tamamlanmadı. Dinlemeye ve konuşmaya devam et.';
+
+  @override
+  String get dailyGoalNotificationTime => 'Hatırlatma saati';
+
+  @override
+  String get dailyGoalRepeatLabel => 'Tekrarla';
+
+  @override
+  String get dailyGoalRepeatNever => 'Asla';
+
+  @override
+  String get dailyGoalRepeatEveryDay => 'Her gün';
+
+  @override
+  String get dailyGoalRepeatWeekdays => 'Hafta içi';
+
+  @override
+  String get dailyGoalRepeatWeekends => 'Hafta sonu';
+
+  @override
+  String get dailyGoalRepeatOnceHint =>
+      'Bir sonraki seçilen saatte tek hatırlatma, tekrar etmez.';
+
+  @override
+  String get discoverAllAccents => 'Tüm aksanlar';
 }

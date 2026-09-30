@@ -247,7 +247,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               children: [
                                 _buildSetLanguagePrompt(context),
                                 const SizedBox(height: 8),
-                                const AudioLevelSelector(allowAll: true),
+                                const AudioLevelSelector(
+                                  allowAll: true,
+                                  showLeadingIcon: false,
+                                ),
                               ],
                             )
                           : DiscoverFilters(

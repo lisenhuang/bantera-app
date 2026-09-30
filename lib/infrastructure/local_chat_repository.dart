@@ -716,6 +716,8 @@ class LocalChatRepository {
   static String _audioExtensionForContentType(String contentType) {
     final normalized = contentType.trim().toLowerCase();
     return switch (normalized) {
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
       'audio/aac' => 'aac',
       'audio/mpeg' => 'mp3',
       'audio/wav' || 'audio/x-wav' => 'wav',

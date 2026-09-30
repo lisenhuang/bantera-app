@@ -39,7 +39,7 @@ List<AudioLanguageGroup> groupAudioLanguages(
     final code = entry.key;
     final name = switch (code) {
       'yue' => 'Cantonese',
-      'zh-cn' => 'Chinese (Mainland China)',
+      'zh-cn' => 'Mandarin (Mainland China)',
       'zh-tw' => 'Mandarin (Taiwan)',
       _ => entry.value.first.displayName.split(' (').first,
     };

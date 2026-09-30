@@ -22,12 +22,16 @@ class TranscriptionLocaleOption {
   final String? flagEmoji;
 }
 
-/// Keep the Taiwan Mandarin accent name consistent across API/native pickers.
+/// Keep spoken-language names consistent across API and native pickers.
 String localeDisplayName(String identifier, String displayName) {
   final code = normalizeLocaleIdentifierForLookup(identifier);
-  return code == 'zh-tw' || code == 'zh-hant-tw'
-      ? 'Mandarin (Taiwan)'
-      : displayName;
+  return switch (code) {
+    'zh' || 'zh-hans' => 'Mandarin',
+    'zh-cn' || 'zh-hans-cn' => 'Mandarin (Mainland China)',
+    'zh-hk' || 'zh-hant-hk' => 'Cantonese (Hong Kong)',
+    'zh-tw' || 'zh-hant-tw' => 'Mandarin (Taiwan)',
+    _ => displayName,
+  };
 }
 
 String normalizeLocaleIdentifierForLookup(String identifier) {

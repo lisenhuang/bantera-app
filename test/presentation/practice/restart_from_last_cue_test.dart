@@ -181,6 +181,20 @@ void main() {
       ),
       0,
     );
+    final progress = find.byKey(const ValueKey('practice-cue-progress'));
+    final track = tester.getRect(progress);
+    final time = tester.getRect(
+      find.byKey(const ValueKey('practice-cue-time')),
+    );
+    expect(track.width, greaterThan(92));
+    expect(time.center.dy, closeTo(track.center.dy, 1));
+    await tester.tapAt(Offset(track.left + track.width * .4, track.center.dy));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('1/2'), findsOneWidget);
+    await tester.tapAt(Offset(track.right - 2, track.center.dy));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('2/2'), findsOneWidget);
+    expect(seeks.last, 2200);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

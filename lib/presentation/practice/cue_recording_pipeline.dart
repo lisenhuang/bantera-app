@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import '../../domain/models/models.dart';
+import '../../core/word_activity_notifier.dart';
+import '../../domain/activity/listening_word_tracker.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/video_processing_service.dart';
 import 'attempt_comparison.dart';
@@ -28,6 +30,8 @@ Future<ProcessedCueAttempt> processRecordingFile({
   required String cueId,
   required String sourceLocaleIdentifier,
   required int recordingDurationMs,
+  String? activityOwnerId,
+  DateTime? activityRecordedAt,
 }) async {
   final transcription = await VideoProcessingService.instance
       .transcribeRecordedAudio(
@@ -43,6 +47,15 @@ Future<ProcessedCueAttempt> processRecordingFile({
       code: 'empty_transcript',
       message:
           'No transcript could be generated for this attempt. Try again closer to the microphone.',
+    );
+  }
+
+  if (activityOwnerId != null) {
+    await WordActivityNotifier.instance.record(
+      spoken: activityWordCount(recognizedText),
+      language: sourceLocaleIdentifier,
+      ownerId: activityOwnerId,
+      at: activityRecordedAt,
     );
   }
 

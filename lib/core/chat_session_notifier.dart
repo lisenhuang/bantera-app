@@ -291,6 +291,31 @@ class ChatSessionNotifier extends ChangeNotifier {
     return message;
   }
 
+  Future<ChatMessageItem> sendGroupImage({
+    required File imageFile,
+    required String language,
+    required String groupKind,
+    required String ownerId,
+  }) async {
+    final message = await _withRetry((token) {
+      if (AuthSessionNotifier.instance.session?.userId != ownerId) {
+        throw const SessionExpiredException();
+      }
+      return _apiClient.sendGroupImage(
+        accessToken: token,
+        imageFile: imageFile,
+        language: language,
+        groupKind: groupKind,
+      );
+    });
+    if (AuthSessionNotifier.instance.session?.userId != ownerId) {
+      throw const SessionExpiredException();
+    }
+    await refreshBootstrap(showLoadingState: false);
+    await loadMessages(message.threadId);
+    return message;
+  }
+
   void _queueDmSync(Iterable<String> threadIds, String owner) {
     for (final threadId in threadIds) {
       _pendingDmSync[threadId] = owner;
@@ -400,6 +425,7 @@ class ChatSessionNotifier extends ChangeNotifier {
         (token) => _apiClient.downloadMessageAudio(
           accessToken: token,
           messageId: message.messageId,
+          image: message.isImage,
         ),
       );
       if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
@@ -461,7 +487,32 @@ class ChatSessionNotifier extends ChangeNotifier {
     return file;
   }
 
+  final Map<String, Future<ChatMessageItem?>> _transcriptions = {};
+
+  Future<ChatMessageItem?> ensureMessageTranscript(
+    ChatMessageItem message,
+  ) async {
+    final cached = await _localRepository.getMessage(message.messageId);
+    if (cached?.localTranscriptStatus == 'ready') return cached;
+    return transcribeMessage(cached ?? message);
+  }
+
   Future<ChatMessageItem?> transcribeMessage(ChatMessageItem message) async {
+    final key =
+        '${AuthSessionNotifier.instance.session?.cacheKey}:${message.messageId}';
+    final existing = _transcriptions[key];
+    if (existing != null) return existing;
+    final future = _transcribeMessage(message);
+    _transcriptions[key] = future;
+    try {
+      return await future;
+    } finally {
+      _transcriptions.remove(key);
+    }
+  }
+
+  Future<ChatMessageItem?> _transcribeMessage(ChatMessageItem message) async {
+    final owner = AuthSessionNotifier.instance.session?.cacheKey;
     final audioFile = await ensureLocalAudio(message);
     // Clear any stale translation so it doesn't mismatch the new transcript.
     if (message.localTranscriptStatus == 'ready') {
@@ -492,6 +543,9 @@ class ChatSessionNotifier extends ChangeNotifier {
             // practice flow, we are not surfacing pronunciation mistakes here.
             allowAutoCorrection: true,
           );
+      if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        throw const SessionExpiredException();
+      }
       await _localRepository.updateMessageTranscript(
         messageId: message.messageId,
         transcriptText: result.transcriptText,
@@ -500,6 +554,9 @@ class ChatSessionNotifier extends ChangeNotifier {
         status: 'ready',
       );
     } on VideoProcessingException catch (_) {
+      if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        throw const SessionExpiredException();
+      }
       await _localRepository.updateMessageTranscript(
         messageId: message.messageId,
         transcriptText: message.localTranscriptText ?? '',

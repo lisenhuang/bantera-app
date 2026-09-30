@@ -14,6 +14,10 @@ String groupChatEmoji(ChatThreadSummary thread) {
   // These group titles use learning-catalog names absent from the smaller
   // embedded fallback list. Keep their regions distinct.
   const chineseGroupLocales = <String, String>{
+    'chinese': 'zh-CN',
+    'chinese (hong kong)': 'zh-HK',
+    'chinese (taiwan)': 'zh-TW',
+    'mandarin (mainland china)': 'zh-CN',
     'chinese, mandarin (china mainland)': 'zh-CN',
     'chinese, mandarin (taiwan)': 'zh-TW',
     'cantonese (hong kong)': 'zh-HK',

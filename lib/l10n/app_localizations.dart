@@ -2113,11 +2113,11 @@ abstract class AppLocalizations {
   /// **'No languages found.'**
   String get languagePickerNoMatchingLanguages;
 
-  /// No description provided for @languagePickerMoreComingSoon.
+  /// No description provided for @languagePickerTotals.
   ///
   /// In en, this message translates to:
-  /// **'More languages coming soon'**
-  String get languagePickerMoreComingSoon;
+  /// **'{languages, plural, =1{1 language} other{{languages} languages}} · {accents, plural, =1{1 accent} other{{accents} accents}}'**
+  String languagePickerTotals(int languages, int accents);
 
   /// No description provided for @editProfileNativeLanguageCleared.
   ///
@@ -2844,6 +2844,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select a level before generating audio.'**
   String get audioLevelRequired;
+
+  /// No description provided for @wordActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Achievements'**
+  String get wordActivityTitle;
+
+  /// No description provided for @wordActivityToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get wordActivityToday;
+
+  /// No description provided for @wordActivityThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get wordActivityThisWeek;
+
+  /// No description provided for @wordActivityTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get wordActivityTotal;
+
+  /// No description provided for @wordActivityListened.
+  ///
+  /// In en, this message translates to:
+  /// **'Words listened'**
+  String get wordActivityListened;
+
+  /// No description provided for @wordActivitySpoken.
+  ///
+  /// In en, this message translates to:
+  /// **'Words spoken'**
+  String get wordActivitySpoken;
+
+  /// No description provided for @wordActivityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated from transcripts. Replays count again.'**
+  String get wordActivityHint;
+
+  /// No description provided for @dailyGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get dailyGoalTitle;
+
+  /// No description provided for @dailyGoalSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set daily goal'**
+  String get dailyGoalSet;
+
+  /// No description provided for @dailyGoalEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit goal'**
+  String get dailyGoalEdit;
+
+  /// No description provided for @dailyGoalChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your daily goal'**
+  String get dailyGoalChoose;
+
+  /// No description provided for @dailyGoalPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min / day'**
+  String dailyGoalPreset(String minutes);
+
+  /// No description provided for @dailyGoalCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get dailyGoalCustom;
+
+  /// No description provided for @dailyGoalListeningTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening words per day'**
+  String get dailyGoalListeningTarget;
+
+  /// No description provided for @dailyGoalSpeakingTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking words per day'**
+  String get dailyGoalSpeakingTarget;
+
+  /// No description provided for @dailyGoalEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'About {minutes} min'**
+  String dailyGoalEstimate(String minutes);
+
+  /// No description provided for @dailyGoalTimeTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'About {minutes} min in total'**
+  String dailyGoalTimeTotal(String minutes);
+
+  /// No description provided for @dailyGoalTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimates use 120 listening words and 60 speaking words per minute. Pauses and your pace may take longer. Goals are saved on this device for your account.'**
+  String get dailyGoalTimeHint;
+
+  /// No description provided for @dailyGoalValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 0 to 100,000. Set 0 for no requirement.'**
+  String get dailyGoalValidation;
+
+  /// No description provided for @dailyGoalRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove goal'**
+  String get dailyGoalRemove;
+
+  /// No description provided for @dailyGoalRemoveConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove your daily goal and its reminders? Your word counts will stay saved.'**
+  String get dailyGoalRemoveConfirmation;
+
+  /// No description provided for @dailyGoalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s goals reached'**
+  String get dailyGoalReached;
+
+  /// No description provided for @dailyGoalProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/{target} words'**
+  String dailyGoalProgress(String count, String target);
+
+  /// No description provided for @dailyGoalSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your goal. Please try again.'**
+  String get dailyGoalSaveFailed;
+
+  /// No description provided for @wordActivityShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get wordActivityShare;
+
+  /// No description provided for @wordActivityPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get wordActivityPreview;
+
+  /// No description provided for @wordActivityShareHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'My speaking\ntoday'**
+  String get wordActivityShareHeading;
+
+  /// No description provided for @wordActivitySavePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Photos'**
+  String get wordActivitySavePhotos;
+
+  /// No description provided for @wordActivitySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Photos'**
+  String get wordActivitySaved;
+
+  /// No description provided for @wordActivitySaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the image. Please try again.'**
+  String get wordActivitySaveFailed;
+
+  /// No description provided for @wordActivityShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share the image. Please try again.'**
+  String get wordActivityShareFailed;
+
+  /// No description provided for @wordActivityPhotoPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Bantera to add photos in Settings, then try again.'**
+  String get wordActivityPhotoPermission;
+
+  /// No description provided for @wordActivityScanToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to join'**
+  String get wordActivityScanToJoin;
+
+  /// No description provided for @dailyGoalNoRequirement.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal requirement'**
+  String get dailyGoalNoRequirement;
+
+  /// No description provided for @wordActivityLearningLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning {language}'**
+  String wordActivityLearningLanguage(String language);
+
+  /// No description provided for @wordActivityLegacyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier activity (language unknown)'**
+  String get wordActivityLegacyLabel;
+
+  /// No description provided for @saveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveLabel;
+
+  /// No description provided for @wordActivityShareToNativeGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Share to native group'**
+  String get wordActivityShareToNativeGroup;
+
+  /// No description provided for @wordActivitySentToGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared to the group'**
+  String get wordActivitySentToGroup;
+
+  /// No description provided for @dailyGoalNotificationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal reminder'**
+  String get dailyGoalNotificationLabel;
+
+  /// No description provided for @dailyGoalNotificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me when my daily goals are unfinished. Uses my timezone.'**
+  String get dailyGoalNotificationHint;
+
+  /// No description provided for @dailyGoalReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A little more practice today'**
+  String get dailyGoalReminderTitle;
+
+  /// No description provided for @dailyGoalReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily goals are still unfinished. Keep listening and speaking.'**
+  String get dailyGoalReminderBody;
+
+  /// No description provided for @dailyGoalNotificationTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get dailyGoalNotificationTime;
+
+  /// No description provided for @dailyGoalRepeatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get dailyGoalRepeatLabel;
+
+  /// No description provided for @dailyGoalRepeatNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get dailyGoalRepeatNever;
+
+  /// No description provided for @dailyGoalRepeatEveryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get dailyGoalRepeatEveryDay;
+
+  /// No description provided for @dailyGoalRepeatWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get dailyGoalRepeatWeekdays;
+
+  /// No description provided for @dailyGoalRepeatWeekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get dailyGoalRepeatWeekends;
+
+  /// No description provided for @dailyGoalRepeatOnceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One reminder at the next chosen time, without repeating.'**
+  String get dailyGoalRepeatOnceHint;
+
+  /// No description provided for @discoverAllAccents.
+  ///
+  /// In en, this message translates to:
+  /// **'All accents'**
+  String get discoverAllAccents;
 }
 
 class _AppLocalizationsDelegate

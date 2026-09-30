@@ -1047,7 +1047,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => '未找到语言。';
 
   @override
-  String get languagePickerMoreComingSoon => '更多语言支持即将推出';
+  String languagePickerTotals(int languages, int accents) {
+    return '共 $languages 种语言 · $accents 种口音';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => '已清除母语。';
@@ -1428,6 +1430,170 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get audioLevelRequired => '请先选择级别，再生成音频。';
+
+  @override
+  String get wordActivityTitle => '我的成就';
+
+  @override
+  String get wordActivityToday => '今天';
+
+  @override
+  String get wordActivityThisWeek => '本周';
+
+  @override
+  String get wordActivityTotal => '累计';
+
+  @override
+  String get wordActivityListened => '听过的词语';
+
+  @override
+  String get wordActivitySpoken => '说过的词语';
+
+  @override
+  String get wordActivityHint => '根据转写文本估算，重复播放会再次计数。';
+
+  @override
+  String get dailyGoalTitle => '每日目标';
+
+  @override
+  String get dailyGoalSet => '设置每日目标';
+
+  @override
+  String get dailyGoalEdit => '编辑目标';
+
+  @override
+  String get dailyGoalChoose => '选择每日目标';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '每天 $minutes 分钟';
+  }
+
+  @override
+  String get dailyGoalCustom => '自定义';
+
+  @override
+  String get dailyGoalListeningTarget => '每天听多少词';
+
+  @override
+  String get dailyGoalSpeakingTarget => '每天说多少词';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return '约 $minutes 分钟';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return '总共约 $minutes 分钟';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      '按每分钟听 120 词、说 60 词估算。停顿和个人语速可能需要更多时间。目标按账户保存在本设备上。';
+
+  @override
+  String get dailyGoalValidation => '请输入 0 到 100,000 的整数。设为 0 表示不设目标。';
+
+  @override
+  String get dailyGoalRemove => '移除目标';
+
+  @override
+  String get dailyGoalRemoveConfirmation => '要移除每日目标及其提醒吗？你的词语统计会保留。';
+
+  @override
+  String get dailyGoalReached => '已达成今天的目标';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target 词';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => '无法保存目标，请重试。';
+
+  @override
+  String get wordActivityShare => '分享';
+
+  @override
+  String get wordActivityPreview => '预览';
+
+  @override
+  String get wordActivityShareHeading => '今天的\n口语练习';
+
+  @override
+  String get wordActivitySavePhotos => '保存到相册';
+
+  @override
+  String get wordActivitySaved => '已保存到相册';
+
+  @override
+  String get wordActivitySaveFailed => '无法保存图片，请重试。';
+
+  @override
+  String get wordActivityShareFailed => '无法分享图片，请重试。';
+
+  @override
+  String get wordActivityPhotoPermission => '请在设置中允许 Bantera 添加照片，然后重试。';
+
+  @override
+  String get wordActivityScanToJoin => '扫码加入';
+
+  @override
+  String get dailyGoalNoRequirement => '不设目标要求';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return '正在学习 $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => '之前的活动（语言未知）';
+
+  @override
+  String get saveLabel => '保存';
+
+  @override
+  String get wordActivityShareToNativeGroup => '分享到母语群聊';
+
+  @override
+  String get wordActivitySentToGroup => '已分享到群聊';
+
+  @override
+  String get dailyGoalNotificationLabel => '每日目标提醒';
+
+  @override
+  String get dailyGoalNotificationHint => '每日目标尚未完成时提醒我，使用我所在的时区。';
+
+  @override
+  String get dailyGoalReminderTitle => '今天再练习一会儿';
+
+  @override
+  String get dailyGoalReminderBody => '你的每日目标尚未完成，继续练习听力和口语吧。';
+
+  @override
+  String get dailyGoalNotificationTime => '提醒时间';
+
+  @override
+  String get dailyGoalRepeatLabel => '重复';
+
+  @override
+  String get dailyGoalRepeatNever => '永不';
+
+  @override
+  String get dailyGoalRepeatEveryDay => '每天';
+
+  @override
+  String get dailyGoalRepeatWeekdays => '工作日';
+
+  @override
+  String get dailyGoalRepeatWeekends => '周末';
+
+  @override
+  String get dailyGoalRepeatOnceHint => '在下一个设定时间提醒一次，不重复。';
+
+  @override
+  String get discoverAllAccents => '所有口音';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2476,7 +2642,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get languagePickerNoMatchingLanguages => '找不到語言。';
 
   @override
-  String get languagePickerMoreComingSoon => '更多語言即將推出';
+  String languagePickerTotals(int languages, int accents) {
+    return '共 $languages 種語言 · $accents 種口音';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => '已清除母語。';
@@ -2858,4 +3026,168 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get audioLevelRequired => '請先選擇級別，再產生音訊。';
+
+  @override
+  String get wordActivityTitle => '我的成就';
+
+  @override
+  String get wordActivityToday => '今天';
+
+  @override
+  String get wordActivityThisWeek => '本週';
+
+  @override
+  String get wordActivityTotal => '累計';
+
+  @override
+  String get wordActivityListened => '聽過的詞語';
+
+  @override
+  String get wordActivitySpoken => '說過的詞語';
+
+  @override
+  String get wordActivityHint => '根據轉寫文字估算，重複播放會再次計數。';
+
+  @override
+  String get dailyGoalTitle => '每日目標';
+
+  @override
+  String get dailyGoalSet => '設定每日目標';
+
+  @override
+  String get dailyGoalEdit => '編輯目標';
+
+  @override
+  String get dailyGoalChoose => '選擇每日目標';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '每天 $minutes 分鐘';
+  }
+
+  @override
+  String get dailyGoalCustom => '自訂';
+
+  @override
+  String get dailyGoalListeningTarget => '每天聽多少詞';
+
+  @override
+  String get dailyGoalSpeakingTarget => '每天說多少詞';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return '約 $minutes 分鐘';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return '總共約 $minutes 分鐘';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      '以每分鐘聽 120 詞、說 60 詞估算。停頓和個人語速可能需要更多時間。目標按帳戶儲存在本裝置上。';
+
+  @override
+  String get dailyGoalValidation => '請輸入 0 到 100,000 的整數。設為 0 表示不設目標。';
+
+  @override
+  String get dailyGoalRemove => '移除目標';
+
+  @override
+  String get dailyGoalRemoveConfirmation => '要移除每日目標及其提醒嗎？你的詞語統計會保留。';
+
+  @override
+  String get dailyGoalReached => '已達成今天的目標';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target 詞';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => '無法儲存目標，請重試。';
+
+  @override
+  String get wordActivityShare => '分享';
+
+  @override
+  String get wordActivityPreview => '預覽';
+
+  @override
+  String get wordActivityShareHeading => '今天的\n口語練習';
+
+  @override
+  String get wordActivitySavePhotos => '儲存至相簿';
+
+  @override
+  String get wordActivitySaved => '已儲存至相簿';
+
+  @override
+  String get wordActivitySaveFailed => '無法儲存圖片，請重試。';
+
+  @override
+  String get wordActivityShareFailed => '無法分享圖片，請重試。';
+
+  @override
+  String get wordActivityPhotoPermission => '請在設定中允許 Bantera 加入照片，然後重試。';
+
+  @override
+  String get wordActivityScanToJoin => '掃碼加入';
+
+  @override
+  String get dailyGoalNoRequirement => '不設目標要求';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return '正在學習 $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => '之前的活動（語言未知）';
+
+  @override
+  String get saveLabel => '儲存';
+
+  @override
+  String get wordActivityShareToNativeGroup => '分享到母語群聊';
+
+  @override
+  String get wordActivitySentToGroup => '已分享到群組';
+
+  @override
+  String get dailyGoalNotificationLabel => '每日目標提醒';
+
+  @override
+  String get dailyGoalNotificationHint => '每日目標尚未完成時提醒我，使用我所在的時區。';
+
+  @override
+  String get dailyGoalReminderTitle => '今天再練習一會兒';
+
+  @override
+  String get dailyGoalReminderBody => '你的每日目標尚未完成，繼續練習聽力和口語吧。';
+
+  @override
+  String get dailyGoalNotificationTime => '提醒時間';
+
+  @override
+  String get dailyGoalRepeatLabel => '重複';
+
+  @override
+  String get dailyGoalRepeatNever => '永不';
+
+  @override
+  String get dailyGoalRepeatEveryDay => '每天';
+
+  @override
+  String get dailyGoalRepeatWeekdays => '工作日';
+
+  @override
+  String get dailyGoalRepeatWeekends => '週末';
+
+  @override
+  String get dailyGoalRepeatOnceHint => '在下一個設定時間提醒一次，不重複。';
+
+  @override
+  String get discoverAllAccents => '所有口音';
 }

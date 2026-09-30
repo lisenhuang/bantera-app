@@ -32,13 +32,13 @@ const kFallbackTranslationLanguages = <TranscriptionLocaleOption>[
   ),
   TranscriptionLocaleOption(
     identifier: 'zh',
-    displayName: 'Chinese',
+    displayName: 'Mandarin',
     isInstalled: false,
     flagEmoji: '🇨🇳',
   ),
   TranscriptionLocaleOption(
     identifier: 'zh-HK',
-    displayName: 'Chinese (Hong Kong)',
+    displayName: 'Cantonese (Hong Kong)',
     isInstalled: false,
     flagEmoji: '🇭🇰',
   ),

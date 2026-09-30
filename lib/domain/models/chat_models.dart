@@ -152,6 +152,8 @@ class ChatMessageItem {
     );
   }
 
+  bool get isImage => Uri.tryParse(audioUrl)?.path.endsWith('/image') == true;
+
   final String messageId;
   final String threadId;
   final String threadType;

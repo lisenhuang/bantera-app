@@ -51,9 +51,14 @@ class AudioLevelIcon extends StatelessWidget {
 }
 
 class AudioLevelSelector extends StatelessWidget {
-  const AudioLevelSelector({super.key, this.allowAll = false});
+  const AudioLevelSelector({
+    super.key,
+    this.allowAll = false,
+    this.showLeadingIcon = true,
+  });
 
   final bool allowAll;
+  final bool showLeadingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +119,9 @@ class AudioLevelSelector extends StatelessWidget {
               await settings.setAudioLevel(AudioLevel.fromStorage(result));
             }
           },
-          icon: level == null
+          icon: !showLeadingIcon
+              ? null
+              : level == null
               ? const Icon(Icons.layers_outlined, size: 22)
               : AudioLevelIcon(level: level, size: 22),
           label: Row(
@@ -127,6 +134,69 @@ class AudioLevelSelector extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Direct choices for generation, sharing the saved level with Discover.
+class AudioLevelButtons extends StatelessWidget {
+  const AudioLevelButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = SettingsNotifier.instance;
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, _) => IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final option in AudioLevel.values) ...[
+              if (option != AudioLevel.values.first) const SizedBox(width: 8),
+              Expanded(
+                child: Semantics(
+                  key: ValueKey('audio-level-choice-${option.name}'),
+                  selected: settings.audioLevel == option,
+                  child: OutlinedButton(
+                    onPressed: () => settings.setAudioLevel(option),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: colors.onSurface,
+                      side: BorderSide(
+                        width: settings.audioLevel == option ? 2 : 1,
+                        color: settings.audioLevel == option
+                            ? colors.primary
+                            : colors.outline,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AudioLevelIcon(level: option),
+                        const SizedBox(height: 8),
+                        Text(
+                          audioLevelLabel(l10n, option),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

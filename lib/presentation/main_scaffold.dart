@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core/apple_system_version.dart';
 import '../core/app_resume_notifier.dart';
+import '../core/goal_reminder_service.dart';
 import '../domain/models/chat_models.dart';
 import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
@@ -52,6 +53,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
     AppResumeNotifier.instance.addListener(_onResume);
+    GoalReminderService.instance.profileRequested.addListener(_openGoalProfile);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openGoalProfile());
     _groupsSub = LocalChatRepository.instance.watchGroups().listen((groups) {
       _groups = groups;
       _updateUnread();
@@ -60,6 +63,13 @@ class _MainScaffoldState extends State<MainScaffold> {
       _dms = dms;
       _updateUnread();
     });
+  }
+
+  void _openGoalProfile() {
+    final request = GoalReminderService.instance.profileRequested;
+    if (!mounted || !request.value) return;
+    request.value = false;
+    setState(() => _currentIndex = supportsCreateTabOnApple ? 3 : 2);
   }
 
   void _updateUnread() {
@@ -76,6 +86,9 @@ class _MainScaffoldState extends State<MainScaffold> {
     _groupsSub?.cancel();
     _dmsSub?.cancel();
     AppResumeNotifier.instance.removeListener(_onResume);
+    GoalReminderService.instance.profileRequested.removeListener(
+      _openGoalProfile,
+    );
     super.dispose();
   }
 

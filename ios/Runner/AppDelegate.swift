@@ -2,6 +2,7 @@ import AVFoundation
 import CoreTelephony
 import Flutter
 import Network
+import Photos
 import Speech
 @preconcurrency import Translation
 import UIKit
@@ -16,6 +17,7 @@ import UserNotifications
   private var iosVersionBridge: BanteraIosVersionBridge?
   private var pushNotificationsBridge: BanteraPushNotificationsBridge?
   private var pendingNotificationTap: [String: String]?
+  private var photoSaveBridge: BanteraPhotoSaveBridge?
 
   override func application(
     _ application: UIApplication,
@@ -35,6 +37,10 @@ import UserNotifications
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
+    if response.notification.request.content.userInfo["payload"] as? String == "daily-goal" {
+      super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+      return
+    }
     let payload = Self.notificationPayload(
       from: response.notification.request.content.userInfo
     )
@@ -77,6 +83,7 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    photoSaveBridge = BanteraPhotoSaveBridge(binaryMessenger: callEngine.binaryMessenger)
     callKit.attach(messenger: callEngine.binaryMessenger)
     videoProcessingBridge = BanteraVideoProcessingBridge(
       binaryMessenger: callEngine.binaryMessenger
@@ -110,6 +117,48 @@ import UserNotifications
       }
     }
     return payload
+  }
+}
+
+final class BanteraPhotoSaveBridge {
+  private let channel: FlutterMethodChannel
+
+  init(binaryMessenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "bantera/photos", binaryMessenger: binaryMessenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "saveImage" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      guard let args = call.arguments as? [String: Any],
+            let bytes = args["bytes"] as? FlutterStandardTypedData,
+            bytes.data.count <= 20_000_000,
+            UIImage(data: bytes.data) != nil else {
+        result(FlutterError(code: "invalid_image", message: "Invalid progress image.", details: nil))
+        return
+      }
+      let data = bytes.data
+      let filename = data.count >= 2 && data[0] == 0xff && data[1] == 0xd8 ? "bantera-word-progress.jpg" : "bantera-word-progress.png"
+      PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+        guard status == .authorized || status == .limited else {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "permission_denied", message: "Allow adding photos in Settings.", details: nil))
+          }
+          return
+        }
+        PHPhotoLibrary.shared().performChanges({
+          let request = PHAssetCreationRequest.forAsset()
+          let options = PHAssetResourceCreationOptions()
+          options.originalFilename = filename
+          request.addResource(with: .photo, data: data, options: options)
+        }) { success, error in
+          DispatchQueue.main.async {
+            if success { result(nil) }
+            else { result(FlutterError(code: "save_failed", message: error?.localizedDescription, details: nil)) }
+          }
+        }
+      }
+    }
   }
 }
 

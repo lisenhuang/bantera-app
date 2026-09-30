@@ -1122,7 +1122,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => 'Keine Sprachen gefunden.';
 
   @override
-  String get languagePickerMoreComingSoon => 'Weitere Sprachen folgen bald';
+  String languagePickerTotals(int languages, int accents) {
+    return '$languages Sprachen · $accents Akzente';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => 'Muttersprache entfernt.';
@@ -1530,4 +1532,178 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get audioLevelRequired =>
       'Wähle ein Niveau aus, bevor du Audio generierst.';
+
+  @override
+  String get wordActivityTitle => 'Meine Erfolge';
+
+  @override
+  String get wordActivityToday => 'Heute';
+
+  @override
+  String get wordActivityThisWeek => 'Diese Woche';
+
+  @override
+  String get wordActivityTotal => 'Gesamt';
+
+  @override
+  String get wordActivityListened => 'Gehörte Wörter';
+
+  @override
+  String get wordActivitySpoken => 'Gesprochene Wörter';
+
+  @override
+  String get wordActivityHint =>
+      'Aus Transkripten geschätzt. Wiederholungen werden erneut gezählt.';
+
+  @override
+  String get dailyGoalTitle => 'Tagesziel';
+
+  @override
+  String get dailyGoalSet => 'Tagesziel festlegen';
+
+  @override
+  String get dailyGoalEdit => 'Ziel bearbeiten';
+
+  @override
+  String get dailyGoalChoose => 'Wähle dein Tagesziel';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '$minutes Min. pro Tag';
+  }
+
+  @override
+  String get dailyGoalCustom => 'Individuell';
+
+  @override
+  String get dailyGoalListeningTarget => 'Gehörte Wörter pro Tag';
+
+  @override
+  String get dailyGoalSpeakingTarget => 'Gesprochene Wörter pro Tag';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return 'Etwa $minutes Min.';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return 'Insgesamt etwa $minutes Min.';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      'Geschätzt mit 120 gehörten und 60 gesprochenen Wörtern pro Minute. Pausen und dein Tempo können mehr Zeit erfordern. Ziele werden für dein Konto auf diesem Gerät gespeichert.';
+
+  @override
+  String get dailyGoalValidation =>
+      'Gib eine ganze Zahl von 0 bis 100.000 ein. 0 bedeutet kein Ziel.';
+
+  @override
+  String get dailyGoalRemove => 'Ziel entfernen';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      'Tagesziel und Erinnerungen entfernen? Deine Wortzahlen bleiben gespeichert.';
+
+  @override
+  String get dailyGoalReached => 'Heutige Ziele erreicht';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target Wörter';
+  }
+
+  @override
+  String get dailyGoalSaveFailed =>
+      'Ziel konnte nicht gespeichert werden. Bitte erneut versuchen.';
+
+  @override
+  String get wordActivityShare => 'Teilen';
+
+  @override
+  String get wordActivityPreview => 'Vorschau';
+
+  @override
+  String get wordActivityShareHeading => 'Mein Sprechen\nheute';
+
+  @override
+  String get wordActivitySavePhotos => 'In Fotos speichern';
+
+  @override
+  String get wordActivitySaved => 'In Fotos gespeichert';
+
+  @override
+  String get wordActivitySaveFailed =>
+      'Bild konnte nicht gespeichert werden. Bitte erneut versuchen.';
+
+  @override
+  String get wordActivityShareFailed =>
+      'Bild konnte nicht geteilt werden. Bitte erneut versuchen.';
+
+  @override
+  String get wordActivityPhotoPermission =>
+      'Erlaube Bantera in den Einstellungen, Fotos hinzuzufügen, und versuche es erneut.';
+
+  @override
+  String get wordActivityScanToJoin => 'Scannen und mitmachen';
+
+  @override
+  String get dailyGoalNoRequirement => 'Kein Ziel erforderlich';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return 'Ich lerne $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel => 'Frühere Aktivität (Sprache unbekannt)';
+
+  @override
+  String get saveLabel => 'Speichern';
+
+  @override
+  String get wordActivityShareToNativeGroup => 'In Muttersprachengruppe teilen';
+
+  @override
+  String get wordActivitySentToGroup => 'In der Gruppe geteilt';
+
+  @override
+  String get dailyGoalNotificationLabel => 'Erinnerung an das Tagesziel';
+
+  @override
+  String get dailyGoalNotificationHint =>
+      'Erinnern, wenn meine Tagesziele noch offen sind. Verwendet meine Zeitzone.';
+
+  @override
+  String get dailyGoalReminderTitle => 'Heute noch etwas üben';
+
+  @override
+  String get dailyGoalReminderBody =>
+      'Deine Tagesziele sind noch offen. Übe weiter Hören und Sprechen.';
+
+  @override
+  String get dailyGoalNotificationTime => 'Erinnerungszeit';
+
+  @override
+  String get dailyGoalRepeatLabel => 'Wiederholen';
+
+  @override
+  String get dailyGoalRepeatNever => 'Nie';
+
+  @override
+  String get dailyGoalRepeatEveryDay => 'Täglich';
+
+  @override
+  String get dailyGoalRepeatWeekdays => 'Werktags';
+
+  @override
+  String get dailyGoalRepeatWeekends => 'Wochenende';
+
+  @override
+  String get dailyGoalRepeatOnceHint =>
+      'Eine Erinnerung zur nächsten gewählten Uhrzeit, ohne Wiederholung.';
+
+  @override
+  String get discoverAllAccents => 'Alle Akzente';
 }

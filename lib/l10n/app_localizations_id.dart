@@ -1113,7 +1113,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get languagePickerNoMatchingLanguages => 'Bahasa tidak ditemukan.';
 
   @override
-  String get languagePickerMoreComingSoon => 'Bahasa lainnya segera hadir';
+  String languagePickerTotals(int languages, int accents) {
+    return '$languages bahasa · $accents aksen';
+  }
 
   @override
   String get editProfileNativeLanguageCleared => 'Bahasa ibu dihapus.';
@@ -1521,4 +1523,178 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get audioLevelRequired => 'Pilih tingkat sebelum membuat audio.';
+
+  @override
+  String get wordActivityTitle => 'Pencapaianku';
+
+  @override
+  String get wordActivityToday => 'Hari ini';
+
+  @override
+  String get wordActivityThisWeek => 'Minggu ini';
+
+  @override
+  String get wordActivityTotal => 'Total';
+
+  @override
+  String get wordActivityListened => 'Kata yang didengar';
+
+  @override
+  String get wordActivitySpoken => 'Kata yang diucapkan';
+
+  @override
+  String get wordActivityHint =>
+      'Perkiraan berdasarkan transkrip. Pemutaran ulang dihitung lagi.';
+
+  @override
+  String get dailyGoalTitle => 'Target harian';
+
+  @override
+  String get dailyGoalSet => 'Atur target harian';
+
+  @override
+  String get dailyGoalEdit => 'Edit target';
+
+  @override
+  String get dailyGoalChoose => 'Pilih target harianmu';
+
+  @override
+  String dailyGoalPreset(String minutes) {
+    return '$minutes menit per hari';
+  }
+
+  @override
+  String get dailyGoalCustom => 'Kustom';
+
+  @override
+  String get dailyGoalListeningTarget => 'Kata didengar per hari';
+
+  @override
+  String get dailyGoalSpeakingTarget => 'Kata diucapkan per hari';
+
+  @override
+  String dailyGoalEstimate(String minutes) {
+    return 'Sekitar $minutes menit';
+  }
+
+  @override
+  String dailyGoalTimeTotal(String minutes) {
+    return 'Total sekitar $minutes menit';
+  }
+
+  @override
+  String get dailyGoalTimeHint =>
+      'Perkiraan: 120 kata didengar dan 60 kata diucapkan per menit. Jeda dan kecepatanmu bisa menambah waktu. Target disimpan di perangkat ini untuk akunmu.';
+
+  @override
+  String get dailyGoalValidation =>
+      'Masukkan bilangan bulat 0 hingga 100.000. Isi 0 untuk tanpa target.';
+
+  @override
+  String get dailyGoalRemove => 'Hapus target';
+
+  @override
+  String get dailyGoalRemoveConfirmation =>
+      'Hapus target harian dan pengingatnya? Jumlah kata Anda akan tetap tersimpan.';
+
+  @override
+  String get dailyGoalReached => 'Target hari ini tercapai';
+
+  @override
+  String dailyGoalProgress(String count, String target) {
+    return '$count/$target kata';
+  }
+
+  @override
+  String get dailyGoalSaveFailed => 'Target tidak dapat disimpan. Coba lagi.';
+
+  @override
+  String get wordActivityShare => 'Bagikan';
+
+  @override
+  String get wordActivityPreview => 'Pratinjau';
+
+  @override
+  String get wordActivityShareHeading => 'Latihan bicaraku\nhari ini';
+
+  @override
+  String get wordActivitySavePhotos => 'Simpan ke Foto';
+
+  @override
+  String get wordActivitySaved => 'Disimpan ke Foto';
+
+  @override
+  String get wordActivitySaveFailed =>
+      'Gambar tidak dapat disimpan. Coba lagi.';
+
+  @override
+  String get wordActivityShareFailed =>
+      'Gambar tidak dapat dibagikan. Coba lagi.';
+
+  @override
+  String get wordActivityPhotoPermission =>
+      'Izinkan Bantera menambahkan foto di Pengaturan, lalu coba lagi.';
+
+  @override
+  String get wordActivityScanToJoin => 'Pindai untuk bergabung';
+
+  @override
+  String get dailyGoalNoRequirement => 'Tanpa target wajib';
+
+  @override
+  String wordActivityLearningLanguage(String language) {
+    return 'Belajar $language';
+  }
+
+  @override
+  String get wordActivityLegacyLabel =>
+      'Aktivitas sebelumnya (bahasa tidak diketahui)';
+
+  @override
+  String get saveLabel => 'Simpan';
+
+  @override
+  String get wordActivityShareToNativeGroup => 'Bagikan ke grup bahasa ibu';
+
+  @override
+  String get wordActivitySentToGroup => 'Dibagikan ke grup';
+
+  @override
+  String get dailyGoalNotificationLabel => 'Pengingat target harian';
+
+  @override
+  String get dailyGoalNotificationHint =>
+      'Ingatkan jika target harian saya belum selesai. Menggunakan zona waktu saya.';
+
+  @override
+  String get dailyGoalReminderTitle => 'Berlatih sedikit lagi hari ini';
+
+  @override
+  String get dailyGoalReminderBody =>
+      'Target harianmu belum selesai. Terus berlatih mendengarkan dan berbicara.';
+
+  @override
+  String get dailyGoalNotificationTime => 'Waktu pengingat';
+
+  @override
+  String get dailyGoalRepeatLabel => 'Ulangi';
+
+  @override
+  String get dailyGoalRepeatNever => 'Tidak pernah';
+
+  @override
+  String get dailyGoalRepeatEveryDay => 'Setiap hari';
+
+  @override
+  String get dailyGoalRepeatWeekdays => 'Hari kerja';
+
+  @override
+  String get dailyGoalRepeatWeekends => 'Akhir pekan';
+
+  @override
+  String get dailyGoalRepeatOnceHint =>
+      'Satu pengingat pada waktu pilihan berikutnya, tanpa pengulangan.';
+
+  @override
+  String get discoverAllAccents => 'Semua aksen';
 }

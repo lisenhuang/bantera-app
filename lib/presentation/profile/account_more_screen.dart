@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/auth_api_error_localizations.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/profile_stats_notifier.dart';
+import '../../core/word_activity_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/practice_playback_speed_store.dart';
@@ -75,6 +76,9 @@ class _AccountMoreScreenState extends State<AccountMoreScreen> {
         return;
       }
       await LocalPracticeRepository.instance.wipeAllDataForCurrentUser();
+      if (session.userId != null) {
+        await WordActivityNotifier.instance.removeUser(session.userId!);
+      }
       await PracticeProgressStore.instance.clearAll();
       await PracticePlaybackSpeedStore.instance.clear();
       await UserProfileCacheStore.instance.removeAllForCacheKey(cacheKey);
