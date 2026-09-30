@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/apple_system_version.dart';
 import '../core/app_resume_notifier.dart';
 import '../core/goal_reminder_service.dart';
+import '../core/dm_call_notifier.dart';
+import '../core/practice_review_service.dart';
 import '../domain/models/chat_models.dart';
 import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
@@ -23,7 +25,9 @@ class MainScaffold extends StatefulWidget {
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends State<MainScaffold> with RouteAware {
+  ModalRoute<dynamic>? _reviewRoute;
+  Timer? _reviewTimer;
   int _currentIndex = 0;
   bool _checkingUpdate = false;
   bool _hasUnreadChats = false;
@@ -82,7 +86,46 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route != _reviewRoute) {
+      practiceReviewRouteObserver.unsubscribe(this);
+      _reviewRoute = route;
+      if (route != null) practiceReviewRouteObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPushNext() => _reviewTimer?.cancel();
+
+  @override
+  void didPopNext() => _schedulePracticeReview();
+
+  bool get _canRequestReview =>
+      mounted &&
+      (_reviewRoute?.isCurrent ?? false) &&
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed &&
+      !DmCallNotifier.instance.isActive &&
+      (_currentIndex == 0 ||
+          _currentIndex == (supportsCreateTabOnApple ? 3 : 2));
+
+  void _schedulePracticeReview() {
+    _reviewTimer?.cancel();
+    if (!PracticeReviewService.instance.enabled) return;
+    _reviewTimer = Timer(const Duration(seconds: 3), () {
+      unawaited(
+        PracticeReviewService.instance.requestIfEligible(
+          isSafe: () => _canRequestReview,
+        ),
+      );
+    });
+  }
+
+  @override
   void dispose() {
+    _reviewTimer?.cancel();
+    practiceReviewRouteObserver.unsubscribe(this);
     _groupsSub?.cancel();
     _dmsSub?.cancel();
     AppResumeNotifier.instance.removeListener(_onResume);
@@ -164,6 +207,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           setState(() {
             _currentIndex = index;
           });
+          _schedulePracticeReview();
         },
         items: [
           BottomNavigationBarItem(

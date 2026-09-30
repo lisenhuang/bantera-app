@@ -18,7 +18,9 @@ import '../../core/apple_system_version.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/word_activity_notifier.dart';
+import '../../core/practice_review_service.dart';
 import '../../domain/activity/listening_word_tracker.dart';
+import '../../domain/activity/lesson_completion_tracker.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/practice_audio_cache.dart';
@@ -44,11 +46,13 @@ class PracticePlayerScreen extends StatefulWidget {
     required this.mediaItem,
     this.initialCueIndex,
     this.initialSavedCue,
+    this.reviewService,
   });
 
   final MediaItem mediaItem;
   final int? initialCueIndex;
   final SavedCueRecord? initialSavedCue;
+  final PracticeReviewService? reviewService;
 
   @override
   State<PracticePlayerScreen> createState() => _PracticePlayerScreenState();
@@ -58,6 +62,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
 
   late final ListeningWordTracker _wordActivityTracker;
+  late final LessonCompletionTracker _lessonCompletionTracker;
+  late final PracticeReviewService _reviewService;
+  String? _reviewOwner;
   String? _wordActivityOwnerId;
   int _activitySeekDepth = 0;
 
@@ -189,6 +196,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await player.seek(position);
     } finally {
       _wordActivityTracker.seek(position.inMilliseconds);
+      _lessonCompletionTracker.seek(position.inMilliseconds);
       _activitySeekDepth--;
     }
   }
@@ -202,6 +210,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       await controller.seekTo(position);
     } finally {
       _wordActivityTracker.seek(position.inMilliseconds);
+      _lessonCompletionTracker.seek(position.inMilliseconds);
       _activitySeekDepth--;
     }
   }
@@ -225,6 +234,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           _activitySeekDepth == 0,
       speed: _playbackSpeed,
     );
+    if (_reviewService.enabled) {
+      final completedCues = _lessonCompletionTracker.advance(
+        positionMs.clamp(0, stopMs),
+        playing:
+            _isPlaying &&
+            (nativePlaying || completed) &&
+            !_playAllInBetweenCueGap &&
+            _activitySeekDepth == 0,
+        speed: _playbackSpeed,
+      );
+      if (completedCues.isNotEmpty) {
+        unawaited(
+          _reviewService.recordCompletedCues(
+            owner: _reviewOwner,
+            lessonId: widget.mediaItem.id,
+            completedCueKeys: completedCues,
+            requiredCueKeys: _lessonCompletionTracker.requiredCueKeys,
+          ),
+        );
+      }
+    }
     if (words > 0 && _wordActivityOwnerId != null) {
       unawaited(
         WordActivityNotifier.instance.record(
@@ -268,6 +298,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     WordActivityNotifier.instance.retain();
     _wordActivityOwnerId = AuthSessionNotifier.instance.session?.userId;
     _wordActivityTracker = ListeningWordTracker.forMedia(widget.mediaItem);
+    _lessonCompletionTracker = LessonCompletionTracker(widget.mediaItem.cues);
+    _reviewService = widget.reviewService ?? PracticeReviewService.instance;
+    _reviewOwner = _reviewService.currentOwner();
     unawaited(WordActivityNotifier.instance.sync());
     _shortCues = widget.mediaItem.shortCues;
     _timedUnits = _buildTimedUnits();

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:app/core/practice_review_service.dart';
 import 'package:app/domain/models/models.dart';
 import 'package:app/infrastructure/practice_progress_store.dart';
 import 'package:app/l10n/app_localizations.dart';
@@ -19,6 +20,41 @@ void main() {
     );
     addTearDown(() => directory.deleteSync(recursive: true));
     const mediaId = 'restart-audio';
+    var reviewRequests = 0;
+    var reviewTime = DateTime(2026, 10, 1);
+    final review = PracticeReviewService(
+      enabled: true,
+      currentOwner: () => 'learner',
+      file: () async => File('${directory.path}/review.json'),
+      now: () => reviewTime,
+      isAvailable: () async => true,
+      requestReview: () async {
+        reviewRequests++;
+      },
+    );
+    await tester.runAsync(() async {
+      for (final id in ['previous-one', 'previous-two']) {
+        await review.recordCompletedCues(
+          owner: 'learner',
+          lessonId: id,
+          completedCueKeys: {'cue'},
+          requiredCueKeys: {'cue'},
+        );
+      }
+    });
+    reviewTime = DateTime(2026, 10, 2);
+    Future<void> checkReview({required bool safe}) async {
+      var finished = false;
+      review.requestIfEligible(isSafe: () => safe).then((_) => finished = true);
+      for (var i = 0; i < 100 && !finished; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump();
+      }
+      expect(finished, isTrue);
+    }
+
     const url = 'https://example.test/audio.wav';
     final cache = Directory('${directory.path}/practice_audio_cache')
       ..createSync();
@@ -144,7 +180,11 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('en'),
-        home: PracticePlayerScreen(mediaItem: media, initialCueIndex: 1),
+        home: PracticePlayerScreen(
+          mediaItem: media,
+          initialCueIndex: 1,
+          reviewService: review,
+        ),
       ),
     );
     // Filesystem work runs outside the widget test's fake clock.
@@ -166,6 +206,8 @@ void main() {
     emit('audio.onComplete');
     await tester.pump();
     expect(find.byIcon(CupertinoIcons.play_circle_fill), findsOneWidget);
+    await checkReview(safe: true);
+    expect(reviewRequests, 0); // Skipping to EOF is not a completed lesson.
     final playsBeforeRestart = resumes;
 
     await tester.tap(find.byIcon(CupertinoIcons.forward_fill));
@@ -181,6 +223,10 @@ void main() {
       ),
       0,
     );
+    for (final ms in [800, 1300, 1800, 2200]) {
+      position = ms;
+      await tester.pump(const Duration(milliseconds: 16));
+    }
     final progress = find.byKey(const ValueKey('practice-cue-progress'));
     final track = tester.getRect(progress);
     final time = tester.getRect(
@@ -195,11 +241,25 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('2/2'), findsOneWidget);
     expect(seeks.last, 2200);
+    if (find.byIcon(CupertinoIcons.play_circle_fill).evaluate().isNotEmpty) {
+      await tester.tap(find.byIcon(CupertinoIcons.play_circle_fill));
+      await tester.pump();
+    }
+    for (final ms in [2700, 3200, 3700]) {
+      position = ms;
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    emit('audio.onComplete');
+    await tester.pump();
+    await checkReview(safe: false);
+    expect(reviewRequests, 0); // Stay focused on practice until it is left.
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 30)),
     );
+    await checkReview(safe: true);
+    expect(reviewRequests, 1);
   });
 }
