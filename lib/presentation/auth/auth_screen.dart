@@ -333,6 +333,19 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
                               ),
                             ],
 
+                            if (Platform.isAndroid && !_showEmailForm) ...[
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: _auth.isBusy
+                                    ? null
+                                    : () {
+                                        setState(() => _showEmailForm = true);
+                                        _auth.clearError();
+                                      },
+                                child: Text(l10n.authSignInWithEmail),
+                              ),
+                            ],
+
                             // ── Error message ──────────────────────────────
                             if (_auth.localizedError(l10n) != null) ...[
                               const SizedBox(height: 16),

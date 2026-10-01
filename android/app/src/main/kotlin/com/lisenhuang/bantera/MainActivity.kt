@@ -17,6 +17,8 @@ import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.android.gms.tasks.Tasks
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.nl.translate.TranslateLanguage
@@ -55,6 +57,28 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         photoSaveBridge = PhotoSaveBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/app_updates")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "checkForUpdate") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                // Play determines availability for this account, device and release track.
+                // Unknown/unavailable checks must not be reported as "up to date".
+                AppUpdateManagerFactory.create(applicationContext).appUpdateInfo
+                    .addOnSuccessListener { info ->
+                        val needsUpdate = when (info.updateAvailability()) {
+                            UpdateAvailability.UPDATE_AVAILABLE,
+                            UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> true
+                            UpdateAvailability.UPDATE_NOT_AVAILABLE -> false
+                            else -> null
+                        }
+                        result.success(needsUpdate)
+                    }
+                    .addOnFailureListener {
+                        result.error("play_update_unavailable", "Could not check Google Play for updates.", null)
+                    }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {

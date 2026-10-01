@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AppUpdateService {
@@ -9,9 +11,9 @@ class AppUpdateService {
   static const String _appStoreId = '6761799720';
   static const String _iosStoreUrl =
       'https://apps.apple.com/app/id$_appStoreId';
-  static const String _androidReleaseManifestUrl =
-      'https://bantera.app/android-release.json';
-  static const String _androidDownloadUrl = 'https://bantera.app/bantera.apk';
+  static const String androidStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.lisenhuang.bantera';
+  static const _androidUpdates = MethodChannel('bantera/app_updates');
 
   static Future<
     ({
@@ -24,8 +26,12 @@ class AppUpdateService {
   checkForUpdate() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      if (Platform.isAndroid) return _checkAndroid(info);
-      if (Platform.isIOS) return _checkIos(info.version);
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        return await _checkAndroid(info);
+      }
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        return await _checkIos(info.version);
+      }
       return null;
     } catch (_) {
       return null;
@@ -70,26 +76,17 @@ class AppUpdateService {
     })?
   >
   _checkAndroid(PackageInfo info) async {
-    final json = await _getJson(Uri.parse(_androidReleaseManifestUrl));
-    if (json == null) return null;
-
-    final storeVersion = json['version'] as String?;
-    if (storeVersion == null) return null;
-
-    final storeBuild = (json['build'] as num?)?.toInt();
-    final currentBuild = int.tryParse(info.buildNumber);
-    final storeUrl = json['url'] as String? ?? _androidDownloadUrl;
+    final needsUpdate = await _androidUpdates
+        .invokeMethod<bool>('checkForUpdate')
+        .timeout(const Duration(seconds: 15));
+    if (needsUpdate == null) return null;
 
     return (
-      needsUpdate: _isNewer(
-        storeVersion,
-        info.version,
-        storeBuild: storeBuild,
-        currentBuild: currentBuild,
-      ),
-      storeUrl: storeUrl,
+      needsUpdate: needsUpdate,
+      storeUrl: androidStoreUrl,
       currentVersion: info.version,
-      storeVersion: storeVersion,
+      // Play exposes a version code, not the store's display version name.
+      storeVersion: '',
     );
   }
 
@@ -108,19 +105,8 @@ class AppUpdateService {
     }
   }
 
-  static bool _isNewer(
-    String storeVersion,
-    String currentVersion, {
-    int? storeBuild,
-    int? currentBuild,
-  }) {
-    final versionComparison = _compareVersions(storeVersion, currentVersion);
-    if (versionComparison != 0) return versionComparison > 0;
-
-    return storeBuild != null &&
-        currentBuild != null &&
-        storeBuild > currentBuild;
-  }
+  static bool _isNewer(String storeVersion, String currentVersion) =>
+      _compareVersions(storeVersion, currentVersion) > 0;
 
   static int _compareVersions(String storeVersion, String currentVersion) {
     final storeParts = storeVersion

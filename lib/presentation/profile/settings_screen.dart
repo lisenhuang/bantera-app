@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -78,6 +80,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final result = await AppUpdateService.checkForUpdate();
       if (!mounted) return;
       if (result == null) {
+        if (Platform.isAndroid) {
+          try {
+            if (await launchUrl(
+              Uri.parse(AppUpdateService.androidStoreUrl),
+              mode: LaunchMode.externalApplication,
+            )) {
+              return;
+            }
+          } on Exception {
+            // The device may not have a store or browser available.
+          }
+        }
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not check for updates')),
         );
@@ -177,10 +192,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             '${l10n.updateCurrentVersionLabel}: v$currentVersion',
             style: style,
           ),
-          Text(
-            '${l10n.updateAppStoreVersionLabel}: v$storeVersion',
-            style: style,
-          ),
+          if (storeVersion.isNotEmpty)
+            Text(
+              '${l10n.updateAppStoreVersionLabel}: v$storeVersion',
+              style: style,
+            ),
         ],
       ),
     );
