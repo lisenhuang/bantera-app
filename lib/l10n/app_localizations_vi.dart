@@ -1613,7 +1613,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get wordActivityPreview => 'Xem trước';
 
   @override
-  String get wordActivityShareHeading => 'Luyện nói của tôi\nhôm nay';
+  String wordActivityShareHeading(String language) {
+    return 'Cứ nói ra.\nBằng lời của bạn.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Lưu vào Ảnh';
@@ -1633,7 +1635,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Cho phép Bantera thêm ảnh trong Cài đặt rồi thử lại.';
 
   @override
-  String get wordActivityScanToJoin => 'Quét để tham gia';
+  String get wordActivityScanToJoin => 'Quét mã để cùng luyện';
 
   @override
   String get dailyGoalNoRequirement => 'Không yêu cầu mục tiêu';
@@ -1694,4 +1696,84 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Tất cả giọng';
+
+  @override
+  String get wordActivityShareToday => 'Luyện tập hôm nay';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Hôm nay đã nói';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return 'từ';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Cũng đã nghe $countString từ';
+  }
+
+  @override
+  String get wordActivityShareEncouragement =>
+      'Mỗi lần cất lời đều có ý nghĩa.';
+
+  @override
+  String get wordActivityShareInvitation => 'Cùng luyện tập, tự tin cất lời.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Hôm nay đã nghe $progress từ',
+      'week': 'Tuần này đã nghe $progress từ',
+      'other': 'Tổng cộng đã nghe $progress từ',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Hôm nay đã nói $progress từ',
+      'week': 'Tuần này đã nói $progress từ',
+      'other': 'Tổng cộng đã nói $progress từ',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => 'Nghe';
+
+  @override
+  String get wordActivitySpeaking => 'Nói';
+
+  @override
+  String get wordActivityTrend => 'Tiến trình luyện tập';
+
+  @override
+  String get wordActivitySevenDays => '7 ngày';
+
+  @override
+  String get wordActivityThirtyDays => '30 ngày';
+
+  @override
+  String get wordActivityWords => 'Số từ';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'Chưa có buổi luyện tập nào trong khoảng thời gian này.';
+
+  @override
+  String get wordActivityAllTime => 'Tất cả';
 }

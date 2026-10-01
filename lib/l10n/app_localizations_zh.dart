@@ -1506,7 +1506,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String dailyGoalProgress(String count, String target) {
-    return '$count/$target 词';
+    return '$count/$target 个词';
   }
 
   @override
@@ -1519,7 +1519,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wordActivityPreview => '预览';
 
   @override
-  String get wordActivityShareHeading => '今天的\n口语练习';
+  String wordActivityShareHeading(String language) {
+    String _temp0 = intl.Intl.selectLogic(language, {
+      'English': '把英语\n说出口。',
+      'Mandarin': '把普通话\n说出口。',
+      'Cantonese': '把粤语\n说出口。',
+      'Japanese': '把日语\n说出口。',
+      'Korean': '把韩语\n说出口。',
+      'French': '把法语\n说出口。',
+      'German': '把德语\n说出口。',
+      'Spanish': '把西班牙语\n说出口。',
+      'Portuguese': '把葡萄牙语\n说出口。',
+      'Italian': '把意大利语\n说出口。',
+      'Arabic': '把阿拉伯语\n说出口。',
+      'Danish': '把丹麦语\n说出口。',
+      'Dutch': '把荷兰语\n说出口。',
+      'Hindi': '把印地语\n说出口。',
+      'Indonesian': '把印尼语\n说出口。',
+      'Norwegian_Bokmal': '把挪威语\n说出口。',
+      'Polish': '把波兰语\n说出口。',
+      'Russian': '把俄语\n说出口。',
+      'Swedish': '把瑞典语\n说出口。',
+      'Thai': '把泰语\n说出口。',
+      'Turkish': '把土耳其语\n说出口。',
+      'Ukrainian': '把乌克兰语\n说出口。',
+      'Vietnamese': '把越南语\n说出口。',
+      'other': '开口练习\n每一天。',
+    });
+    return '$_temp0';
+  }
 
   @override
   String get wordActivitySavePhotos => '保存到相册';
@@ -1537,7 +1565,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wordActivityPhotoPermission => '请在设置中允许 Bantera 添加照片，然后重试。';
 
   @override
-  String get wordActivityScanToJoin => '扫码加入';
+  String get wordActivityScanToJoin => '扫码一起练';
 
   @override
   String get dailyGoalNoRequirement => '不设目标要求';
@@ -1594,6 +1622,84 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get discoverAllAccents => '所有口音';
+
+  @override
+  String get wordActivityShareToday => '今日练习';
+
+  @override
+  String get wordActivityShareSpokenToday => '今天说了';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return '个词';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '也听了 $countString 个词';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => '每一次开口，都算数。';
+
+  @override
+  String get wordActivityShareInvitation => '一起练，敢开口。';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今天听了 $progress 个词',
+      'week': '本周听了 $progress 个词',
+      'other': '累计听了 $progress 个词',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今天说了 $progress 个词',
+      'week': '本周说了 $progress 个词',
+      'other': '累计说了 $progress 个词',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => '听力';
+
+  @override
+  String get wordActivitySpeaking => '口语';
+
+  @override
+  String get wordActivityTrend => '练习趋势';
+
+  @override
+  String get wordActivitySevenDays => '近7天';
+
+  @override
+  String get wordActivityThirtyDays => '近30天';
+
+  @override
+  String get wordActivityWords => '词数';
+
+  @override
+  String get wordActivityTrendEmpty => '这个时段还没有练习记录。';
+
+  @override
+  String get wordActivityAllTime => '全部';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3102,7 +3208,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String dailyGoalProgress(String count, String target) {
-    return '$count/$target 詞';
+    return '$count/$target 個詞';
   }
 
   @override
@@ -3115,7 +3221,35 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get wordActivityPreview => '預覽';
 
   @override
-  String get wordActivityShareHeading => '今天的\n口語練習';
+  String wordActivityShareHeading(String language) {
+    String _temp0 = intl.Intl.selectLogic(language, {
+      'English': '把英語\n說出口。',
+      'Mandarin': '把普通話\n說出口。',
+      'Cantonese': '把粵語\n說出口。',
+      'Japanese': '把日語\n說出口。',
+      'Korean': '把韓語\n說出口。',
+      'French': '把法語\n說出口。',
+      'German': '把德語\n說出口。',
+      'Spanish': '把西班牙語\n說出口。',
+      'Portuguese': '把葡萄牙語\n說出口。',
+      'Italian': '把義大利語\n說出口。',
+      'Arabic': '把阿拉伯語\n說出口。',
+      'Danish': '把丹麥語\n說出口。',
+      'Dutch': '把荷蘭語\n說出口。',
+      'Hindi': '把印地語\n說出口。',
+      'Indonesian': '把印尼語\n說出口。',
+      'Norwegian_Bokmal': '把挪威語\n說出口。',
+      'Polish': '把波蘭語\n說出口。',
+      'Russian': '把俄語\n說出口。',
+      'Swedish': '把瑞典語\n說出口。',
+      'Thai': '把泰語\n說出口。',
+      'Turkish': '把土耳其語\n說出口。',
+      'Ukrainian': '把烏克蘭語\n說出口。',
+      'Vietnamese': '把越南語\n說出口。',
+      'other': '開口練習\n每一天。',
+    });
+    return '$_temp0';
+  }
 
   @override
   String get wordActivitySavePhotos => '儲存至相簿';
@@ -3133,7 +3267,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get wordActivityPhotoPermission => '請在設定中允許 Bantera 加入照片，然後重試。';
 
   @override
-  String get wordActivityScanToJoin => '掃碼加入';
+  String get wordActivityScanToJoin => '掃碼一起練';
 
   @override
   String get dailyGoalNoRequirement => '不設目標要求';
@@ -3190,4 +3324,82 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get discoverAllAccents => '所有口音';
+
+  @override
+  String get wordActivityShareToday => '今日練習';
+
+  @override
+  String get wordActivityShareSpokenToday => '今天說了';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return '個詞';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '也聽了 $countString 個詞';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => '每一次開口，都算數。';
+
+  @override
+  String get wordActivityShareInvitation => '一起練，敢開口。';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今天聽了 $progress 個詞',
+      'week': '本週聽了 $progress 個詞',
+      'other': '累計聽了 $progress 個詞',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今天說了 $progress 個詞',
+      'week': '本週說了 $progress 個詞',
+      'other': '累計說了 $progress 個詞',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => '聽力';
+
+  @override
+  String get wordActivitySpeaking => '口語';
+
+  @override
+  String get wordActivityTrend => '練習趨勢';
+
+  @override
+  String get wordActivitySevenDays => '近7天';
+
+  @override
+  String get wordActivityThirtyDays => '近30天';
+
+  @override
+  String get wordActivityWords => '詞數';
+
+  @override
+  String get wordActivityTrendEmpty => '這個時段還沒有練習記錄。';
+
+  @override
+  String get wordActivityAllTime => '全部';
 }

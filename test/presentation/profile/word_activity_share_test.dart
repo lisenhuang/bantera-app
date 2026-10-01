@@ -1,4 +1,6 @@
 import 'dart:io';
+
+import '../../support/share_card_fonts.dart';
 import 'dart:ui' as ui;
 
 import 'package:app/domain/activity/word_activity.dart';
@@ -42,6 +44,7 @@ void main() {
   const photos = MethodChannel('bantera/photos');
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
+    await loadShareCardFonts();
     // A readable optional developer preview; normal tests work without this font.
     if (Platform.environment['BANTERA_SHARE_PREVIEW_OUTPUT'] != null) {
       final font = File('/System/Library/Fonts/Supplemental/Arial.ttf');
@@ -139,27 +142,23 @@ void main() {
     await tester.pumpWidget(page());
     await prepared(tester);
     expect(find.text('Alex Morgan'), findsOneWidget);
-    expect(find.text('My speaking\ntoday'), findsOneWidget);
+    expect(find.text('Say it.\nOut loud.'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('120')).dy,
-      lessThan(tester.getTopLeft(find.text('380')).dy),
+      lessThan(tester.getTopLeft(find.text('Also listened to 380 words')).dy),
     );
-    expect(find.text('Learning English'), findsOneWidget);
+    expect(find.text('English'), findsOneWidget);
     expect(find.textContaining('New Zealand'), findsNothing);
     expect(find.textContaining('en-NZ'), findsNothing);
     expect(find.text('🇳🇿'), findsOneWidget);
     expect(find.textContaining('Native'), findsNothing);
-    expect(find.text('4,320'), findsOneWidget);
-    expect(find.text('1,280'), findsOneWidget);
-    expect(find.text('380'), findsOneWidget);
     expect(find.text('120'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.text('380')).dy,
-      lessThan(tester.getTopLeft(find.text('4,320')).dy),
-    );
-    expect(find.text('This week'), findsOneWidget);
-    expect(find.text('iOS/Android'), findsOneWidget);
-    expect(find.text('bantera.app'), findsNothing);
+    expect(find.text('Also listened to 380 words'), findsOneWidget);
+    expect(find.text('4,320'), findsNothing);
+    expect(find.text('This week'), findsNothing);
+    expect(find.text('iOS/Android'), findsNothing);
+    expect(find.text('bantera.app'), findsOneWidget);
+    expect(find.text('Every word you say counts.'), findsOneWidget);
     await tester.tap(find.text('Save to Photos'));
     await tester.pump();
     for (var i = 0; i < 100 && saved == null; i++) {
@@ -220,40 +219,41 @@ void main() {
     'yue-CN': 'Cantonese',
     'unknown-ZZ': null,
   }.entries) {
-    testWidgets('learning language ${entry.key} has no code or accent', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: FittedBox(
-              child: WordActivityShareCard(
-                name: 'Alex',
-                learningLanguage: entry.key,
-                today: const WordTotals(),
-                week: const WordTotals(),
-                total: const WordTotals(),
+    testWidgets(
+      'learning language ${entry.key} shows only the language name without an accent or code',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FittedBox(
+                child: WordActivityShareCard(
+                  name: 'Alex',
+                  learningLanguage: entry.key,
+                  today: const WordTotals(),
+                  week: const WordTotals(),
+                  total: const WordTotals(),
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      if (entry.value == null) {
-        expect(find.textContaining('Learning '), findsNothing);
-      } else {
-        expect(find.text('Learning ${entry.value}'), findsOneWidget);
-      }
-      expect(
-        entry.key.contains('-')
-            ? find.textContaining(entry.key)
-            : find.text(entry.key),
-        findsNothing,
-      );
-      expect(tester.takeException(), isNull);
-    });
+        );
+        await tester.pumpAndSettle();
+        if (entry.value == null) {
+          expect(find.textContaining('Learning '), findsNothing);
+        } else {
+          expect(find.text('${entry.value}'), findsOneWidget);
+          expect(
+            find.textContaining(
+              entry.key.contains('-') ? entry.key : '${entry.key} ·',
+            ),
+            findsNothing,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   for (final locale in AppLocalizations.supportedLocales) {

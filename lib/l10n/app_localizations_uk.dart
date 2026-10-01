@@ -1613,7 +1613,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get wordActivityPreview => 'Попередній перегляд';
 
   @override
-  String get wordActivityShareHeading => 'Моє мовлення\nсьогодні';
+  String wordActivityShareHeading(String language) {
+    return 'Скажи це.\nУголос.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Зберегти у Фото';
@@ -1634,7 +1636,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Дозвольте Bantera додавати фото в налаштуваннях і спробуйте знову.';
 
   @override
-  String get wordActivityScanToJoin => 'Скануйте та долучайтеся';
+  String get wordActivityScanToJoin => 'Скануй і практикуйся';
 
   @override
   String get dailyGoalNoRequirement => 'Ціль не потрібна';
@@ -1694,4 +1696,148 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Усі акценти';
+
+  @override
+  String get wordActivityShareToday => 'Практика за сьогодні';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Сьогодні вимовлено';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'слова',
+      many: 'слів',
+      few: 'слова',
+      one: 'слово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Також прослухано $countString слова',
+      many: 'Також прослухано $countString слів',
+      few: 'Також прослухано $countString слова',
+      one: 'Також прослухано $countString слово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Кожне сказане слово важливе.';
+
+  @override
+  String get wordActivityShareInvitation =>
+      'Практикуймося разом. Говорімо сміливіше.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сьогодні прослухано $progress слова',
+      many: 'Сьогодні прослухано $progress слів',
+      few: 'Сьогодні прослухано $progress слова',
+      one: 'Сьогодні прослухано $progress слово',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Цього тижня прослухано $progress слова',
+      many: 'Цього тижня прослухано $progress слів',
+      few: 'Цього тижня прослухано $progress слова',
+      one: 'Цього тижня прослухано $progress слово',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Загалом прослухано $progress слова',
+      many: 'Загалом прослухано $progress слів',
+      few: 'Загалом прослухано $progress слова',
+      one: 'Загалом прослухано $progress слово',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сьогодні вимовлено $progress слова',
+      many: 'Сьогодні вимовлено $progress слів',
+      few: 'Сьогодні вимовлено $progress слова',
+      one: 'Сьогодні вимовлено $progress слово',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Цього тижня вимовлено $progress слова',
+      many: 'Цього тижня вимовлено $progress слів',
+      few: 'Цього тижня вимовлено $progress слова',
+      one: 'Цього тижня вимовлено $progress слово',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Загалом вимовлено $progress слова',
+      many: 'Загалом вимовлено $progress слів',
+      few: 'Загалом вимовлено $progress слова',
+      one: 'Загалом вимовлено $progress слово',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String get wordActivityListening => 'Аудіювання';
+
+  @override
+  String get wordActivitySpeaking => 'Говоріння';
+
+  @override
+  String get wordActivityTrend => 'Динаміка практики';
+
+  @override
+  String get wordActivitySevenDays => '7 днів';
+
+  @override
+  String get wordActivityThirtyDays => '30 днів';
+
+  @override
+  String get wordActivityWords => 'Слова';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'За цей період ще немає записів про практику.';
+
+  @override
+  String get wordActivityAllTime => 'Увесь час';
 }

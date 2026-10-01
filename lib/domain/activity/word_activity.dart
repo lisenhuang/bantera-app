@@ -88,6 +88,18 @@ class WordActivityLedger {
     return days;
   }
 
+  /// The same merged, acknowledged totals as the summary, grouped by local day.
+  Map<String, WordTotals> historyFor(String language) {
+    final result = <String, WordTotals>{};
+    final key = wordActivityLanguageKey(language);
+    for (final entry in combinedDays.entries) {
+      if (wordActivityBucketLanguage(entry.key) != key) continue;
+      final date = wordActivityBucketDate(entry.key);
+      result[date] = (result[date] ?? const WordTotals()) + entry.value;
+    }
+    return result;
+  }
+
   ({WordTotals today, WordTotals week, WordTotals total}) summary(
     DateTime now, {
     String? language,

@@ -334,8 +334,12 @@
   "languagePickerTotals": "Liczba języków: {languages} · Liczba akcentów: {accents}",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Usunięto język ojczysty.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Nie udało się zapisać celu. Spróbuj ponownie.",
   "wordActivityShare": "Udostępnij",
   "wordActivityPreview": "Podgląd",
-  "wordActivityShareHeading": "Moje mówienie\ndzisiaj",
+  "wordActivityShareHeading": "Powiedz to.\nNa głos.",
   "wordActivitySavePhotos": "Zapisz w Zdjęciach",
   "wordActivitySaved": "Zapisano w Zdjęciach",
   "wordActivitySaveFailed": "Nie udało się zapisać obrazu. Spróbuj ponownie.",
   "wordActivityShareFailed": "Nie udało się udostępnić obrazu. Spróbuj ponownie.",
   "wordActivityPhotoPermission": "Zezwól Banterze na dodawanie zdjęć w Ustawieniach i spróbuj ponownie.",
-  "wordActivityScanToJoin": "Zeskanuj i dołącz",
+  "wordActivityScanToJoin": "Zeskanuj i ćwicz",
   "dailyGoalNoRequirement": "Brak wymaganego celu",
   "wordActivityLearningLanguage": "Uczę się: {language}",
   "wordActivityLegacyLabel": "Wcześniejsza aktywność (nieznany język)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Dni robocze",
   "dailyGoalRepeatWeekends": "Weekendy",
   "dailyGoalRepeatOnceHint": "Jedno przypomnienie o najbliższej wybranej godzinie, bez powtarzania.",
-  "discoverAllAccents": "Wszystkie akcenty"
+  "discoverAllAccents": "Wszystkie akcenty",
+  "wordActivityShareToday": "Dzisiejsza praktyka",
+  "wordActivityShareSpokenToday": "Dziś na głos",
+  "wordActivityShareWordUnit": "{count, plural, one{słowo} few{słowa} many{słów} other{słowa}}",
+  "wordActivityShareListened": "{count, plural, one{Także {count} usłyszane słowo} few{Także {count} usłyszane słowa} many{Także {count} usłyszanych słów} other{Także {count} usłyszanego słowa}}",
+  "wordActivityShareEncouragement": "Każde wypowiedziane słowo się liczy.",
+  "wordActivityShareInvitation": "Ćwiczmy razem. Mówmy śmiało.",
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Dzisiaj odsłuchano {progress} słowo} few{Dzisiaj odsłuchano {progress} słowa} many{Dzisiaj odsłuchano {progress} słów} other{Dzisiaj odsłuchano {progress} słowa}}} week{{count, plural, one{W tym tygodniu odsłuchano {progress} słowo} few{W tym tygodniu odsłuchano {progress} słowa} many{W tym tygodniu odsłuchano {progress} słów} other{W tym tygodniu odsłuchano {progress} słowa}}} other{{count, plural, one{Łącznie odsłuchano {progress} słowo} few{Łącznie odsłuchano {progress} słowa} many{Łącznie odsłuchano {progress} słów} other{Łącznie odsłuchano {progress} słowa}}}}",
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Dzisiaj wypowiedziano {progress} słowo} few{Dzisiaj wypowiedziano {progress} słowa} many{Dzisiaj wypowiedziano {progress} słów} other{Dzisiaj wypowiedziano {progress} słowa}}} week{{count, plural, one{W tym tygodniu wypowiedziano {progress} słowo} few{W tym tygodniu wypowiedziano {progress} słowa} many{W tym tygodniu wypowiedziano {progress} słów} other{W tym tygodniu wypowiedziano {progress} słowa}}} other{{count, plural, one{Łącznie wypowiedziano {progress} słowo} few{Łącznie wypowiedziano {progress} słowa} many{Łącznie wypowiedziano {progress} słów} other{Łącznie wypowiedziano {progress} słowa}}}}",
+  "wordActivityListening": "Słuchanie",
+  "wordActivitySpeaking": "Mówienie",
+  "wordActivityTrend": "Przebieg ćwiczeń",
+  "wordActivitySevenDays": "7 dni",
+  "wordActivityThirtyDays": "30 dni",
+  "wordActivityWords": "Słowa",
+  "wordActivityTrendEmpty": "Brak zapisanych ćwiczeń w tym okresie.",
+  "wordActivityAllTime": "Cały okres"
 }

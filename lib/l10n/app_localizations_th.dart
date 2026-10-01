@@ -1599,7 +1599,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get wordActivityPreview => 'ดูตัวอย่าง';
 
   @override
-  String get wordActivityShareHeading => 'การพูดของฉัน\nวันนี้';
+  String wordActivityShareHeading(String language) {
+    return 'พูดออกมา\nในแบบของคุณ';
+  }
 
   @override
   String get wordActivitySavePhotos => 'บันทึกลงรูปภาพ';
@@ -1618,7 +1620,7 @@ class AppLocalizationsTh extends AppLocalizations {
       'อนุญาตให้ Bantera เพิ่มรูปภาพในการตั้งค่า แล้วลองอีกครั้ง';
 
   @override
-  String get wordActivityScanToJoin => 'สแกนเพื่อเข้าร่วม';
+  String get wordActivityScanToJoin => 'สแกนแล้วมาฝึกด้วยกัน';
 
   @override
   String get dailyGoalNoRequirement => 'ไม่มีข้อกำหนดเป้าหมาย';
@@ -1678,4 +1680,82 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'ทุกสำเนียง';
+
+  @override
+  String get wordActivityShareToday => 'ฝึกวันนี้';
+
+  @override
+  String get wordActivityShareSpokenToday => 'วันนี้พูดไป';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return 'คำ';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'และฟังไป $countString คำ';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'ทุกคำที่พูดมีความหมาย';
+
+  @override
+  String get wordActivityShareInvitation => 'ฝึกด้วยกัน กล้าพูดมากขึ้น';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'วันนี้ฟังไป $progress คำ',
+      'week': 'สัปดาห์นี้ฟังไป $progress คำ',
+      'other': 'ฟังไปทั้งหมด $progress คำ',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'วันนี้พูดไป $progress คำ',
+      'week': 'สัปดาห์นี้พูดไป $progress คำ',
+      'other': 'พูดไปทั้งหมด $progress คำ',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => 'การฟัง';
+
+  @override
+  String get wordActivitySpeaking => 'การพูด';
+
+  @override
+  String get wordActivityTrend => 'แนวโน้มการฝึก';
+
+  @override
+  String get wordActivitySevenDays => '7 วัน';
+
+  @override
+  String get wordActivityThirtyDays => '30 วัน';
+
+  @override
+  String get wordActivityWords => 'จำนวนคำ';
+
+  @override
+  String get wordActivityTrendEmpty => 'ยังไม่มีบันทึกการฝึกในช่วงเวลานี้';
+
+  @override
+  String get wordActivityAllTime => 'ทั้งหมด';
 }

@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../shared/learning_language_label.dart';
 
 /// Fixed logical canvas, exported at 2x for a 1080 × 1920 story.
+/// Text is measured inside its own slot; artwork never contains baked-in copy.
 class WordActivityShareCard extends StatelessWidget {
   const WordActivityShareCard({
     super.key,
@@ -17,87 +18,18 @@ class WordActivityShareCard extends StatelessWidget {
     this.learningLanguage,
   });
   static const size = Size(540, 960);
+  static const backgroundAsset =
+      'assets/word_activity/share-editorial-background.png';
+  static const qrAsset = 'assets/word_activity/homepage-qr.png';
+  static const _ink = Color(0xFF142D27);
+  static const _muted = Color(0xFF62716A);
   final String name;
   final WordTotals today;
+  // Kept in the public contract for callers; this artwork celebrates today.
   final WordTotals week;
   final WordTotals total;
   final ImageProvider? avatar;
   final String? learningLanguage;
-  static const backgroundAsset = 'assets/word_activity/share-background.png';
-  static const qrAsset = 'assets/word_activity/homepage-qr.png';
-  static const _muted = Color(0xFFD1C5FF);
-
-  Widget _fit(
-    String text,
-    double size, {
-    Color color = Colors.white,
-    FontWeight weight = FontWeight.w600,
-  }) => FittedBox(
-    fit: BoxFit.scaleDown,
-    alignment: Alignment.centerLeft,
-    child: Text(
-      text,
-      style: TextStyle(
-        fontSize: size,
-        fontWeight: weight,
-        color: color,
-        height: 1.05,
-      ),
-    ),
-  );
-
-  BoxDecoration get _panel => BoxDecoration(
-    borderRadius: BorderRadius.circular(24),
-    gradient: const LinearGradient(
-      colors: [Color(0xB04D3C97), Color(0x85352877)],
-    ),
-    border: Border.all(color: const Color(0xFFA58BFF), width: 1),
-    boxShadow: [
-      BoxShadow(
-        color: const Color(0xFF6B4EE6).withValues(alpha: .28),
-        blurRadius: 16,
-      ),
-    ],
-  );
-
-  Widget _stat(IconData icon, String value, String label) => Container(
-    decoration: _panel,
-    padding: const EdgeInsets.all(24),
-    child: Row(
-      children: [
-        Container(
-          width: 94,
-          height: 94,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0x705D3DA9),
-            border: Border.all(color: const Color(0xFFAE95FF)),
-          ),
-          child: Icon(icon, size: 64, color: const Color(0xFFF0E8FF)),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(child: _fit(value, 76, weight: FontWeight.w800)),
-              const SizedBox(height: 6),
-              SizedBox(
-                height: 26,
-                child: _fit(
-                  label,
-                  27,
-                  color: const Color(0xFFF0E8FF),
-                  weight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -105,96 +37,81 @@ class WordActivityShareCard extends StatelessWidget {
     final number = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
-    final languageLabel = learningLanguageLabel(learningLanguage);
-    final languageName = languageLabel.name;
-    final languageFlag = languageLabel.flag;
+    final language = learningLanguageLabel(learningLanguage);
+    final languageName = switch (language.name) {
+      'English' => l10n.languageEnglish,
+      'Japanese' => l10n.languageJapanese,
+      'Korean' => l10n.languageKorean,
+      _ => language.name,
+    };
     return SizedBox.fromSize(
       size: size,
       child: MediaQuery.withNoTextScaling(
-        child: DefaultTextStyle.merge(
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+        child: ColoredBox(
+          color: const Color(0xFFF7F5EC),
           child: Stack(
             children: [
               Positioned.fill(
-                child: Image.asset(backgroundAsset, fit: BoxFit.cover),
+                child: Image.asset(backgroundAsset, fit: BoxFit.fill),
               ),
               Positioned(
-                top: 48,
-                left: 36,
-                right: 36,
-                height: 84,
+                top: 52,
+                left: 34,
+                right: 160,
+                height: 76,
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 36,
-                      backgroundColor: const Color(0xFF9470F5),
+                      radius: 37,
+                      backgroundColor: const Color(0xFFD9C9F7),
                       foregroundImage: avatar,
                       child: avatar == null
-                          ? const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 45,
-                            )
+                          ? const Icon(Icons.person, color: _ink, size: 38)
                           : null,
                     ),
-                    const SizedBox(width: 18),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(
-                            height: languageName.isEmpty ? 64 : 40,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 350,
-                                ),
-                                child: Text(
-                                  name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                          Expanded(
+                            child: _ArtworkText(
+                              name,
+                              fontSize: 27,
+                              weight: FontWeight.w700,
+                              maxLines: 2,
                             ),
                           ),
-                          if (languageName.isNotEmpty) ...[
-                            const SizedBox(height: 8),
+                          if (language.name.isNotEmpty)
                             SizedBox(
-                              height: 26,
+                              height: 30,
                               child: Row(
                                 children: [
                                   Text(
-                                    languageFlag,
+                                    language.flag,
                                     style: const TextStyle(
-                                      fontSize: 22,
+                                      fontSize: 20,
+                                      color: _ink,
+                                      decoration: TextDecoration.none,
                                       fontFamilyFallback: [
                                         'Apple Color Emoji',
                                         'Noto Color Emoji',
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Expanded(
-                                    child: _fit(
-                                      l10n.wordActivityLearningLanguage(
-                                        languageName,
-                                      ),
-                                      18,
+                                    child: _ArtworkText(
+                                      languageName,
+                                      fontSize: 17,
+                                      maxLines: 2,
                                       color: _muted,
+                                      weight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ),
@@ -202,110 +119,181 @@ class WordActivityShareCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: 145,
-                left: 36,
-                right: 36,
-                height: 145,
-                child: _fit(
-                  l10n.wordActivityShareHeading,
-                  76,
-                  color: const Color(0xFF4EE8CD),
-                  weight: FontWeight.w800,
-                ),
-              ),
-              Positioned(
-                top: 320,
-                left: 32,
-                right: 32,
-                height: 148,
-                child: _stat(
-                  Icons.mic_none_outlined,
-                  number.format(today.spoken),
-                  l10n.wordActivitySpoken,
-                ),
-              ),
-              Positioned(
-                top: 484,
-                left: 32,
-                right: 32,
-                height: 148,
-                child: _stat(
-                  Icons.headphones_outlined,
-                  number.format(today.listened),
-                  l10n.wordActivityListened,
-                ),
-              ),
-              Positioned(
-                top: 649,
-                left: 32,
-                right: 32,
-                height: 123,
+                top: 68,
+                right: 34,
+                width: 96,
+                height: 37,
                 child: Container(
-                  decoration: _panel,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
+                    horizontal: 12,
+                    vertical: 7,
                   ),
-                  child: Table(
-                    columnWidths: const {
-                      0: FlexColumnWidth(1),
-                      1: FlexColumnWidth(1.2),
-                      2: FlexColumnWidth(1.2),
-                    },
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    children: [
-                      TableRow(
-                        children: [
-                          const SizedBox(),
-                          _fit(l10n.wordActivitySpoken, 16, color: _muted),
-                          _fit(l10n.wordActivityListened, 16, color: _muted),
-                        ],
-                      ),
-                      for (final row in [
-                        (l10n.wordActivityThisWeek, week),
-                        (l10n.wordActivityTotal, total),
-                      ])
-                        TableRow(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: _fit(row.$1, 21, color: _muted),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: _fit(number.format(row.$2.spoken), 23),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: _fit(number.format(row.$2.listened), 23),
-                            ),
-                          ],
-                        ),
-                    ],
+                  decoration: BoxDecoration(
+                    border: Border.all(color: _ink, width: 1.2),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: _ArtworkText(
+                    l10n.wordActivityShareToday,
+                    fontSize: 16,
+                    maxLines: 2,
+                    alignment: Alignment.center,
                   ),
                 ),
               ),
               Positioned(
-                left: 40,
-                top: 841,
-                right: 166,
-                height: 72,
+                top: 140,
+                left: 34,
+                right: 34,
+                height: 190,
+                child: _ArtworkText(
+                  l10n.wordActivityShareHeading(
+                    language.name.replaceAll(' ', '_').replaceAll('å', 'a'),
+                  ),
+                  fontSize: 94,
+                  lineHeight: 1,
+                  maxLines: 3,
+                  weight: FontWeight.w900,
+                  alignment: Alignment.topLeft,
+                ),
+              ),
+              Positioned(
+                top: 394,
+                left: 98,
+                right: 65,
+                height: 43,
+                child: _ArtworkText(
+                  l10n.wordActivityShareSpokenToday,
+                  fontSize: 30,
+                  maxLines: 2,
+                ),
+              ),
+              Positioned(
+                top: 428,
+                left: 94,
+                right: 72,
+                height: 145,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Flexible(
+                      child: SizedBox(
+                        height: 145,
+                        child: _ArtworkText(
+                          number.format(today.spoken),
+                          key: const ValueKey('share-spoken-number'),
+                          fontSize: 180,
+                          lineHeight: .9,
+                          letterSpacing: -1.5,
+                          weight: FontWeight.w900,
+                          alignment: Alignment.bottomLeft,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 62,
+                      height: 52,
+                      child: _ArtworkText(
+                        l10n.wordActivityShareWordUnit(today.spoken),
+                        key: const ValueKey('share-spoken-unit'),
+                        fontSize: 30,
+                        maxLines: 1,
+                        alignment: Alignment.bottomLeft,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 650,
+                left: 50,
+                right: 50,
+                height: 60,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.headphones_outlined,
+                      size: 46,
+                      color: _ink,
+                    ),
+                    const SizedBox(width: 17),
+                    Flexible(
+                      child: _ArtworkText(
+                        l10n.wordActivityShareListened(today.listened),
+                        key: const ValueKey('share-listened'),
+                        fontSize: 28,
+                        emphasizedText: number.format(today.listened),
+                        maxLines: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 740,
+                left: 34,
+                right: 34,
+                height: 58,
+                child: _ArtworkText(
+                  l10n.wordActivityShareEncouragement,
+                  weight: FontWeight.w700,
+                  fontSize: 29,
+                  maxLines: 2,
+                ),
+              ),
+              const Positioned(
+                top: 809,
+                left: 34,
+                right: 34,
+                height: 1,
+                child: ColoredBox(color: Color(0xFFACB8AE)),
+              ),
+              Positioned(
+                top: 840,
+                left: 34,
+                right: 158,
+                height: 86,
                 child: Row(
                   children: [
-                    Image.asset('assets/icon.png', width: 70, height: 70),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(17),
+                      child: Image.asset(
+                        'assets/icon.png',
+                        width: 75,
+                        height: 75,
+                      ),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _fit('Bantera', 38, weight: FontWeight.w800),
-                          const SizedBox(height: 4),
-                          _fit(
-                            'iOS/Android',
-                            20,
-                            color: _muted,
-                            weight: FontWeight.w400,
+                          const SizedBox(
+                            height: 42,
+                            child: _ArtworkText(
+                              'Bantera',
+                              fontSize: 38,
+                              weight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 26,
+                            child: _ArtworkText(
+                              l10n.wordActivityShareInvitation,
+                              fontSize: 17,
+                              maxLines: 2,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 18,
+                            child: _ArtworkText(
+                              'bantera.app',
+                              fontSize: 14,
+                              color: _muted,
+                              weight: FontWeight.w500,
+                            ),
                           ),
                         ],
                       ),
@@ -314,24 +302,31 @@ class WordActivityShareCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                right: 40,
-                top: 784,
-                width: 104,
-                height: 22,
-                child: _fit(l10n.wordActivityScanToJoin, 14),
-              ),
-              Positioned(
-                right: 40,
-                bottom: 40,
-                width: 104,
-                height: 104,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    qrAsset,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.none,
-                  ),
+                top: 825,
+                right: 30,
+                width: 116,
+                height: 116,
+                child: Column(
+                  children: [
+                    // Includes the original white quiet zone; no rounded mask.
+                    Image.asset(
+                      qrAsset,
+                      // Keep the source quiet zone inside the reference-sized tile.
+                      width: 96,
+                      height: 96,
+                      filterQuality: FilterQuality.none,
+                    ),
+                    const SizedBox(height: 2),
+                    Expanded(
+                      child: _ArtworkText(
+                        l10n.wordActivityScanToJoin,
+                        fontSize: 12,
+                        maxLines: 2,
+                        color: _muted,
+                        alignment: Alignment.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -340,4 +335,141 @@ class WordActivityShareCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Measures real localized glyphs, grouping separators and line breaks before
+/// choosing a font size. Unlike scaling a whole row, the number cannot shrink
+/// its unit, and translated labels cannot push neighbouring elements around.
+class _ArtworkText extends StatelessWidget {
+  const _ArtworkText(
+    this.text, {
+    super.key,
+    required this.fontSize,
+    this.maxLines = 1,
+    this.weight = FontWeight.w500,
+    this.color = WordActivityShareCard._ink,
+    this.alignment = Alignment.centerLeft,
+    this.lineHeight,
+    this.letterSpacing = 0,
+    this.emphasizedText,
+  });
+  final String text;
+  final double fontSize;
+  final int maxLines;
+  final FontWeight weight;
+  final Color color;
+  final Alignment alignment;
+  final double? lineHeight;
+  final double letterSpacing;
+  final String? emphasizedText;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final locale = Localizations.localeOf(context);
+      final script = switch (locale.languageCode) {
+        'zh' => locale.scriptCode == 'Hant' ? 'TC' : 'SC',
+        'ja' => 'JP',
+        'ko' => 'KR',
+        'th' => 'Thai',
+        _ => null,
+      };
+      final latinFamily =
+          'BanteraShareLatin${weight.value >= FontWeight.w800.value
+              ? 900
+              : weight.value >= FontWeight.w700.value
+              ? 700
+              : 600}';
+      final scriptFamily = script == null
+          ? null
+          : 'BanteraShare$script${weight.value >= FontWeight.w800.value ? 900 : 600}';
+      final hasScriptText =
+          script != null &&
+          text.runes.any(
+            (rune) => rune >= 0x2e80 || (rune >= 0x0e00 && rune <= 0x0e7f),
+          );
+      final base = Theme.of(context).textTheme.bodyMedium!.copyWith(
+        fontFamily: hasScriptText ? scriptFamily : latinFamily,
+        fontFamilyFallback: [
+          latinFamily,
+          ?scriptFamily,
+          ...?Theme.of(context).textTheme.bodyMedium!.fontFamilyFallback,
+        ],
+        color: color,
+        fontWeight: weight,
+        // Thai tone marks and vowels need more room between headline lines.
+        height: locale.languageCode == 'th' ? 1.35 : (lineHeight ?? 1.15),
+        letterSpacing: letterSpacing,
+        fontSize: fontSize,
+      );
+      final direction = Directionality.of(context);
+      final painter = TextPainter(
+        textDirection: direction,
+        locale: locale,
+        maxLines: maxLines,
+        textScaler: TextScaler.noScaling,
+      );
+      TextSpan span(double size) {
+        final style = base.copyWith(fontSize: size);
+        final emphasis = emphasizedText;
+        final index = emphasis == null ? -1 : text.indexOf(emphasis);
+        if (index < 0) return TextSpan(text: text, style: style);
+        return TextSpan(
+          style: style,
+          children: [
+            TextSpan(text: text.substring(0, index)),
+            TextSpan(
+              text: emphasis,
+              style: style.copyWith(
+                fontFamily: 'BanteraShareLatin900',
+                fontWeight: FontWeight.w900,
+                fontSize: size * 1.85,
+                height: 1,
+              ),
+            ),
+            TextSpan(text: text.substring(index + emphasis!.length)),
+          ],
+        );
+      }
+
+      bool fits(double size) {
+        painter.text = span(size);
+        painter.layout(maxWidth: constraints.maxWidth);
+        return !painter.didExceedMaxLines &&
+            painter.width <= constraints.maxWidth &&
+            painter.height <= constraints.maxHeight;
+      }
+
+      var chosen = fontSize;
+      if (!fits(chosen)) {
+        var low = 1.0;
+        var high = fontSize;
+        for (var i = 0; i < 14; i++) {
+          final mid = (low + high) / 2;
+          if (fits(mid)) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+        chosen = low;
+      }
+      painter.dispose();
+      return Align(
+        alignment: alignment,
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text.rich(
+          span(chosen),
+          style: base.copyWith(fontSize: chosen),
+          locale: locale,
+          maxLines: maxLines,
+          textScaler: TextScaler.noScaling,
+          textAlign: alignment == Alignment.center
+              ? TextAlign.center
+              : TextAlign.start,
+        ),
+      );
+    },
+  );
 }

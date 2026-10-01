@@ -3001,11 +3001,11 @@ abstract class AppLocalizations {
   /// **'Preview'**
   String get wordActivityPreview;
 
-  /// No description provided for @wordActivityShareHeading.
+  /// Share headline. language is the catalog language name with spaces replaced by underscores, for localized Chinese select variants. Other locales may keep a language-neutral headline.
   ///
   /// In en, this message translates to:
-  /// **'My speaking\ntoday'**
-  String get wordActivityShareHeading;
+  /// **'Say it.\nOut loud.'**
+  String wordActivityShareHeading(String language);
 
   /// No description provided for @wordActivitySavePhotos.
   ///
@@ -3040,7 +3040,7 @@ abstract class AppLocalizations {
   /// No description provided for @wordActivityScanToJoin.
   ///
   /// In en, this message translates to:
-  /// **'Scan to join'**
+  /// **'Scan to practise'**
   String get wordActivityScanToJoin;
 
   /// No description provided for @dailyGoalNoRequirement.
@@ -3150,6 +3150,106 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All accents'**
   String get discoverAllAccents;
+
+  /// No description provided for @wordActivityShareToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s practice'**
+  String get wordActivityShareToday;
+
+  /// No description provided for @wordActivityShareSpokenToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today I spoke'**
+  String get wordActivityShareSpokenToday;
+
+  /// Standalone unit beside the spoken total. Pluralize using the unformatted count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{word} other{words}}'**
+  String wordActivityShareWordUnit(int count);
+
+  /// Complete listening caption. Keep count anywhere required by local grammar.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Also listened to {count} word} other{Also listened to {count} words}}'**
+  String wordActivityShareListened(int count);
+
+  /// No description provided for @wordActivityShareEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Every word you say counts.'**
+  String get wordActivityShareEncouragement;
+
+  /// No description provided for @wordActivityShareInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice together. Speak freely.'**
+  String get wordActivityShareInvitation;
+
+  /// Complete activity sentence. period is today, week, or total. progress is a locale-formatted count or count/goal. count selects plural forms (the goal when progress is a ratio).
+  ///
+  /// In en, this message translates to:
+  /// **'{period, select, today{{count, plural, one{Heard {progress} word today} other{Heard {progress} words today}}} week{{count, plural, one{Heard {progress} word this week} other{Heard {progress} words this week}}} other{{count, plural, one{Heard {progress} word in total} other{Heard {progress} words in total}}}}'**
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  );
+
+  /// Complete activity sentence. period is today, week, or total. progress is a locale-formatted count or count/goal. count selects plural forms (the goal when progress is a ratio).
+  ///
+  /// In en, this message translates to:
+  /// **'{period, select, today{{count, plural, one{Said {progress} word today} other{Said {progress} words today}}} week{{count, plural, one{Said {progress} word this week} other{Said {progress} words this week}}} other{{count, plural, one{Said {progress} word in total} other{Said {progress} words in total}}}}'**
+  String wordActivitySpeakingSummary(String period, String progress, int count);
+
+  /// No description provided for @wordActivityListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get wordActivityListening;
+
+  /// No description provided for @wordActivitySpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get wordActivitySpeaking;
+
+  /// No description provided for @wordActivityTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice over time'**
+  String get wordActivityTrend;
+
+  /// No description provided for @wordActivitySevenDays.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get wordActivitySevenDays;
+
+  /// No description provided for @wordActivityThirtyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get wordActivityThirtyDays;
+
+  /// No description provided for @wordActivityWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get wordActivityWords;
+
+  /// No description provided for @wordActivityTrendEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No practice recorded in this period yet.'**
+  String get wordActivityTrendEmpty;
+
+  /// No description provided for @wordActivityAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get wordActivityAllTime;
 }
 
 class _AppLocalizationsDelegate

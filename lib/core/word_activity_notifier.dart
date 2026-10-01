@@ -145,6 +145,14 @@ class WordActivityNotifier extends ChangeNotifier {
       ? _ledger!.summary(DateTime.now(), language: '').total
       : const WordTotals();
 
+  Map<String, WordTotals> historyFor(String? language) =>
+      _loadedUserId == _userId &&
+          _ledger != null &&
+          language != null &&
+          language.trim().isNotEmpty
+      ? _ledger!.historyFor(language)
+      : const {};
+
   Future<void> _serial(Future<void> Function() action) {
     final result = _queue.then(
       (_) => _disposed ? Future<void>.value() : action(),

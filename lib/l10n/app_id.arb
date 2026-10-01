@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} bahasa · {accents} aksen",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Bahasa ibu dihapus.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Target tidak dapat disimpan. Coba lagi.",
   "wordActivityShare": "Bagikan",
   "wordActivityPreview": "Pratinjau",
-  "wordActivityShareHeading": "Latihan bicaraku\nhari ini",
+  "wordActivityShareHeading": "Ucapkan.\nDengan suaramu.",
   "wordActivitySavePhotos": "Simpan ke Foto",
   "wordActivitySaved": "Disimpan ke Foto",
   "wordActivitySaveFailed": "Gambar tidak dapat disimpan. Coba lagi.",
   "wordActivityShareFailed": "Gambar tidak dapat dibagikan. Coba lagi.",
   "wordActivityPhotoPermission": "Izinkan Bantera menambahkan foto di Pengaturan, lalu coba lagi.",
-  "wordActivityScanToJoin": "Pindai untuk bergabung",
+  "wordActivityScanToJoin": "Pindai untuk berlatih",
   "dailyGoalNoRequirement": "Tanpa target wajib",
   "wordActivityLearningLanguage": "Belajar {language}",
   "wordActivityLegacyLabel": "Aktivitas sebelumnya (bahasa tidak diketahui)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Hari kerja",
   "dailyGoalRepeatWeekends": "Akhir pekan",
   "dailyGoalRepeatOnceHint": "Satu pengingat pada waktu pilihan berikutnya, tanpa pengulangan.",
-  "discoverAllAccents": "Semua aksen"
+  "discoverAllAccents": "Semua aksen",
+  "wordActivityShareToday": "Latihan hari ini",
+  "wordActivityShareSpokenToday": "Hari ini mengucapkan",
+  "wordActivityShareWordUnit": "kata",
+  "wordActivityShareListened": "Juga mendengarkan {count} kata",
+  "wordActivityShareEncouragement": "Setiap kata yang diucapkan berarti.",
+  "wordActivityShareInvitation": "Latihan bersama. Berani bicara.",
+  "wordActivityListeningSummary": "{period, select, today{Hari ini mendengarkan {progress} kata} week{Minggu ini mendengarkan {progress} kata} other{Total sudah mendengarkan {progress} kata}}",
+  "wordActivitySpeakingSummary": "{period, select, today{Hari ini mengucapkan {progress} kata} week{Minggu ini mengucapkan {progress} kata} other{Total sudah mengucapkan {progress} kata}}",
+  "wordActivityListening": "Mendengarkan",
+  "wordActivitySpeaking": "Berbicara",
+  "wordActivityTrend": "Perkembangan latihan",
+  "wordActivitySevenDays": "7 hari",
+  "wordActivityThirtyDays": "30 hari",
+  "wordActivityWords": "Kata",
+  "wordActivityTrendEmpty": "Belum ada latihan tercatat dalam periode ini.",
+  "wordActivityAllTime": "Semua"
 }

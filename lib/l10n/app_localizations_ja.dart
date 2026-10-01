@@ -1538,7 +1538,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get wordActivityPreview => 'プレビュー';
 
   @override
-  String get wordActivityShareHeading => '今日の\nスピーキング';
+  String wordActivityShareHeading(String language) {
+    return '声に出そう。\n自分の言葉で。';
+  }
 
   @override
   String get wordActivitySavePhotos => '写真に保存';
@@ -1556,7 +1558,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get wordActivityPhotoPermission => '設定でBanteraの写真追加を許可して再試行してください。';
 
   @override
-  String get wordActivityScanToJoin => 'スキャンして参加';
+  String get wordActivityScanToJoin => 'スキャンして一緒に練習';
 
   @override
   String get dailyGoalNoRequirement => '目標なし';
@@ -1613,4 +1615,82 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'すべてのアクセント';
+
+  @override
+  String get wordActivityShareToday => '今日の練習';
+
+  @override
+  String get wordActivityShareSpokenToday => '今日、声に出した言葉';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return '語';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '聞いた言葉は $countString 語';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'ひと言ずつ、積み重ねよう。';
+
+  @override
+  String get wordActivityShareInvitation => '一緒に練習。声に出そう。';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今日は $progress 語聞きました',
+      'week': '今週は $progress 語聞きました',
+      'other': 'これまでに $progress 語聞きました',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '今日は $progress 語話しました',
+      'week': '今週は $progress 語話しました',
+      'other': 'これまでに $progress 語話しました',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => 'リスニング';
+
+  @override
+  String get wordActivitySpeaking => 'スピーキング';
+
+  @override
+  String get wordActivityTrend => '練習の推移';
+
+  @override
+  String get wordActivitySevenDays => '7日間';
+
+  @override
+  String get wordActivityThirtyDays => '30日間';
+
+  @override
+  String get wordActivityWords => '語数';
+
+  @override
+  String get wordActivityTrendEmpty => 'この期間の練習記録はまだありません。';
+
+  @override
+  String get wordActivityAllTime => '全期間';
 }

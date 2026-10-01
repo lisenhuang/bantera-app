@@ -1544,7 +1544,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get wordActivityPreview => '미리보기';
 
   @override
-  String get wordActivityShareHeading => '오늘의\n말하기';
+  String wordActivityShareHeading(String language) {
+    return '하고 싶은 말,\n소리 내어 봐요.';
+  }
 
   @override
   String get wordActivitySavePhotos => '사진에 저장';
@@ -1563,7 +1565,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '설정에서 Bantera의 사진 추가를 허용한 후 다시 시도하세요.';
 
   @override
-  String get wordActivityScanToJoin => '스캔하여 참여';
+  String get wordActivityScanToJoin => '스캔하고 함께 연습해요';
 
   @override
   String get dailyGoalNoRequirement => '목표 없음';
@@ -1622,4 +1624,82 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get discoverAllAccents => '모든 억양';
+
+  @override
+  String get wordActivityShareToday => '오늘의 연습';
+
+  @override
+  String get wordActivityShareSpokenToday => '오늘 말한 단어';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return '개';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '들은 단어도 $countString개';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => '말 한마디도 소중한 연습.';
+
+  @override
+  String get wordActivityShareInvitation => '함께 연습하고, 자신 있게 말해요.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '오늘 $progress단어를 들었어요',
+      'week': '이번 주 $progress단어를 들었어요',
+      'other': '지금까지 $progress단어를 들었어요',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': '오늘 $progress단어를 말했어요',
+      'week': '이번 주 $progress단어를 말했어요',
+      'other': '지금까지 $progress단어를 말했어요',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => '듣기';
+
+  @override
+  String get wordActivitySpeaking => '말하기';
+
+  @override
+  String get wordActivityTrend => '연습 추이';
+
+  @override
+  String get wordActivitySevenDays => '7일';
+
+  @override
+  String get wordActivityThirtyDays => '30일';
+
+  @override
+  String get wordActivityWords => '단어 수';
+
+  @override
+  String get wordActivityTrendEmpty => '이 기간에는 아직 연습 기록이 없어요.';
+
+  @override
+  String get wordActivityAllTime => '전체';
 }

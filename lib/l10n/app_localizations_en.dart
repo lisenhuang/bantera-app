@@ -1627,7 +1627,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wordActivityPreview => 'Preview';
 
   @override
-  String get wordActivityShareHeading => 'My speaking\ntoday';
+  String wordActivityShareHeading(String language) {
+    return 'Say it.\nOut loud.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Save to Photos';
@@ -1648,7 +1650,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Allow Bantera to add photos in Settings, then try again.';
 
   @override
-  String get wordActivityScanToJoin => 'Scan to join';
+  String get wordActivityScanToJoin => 'Scan to practise';
 
   @override
   String get dailyGoalNoRequirement => 'No goal requirement';
@@ -1708,4 +1710,131 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'All accents';
+
+  @override
+  String get wordActivityShareToday => 'Today’s practice';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Today I spoke';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'words',
+      one: 'word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also listened to $countString words',
+      one: 'Also listened to $countString word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Every word you say counts.';
+
+  @override
+  String get wordActivityShareInvitation => 'Practice together. Speak freely.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Heard $progress words today',
+      one: 'Heard $progress word today',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Heard $progress words this week',
+      one: 'Heard $progress word this week',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Heard $progress words in total',
+      one: 'Heard $progress word in total',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Said $progress words today',
+      one: 'Said $progress word today',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Said $progress words this week',
+      one: 'Said $progress word this week',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Said $progress words in total',
+      one: 'Said $progress word in total',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String get wordActivityListening => 'Listening';
+
+  @override
+  String get wordActivitySpeaking => 'Speaking';
+
+  @override
+  String get wordActivityTrend => 'Practice over time';
+
+  @override
+  String get wordActivitySevenDays => '7 days';
+
+  @override
+  String get wordActivityThirtyDays => '30 days';
+
+  @override
+  String get wordActivityWords => 'Words';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'No practice recorded in this period yet.';
+
+  @override
+  String get wordActivityAllTime => 'All time';
 }

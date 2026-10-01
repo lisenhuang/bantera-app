@@ -1625,7 +1625,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get wordActivityPreview => 'Vorschau';
 
   @override
-  String get wordActivityShareHeading => 'Mein Sprechen\nheute';
+  String wordActivityShareHeading(String language) {
+    return 'Sprich los.\nLaut und frei.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'In Fotos speichern';
@@ -1646,7 +1648,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Erlaube Bantera in den Einstellungen, Fotos hinzuzufügen, und versuche es erneut.';
 
   @override
-  String get wordActivityScanToJoin => 'Scannen und mitmachen';
+  String get wordActivityScanToJoin => 'Scannen und mitüben';
 
   @override
   String get dailyGoalNoRequirement => 'Kein Ziel erforderlich';
@@ -1706,4 +1708,131 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Alle Akzente';
+
+  @override
+  String get wordActivityShareToday => 'Heute geübt';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Heute gesprochen';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wörter',
+      one: 'Wort',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Auch $countString Wörter gehört',
+      one: 'Auch $countString Wort gehört',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Jedes gesprochene Wort zählt.';
+
+  @override
+  String get wordActivityShareInvitation => 'Zusammen üben. Frei sprechen.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Heute $progress Wörter gehört',
+      one: 'Heute $progress Wort gehört',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Diese Woche $progress Wörter gehört',
+      one: 'Diese Woche $progress Wort gehört',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Insgesamt $progress Wörter gehört',
+      one: 'Insgesamt $progress Wort gehört',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Heute $progress Wörter gesprochen',
+      one: 'Heute $progress Wort gesprochen',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Diese Woche $progress Wörter gesprochen',
+      one: 'Diese Woche $progress Wort gesprochen',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Insgesamt $progress Wörter gesprochen',
+      one: 'Insgesamt $progress Wort gesprochen',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String get wordActivityListening => 'Hören';
+
+  @override
+  String get wordActivitySpeaking => 'Sprechen';
+
+  @override
+  String get wordActivityTrend => 'Übungsverlauf';
+
+  @override
+  String get wordActivitySevenDays => '7 Tage';
+
+  @override
+  String get wordActivityThirtyDays => '30 Tage';
+
+  @override
+  String get wordActivityWords => 'Wörter';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'Für diesen Zeitraum gibt es noch keine Übungen.';
+
+  @override
+  String get wordActivityAllTime => 'Gesamt';
 }

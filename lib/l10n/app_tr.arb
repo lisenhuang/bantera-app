@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} dil · {accents} aksan",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Ana dil temizlendi.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Hedef kaydedilemedi. Tekrar dene.",
   "wordActivityShare": "Paylaş",
   "wordActivityPreview": "Önizleme",
-  "wordActivityShareHeading": "Bugünkü\nkonuşmam",
+  "wordActivityShareHeading": "Söyle.\nSesini duyur.",
   "wordActivitySavePhotos": "Fotoğraflara kaydet",
   "wordActivitySaved": "Fotoğraflara kaydedildi",
   "wordActivitySaveFailed": "Görsel kaydedilemedi. Tekrar dene.",
   "wordActivityShareFailed": "Görsel paylaşılamadı. Tekrar dene.",
   "wordActivityPhotoPermission": "Ayarlarda Bantera’nın fotoğraf eklemesine izin verip tekrar dene.",
-  "wordActivityScanToJoin": "Katılmak için tara",
+  "wordActivityScanToJoin": "Tara ve pratik yap",
   "dailyGoalNoRequirement": "Hedef gerekmiyor",
   "wordActivityLearningLanguage": "Öğrendiğim dil: {language}",
   "wordActivityLegacyLabel": "Önceki etkinlik (dil bilinmiyor)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Hafta içi",
   "dailyGoalRepeatWeekends": "Hafta sonu",
   "dailyGoalRepeatOnceHint": "Bir sonraki seçilen saatte tek hatırlatma, tekrar etmez.",
-  "discoverAllAccents": "Tüm aksanlar"
+  "discoverAllAccents": "Tüm aksanlar",
+  "wordActivityShareToday": "Bugünkü pratik",
+  "wordActivityShareSpokenToday": "Bugün söylenen",
+  "wordActivityShareWordUnit": "kelime",
+  "wordActivityShareListened": "Ayrıca {count} kelime dinlendi",
+  "wordActivityShareEncouragement": "Söylediğin her kelime değerli.",
+  "wordActivityShareInvitation": "Birlikte pratik yap, cesaretle konuş.",
+  "wordActivityListeningSummary": "{period, select, today{Bugün {progress} kelime dinledim} week{Bu hafta {progress} kelime dinledim} other{Toplam {progress} kelime dinledim}}",
+  "wordActivitySpeakingSummary": "{period, select, today{Bugün {progress} kelime söyledim} week{Bu hafta {progress} kelime söyledim} other{Toplam {progress} kelime söyledim}}",
+  "wordActivityListening": "Dinleme",
+  "wordActivitySpeaking": "Konuşma",
+  "wordActivityTrend": "Pratik geçmişi",
+  "wordActivitySevenDays": "7 gün",
+  "wordActivityThirtyDays": "30 gün",
+  "wordActivityWords": "Kelime",
+  "wordActivityTrendEmpty": "Bu dönemde henüz kayıtlı pratik yok.",
+  "wordActivityAllTime": "Tümü"
 }

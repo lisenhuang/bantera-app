@@ -369,8 +369,12 @@
   "languagePickerTotals": "共 {languages} 种语言 · {accents} 种口音",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "已清除母语。",
@@ -516,17 +520,17 @@
   "dailyGoalRemove": "移除目标",
   "dailyGoalRemoveConfirmation": "要移除每日目标及其提醒吗？你的词语统计会保留。",
   "dailyGoalReached": "已达成今天的目标",
-  "dailyGoalProgress": "{count}/{target} 词",
+  "dailyGoalProgress": "{count}/{target} 个词",
   "dailyGoalSaveFailed": "无法保存目标，请重试。",
   "wordActivityShare": "分享",
   "wordActivityPreview": "预览",
-  "wordActivityShareHeading": "今天的\n口语练习",
+  "wordActivityShareHeading": "{language, select, English{把英语\n说出口。} Mandarin{把普通话\n说出口。} Cantonese{把粤语\n说出口。} Japanese{把日语\n说出口。} Korean{把韩语\n说出口。} French{把法语\n说出口。} German{把德语\n说出口。} Spanish{把西班牙语\n说出口。} Portuguese{把葡萄牙语\n说出口。} Italian{把意大利语\n说出口。} Arabic{把阿拉伯语\n说出口。} Danish{把丹麦语\n说出口。} Dutch{把荷兰语\n说出口。} Hindi{把印地语\n说出口。} Indonesian{把印尼语\n说出口。} Norwegian_Bokmal{把挪威语\n说出口。} Polish{把波兰语\n说出口。} Russian{把俄语\n说出口。} Swedish{把瑞典语\n说出口。} Thai{把泰语\n说出口。} Turkish{把土耳其语\n说出口。} Ukrainian{把乌克兰语\n说出口。} Vietnamese{把越南语\n说出口。} other{开口练习\n每一天。}}",
   "wordActivitySavePhotos": "保存到相册",
   "wordActivitySaved": "已保存到相册",
   "wordActivitySaveFailed": "无法保存图片，请重试。",
   "wordActivityShareFailed": "无法分享图片，请重试。",
   "wordActivityPhotoPermission": "请在设置中允许 Bantera 添加照片，然后重试。",
-  "wordActivityScanToJoin": "扫码加入",
+  "wordActivityScanToJoin": "扫码一起练",
   "dailyGoalNoRequirement": "不设目标要求",
   "wordActivityLearningLanguage": "正在学习 {language}",
   "wordActivityLegacyLabel": "之前的活动（语言未知）",
@@ -544,5 +548,21 @@
   "dailyGoalRepeatWeekdays": "工作日",
   "dailyGoalRepeatWeekends": "周末",
   "dailyGoalRepeatOnceHint": "在下一个设定时间提醒一次，不重复。",
-  "discoverAllAccents": "所有口音"
+  "discoverAllAccents": "所有口音",
+  "wordActivityShareToday": "今日练习",
+  "wordActivityShareSpokenToday": "今天说了",
+  "wordActivityShareWordUnit": "个词",
+  "wordActivityShareListened": "也听了 {count} 个词",
+  "wordActivityShareEncouragement": "每一次开口，都算数。",
+  "wordActivityShareInvitation": "一起练，敢开口。",
+  "wordActivityListeningSummary": "{period, select, today{今天听了 {progress} 个词} week{本周听了 {progress} 个词} other{累计听了 {progress} 个词}}",
+  "wordActivitySpeakingSummary": "{period, select, today{今天说了 {progress} 个词} week{本周说了 {progress} 个词} other{累计说了 {progress} 个词}}",
+  "wordActivityListening": "听力",
+  "wordActivitySpeaking": "口语",
+  "wordActivityTrend": "练习趋势",
+  "wordActivitySevenDays": "近7天",
+  "wordActivityThirtyDays": "近30天",
+  "wordActivityWords": "词数",
+  "wordActivityTrendEmpty": "这个时段还没有练习记录。",
+  "wordActivityAllTime": "全部"
 }

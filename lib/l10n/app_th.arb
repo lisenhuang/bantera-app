@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} ภาษา · {accents} สำเนียง",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "ล้างภาษาแม่แล้ว",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "บันทึกเป้าหมายไม่ได้ โปรดลองอีกครั้ง",
   "wordActivityShare": "แชร์",
   "wordActivityPreview": "ดูตัวอย่าง",
-  "wordActivityShareHeading": "การพูดของฉัน\nวันนี้",
+  "wordActivityShareHeading": "พูดออกมา\nในแบบของคุณ",
   "wordActivitySavePhotos": "บันทึกลงรูปภาพ",
   "wordActivitySaved": "บันทึกลงรูปภาพแล้ว",
   "wordActivitySaveFailed": "บันทึกรูปภาพไม่ได้ โปรดลองอีกครั้ง",
   "wordActivityShareFailed": "แชร์รูปภาพไม่ได้ โปรดลองอีกครั้ง",
   "wordActivityPhotoPermission": "อนุญาตให้ Bantera เพิ่มรูปภาพในการตั้งค่า แล้วลองอีกครั้ง",
-  "wordActivityScanToJoin": "สแกนเพื่อเข้าร่วม",
+  "wordActivityScanToJoin": "สแกนแล้วมาฝึกด้วยกัน",
   "dailyGoalNoRequirement": "ไม่มีข้อกำหนดเป้าหมาย",
   "wordActivityLearningLanguage": "กำลังเรียน {language}",
   "wordActivityLegacyLabel": "กิจกรรมก่อนหน้า (ไม่ทราบภาษา)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "วันธรรมดา",
   "dailyGoalRepeatWeekends": "วันหยุดสุดสัปดาห์",
   "dailyGoalRepeatOnceHint": "แจ้งเตือนครั้งเดียวในเวลาที่เลือกครั้งถัดไป โดยไม่ทำซ้ำ",
-  "discoverAllAccents": "ทุกสำเนียง"
+  "discoverAllAccents": "ทุกสำเนียง",
+  "wordActivityShareToday": "ฝึกวันนี้",
+  "wordActivityShareSpokenToday": "วันนี้พูดไป",
+  "wordActivityShareWordUnit": "คำ",
+  "wordActivityShareListened": "และฟังไป {count} คำ",
+  "wordActivityShareEncouragement": "ทุกคำที่พูดมีความหมาย",
+  "wordActivityShareInvitation": "ฝึกด้วยกัน กล้าพูดมากขึ้น",
+  "wordActivityListeningSummary": "{period, select, today{วันนี้ฟังไป {progress} คำ} week{สัปดาห์นี้ฟังไป {progress} คำ} other{ฟังไปทั้งหมด {progress} คำ}}",
+  "wordActivitySpeakingSummary": "{period, select, today{วันนี้พูดไป {progress} คำ} week{สัปดาห์นี้พูดไป {progress} คำ} other{พูดไปทั้งหมด {progress} คำ}}",
+  "wordActivityListening": "การฟัง",
+  "wordActivitySpeaking": "การพูด",
+  "wordActivityTrend": "แนวโน้มการฝึก",
+  "wordActivitySevenDays": "7 วัน",
+  "wordActivityThirtyDays": "30 วัน",
+  "wordActivityWords": "จำนวนคำ",
+  "wordActivityTrendEmpty": "ยังไม่มีบันทึกการฝึกในช่วงเวลานี้",
+  "wordActivityAllTime": "ทั้งหมด"
 }

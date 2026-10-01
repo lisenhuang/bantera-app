@@ -369,8 +369,12 @@
   "languagePickerTotals": "{languages}言語・{accents}アクセント",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "母語をクリアしました。",
@@ -520,13 +524,13 @@
   "dailyGoalSaveFailed": "目標を保存できませんでした。再試行してください。",
   "wordActivityShare": "共有",
   "wordActivityPreview": "プレビュー",
-  "wordActivityShareHeading": "今日の\nスピーキング",
+  "wordActivityShareHeading": "声に出そう。\n自分の言葉で。",
   "wordActivitySavePhotos": "写真に保存",
   "wordActivitySaved": "写真に保存しました",
   "wordActivitySaveFailed": "画像を保存できませんでした。再試行してください。",
   "wordActivityShareFailed": "画像を共有できませんでした。再試行してください。",
   "wordActivityPhotoPermission": "設定でBanteraの写真追加を許可して再試行してください。",
-  "wordActivityScanToJoin": "スキャンして参加",
+  "wordActivityScanToJoin": "スキャンして一緒に練習",
   "dailyGoalNoRequirement": "目標なし",
   "wordActivityLearningLanguage": "学習中: {language}",
   "wordActivityLegacyLabel": "過去のアクティビティ（言語不明）",
@@ -544,5 +548,21 @@
   "dailyGoalRepeatWeekdays": "平日",
   "dailyGoalRepeatWeekends": "週末",
   "dailyGoalRepeatOnceHint": "次の設定時刻に一度だけ通知し、繰り返しません。",
-  "discoverAllAccents": "すべてのアクセント"
+  "discoverAllAccents": "すべてのアクセント",
+  "wordActivityShareToday": "今日の練習",
+  "wordActivityShareSpokenToday": "今日、声に出した言葉",
+  "wordActivityShareWordUnit": "語",
+  "wordActivityShareListened": "聞いた言葉は {count} 語",
+  "wordActivityShareEncouragement": "ひと言ずつ、積み重ねよう。",
+  "wordActivityShareInvitation": "一緒に練習。声に出そう。",
+  "wordActivityListeningSummary": "{period, select, today{今日は {progress} 語聞きました} week{今週は {progress} 語聞きました} other{これまでに {progress} 語聞きました}}",
+  "wordActivitySpeakingSummary": "{period, select, today{今日は {progress} 語話しました} week{今週は {progress} 語話しました} other{これまでに {progress} 語話しました}}",
+  "wordActivityListening": "リスニング",
+  "wordActivitySpeaking": "スピーキング",
+  "wordActivityTrend": "練習の推移",
+  "wordActivitySevenDays": "7日間",
+  "wordActivityThirtyDays": "30日間",
+  "wordActivityWords": "語数",
+  "wordActivityTrendEmpty": "この期間の練習記録はまだありません。",
+  "wordActivityAllTime": "全期間"
 }

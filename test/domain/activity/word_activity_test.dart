@@ -4,6 +4,28 @@ import 'package:app/domain/activity/voice_word_progress.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'chart history uses acknowledged totals and the selected language only',
+    () {
+      final ledger = WordActivityLedger(deviceId: 'device')
+        ..remote = {
+          '2026-09-30|en': const WordTotals(listened: 100, spoken: 20),
+        }
+        ..acknowledged = {
+          '2026-09-30|en': const WordTotals(listened: 30, spoken: 10),
+        }
+        ..local = {
+          '2026-09-30|en': const WordTotals(listened: 40, spoken: 15),
+          '2026-09-30|ja': const WordTotals(listened: 999),
+          '2026-09-30': const WordTotals(listened: 777),
+        };
+      final history = ledger.historyFor('en-NZ');
+      expect(history.keys, ['2026-09-30']);
+      expect(history.values.single.listened, 110);
+      expect(history.values.single.spoken, 25);
+      expect(ledger.historyFor('fr'), isEmpty);
+    },
+  );
   test('languages stay separate, accents merge and switching is immediate', () {
     final day = DateTime(2026, 9, 30);
     final ledger = WordActivityLedger(deviceId: 'device');

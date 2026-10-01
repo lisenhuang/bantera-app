@@ -1615,7 +1615,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get wordActivityPreview => 'Pratinjau';
 
   @override
-  String get wordActivityShareHeading => 'Latihan bicaraku\nhari ini';
+  String wordActivityShareHeading(String language) {
+    return 'Ucapkan.\nDengan suaramu.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Simpan ke Foto';
@@ -1636,7 +1638,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Izinkan Bantera menambahkan foto di Pengaturan, lalu coba lagi.';
 
   @override
-  String get wordActivityScanToJoin => 'Pindai untuk bergabung';
+  String get wordActivityScanToJoin => 'Pindai untuk berlatih';
 
   @override
   String get dailyGoalNoRequirement => 'Tanpa target wajib';
@@ -1697,4 +1699,84 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Semua aksen';
+
+  @override
+  String get wordActivityShareToday => 'Latihan hari ini';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Hari ini mengucapkan';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return 'kata';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Juga mendengarkan $countString kata';
+  }
+
+  @override
+  String get wordActivityShareEncouragement =>
+      'Setiap kata yang diucapkan berarti.';
+
+  @override
+  String get wordActivityShareInvitation => 'Latihan bersama. Berani bicara.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Hari ini mendengarkan $progress kata',
+      'week': 'Minggu ini mendengarkan $progress kata',
+      'other': 'Total sudah mendengarkan $progress kata',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Hari ini mengucapkan $progress kata',
+      'week': 'Minggu ini mengucapkan $progress kata',
+      'other': 'Total sudah mengucapkan $progress kata',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => 'Mendengarkan';
+
+  @override
+  String get wordActivitySpeaking => 'Berbicara';
+
+  @override
+  String get wordActivityTrend => 'Perkembangan latihan';
+
+  @override
+  String get wordActivitySevenDays => '7 hari';
+
+  @override
+  String get wordActivityThirtyDays => '30 hari';
+
+  @override
+  String get wordActivityWords => 'Kata';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'Belum ada latihan tercatat dalam periode ini.';
+
+  @override
+  String get wordActivityAllTime => 'Semua';
 }

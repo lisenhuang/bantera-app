@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} ngôn ngữ · {accents} giọng",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Đã xóa tiếng mẹ đẻ.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Không thể lưu mục tiêu. Vui lòng thử lại.",
   "wordActivityShare": "Chia sẻ",
   "wordActivityPreview": "Xem trước",
-  "wordActivityShareHeading": "Luyện nói của tôi\nhôm nay",
+  "wordActivityShareHeading": "Cứ nói ra.\nBằng lời của bạn.",
   "wordActivitySavePhotos": "Lưu vào Ảnh",
   "wordActivitySaved": "Đã lưu vào Ảnh",
   "wordActivitySaveFailed": "Không thể lưu ảnh. Vui lòng thử lại.",
   "wordActivityShareFailed": "Không thể chia sẻ ảnh. Vui lòng thử lại.",
   "wordActivityPhotoPermission": "Cho phép Bantera thêm ảnh trong Cài đặt rồi thử lại.",
-  "wordActivityScanToJoin": "Quét để tham gia",
+  "wordActivityScanToJoin": "Quét mã để cùng luyện",
   "dailyGoalNoRequirement": "Không yêu cầu mục tiêu",
   "wordActivityLearningLanguage": "Đang học {language}",
   "wordActivityLegacyLabel": "Hoạt động trước đây (không rõ ngôn ngữ)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Ngày trong tuần",
   "dailyGoalRepeatWeekends": "Cuối tuần",
   "dailyGoalRepeatOnceHint": "Nhắc một lần vào thời điểm đã chọn tiếp theo, không lặp lại.",
-  "discoverAllAccents": "Tất cả giọng"
+  "discoverAllAccents": "Tất cả giọng",
+  "wordActivityShareToday": "Luyện tập hôm nay",
+  "wordActivityShareSpokenToday": "Hôm nay đã nói",
+  "wordActivityShareWordUnit": "từ",
+  "wordActivityShareListened": "Cũng đã nghe {count} từ",
+  "wordActivityShareEncouragement": "Mỗi lần cất lời đều có ý nghĩa.",
+  "wordActivityShareInvitation": "Cùng luyện tập, tự tin cất lời.",
+  "wordActivityListeningSummary": "{period, select, today{Hôm nay đã nghe {progress} từ} week{Tuần này đã nghe {progress} từ} other{Tổng cộng đã nghe {progress} từ}}",
+  "wordActivitySpeakingSummary": "{period, select, today{Hôm nay đã nói {progress} từ} week{Tuần này đã nói {progress} từ} other{Tổng cộng đã nói {progress} từ}}",
+  "wordActivityListening": "Nghe",
+  "wordActivitySpeaking": "Nói",
+  "wordActivityTrend": "Tiến trình luyện tập",
+  "wordActivitySevenDays": "7 ngày",
+  "wordActivityThirtyDays": "30 ngày",
+  "wordActivityWords": "Số từ",
+  "wordActivityTrendEmpty": "Chưa có buổi luyện tập nào trong khoảng thời gian này.",
+  "wordActivityAllTime": "Tất cả"
 }

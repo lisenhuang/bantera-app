@@ -1627,7 +1627,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wordActivityPreview => 'Aperçu';
 
   @override
-  String get wordActivityShareHeading => 'Ce que j’ai dit\naujourd’hui';
+  String wordActivityShareHeading(String language) {
+    return 'Exprime-toi.\nÀ voix haute.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Enregistrer dans Photos';
@@ -1648,7 +1650,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Autorise Bantera à ajouter des photos dans les réglages, puis réessaie.';
 
   @override
-  String get wordActivityScanToJoin => 'Scanner pour nous rejoindre';
+  String get wordActivityScanToJoin => 'Scannez pour pratiquer';
 
   @override
   String get dailyGoalNoRequirement => 'Aucun objectif requis';
@@ -1708,4 +1710,132 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Tous les accents';
+
+  @override
+  String get wordActivityShareToday => 'Pratique du jour';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Aujourd’hui, j’ai dit';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'mots',
+      one: 'mot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'J’ai aussi écouté $countString mots',
+      one: 'J’ai aussi écouté $countString mot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Chaque mot prononcé compte.';
+
+  @override
+  String get wordActivityShareInvitation =>
+      'Pratiquons ensemble. Osons parler.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Aujourd’hui, j’ai écouté $progress mots',
+      one: 'Aujourd’hui, j’ai écouté $progress mot',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cette semaine, j’ai écouté $progress mots',
+      one: 'Cette semaine, j’ai écouté $progress mot',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Au total, j’ai écouté $progress mots',
+      one: 'Au total, j’ai écouté $progress mot',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Aujourd’hui, j’ai prononcé $progress mots',
+      one: 'Aujourd’hui, j’ai prononcé $progress mot',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cette semaine, j’ai prononcé $progress mots',
+      one: 'Cette semaine, j’ai prononcé $progress mot',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Au total, j’ai prononcé $progress mots',
+      one: 'Au total, j’ai prononcé $progress mot',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String get wordActivityListening => 'Écoute';
+
+  @override
+  String get wordActivitySpeaking => 'Expression orale';
+
+  @override
+  String get wordActivityTrend => 'Évolution de la pratique';
+
+  @override
+  String get wordActivitySevenDays => '7 jours';
+
+  @override
+  String get wordActivityThirtyDays => '30 jours';
+
+  @override
+  String get wordActivityWords => 'Mots';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'Aucune pratique enregistrée pour cette période.';
+
+  @override
+  String get wordActivityAllTime => 'Tout';
 }

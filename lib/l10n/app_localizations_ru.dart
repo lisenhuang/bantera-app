@@ -1615,7 +1615,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get wordActivityPreview => 'Предпросмотр';
 
   @override
-  String get wordActivityShareHeading => 'Моя речь\nсегодня';
+  String wordActivityShareHeading(String language) {
+    return 'Скажи это.\nВслух.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Сохранить в Фото';
@@ -1636,7 +1638,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Разрешите Bantera добавлять фото в настройках и попробуйте снова.';
 
   @override
-  String get wordActivityScanToJoin => 'Сканируйте и присоединяйтесь';
+  String get wordActivityScanToJoin => 'Сканируй и практикуйся';
 
   @override
   String get dailyGoalNoRequirement => 'Цель не требуется';
@@ -1696,4 +1698,148 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Все акценты';
+
+  @override
+  String get wordActivityShareToday => 'Практика за сегодня';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Сегодня произнесено';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'слова',
+      many: 'слов',
+      few: 'слова',
+      one: 'слово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Также прослушано $countString слова',
+      many: 'Также прослушано $countString слов',
+      few: 'Также прослушано $countString слова',
+      one: 'Также прослушано $countString слово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Каждое сказанное слово важно.';
+
+  @override
+  String get wordActivityShareInvitation =>
+      'Практикуемся вместе. Говорим смелее.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сегодня прослушано $progress слова',
+      many: 'Сегодня прослушано $progress слов',
+      few: 'Сегодня прослушано $progress слова',
+      one: 'Сегодня прослушано $progress слово',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'За эту неделю прослушано $progress слова',
+      many: 'За эту неделю прослушано $progress слов',
+      few: 'За эту неделю прослушано $progress слова',
+      one: 'За эту неделю прослушано $progress слово',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Всего прослушано $progress слова',
+      many: 'Всего прослушано $progress слов',
+      few: 'Всего прослушано $progress слова',
+      one: 'Всего прослушано $progress слово',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Сегодня произнесено $progress слова',
+      many: 'Сегодня произнесено $progress слов',
+      few: 'Сегодня произнесено $progress слова',
+      one: 'Сегодня произнесено $progress слово',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'За эту неделю произнесено $progress слова',
+      many: 'За эту неделю произнесено $progress слов',
+      few: 'За эту неделю произнесено $progress слова',
+      one: 'За эту неделю произнесено $progress слово',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Всего произнесено $progress слова',
+      many: 'Всего произнесено $progress слов',
+      few: 'Всего произнесено $progress слова',
+      one: 'Всего произнесено $progress слово',
+    );
+    String _temp3 = intl.Intl.selectLogic(period, {
+      'today': '$_temp0',
+      'week': '$_temp1',
+      'other': '$_temp2',
+    });
+    return '$_temp3';
+  }
+
+  @override
+  String get wordActivityListening => 'Аудирование';
+
+  @override
+  String get wordActivitySpeaking => 'Говорение';
+
+  @override
+  String get wordActivityTrend => 'Динамика практики';
+
+  @override
+  String get wordActivitySevenDays => '7 дней';
+
+  @override
+  String get wordActivityThirtyDays => '30 дней';
+
+  @override
+  String get wordActivityWords => 'Слова';
+
+  @override
+  String get wordActivityTrendEmpty =>
+      'За этот период пока нет записей о практике.';
+
+  @override
+  String get wordActivityAllTime => 'Всё время';
 }

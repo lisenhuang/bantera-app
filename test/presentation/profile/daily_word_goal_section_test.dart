@@ -4,6 +4,7 @@ import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/profile/daily_word_goal_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   for (final goal in [
@@ -40,11 +41,11 @@ void main() {
       );
       if (goal.listened > 0) {
         expect(bars.first.value, .5);
-        expect(find.text('50%'), findsOneWidget);
+        expect(find.text('300/600 words', findRichText: true), findsOneWidget);
       }
       if (goal.spoken > 0) {
         expect(bars.last.value, 1);
-        expect(find.text('100%'), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
       }
       expect(tester.takeException(), isNull);
     });
@@ -79,7 +80,53 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(DailyWordGoalSection)),
+      )!;
+      final number = NumberFormat.decimalPattern(locale.toLanguageTag());
+      expect(
+        find.text(
+          l10n.dailyGoalProgress(
+            number.format(12345678),
+            number.format(100000),
+          ),
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          l10n.dailyGoalProgress(number.format(99999), number.format(100000)),
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(FittedBox), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets(
+    'Chinese daily progress reads naturally and keeps exceeded totals',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DailyWordGoalSection(
+              goal: const DailyWordGoal(listened: 300, spoken: 150),
+              today: const WordTotals(listened: 346, spoken: 296),
+              onEdit: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('346/300 个词', findRichText: true), findsOneWidget);
+      expect(find.text('296/150 个词', findRichText: true), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

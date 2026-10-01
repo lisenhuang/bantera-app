@@ -369,8 +369,12 @@
   "languagePickerTotals": "{languages}개 언어 · {accents}개 억양",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "모국어가 지워졌습니다.",
@@ -520,13 +524,13 @@
   "dailyGoalSaveFailed": "목표를 저장하지 못했습니다. 다시 시도하세요.",
   "wordActivityShare": "공유",
   "wordActivityPreview": "미리보기",
-  "wordActivityShareHeading": "오늘의\n말하기",
+  "wordActivityShareHeading": "하고 싶은 말,\n소리 내어 봐요.",
   "wordActivitySavePhotos": "사진에 저장",
   "wordActivitySaved": "사진에 저장됨",
   "wordActivitySaveFailed": "이미지를 저장하지 못했습니다. 다시 시도하세요.",
   "wordActivityShareFailed": "이미지를 공유하지 못했습니다. 다시 시도하세요.",
   "wordActivityPhotoPermission": "설정에서 Bantera의 사진 추가를 허용한 후 다시 시도하세요.",
-  "wordActivityScanToJoin": "스캔하여 참여",
+  "wordActivityScanToJoin": "스캔하고 함께 연습해요",
   "dailyGoalNoRequirement": "목표 없음",
   "wordActivityLearningLanguage": "학습 중: {language}",
   "wordActivityLegacyLabel": "이전 활동 (언어 알 수 없음)",
@@ -544,5 +548,21 @@
   "dailyGoalRepeatWeekdays": "평일",
   "dailyGoalRepeatWeekends": "주말",
   "dailyGoalRepeatOnceHint": "다음 설정 시간에 한 번만 알림을 보내며 반복하지 않습니다.",
-  "discoverAllAccents": "모든 억양"
+  "discoverAllAccents": "모든 억양",
+  "wordActivityShareToday": "오늘의 연습",
+  "wordActivityShareSpokenToday": "오늘 말한 단어",
+  "wordActivityShareWordUnit": "개",
+  "wordActivityShareListened": "들은 단어도 {count}개",
+  "wordActivityShareEncouragement": "말 한마디도 소중한 연습.",
+  "wordActivityShareInvitation": "함께 연습하고, 자신 있게 말해요.",
+  "wordActivityListeningSummary": "{period, select, today{오늘 {progress}단어를 들었어요} week{이번 주 {progress}단어를 들었어요} other{지금까지 {progress}단어를 들었어요}}",
+  "wordActivitySpeakingSummary": "{period, select, today{오늘 {progress}단어를 말했어요} week{이번 주 {progress}단어를 말했어요} other{지금까지 {progress}단어를 말했어요}}",
+  "wordActivityListening": "듣기",
+  "wordActivitySpeaking": "말하기",
+  "wordActivityTrend": "연습 추이",
+  "wordActivitySevenDays": "7일",
+  "wordActivityThirtyDays": "30일",
+  "wordActivityWords": "단어 수",
+  "wordActivityTrendEmpty": "이 기간에는 아직 연습 기록이 없어요.",
+  "wordActivityAllTime": "전체"
 }

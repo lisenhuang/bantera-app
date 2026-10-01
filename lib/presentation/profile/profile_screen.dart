@@ -212,6 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 24),
                 WordActivitySection(
+                  history: WordActivityNotifier.instance.historyFor(
+                    profile.learningLanguage,
+                  ),
                   today: activity.today,
                   week: activity.week,
                   total: activity.total,

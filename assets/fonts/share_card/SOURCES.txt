@@ -1,0 +1,4 @@
+Source: https://github.com/google/fonts/tree/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl
+Latin: inter; SC: notosanssc; TC: notosanstc; JP: notosansjp; KR: notosanskr; Thai: notosansthai.
+Derived with scripts/build_share_card_fonts.py. Asian subsets cover localized share strings; fonts are statically instanced and renamed BanteraShare*.
+Original copyrights and SIL Open Font Licenses are in the accompanying *-OFL.txt files.

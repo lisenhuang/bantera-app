@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} langues · {accents} accents",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Langue maternelle effacée.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Impossible d’enregistrer l’objectif. Réessaie.",
   "wordActivityShare": "Partager",
   "wordActivityPreview": "Aperçu",
-  "wordActivityShareHeading": "Ce que j’ai dit\naujourd’hui",
+  "wordActivityShareHeading": "Exprime-toi.\nÀ voix haute.",
   "wordActivitySavePhotos": "Enregistrer dans Photos",
   "wordActivitySaved": "Enregistré dans Photos",
   "wordActivitySaveFailed": "Impossible d’enregistrer l’image. Réessaie.",
   "wordActivityShareFailed": "Impossible de partager l’image. Réessaie.",
   "wordActivityPhotoPermission": "Autorise Bantera à ajouter des photos dans les réglages, puis réessaie.",
-  "wordActivityScanToJoin": "Scanner pour nous rejoindre",
+  "wordActivityScanToJoin": "Scannez pour pratiquer",
   "dailyGoalNoRequirement": "Aucun objectif requis",
   "wordActivityLearningLanguage": "J’apprends {language}",
   "wordActivityLegacyLabel": "Activité antérieure (langue inconnue)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "En semaine",
   "dailyGoalRepeatWeekends": "Le week-end",
   "dailyGoalRepeatOnceHint": "Un rappel à la prochaine heure choisie, sans répétition.",
-  "discoverAllAccents": "Tous les accents"
+  "discoverAllAccents": "Tous les accents",
+  "wordActivityShareToday": "Pratique du jour",
+  "wordActivityShareSpokenToday": "Aujourd’hui, j’ai dit",
+  "wordActivityShareWordUnit": "{count, plural, one{mot} other{mots}}",
+  "wordActivityShareListened": "{count, plural, one{J’ai aussi écouté {count} mot} other{J’ai aussi écouté {count} mots}}",
+  "wordActivityShareEncouragement": "Chaque mot prononcé compte.",
+  "wordActivityShareInvitation": "Pratiquons ensemble. Osons parler.",
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Aujourd’hui, j’ai écouté {progress} mot} other{Aujourd’hui, j’ai écouté {progress} mots}}} week{{count, plural, one{Cette semaine, j’ai écouté {progress} mot} other{Cette semaine, j’ai écouté {progress} mots}}} other{{count, plural, one{Au total, j’ai écouté {progress} mot} other{Au total, j’ai écouté {progress} mots}}}}",
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Aujourd’hui, j’ai prononcé {progress} mot} other{Aujourd’hui, j’ai prononcé {progress} mots}}} week{{count, plural, one{Cette semaine, j’ai prononcé {progress} mot} other{Cette semaine, j’ai prononcé {progress} mots}}} other{{count, plural, one{Au total, j’ai prononcé {progress} mot} other{Au total, j’ai prononcé {progress} mots}}}}",
+  "wordActivityListening": "Écoute",
+  "wordActivitySpeaking": "Expression orale",
+  "wordActivityTrend": "Évolution de la pratique",
+  "wordActivitySevenDays": "7 jours",
+  "wordActivityThirtyDays": "30 jours",
+  "wordActivityWords": "Mots",
+  "wordActivityTrendEmpty": "Aucune pratique enregistrée pour cette période.",
+  "wordActivityAllTime": "Tout"
 }

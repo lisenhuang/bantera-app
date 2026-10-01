@@ -447,8 +447,12 @@
   "languagePickerTotals": "{languages, plural, =1{1 language} other{{languages} languages}} · {accents, plural, =1{1 accent} other{{accents} accents}}",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Native language cleared.",
@@ -633,13 +637,13 @@
   "dailyGoalSaveFailed": "Could not save your goal. Please try again.",
   "wordActivityShare": "Share",
   "wordActivityPreview": "Preview",
-  "wordActivityShareHeading": "My speaking\ntoday",
+  "wordActivityShareHeading": "Say it.\nOut loud.",
   "wordActivitySavePhotos": "Save to Photos",
   "wordActivitySaved": "Saved to Photos",
   "wordActivitySaveFailed": "Could not save the image. Please try again.",
   "wordActivityShareFailed": "Could not share the image. Please try again.",
   "wordActivityPhotoPermission": "Allow Bantera to add photos in Settings, then try again.",
-  "wordActivityScanToJoin": "Scan to join",
+  "wordActivityScanToJoin": "Scan to practise",
   "@dailyGoalPreset": {
     "placeholders": {
       "minutes": {
@@ -695,5 +699,74 @@
   "dailyGoalRepeatWeekdays": "Weekdays",
   "dailyGoalRepeatWeekends": "Weekends",
   "dailyGoalRepeatOnceHint": "One reminder at the next chosen time, without repeating.",
-  "discoverAllAccents": "All accents"
+  "discoverAllAccents": "All accents",
+  "wordActivityShareToday": "Today’s practice",
+  "wordActivityShareSpokenToday": "Today I spoke",
+  "wordActivityShareWordUnit": "{count, plural, one{word} other{words}}",
+  "wordActivityShareListened": "{count, plural, one{Also listened to {count} word} other{Also listened to {count} words}}",
+  "wordActivityShareEncouragement": "Every word you say counts.",
+  "wordActivityShareInvitation": "Practice together. Speak freely.",
+  "@wordActivityShareWordUnit": {
+    "description": "Standalone unit beside the spoken total. Pluralize using the unformatted count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@wordActivityShareListened": {
+    "description": "Complete listening caption. Keep count anywhere required by local grammar.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@wordActivityShareHeading": {
+    "description": "Share headline. language is the catalog language name with spaces replaced by underscores, for localized Chinese select variants. Other locales may keep a language-neutral headline.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Heard {progress} word today} other{Heard {progress} words today}}} week{{count, plural, one{Heard {progress} word this week} other{Heard {progress} words this week}}} other{{count, plural, one{Heard {progress} word in total} other{Heard {progress} words in total}}}}",
+  "@wordActivityListeningSummary": {
+    "description": "Complete activity sentence. period is today, week, or total. progress is a locale-formatted count or count/goal. count selects plural forms (the goal when progress is a ratio).",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Said {progress} word today} other{Said {progress} words today}}} week{{count, plural, one{Said {progress} word this week} other{Said {progress} words this week}}} other{{count, plural, one{Said {progress} word in total} other{Said {progress} words in total}}}}",
+  "@wordActivitySpeakingSummary": {
+    "description": "Complete activity sentence. period is today, week, or total. progress is a locale-formatted count or count/goal. count selects plural forms (the goal when progress is a ratio).",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "wordActivityListening": "Listening",
+  "wordActivitySpeaking": "Speaking",
+  "wordActivityTrend": "Practice over time",
+  "wordActivitySevenDays": "7 days",
+  "wordActivityThirtyDays": "30 days",
+  "wordActivityWords": "Words",
+  "wordActivityTrendEmpty": "No practice recorded in this period yet.",
+  "wordActivityAllTime": "All time"
 }

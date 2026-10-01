@@ -334,8 +334,12 @@
   "languagePickerTotals": "Языков: {languages} · Акцентов: {accents}",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Родной язык сброшен.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Не удалось сохранить цель. Попробуйте снова.",
   "wordActivityShare": "Поделиться",
   "wordActivityPreview": "Предпросмотр",
-  "wordActivityShareHeading": "Моя речь\nсегодня",
+  "wordActivityShareHeading": "Скажи это.\nВслух.",
   "wordActivitySavePhotos": "Сохранить в Фото",
   "wordActivitySaved": "Сохранено в Фото",
   "wordActivitySaveFailed": "Не удалось сохранить изображение. Попробуйте снова.",
   "wordActivityShareFailed": "Не удалось поделиться изображением. Попробуйте снова.",
   "wordActivityPhotoPermission": "Разрешите Bantera добавлять фото в настройках и попробуйте снова.",
-  "wordActivityScanToJoin": "Сканируйте и присоединяйтесь",
+  "wordActivityScanToJoin": "Сканируй и практикуйся",
   "dailyGoalNoRequirement": "Цель не требуется",
   "wordActivityLearningLanguage": "Изучаю {language}",
   "wordActivityLegacyLabel": "Прошлая активность (язык неизвестен)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "По будням",
   "dailyGoalRepeatWeekends": "По выходным",
   "dailyGoalRepeatOnceHint": "Одно напоминание в ближайшее выбранное время, без повтора.",
-  "discoverAllAccents": "Все акценты"
+  "discoverAllAccents": "Все акценты",
+  "wordActivityShareToday": "Практика за сегодня",
+  "wordActivityShareSpokenToday": "Сегодня произнесено",
+  "wordActivityShareWordUnit": "{count, plural, one{слово} few{слова} many{слов} other{слова}}",
+  "wordActivityShareListened": "{count, plural, one{Также прослушано {count} слово} few{Также прослушано {count} слова} many{Также прослушано {count} слов} other{Также прослушано {count} слова}}",
+  "wordActivityShareEncouragement": "Каждое сказанное слово важно.",
+  "wordActivityShareInvitation": "Практикуемся вместе. Говорим смелее.",
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Сегодня прослушано {progress} слово} few{Сегодня прослушано {progress} слова} many{Сегодня прослушано {progress} слов} other{Сегодня прослушано {progress} слова}}} week{{count, plural, one{За эту неделю прослушано {progress} слово} few{За эту неделю прослушано {progress} слова} many{За эту неделю прослушано {progress} слов} other{За эту неделю прослушано {progress} слова}}} other{{count, plural, one{Всего прослушано {progress} слово} few{Всего прослушано {progress} слова} many{Всего прослушано {progress} слов} other{Всего прослушано {progress} слова}}}}",
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Сегодня произнесено {progress} слово} few{Сегодня произнесено {progress} слова} many{Сегодня произнесено {progress} слов} other{Сегодня произнесено {progress} слова}}} week{{count, plural, one{За эту неделю произнесено {progress} слово} few{За эту неделю произнесено {progress} слова} many{За эту неделю произнесено {progress} слов} other{За эту неделю произнесено {progress} слова}}} other{{count, plural, one{Всего произнесено {progress} слово} few{Всего произнесено {progress} слова} many{Всего произнесено {progress} слов} other{Всего произнесено {progress} слова}}}}",
+  "wordActivityListening": "Аудирование",
+  "wordActivitySpeaking": "Говорение",
+  "wordActivityTrend": "Динамика практики",
+  "wordActivitySevenDays": "7 дней",
+  "wordActivityThirtyDays": "30 дней",
+  "wordActivityWords": "Слова",
+  "wordActivityTrendEmpty": "За этот период пока нет записей о практике.",
+  "wordActivityAllTime": "Всё время"
 }

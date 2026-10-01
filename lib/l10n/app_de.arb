@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} Sprachen · {accents} Akzente",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Muttersprache entfernt.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "Ziel konnte nicht gespeichert werden. Bitte erneut versuchen.",
   "wordActivityShare": "Teilen",
   "wordActivityPreview": "Vorschau",
-  "wordActivityShareHeading": "Mein Sprechen\nheute",
+  "wordActivityShareHeading": "Sprich los.\nLaut und frei.",
   "wordActivitySavePhotos": "In Fotos speichern",
   "wordActivitySaved": "In Fotos gespeichert",
   "wordActivitySaveFailed": "Bild konnte nicht gespeichert werden. Bitte erneut versuchen.",
   "wordActivityShareFailed": "Bild konnte nicht geteilt werden. Bitte erneut versuchen.",
   "wordActivityPhotoPermission": "Erlaube Bantera in den Einstellungen, Fotos hinzuzufügen, und versuche es erneut.",
-  "wordActivityScanToJoin": "Scannen und mitmachen",
+  "wordActivityScanToJoin": "Scannen und mitüben",
   "dailyGoalNoRequirement": "Kein Ziel erforderlich",
   "wordActivityLearningLanguage": "Ich lerne {language}",
   "wordActivityLegacyLabel": "Frühere Aktivität (Sprache unbekannt)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Werktags",
   "dailyGoalRepeatWeekends": "Wochenende",
   "dailyGoalRepeatOnceHint": "Eine Erinnerung zur nächsten gewählten Uhrzeit, ohne Wiederholung.",
-  "discoverAllAccents": "Alle Akzente"
+  "discoverAllAccents": "Alle Akzente",
+  "wordActivityShareToday": "Heute geübt",
+  "wordActivityShareSpokenToday": "Heute gesprochen",
+  "wordActivityShareWordUnit": "{count, plural, one{Wort} other{Wörter}}",
+  "wordActivityShareListened": "{count, plural, one{Auch {count} Wort gehört} other{Auch {count} Wörter gehört}}",
+  "wordActivityShareEncouragement": "Jedes gesprochene Wort zählt.",
+  "wordActivityShareInvitation": "Zusammen üben. Frei sprechen.",
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Heute {progress} Wort gehört} other{Heute {progress} Wörter gehört}}} week{{count, plural, one{Diese Woche {progress} Wort gehört} other{Diese Woche {progress} Wörter gehört}}} other{{count, plural, one{Insgesamt {progress} Wort gehört} other{Insgesamt {progress} Wörter gehört}}}}",
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Heute {progress} Wort gesprochen} other{Heute {progress} Wörter gesprochen}}} week{{count, plural, one{Diese Woche {progress} Wort gesprochen} other{Diese Woche {progress} Wörter gesprochen}}} other{{count, plural, one{Insgesamt {progress} Wort gesprochen} other{Insgesamt {progress} Wörter gesprochen}}}}",
+  "wordActivityListening": "Hören",
+  "wordActivitySpeaking": "Sprechen",
+  "wordActivityTrend": "Übungsverlauf",
+  "wordActivitySevenDays": "7 Tage",
+  "wordActivityThirtyDays": "30 Tage",
+  "wordActivityWords": "Wörter",
+  "wordActivityTrendEmpty": "Für diesen Zeitraum gibt es noch keine Übungen.",
+  "wordActivityAllTime": "Gesamt"
 }

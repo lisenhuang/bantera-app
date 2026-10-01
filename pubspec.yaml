@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.0.106+294
+version: 2.0.110+298
 
 environment:
   sdk: ^3.11.0
@@ -100,6 +100,7 @@ flutter:
   assets:
     - assets/icon.png
     - assets/word_activity/
+    - assets/fonts/share_card/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -126,3 +127,57 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  fonts:
+    - family: BanteraShareLatin600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareLatin-600.ttf
+          weight: 600
+    - family: BanteraShareLatin700
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareLatin-700.ttf
+          weight: 700
+    - family: BanteraShareLatin900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareLatin-900.ttf
+          weight: 900
+    - family: BanteraShareSC600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareSC-600.ttf
+          weight: 600
+    - family: BanteraShareSC900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareSC-900.ttf
+          weight: 900
+    - family: BanteraShareTC600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareTC-600.ttf
+          weight: 600
+    - family: BanteraShareTC900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareTC-900.ttf
+          weight: 900
+    - family: BanteraShareJP600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareJP-600.ttf
+          weight: 600
+    - family: BanteraShareJP900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareJP-900.ttf
+          weight: 900
+    - family: BanteraShareKR600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareKR-600.ttf
+          weight: 600
+    - family: BanteraShareKR900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareKR-900.ttf
+          weight: 900
+    - family: BanteraShareThai600
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareThai-600.ttf
+          weight: 600
+    - family: BanteraShareThai900
+      fonts:
+        - asset: assets/fonts/share_card/BanteraShareThai-900.ttf
+          weight: 900

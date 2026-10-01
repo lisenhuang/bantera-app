@@ -8,6 +8,7 @@ import '../../domain/activity/daily_word_goal.dart';
 import '../../domain/activity/word_activity.dart';
 import '../../l10n/app_localizations.dart';
 import 'goal_reminder_time_picker.dart';
+import 'word_activity_visuals.dart';
 
 String goalMinutes(BuildContext context, double value) =>
     (NumberFormat.decimalPattern(
@@ -29,10 +30,6 @@ class DailyWordGoalSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final target = goal;
-    final separator = switch (Localizations.localeOf(context).languageCode) {
-      'zh' || 'ja' => '：',
-      _ => ': ',
-    };
     final number = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
@@ -40,6 +37,15 @@ class DailyWordGoalSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Card(
         margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Theme.of(
+              context,
+            ).colorScheme.outlineVariant.withValues(alpha: .6),
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -78,41 +84,88 @@ class DailyWordGoalSection extends StatelessWidget {
               else ...[
                 for (final item in [
                   (
-                    label: l10n.wordActivityListened,
+                    listening: true,
+                    summary: l10n.wordActivityListeningSummary,
                     count: today.listened,
                     target: target.listened,
                   ),
                   (
-                    label: l10n.wordActivitySpoken,
+                    listening: false,
+                    summary: l10n.wordActivitySpeakingSummary,
                     count: today.spoken,
                     target: target.spoken,
                   ),
                 ].where((item) => item.target > 0)) ...[
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Text(
-                            '${item.label}$separator${l10n.dailyGoalProgress(number.format(item.count), number.format(item.target))}',
-                            maxLines: 1,
-                            softWrap: false,
+                  Semantics(
+                    label: item.summary(
+                      'today',
+                      '${number.format(item.count)}/${number.format(item.target)}',
+                      item.target,
+                    ),
+                    child: ExcludeSemantics(
+                      child: Row(
+                        children: [
+                          Tooltip(
+                            message: item.listening
+                                ? l10n.wordActivityListening
+                                : l10n.wordActivitySpeaking,
+                            child: ActivityIcon(listening: item.listening),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: number.format(item.count),
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: l10n.dailyGoalProgress(
+                                      '',
+                                      number.format(item.target),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ),
+                          if (item.count >= item.target) ...[
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: activityColor(
+                                context,
+                                listening: item.listening,
+                              ),
+                              size: 22,
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        NumberFormat.percentPattern(
-                          Localizations.localeOf(context).toLanguageTag(),
-                        ).format((item.count / item.target).clamp(0.0, 1.0)),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
+                    color: activityColor(context, listening: item.listening),
+                    backgroundColor: activityColor(
+                      context,
+                      listening: item.listening,
+                    ).withValues(alpha: .10),
+                    semanticsLabel: item.listening
+                        ? l10n.wordActivityListening
+                        : l10n.wordActivitySpeaking,
                     value: (item.count / item.target).clamp(0.0, 1.0),
                     minHeight: 6,
                     borderRadius: BorderRadius.circular(8),
@@ -248,7 +301,7 @@ class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
           _notificationTime.hour,
           _notificationTime.minute,
         );
-        if (!next.isAfter(now))
+        if (!next.isAfter(now)) {
           next = DateTime(
             now.year,
             now.month,
@@ -256,6 +309,7 @@ class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
             _notificationTime.hour,
             _notificationTime.minute,
           );
+        }
         _oneTimeReminderDate = next;
       }
     }

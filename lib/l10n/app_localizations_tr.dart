@@ -1611,7 +1611,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get wordActivityPreview => 'Önizleme';
 
   @override
-  String get wordActivityShareHeading => 'Bugünkü\nkonuşmam';
+  String wordActivityShareHeading(String language) {
+    return 'Söyle.\nSesini duyur.';
+  }
 
   @override
   String get wordActivitySavePhotos => 'Fotoğraflara kaydet';
@@ -1630,7 +1632,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Ayarlarda Bantera’nın fotoğraf eklemesine izin verip tekrar dene.';
 
   @override
-  String get wordActivityScanToJoin => 'Katılmak için tara';
+  String get wordActivityScanToJoin => 'Tara ve pratik yap';
 
   @override
   String get dailyGoalNoRequirement => 'Hedef gerekmiyor';
@@ -1690,4 +1692,83 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get discoverAllAccents => 'Tüm aksanlar';
+
+  @override
+  String get wordActivityShareToday => 'Bugünkü pratik';
+
+  @override
+  String get wordActivityShareSpokenToday => 'Bugün söylenen';
+
+  @override
+  String wordActivityShareWordUnit(int count) {
+    return 'kelime';
+  }
+
+  @override
+  String wordActivityShareListened(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Ayrıca $countString kelime dinlendi';
+  }
+
+  @override
+  String get wordActivityShareEncouragement => 'Söylediğin her kelime değerli.';
+
+  @override
+  String get wordActivityShareInvitation =>
+      'Birlikte pratik yap, cesaretle konuş.';
+
+  @override
+  String wordActivityListeningSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Bugün $progress kelime dinledim',
+      'week': 'Bu hafta $progress kelime dinledim',
+      'other': 'Toplam $progress kelime dinledim',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String wordActivitySpeakingSummary(
+    String period,
+    String progress,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'today': 'Bugün $progress kelime söyledim',
+      'week': 'Bu hafta $progress kelime söyledim',
+      'other': 'Toplam $progress kelime söyledim',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get wordActivityListening => 'Dinleme';
+
+  @override
+  String get wordActivitySpeaking => 'Konuşma';
+
+  @override
+  String get wordActivityTrend => 'Pratik geçmişi';
+
+  @override
+  String get wordActivitySevenDays => '7 gün';
+
+  @override
+  String get wordActivityThirtyDays => '30 gün';
+
+  @override
+  String get wordActivityWords => 'Kelime';
+
+  @override
+  String get wordActivityTrendEmpty => 'Bu dönemde henüz kayıtlı pratik yok.';
+
+  @override
+  String get wordActivityAllTime => 'Tümü';
 }

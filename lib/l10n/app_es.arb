@@ -334,8 +334,12 @@
   "languagePickerTotals": "{languages} idiomas · {accents} acentos",
   "@languagePickerTotals": {
     "placeholders": {
-      "languages": {"type": "int"},
-      "accents": {"type": "int"}
+      "languages": {
+        "type": "int"
+      },
+      "accents": {
+        "type": "int"
+      }
     }
   },
   "editProfileNativeLanguageCleared": "Se borró el idioma nativo.",
@@ -485,13 +489,13 @@
   "dailyGoalSaveFailed": "No se pudo guardar la meta. Inténtalo de nuevo.",
   "wordActivityShare": "Compartir",
   "wordActivityPreview": "Vista previa",
-  "wordActivityShareHeading": "Lo que hablé\nhoy",
+  "wordActivityShareHeading": "Dilo.\nEn voz alta.",
   "wordActivitySavePhotos": "Guardar en Fotos",
   "wordActivitySaved": "Guardado en Fotos",
   "wordActivitySaveFailed": "No se pudo guardar la imagen. Inténtalo de nuevo.",
   "wordActivityShareFailed": "No se pudo compartir la imagen. Inténtalo de nuevo.",
   "wordActivityPhotoPermission": "Permite a Bantera añadir fotos en Ajustes e inténtalo de nuevo.",
-  "wordActivityScanToJoin": "Escanea para unirte",
+  "wordActivityScanToJoin": "Escanea y practica",
   "dailyGoalNoRequirement": "Sin requisito de meta",
   "wordActivityLearningLanguage": "Aprendiendo {language}",
   "wordActivityLegacyLabel": "Actividad anterior (idioma desconocido)",
@@ -509,5 +513,21 @@
   "dailyGoalRepeatWeekdays": "Entre semana",
   "dailyGoalRepeatWeekends": "Fin de semana",
   "dailyGoalRepeatOnceHint": "Un recordatorio a la próxima hora elegida, sin repetición.",
-  "discoverAllAccents": "Todos los acentos"
+  "discoverAllAccents": "Todos los acentos",
+  "wordActivityShareToday": "Práctica de hoy",
+  "wordActivityShareSpokenToday": "Hoy dije",
+  "wordActivityShareWordUnit": "{count, plural, one{palabra} other{palabras}}",
+  "wordActivityShareListened": "{count, plural, one{También escuché {count} palabra} other{También escuché {count} palabras}}",
+  "wordActivityShareEncouragement": "Cada palabra que dices cuenta.",
+  "wordActivityShareInvitation": "Practiquemos. Atrévete a hablar.",
+  "wordActivityListeningSummary": "{period, select, today{{count, plural, one{Hoy escuché {progress} palabra} other{Hoy escuché {progress} palabras}}} week{{count, plural, one{Esta semana escuché {progress} palabra} other{Esta semana escuché {progress} palabras}}} other{{count, plural, one{En total escuché {progress} palabra} other{En total escuché {progress} palabras}}}}",
+  "wordActivitySpeakingSummary": "{period, select, today{{count, plural, one{Hoy dije {progress} palabra} other{Hoy dije {progress} palabras}}} week{{count, plural, one{Esta semana dije {progress} palabra} other{Esta semana dije {progress} palabras}}} other{{count, plural, one{En total dije {progress} palabra} other{En total dije {progress} palabras}}}}",
+  "wordActivityListening": "Escucha",
+  "wordActivitySpeaking": "Habla",
+  "wordActivityTrend": "Tu práctica en el tiempo",
+  "wordActivitySevenDays": "7 días",
+  "wordActivityThirtyDays": "30 días",
+  "wordActivityWords": "Palabras",
+  "wordActivityTrendEmpty": "Aún no hay práctica registrada en este período.",
+  "wordActivityAllTime": "Todo"
 }
