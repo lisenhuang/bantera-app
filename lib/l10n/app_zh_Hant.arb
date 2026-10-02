@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "沒有更多結果",
   "discoverSetLearningLanguagePrompt": "設定學習語言後即可在此查看內容",
   "discoverNoPublicContentInLanguage": "暫時沒有{language}的公開內容",
+  "discoverNoPublicContentInLanguageAtLevel": "暫時沒有 {language} 的{level}級別公開內容",
   "discoverSetLanguageToDiscover": "設定學習語言以探索內容",
   "mediaStartPractice": "開始練習",
   "mediaTranscript": "文字稿",

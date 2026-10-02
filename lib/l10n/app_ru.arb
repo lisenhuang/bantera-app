@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "Больше ничего нет",
   "discoverSetLearningLanguagePrompt": "Выбери изучаемый язык, чтобы видеть материалы",
   "discoverNoPublicContentInLanguage": "Общедоступных материалов на языке «{language}» пока нет",
+  "discoverNoPublicContentInLanguageAtLevel": "Общедоступных материалов на языке «{language}» для уровня «{level}» пока нет",
   "discoverSetLanguageToDiscover": "Выбери изучаемый язык, чтобы находить материалы",
   "mediaStartPractice": "Начать практику",
   "mediaTranscript": "Текст",

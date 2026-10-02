@@ -656,6 +656,14 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return 'Общедоступных материалов на языке «$language» для уровня «$level» пока нет';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover =>
       'Выбери изучаемый язык, чтобы находить материалы';
 

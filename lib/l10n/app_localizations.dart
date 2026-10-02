@@ -1315,6 +1315,15 @@ abstract class AppLocalizations {
   /// **'No public content in {language} yet'**
   String discoverNoPublicContentInLanguage(String language);
 
+  /// Discover empty state when a specific difficulty level is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'No public content in {language} for {level} level yet'**
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  );
+
   /// No description provided for @discoverSetLanguageToDiscover.
   ///
   /// In en, this message translates to:

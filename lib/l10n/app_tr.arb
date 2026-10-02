@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "Başka sonuç yok",
   "discoverSetLearningLanguagePrompt": "Burada içerik görmek için öğrendiğin dili ayarla",
   "discoverNoPublicContentInLanguage": "{language} dilinde henüz herkese açık içerik yok",
+  "discoverNoPublicContentInLanguageAtLevel": "{language} dilinde {level} seviyesi için henüz herkese açık içerik yok",
   "discoverSetLanguageToDiscover": "İçerik keşfetmek için öğrendiğin dili ayarla",
   "mediaStartPractice": "Pratiğe Başla",
   "mediaTranscript": "Transkript",

@@ -628,6 +628,14 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return '$language의 $level 수준 공개 콘텐츠가 아직 없습니다';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover => '학습 언어를 설정해 콘텐츠를 찾아보세요';
 
   @override

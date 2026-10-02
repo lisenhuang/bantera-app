@@ -233,6 +233,7 @@
   "discoverNoMoreResults": "더 이상 결과 없음",
   "discoverSetLearningLanguagePrompt": "학습 언어를 설정하면 여기에 콘텐츠가 표시됩니다",
   "discoverNoPublicContentInLanguage": "{language} 공개 콘텐츠가 아직 없습니다",
+  "discoverNoPublicContentInLanguageAtLevel": "{language}의 {level} 수준 공개 콘텐츠가 아직 없습니다",
   "discoverSetLanguageToDiscover": "학습 언어를 설정해 콘텐츠를 찾아보세요",
   "mediaStartPractice": "연습 시작",
   "mediaTranscript": "대본",

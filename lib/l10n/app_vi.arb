@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "Không còn kết quả",
   "discoverSetLearningLanguagePrompt": "Đặt ngôn ngữ đang học để xem nội dung tại đây",
   "discoverNoPublicContentInLanguage": "Chưa có nội dung công khai bằng {language}",
+  "discoverNoPublicContentInLanguageAtLevel": "Chưa có nội dung công khai bằng {language} cho trình độ {level}",
   "discoverSetLanguageToDiscover": "Đặt ngôn ngữ đang học để khám phá nội dung",
   "mediaStartPractice": "Bắt đầu luyện tập",
   "mediaTranscript": "Lời thoại",

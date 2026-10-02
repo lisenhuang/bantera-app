@@ -660,6 +660,14 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return 'Ainda não há conteúdo público em $language para o nível $level';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover =>
       'Defina um idioma de aprendizado para descobrir conteúdo';
 

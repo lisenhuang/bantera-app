@@ -657,6 +657,14 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return 'Публічних матеріалів мовою «$language» для рівня «$level» поки немає';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover =>
       'Вкажи мову, яку вивчаєш, щоб знаходити матеріали';
 

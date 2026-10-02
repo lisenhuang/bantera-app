@@ -624,6 +624,14 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return '$language の「$level」レベルの公開コンテンツはまだありません';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover => '学習言語を設定してコンテンツを見つけましょう';
 
   @override

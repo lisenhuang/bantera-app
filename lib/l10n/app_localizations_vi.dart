@@ -656,6 +656,14 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return 'Chưa có nội dung công khai bằng $language cho trình độ $level';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover =>
       'Đặt ngôn ngữ đang học để khám phá nội dung';
 

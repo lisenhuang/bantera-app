@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "No hay más resultados",
   "discoverSetLearningLanguagePrompt": "Elige el idioma que aprendes para ver contenido aquí",
   "discoverNoPublicContentInLanguage": "Aún no hay contenido público en {language}",
+  "discoverNoPublicContentInLanguageAtLevel": "Aún no hay contenido público en {language} para el nivel {level}",
   "discoverSetLanguageToDiscover": "Elige un idioma de aprendizaje para descubrir contenido",
   "mediaStartPractice": "Empezar a practicar",
   "mediaTranscript": "Transcripción",

@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "ไม่มีผลลัพธ์เพิ่มเติม",
   "discoverSetLearningLanguagePrompt": "ตั้งค่าภาษาที่เรียนเพื่อดูเนื้อหาที่นี่",
   "discoverNoPublicContentInLanguage": "ยังไม่มีเนื้อหาสาธารณะใน {language}",
+  "discoverNoPublicContentInLanguageAtLevel": "ยังไม่มีเนื้อหาสาธารณะใน {language} สำหรับระดับ {level}",
   "discoverSetLanguageToDiscover": "ตั้งค่าภาษาที่เรียนเพื่อสำรวจเนื้อหา",
   "mediaStartPractice": "เริ่มฝึก",
   "mediaTranscript": "บทถอดเสียง",

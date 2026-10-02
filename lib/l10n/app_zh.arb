@@ -233,6 +233,7 @@
   "discoverNoMoreResults": "没有更多了",
   "discoverSetLearningLanguagePrompt": "设置学习语言以在此查看内容",
   "discoverNoPublicContentInLanguage": "暂无 {language} 的公开内容",
+  "discoverNoPublicContentInLanguageAtLevel": "暂无 {language} 的{level}级别公开内容",
   "discoverSetLanguageToDiscover": "设置学习语言以发现内容",
   "mediaStartPractice": "开始练习",
   "mediaTranscript": "字幕稿",

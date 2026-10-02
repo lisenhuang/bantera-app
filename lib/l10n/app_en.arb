@@ -233,6 +233,18 @@
   "discoverNoMoreResults": "No more results",
   "discoverSetLearningLanguagePrompt": "Set your learning language to see content here",
   "discoverNoPublicContentInLanguage": "No public content in {language} yet",
+  "discoverNoPublicContentInLanguageAtLevel": "No public content in {language} for {level} level yet",
+  "@discoverNoPublicContentInLanguageAtLevel": {
+    "description": "Discover empty state when a specific difficulty level is selected.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
   "@discoverNoPublicContentInLanguage": {
     "placeholders": {
       "language": {

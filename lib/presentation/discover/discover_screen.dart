@@ -382,6 +382,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _buildEmptyState(BuildContext context, String? learningLang) {
     final l10n = AppLocalizations.of(context)!;
     final hasLang = learningLang != null && learningLang.isNotEmpty;
+    final level = SettingsNotifier.instance.audioLevel;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -393,7 +394,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               switch (learningLang) {
                 final l when l != null && l.isNotEmpty =>
-                  l10n.discoverNoPublicContentInLanguage(l),
+                  level == null
+                      ? l10n.discoverNoPublicContentInLanguage(l)
+                      : l10n.discoverNoPublicContentInLanguageAtLevel(
+                          l,
+                          audioLevelLabel(l10n, level),
+                        ),
                 _ => l10n.discoverSetLanguageToDiscover,
               },
               textAlign: TextAlign.center,

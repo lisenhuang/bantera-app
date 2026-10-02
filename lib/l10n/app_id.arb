@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "Tidak ada hasil lagi",
   "discoverSetLearningLanguagePrompt": "Atur bahasa yang kamu pelajari untuk melihat konten di sini",
   "discoverNoPublicContentInLanguage": "Belum ada konten publik dalam bahasa {language}",
+  "discoverNoPublicContentInLanguageAtLevel": "Belum ada konten publik dalam bahasa {language} untuk tingkat {level}",
   "discoverSetLanguageToDiscover": "Atur bahasa yang dipelajari untuk menjelajahi konten",
   "mediaStartPractice": "Mulai Latihan",
   "mediaTranscript": "Transkrip",

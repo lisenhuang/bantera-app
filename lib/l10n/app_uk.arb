@@ -198,6 +198,7 @@
   "discoverNoMoreResults": "Більше результатів немає",
   "discoverSetLearningLanguagePrompt": "Вкажи мову, яку вивчаєш, щоб побачити матеріали",
   "discoverNoPublicContentInLanguage": "Публічних матеріалів мовою «{language}» поки немає",
+  "discoverNoPublicContentInLanguageAtLevel": "Публічних матеріалів мовою «{language}» для рівня «{level}» поки немає",
   "discoverSetLanguageToDiscover": "Вкажи мову, яку вивчаєш, щоб знаходити матеріали",
   "mediaStartPractice": "Почати практику",
   "mediaTranscript": "Текст",

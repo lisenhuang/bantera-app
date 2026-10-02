@@ -618,6 +618,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return '暂无 $language 的$level级别公开内容';
+  }
+
+  @override
   String get discoverSetLanguageToDiscover => '设置学习语言以发现内容';
 
   @override
@@ -2315,6 +2323,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String discoverNoPublicContentInLanguage(String language) {
     return '暫時沒有$language的公開內容';
+  }
+
+  @override
+  String discoverNoPublicContentInLanguageAtLevel(
+    String language,
+    String level,
+  ) {
+    return '暫時沒有 $language 的$level級別公開內容';
   }
 
   @override
