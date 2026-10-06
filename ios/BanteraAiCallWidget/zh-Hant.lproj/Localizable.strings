@@ -1,0 +1,9 @@
+"ai.call.audio" = "語音通話";
+"ai.call.connecting" = "正在連接…";
+"ai.call.goodbye" = "正在道別";
+"ai.call.mute" = "靜音";
+"ai.call.unmute" = "取消靜音";
+"ai.call.speaker" = "揚聲器";
+"ai.call.end" = "結束";
+"ai.call.ended" = "通話已結束";
+"ai.call.earpiece" = "聽筒";

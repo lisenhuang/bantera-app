@@ -1816,4 +1816,37 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.';
+
+  @override
+  String get aiClearHistory => 'Geçmişi temizle';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Bu cihazdaki AI mesajları, sesler ve konuşma hafızası silinsin mi? Arama sona erer. Öğrenme içerikleri, profil ve planlanan aramalar korunur.';
+
+  @override
+  String get aiLocalHistory =>
+      'AI sohbet geçmişi yalnızca bu cihazda saklanır. Yanıt vermek için ilgili veriler AI ile paylaşılır. Arama planları sunucuda saklanır.';
+
+  @override
+  String get aiSayingGoodbye => 'Vedalaşıyor';
+
+  @override
+  String get aiSend => 'Gönder';
+
+  @override
+  String get aiPlayAudio => 'Sesi oynat';
+
+  @override
+  String get aiWelcome =>
+      'Dil pratiği arkadaşınız. Sesli mesaj gönderin veya dokuz dakikalık sesli arama başlatın.';
+
+  @override
+  String get aiChatSubtitle => 'Sesli mesajlar ve sesli aramalar';
+
+  @override
+  String get aiRecordVoiceMessage => 'Sesli mesaj kaydet';
+
+  @override
+  String get aiPrivacyNotice => 'Gizlilik bildirimi';
 }

@@ -203,6 +203,7 @@ class WordActivityNotifier extends ChangeNotifier {
     String? ownerId,
     DateTime? at,
     String? language,
+    String? speechEventId,
   }) {
     final userId = ownerId ?? _userId;
     final date = at ?? DateTime.now();
@@ -216,6 +217,14 @@ class WordActivityNotifier extends ChangeNotifier {
       if (_userId != userId || _deletedUserIds.contains(userId)) return;
       await _load(userId);
       if (_userId != userId) return;
+      if (speechEventId != null &&
+          _ledger!.recordedSpeechEvents.contains(speechEventId)) {
+        return;
+      }
+      final before = _ledger!.toJson();
+      if (speechEventId != null) {
+        _ledger!.recordedSpeechEvents.add(speechEventId);
+      }
       _ledger!.record(
         date,
         WordTotals(
@@ -224,8 +233,13 @@ class WordActivityNotifier extends ChangeNotifier {
         ),
         language: language,
       );
+      try {
+        await _save(userId, _ledger!);
+      } catch (_) {
+        _ledger = WordActivityLedger.fromJson(before);
+        rethrow;
+      }
       notifyListeners();
-      await _save(userId, _ledger!);
     });
   }
 

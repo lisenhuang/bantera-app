@@ -575,5 +575,15 @@
   "practiceHistoryEmpty": "次の練習から記録しましょう",
   "practiceHistoryDeviceNote": "レッスンを練習すると進捗が表示されます。履歴はこの端末に保存されます。",
   "practiceHistoryRemoveBody": "このレッスンを履歴から削除し、進捗と再開位置をリセットしますか？保存したメディア、字幕、単語数の合計は残ります。",
-  "practiceHistoryUnavailable": "このメディアは端末にありません。履歴から削除できます。"
+  "practiceHistoryUnavailable": "このメディアは端末にありません。履歴から削除できます。",
+  "aiClearHistory": "履歴を削除",
+  "aiClearHistoryBody": "この端末のAIメッセージ、音声、会話の記憶を削除しますか？通話も終了します。学習資料、プロフィール、折り返し予約は残ります。",
+  "aiLocalHistory": "AIチャット履歴はこの端末だけに保存されます。返信のため関連する履歴と学習データがAIに送信されます。折り返し予約はサーバーに保存されます。",
+  "aiSayingGoodbye": "お別れの挨拶中",
+  "aiSend": "送信",
+  "aiPlayAudio": "音声を再生",
+  "aiWelcome": "あなたの語学練習パートナー。ボイスメッセージを送るか、9分間の音声通話を始めましょう。",
+  "aiChatSubtitle": "ボイスメッセージと音声通話",
+  "aiRecordVoiceMessage": "ボイスメッセージを録音",
+  "aiPrivacyNotice": "プライバシーに関するお知らせ"
 }

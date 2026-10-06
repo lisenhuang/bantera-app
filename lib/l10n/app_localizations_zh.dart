@@ -1741,6 +1741,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get practiceHistoryUnavailable => '此媒体已不在本设备上，你可以将其从历史记录中移除。';
+
+  @override
+  String get aiClearHistory => '清空聊天记录';
+
+  @override
+  String get aiClearHistoryBody =>
+      '删除此设备上的 AI 消息、音频和对话记忆？当前通话也会结束。学习资料、个人资料和预约回拨不会改变。';
+
+  @override
+  String get aiLocalHistory =>
+      'AI 聊天记录仅保存在此设备上。相关记录和学习数据会发送给 AI 以生成回复。回拨预约保存在服务器上。';
+
+  @override
+  String get aiSayingGoodbye => '正在道别';
+
+  @override
+  String get aiSend => '发送';
+
+  @override
+  String get aiPlayAudio => '播放音频';
+
+  @override
+  String get aiWelcome => '你的语言练习伙伴。发送语音消息，或开始九分钟语音通话。';
+
+  @override
+  String get aiChatSubtitle => '语音消息和语音通话';
+
+  @override
+  String get aiRecordVoiceMessage => '录制语音消息';
+
+  @override
+  String get aiPrivacyNotice => '隐私说明';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3484,4 +3516,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get practiceHistoryUnavailable => '此媒體已不在本裝置上，你可以將其從歷史記錄中移除。';
+
+  @override
+  String get aiClearHistory => '清空聊天記錄';
+
+  @override
+  String get aiClearHistoryBody =>
+      '刪除此裝置上的 AI 訊息、音訊和對話記憶？目前通話也會結束。學習資料、個人資料和預約回撥不會改變。';
+
+  @override
+  String get aiLocalHistory =>
+      'AI 聊天記錄僅儲存在此裝置上。相關記錄和學習資料會傳送給 AI 以產生回覆。回撥預約儲存在伺服器上。';
+
+  @override
+  String get aiSayingGoodbye => '正在道別';
+
+  @override
+  String get aiSend => '傳送';
+
+  @override
+  String get aiPlayAudio => '播放音訊';
+
+  @override
+  String get aiWelcome => '你的語言練習夥伴。傳送語音訊息，或開始九分鐘語音通話。';
+
+  @override
+  String get aiChatSubtitle => '語音訊息和語音通話';
+
+  @override
+  String get aiRecordVoiceMessage => '錄製語音訊息';
+
+  @override
+  String get aiPrivacyNotice => '私隱說明';
 }

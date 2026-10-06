@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Sua próxima prática começa aqui",
   "practiceHistoryDeviceNote": "Pratique uma lição para ver seu progresso aqui. O histórico é salvo neste dispositivo.",
   "practiceHistoryRemoveBody": "Remover esta lição do histórico e redefinir o progresso e o ponto de retomada? Suas mídias, frases salvas e totais de palavras serão mantidos.",
-  "practiceHistoryUnavailable": "Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico."
+  "practiceHistoryUnavailable": "Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico.",
+  "aiClearHistory": "Limpar histórico",
+  "aiClearHistoryBody": "Eliminar mensagens, áudios e memórias da conversa com IA neste dispositivo? A chamada terminará. A biblioteca, o perfil e as chamadas agendadas serão mantidos.",
+  "aiLocalHistory": "O histórico de chat com IA é guardado apenas neste dispositivo. Os dados relevantes são enviados à IA para responder. As chamadas agendadas são guardadas no servidor.",
+  "aiSayingGoodbye": "A despedir-se",
+  "aiSend": "Enviar",
+  "aiPlayAudio": "Reproduzir áudio",
+  "aiWelcome": "O seu parceiro para praticar idiomas. Envie uma mensagem de voz ou inicie uma chamada de áudio de nove minutos.",
+  "aiChatSubtitle": "Mensagens de voz e chamadas de áudio",
+  "aiRecordVoiceMessage": "Gravar uma mensagem de voz",
+  "aiPrivacyNotice": "Aviso de privacidade"
 }

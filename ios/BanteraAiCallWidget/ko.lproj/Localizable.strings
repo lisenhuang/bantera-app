@@ -1,0 +1,9 @@
+"ai.call.audio" = "음성 통화";
+"ai.call.connecting" = "연결 중...";
+"ai.call.goodbye" = "작별 인사 중";
+"ai.call.mute" = "음소거";
+"ai.call.unmute" = "음소거 해제";
+"ai.call.speaker" = "스피커";
+"ai.call.end" = "종료";
+"ai.call.ended" = "통화 종료";
+"ai.call.earpiece" = "수화부";

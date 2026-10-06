@@ -1,0 +1,9 @@
+"ai.call.audio" = "โทรด้วยเสียง";
+"ai.call.connecting" = "กำลังเชื่อมต่อ...";
+"ai.call.goodbye" = "กำลังบอกลา";
+"ai.call.mute" = "ปิดเสียง";
+"ai.call.unmute" = "เปิดเสียง";
+"ai.call.speaker" = "ลำโพง";
+"ai.call.end" = "วางสาย";
+"ai.call.ended" = "สิ้นสุดการโทร";
+"ai.call.earpiece" = "หูฟังโทรศัพท์";

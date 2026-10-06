@@ -1819,4 +1819,37 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.';
+
+  @override
+  String get aiClearHistory => 'Xóa lịch sử';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Xóa tin nhắn AI, âm thanh và ký ức hội thoại trên thiết bị này? Cuộc gọi sẽ kết thúc. Tài liệu học, hồ sơ và lịch gọi lại vẫn được giữ.';
+
+  @override
+  String get aiLocalHistory =>
+      'Lịch sử trò chuyện AI chỉ lưu trên thiết bị này. Dữ liệu liên quan được gửi đến AI để trả lời. Lịch gọi lại được lưu trên máy chủ.';
+
+  @override
+  String get aiSayingGoodbye => 'Đang chào tạm biệt';
+
+  @override
+  String get aiSend => 'Gửi';
+
+  @override
+  String get aiPlayAudio => 'Phát âm thanh';
+
+  @override
+  String get aiWelcome =>
+      'Bạn đồng hành luyện ngôn ngữ. Gửi tin nhắn thoại hoặc bắt đầu cuộc gọi thoại chín phút.';
+
+  @override
+  String get aiChatSubtitle => 'Tin nhắn thoại và cuộc gọi thoại';
+
+  @override
+  String get aiRecordVoiceMessage => 'Ghi âm tin nhắn thoại';
+
+  @override
+  String get aiPrivacyNotice => 'Thông báo quyền riêng tư';
 }

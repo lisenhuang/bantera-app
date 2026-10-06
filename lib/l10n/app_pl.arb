@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Tutaj zaczyna się kolejne ćwiczenie",
   "practiceHistoryDeviceNote": "Przećwicz lekcję, aby zobaczyć postępy. Historia jest zapisywana na tym urządzeniu.",
   "practiceHistoryRemoveBody": "Usunąć lekcję z historii i zresetować jej postępy oraz punkt wznowienia? Zapisane multimedia, zdania i sumy słów pozostaną.",
-  "practiceHistoryUnavailable": "Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii."
+  "practiceHistoryUnavailable": "Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii.",
+  "aiClearHistory": "Wyczyść historię",
+  "aiClearHistoryBody": "Usunąć wiadomości AI, dźwięk i pamięć rozmowy z tego urządzenia? Połączenie zostanie zakończone. Materiały, profil i zaplanowane połączenia pozostaną.",
+  "aiLocalHistory": "Historia czatu AI jest zapisana tylko na tym urządzeniu. Potrzebne dane są wysyłane do AI w celu odpowiedzi. Harmonogramy połączeń są przechowywane na serwerze.",
+  "aiSayingGoodbye": "Pożegnanie",
+  "aiSend": "Wyślij",
+  "aiPlayAudio": "Odtwórz dźwięk",
+  "aiWelcome": "Twój partner do nauki języka. Wyślij wiadomość głosową lub rozpocznij dziewięciominutową rozmowę głosową.",
+  "aiChatSubtitle": "Wiadomości głosowe i rozmowy audio",
+  "aiRecordVoiceMessage": "Nagraj wiadomość głosową",
+  "aiPrivacyNotice": "Informacja o prywatności"
 }

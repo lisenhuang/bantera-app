@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Bir sonraki alıştırman burada başlıyor",
   "practiceHistoryDeviceNote": "İlerlemeni burada görmek için bir ders çalış. Geçmiş bu cihazda saklanır.",
   "practiceHistoryRemoveBody": "Bu ders geçmişten kaldırılsın ve ilerleme ile devam noktası sıfırlansın mı? Kayıtlı medya, cümleler ve toplam kelime sayıları korunur.",
-  "practiceHistoryUnavailable": "Bu medya artık cihazda yok. Geçmişten kaldırabilirsin."
+  "practiceHistoryUnavailable": "Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.",
+  "aiClearHistory": "Geçmişi temizle",
+  "aiClearHistoryBody": "Bu cihazdaki AI mesajları, sesler ve konuşma hafızası silinsin mi? Arama sona erer. Öğrenme içerikleri, profil ve planlanan aramalar korunur.",
+  "aiLocalHistory": "AI sohbet geçmişi yalnızca bu cihazda saklanır. Yanıt vermek için ilgili veriler AI ile paylaşılır. Arama planları sunucuda saklanır.",
+  "aiSayingGoodbye": "Vedalaşıyor",
+  "aiSend": "Gönder",
+  "aiPlayAudio": "Sesi oynat",
+  "aiWelcome": "Dil pratiği arkadaşınız. Sesli mesaj gönderin veya dokuz dakikalık sesli arama başlatın.",
+  "aiChatSubtitle": "Sesli mesajlar ve sesli aramalar",
+  "aiRecordVoiceMessage": "Sesli mesaj kaydet",
+  "aiPrivacyNotice": "Gizlilik bildirimi"
 }

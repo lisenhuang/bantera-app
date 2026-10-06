@@ -1,0 +1,9 @@
+"ai.call.audio" = "音声通話";
+"ai.call.connecting" = "接続中...";
+"ai.call.goodbye" = "お別れの挨拶中";
+"ai.call.mute" = "ミュート";
+"ai.call.unmute" = "ミュート解除";
+"ai.call.speaker" = "スピーカー";
+"ai.call.end" = "終了";
+"ai.call.ended" = "通話終了";
+"ai.call.earpiece" = "受話口";

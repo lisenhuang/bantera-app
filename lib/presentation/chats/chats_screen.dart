@@ -6,6 +6,8 @@ import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
+import 'ai/ai_chat_screen.dart';
+import 'ai/ai_avatar.dart';
 import 'chat_conversation_screen.dart';
 import 'chat_menu_item_row.dart';
 import 'group_chat_presentation.dart';
@@ -109,6 +111,35 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                       ),
                                 ),
                               ),
+                              _ChatAiItem() => Card(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                  leading: const AiAvatar(online: true),
+                                  title: Text(
+                                    'Bantera AI',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Text(
+                                      l10n.aiChatSubtitle,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const AiChatScreen(),
+                                    ),
+                                  ),
+                                ),
+                              ),
                               _ChatThreadItem() => _ThreadCard(
                                 thread: item.thread,
                                 isOnline: item.isOnline,
@@ -180,6 +211,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
     return <_ChatHomeItem>[
       _ChatSectionHeaderItem(l10n.chatOnlineSection),
+      const _ChatAiItem(),
       ...groups.map((thread) => _ChatThreadItem(thread)),
       ...visibleOnlineUsers.map((user) => _ChatUserItem(user)),
       _ChatSectionHeaderItem(l10n.chatDirectMessagesSection),
@@ -202,6 +234,10 @@ enum _ChatsMenuAction { blockedUsers }
 
 sealed class _ChatHomeItem {
   const _ChatHomeItem();
+}
+
+class _ChatAiItem extends _ChatHomeItem {
+  const _ChatAiItem();
 }
 
 class _ChatSectionHeaderItem extends _ChatHomeItem {

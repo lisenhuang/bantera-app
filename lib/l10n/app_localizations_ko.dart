@@ -1744,4 +1744,36 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get practiceHistoryUnavailable => '이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다.';
+
+  @override
+  String get aiClearHistory => '기록 지우기';
+
+  @override
+  String get aiClearHistoryBody =>
+      '이 기기의 AI 메시지, 오디오 및 대화 기억을 삭제할까요? 현재 통화도 종료됩니다. 학습 자료, 프로필 및 예약 통화는 유지됩니다.';
+
+  @override
+  String get aiLocalHistory =>
+      'AI 채팅 기록은 이 기기에만 저장됩니다. 답변을 위해 관련 기록과 학습 데이터가 AI로 전송됩니다. 통화 예약은 서버에 저장됩니다.';
+
+  @override
+  String get aiSayingGoodbye => '작별 인사 중';
+
+  @override
+  String get aiSend => '보내기';
+
+  @override
+  String get aiPlayAudio => '오디오 재생';
+
+  @override
+  String get aiWelcome => '언어 연습 파트너입니다. 음성 메시지를 보내거나 9분 음성 통화를 시작하세요.';
+
+  @override
+  String get aiChatSubtitle => '음성 메시지 및 음성 통화';
+
+  @override
+  String get aiRecordVoiceMessage => '음성 메시지 녹음';
+
+  @override
+  String get aiPrivacyNotice => '개인정보 안내';
 }

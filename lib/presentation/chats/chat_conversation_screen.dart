@@ -26,6 +26,7 @@ import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_menu_item_row.dart';
 import 'chat_image_message.dart';
+import 'chat_bubble_parts.dart';
 import 'group_chat_presentation.dart';
 
 class ChatConversationScreen extends StatefulWidget {
@@ -1151,49 +1152,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
 
 enum _DirectMenuAction { toggleMute, block, deleteDm }
 
-class _RoundedAudioProgressBar extends StatelessWidget {
-  const _RoundedAudioProgressBar({
-    required this.value,
-    required this.backgroundColor,
-    required this.foregroundColor,
-  });
-
-  final double value;
-  final Color backgroundColor;
-  final Color foregroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final clampedValue = value.clamp(0.0, 1.0);
-
-    return SizedBox(
-      height: 6,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ColoredBox(color: backgroundColor),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: clampedValue,
-                heightFactor: 1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: foregroundColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     required this.message,
@@ -1277,35 +1235,25 @@ class _MessageBubble extends StatelessWidget {
               if (message.isImage)
                 ChatImageMessage(message: message)
               else ...[
-                Row(
-                  children: [
-                    IconButton.filled(
-                      onPressed: onPlay,
-                      icon: Icon(
-                        isPlaying
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatDuration(message.durationMs),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _RoundedAudioProgressBar(
-                        value: progress,
-                        backgroundColor: theme.colorScheme.outlineVariant,
-                        foregroundColor: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatTimestamp(message.createdAt),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ],
+                ChatAudioHeader(
+                  playing: isPlaying,
+                  progress: progress,
+                  onPlay: onPlay,
+                  duration: _formatDuration(message.durationMs),
+                  trailing: showTranslateButton
+                      ? IconButton(
+                          tooltip: l10n.chatTranslate,
+                          onPressed: isTranslating ? null : onTranslate,
+                          icon: isTranslating
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.translate, size: 20),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -1338,22 +1286,6 @@ class _MessageBubble extends StatelessWidget {
                             : const Icon(Icons.replay),
                         label: Text(l10n.chatRetranscribe),
                       ),
-                    if (showTranslateButton) ...[
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: isTranslating ? null : onTranslate,
-                        icon: isTranslating
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.translate),
-                        label: Text(l10n.chatTranslate),
-                      ),
-                    ],
                   ],
                 ),
               ],
@@ -1414,6 +1346,7 @@ class _MessageBubble extends StatelessWidget {
                     ],
                   ),
                 ),
+              ChatMessageTimestamp(sentAt: message.createdAt),
             ],
           ),
         ),
@@ -1470,41 +1403,6 @@ String _formatDuration(int durationMs) {
   final minutes = totalSeconds ~/ 60;
   final seconds = totalSeconds % 60;
   return '$minutes:${seconds.toString().padLeft(2, '0')}';
-}
-
-String _formatTimestamp(DateTime time) {
-  final hour = time.hour.toString().padLeft(2, '0');
-  final minute = time.minute.toString().padLeft(2, '0');
-  final timeStr = '$hour:$minute';
-
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final msgDay = DateTime(time.year, time.month, time.day);
-  final diff = today.difference(msgDay).inDays;
-
-  if (diff == 0) return timeStr;
-
-  if (diff < 7) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return '${days[time.weekday - 1]} $timeStr';
-  }
-
-  // Older: "9 May 14:30"
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${time.day} ${months[time.month - 1]} $timeStr';
 }
 
 class _GroupSettingsScreen extends StatelessWidget {

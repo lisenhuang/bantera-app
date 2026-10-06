@@ -1879,4 +1879,37 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen.';
+
+  @override
+  String get aiClearHistory => 'Verlauf löschen';
+
+  @override
+  String get aiClearHistoryBody =>
+      'KI-Nachrichten, Audio und Gesprächserinnerungen auf diesem Gerät löschen? Das Gespräch wird beendet. Lernmaterial, Profil und Rückruftermine bleiben erhalten.';
+
+  @override
+  String get aiLocalHistory =>
+      'Der KI-Chatverlauf wird nur auf diesem Gerät gespeichert. Relevante Verlaufs- und Lerndaten werden für Antworten an die KI gesendet. Rückruftermine werden auf dem Server gespeichert.';
+
+  @override
+  String get aiSayingGoodbye => 'Verabschiedung';
+
+  @override
+  String get aiSend => 'Senden';
+
+  @override
+  String get aiPlayAudio => 'Audio abspielen';
+
+  @override
+  String get aiWelcome =>
+      'Dein Sprachlernpartner. Sende eine Sprachnachricht oder starte ein neunminütiges Audiogespräch.';
+
+  @override
+  String get aiChatSubtitle => 'Sprachnachrichten und Audioanrufe';
+
+  @override
+  String get aiRecordVoiceMessage => 'Sprachnachricht aufnehmen';
+
+  @override
+  String get aiPrivacyNotice => 'Datenschutzhinweis';
 }

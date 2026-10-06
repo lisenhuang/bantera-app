@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/api_config_notifier.dart';
+import 'core/ai_callback_notifier.dart';
+import 'presentation/chats/ai/ai_callback_host.dart';
 import 'core/app_locale.dart';
 import 'core/app_resume_notifier.dart';
 import 'core/auth_session_notifier.dart';
@@ -33,6 +35,7 @@ Future<void> main() async {
   WordActivityNotifier.instance;
   ChatSessionNotifier.instance;
   PushNotificationsService.instance;
+  AiCallbackNotifier.instance;
   DmCallNotifier.instance;
   // Preload language lists in the background so pickers are fast on first open.
   unawaited(
@@ -98,6 +101,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               children: [
                 child ?? const SizedBox.shrink(),
                 const DmCallOverlayHost(),
+                const AiCallbackHost(),
               ],
             );
           },

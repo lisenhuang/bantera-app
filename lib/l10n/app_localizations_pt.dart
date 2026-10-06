@@ -1879,4 +1879,37 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico.';
+
+  @override
+  String get aiClearHistory => 'Limpar histórico';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Eliminar mensagens, áudios e memórias da conversa com IA neste dispositivo? A chamada terminará. A biblioteca, o perfil e as chamadas agendadas serão mantidos.';
+
+  @override
+  String get aiLocalHistory =>
+      'O histórico de chat com IA é guardado apenas neste dispositivo. Os dados relevantes são enviados à IA para responder. As chamadas agendadas são guardadas no servidor.';
+
+  @override
+  String get aiSayingGoodbye => 'A despedir-se';
+
+  @override
+  String get aiSend => 'Enviar';
+
+  @override
+  String get aiPlayAudio => 'Reproduzir áudio';
+
+  @override
+  String get aiWelcome =>
+      'O seu parceiro para praticar idiomas. Envie uma mensagem de voz ou inicie uma chamada de áudio de nove minutos.';
+
+  @override
+  String get aiChatSubtitle => 'Mensagens de voz e chamadas de áudio';
+
+  @override
+  String get aiRecordVoiceMessage => 'Gravar uma mensagem de voz';
+
+  @override
+  String get aiPrivacyNotice => 'Aviso de privacidade';
 }

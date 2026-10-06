@@ -1,0 +1,9 @@
+"ai.call.audio" = "Аудиозвонок";
+"ai.call.connecting" = "Соединение...";
+"ai.call.goodbye" = "Прощается";
+"ai.call.mute" = "Выкл. звук";
+"ai.call.unmute" = "Вкл. звук";
+"ai.call.speaker" = "Динамик";
+"ai.call.end" = "Завершить";
+"ai.call.ended" = "Звонок завершён";
+"ai.call.earpiece" = "Динамик у уха";

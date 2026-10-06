@@ -1,0 +1,9 @@
+"ai.call.audio" = "Audio Call";
+"ai.call.connecting" = "Connecting...";
+"ai.call.goodbye" = "Saying goodbye";
+"ai.call.mute" = "Mute";
+"ai.call.unmute" = "Unmute";
+"ai.call.speaker" = "Speaker";
+"ai.call.end" = "End";
+"ai.call.ended" = "Call ended";
+"ai.call.earpiece" = "Earpiece";

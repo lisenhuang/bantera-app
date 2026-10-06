@@ -10,6 +10,7 @@ import '../infrastructure/chat_api_client.dart';
 import '../infrastructure/callkit_service.dart';
 import '../infrastructure/push_notifications_service.dart';
 import 'auth_session_notifier.dart';
+import 'ai_callback_notifier.dart';
 import 'chat_session_notifier.dart';
 
 enum DmCallMediaKind { audio, video }
@@ -303,6 +304,10 @@ class DmCallNotifier extends ChangeNotifier {
     Map<String, String> payload, {
     bool fromSystem = false,
   }) async {
+    if (payload['callerUserId'] == AiCallbackNotifier.identity) {
+      await AiCallbackNotifier.instance.incoming(payload, system: fromSystem);
+      return;
+    }
     if (payload['type'] != 'incoming_call') {
       return;
     }
@@ -350,6 +355,7 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   Future<void> _handleCallKitEvent(Map<String, dynamic> event) async {
+    if (AiCallbackNotifier.instance.handles(event)) return;
     final id = event['callId']?.toString().toLowerCase();
     try {
       switch (event['event']) {

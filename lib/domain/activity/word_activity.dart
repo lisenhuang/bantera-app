@@ -58,6 +58,7 @@ class WordActivityLedger {
   WordActivityLedger({required this.deviceId});
   final String deviceId;
   DailyWordGoal? dailyGoal;
+  Set<String> recordedSpeechEvents = {};
   Map<String, WordTotals> local = {};
   Map<String, WordTotals> acknowledged = {};
   Map<String, WordTotals> remote = {};
@@ -138,6 +139,7 @@ class WordActivityLedger {
   Map<String, dynamic> toJson() => {
     'deviceId': deviceId,
     'dailyGoal': dailyGoal?.toJson(),
+    'recordedSpeechEvents': recordedSpeechEvents.toList(),
     'local': local.map((key, value) => MapEntry(key, value.toJson())),
     'acknowledged': acknowledged.map(
       (key, value) => MapEntry(key, value.toJson()),
@@ -154,6 +156,9 @@ class WordActivityLedger {
     );
     return WordActivityLedger(deviceId: json['deviceId'] as String)
       ..dailyGoal = DailyWordGoal.fromJson(json['dailyGoal'])
+      ..recordedSpeechEvents = (json['recordedSpeechEvents'] as List? ?? [])
+          .whereType<String>()
+          .toSet()
       ..local = read('local')
       ..acknowledged = read('acknowledged')
       ..remote = read('remote');

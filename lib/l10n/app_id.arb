@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Latihan berikutnya dimulai di sini",
   "practiceHistoryDeviceNote": "Latih sebuah pelajaran untuk melihat progres di sini. Riwayat disimpan di perangkat ini.",
   "practiceHistoryRemoveBody": "Hapus pelajaran ini dari riwayat dan atur ulang progres serta posisi lanjutannya? Media, frasa tersimpan, dan total kata Anda akan tetap ada.",
-  "practiceHistoryUnavailable": "Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat."
+  "practiceHistoryUnavailable": "Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.",
+  "aiClearHistory": "Hapus riwayat",
+  "aiClearHistoryBody": "Hapus pesan AI, audio, dan ingatan percakapan di perangkat ini? Panggilan akan berakhir. Materi belajar, profil, dan jadwal panggilan tetap tersimpan.",
+  "aiLocalHistory": "Riwayat chat AI hanya disimpan di perangkat ini. Riwayat dan data belajar yang relevan dikirim ke AI untuk menjawab. Jadwal panggilan disimpan di server.",
+  "aiSayingGoodbye": "Mengucapkan salam perpisahan",
+  "aiSend": "Kirim",
+  "aiPlayAudio": "Putar audio",
+  "aiWelcome": "Teman latihan bahasa Anda. Kirim pesan suara atau mulai panggilan audio sembilan menit.",
+  "aiChatSubtitle": "Pesan suara dan panggilan audio",
+  "aiRecordVoiceMessage": "Rekam pesan suara",
+  "aiPrivacyNotice": "Pemberitahuan privasi"
 }

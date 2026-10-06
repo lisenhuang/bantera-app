@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Bắt đầu buổi luyện tập tiếp theo",
   "practiceHistoryDeviceNote": "Luyện tập một bài học để xem tiến độ tại đây. Lịch sử được lưu trên thiết bị này.",
   "practiceHistoryRemoveBody": "Xóa bài học này khỏi lịch sử và đặt lại tiến độ cùng vị trí tiếp tục? Nội dung, câu đã lưu và tổng số từ sẽ được giữ lại.",
-  "practiceHistoryUnavailable": "Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử."
+  "practiceHistoryUnavailable": "Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.",
+  "aiClearHistory": "Xóa lịch sử",
+  "aiClearHistoryBody": "Xóa tin nhắn AI, âm thanh và ký ức hội thoại trên thiết bị này? Cuộc gọi sẽ kết thúc. Tài liệu học, hồ sơ và lịch gọi lại vẫn được giữ.",
+  "aiLocalHistory": "Lịch sử trò chuyện AI chỉ lưu trên thiết bị này. Dữ liệu liên quan được gửi đến AI để trả lời. Lịch gọi lại được lưu trên máy chủ.",
+  "aiSayingGoodbye": "Đang chào tạm biệt",
+  "aiSend": "Gửi",
+  "aiPlayAudio": "Phát âm thanh",
+  "aiWelcome": "Bạn đồng hành luyện ngôn ngữ. Gửi tin nhắn thoại hoặc bắt đầu cuộc gọi thoại chín phút.",
+  "aiChatSubtitle": "Tin nhắn thoại và cuộc gọi thoại",
+  "aiRecordVoiceMessage": "Ghi âm tin nhắn thoại",
+  "aiPrivacyNotice": "Thông báo quyền riêng tư"
 }

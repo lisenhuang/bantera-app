@@ -68,4 +68,6 @@ dependencies {
     // On-device text translation (chat + practice cues) on Android. Fully on-device:
     // no API key/server; language models download at runtime, not bundled in the APK.
     implementation("com.google.mlkit:translate:17.0.3")
+    // Bundled on-device language detection; no speech or transcripts sent to a server.
+    implementation("com.google.mlkit:language-id:17.0.6")
 }

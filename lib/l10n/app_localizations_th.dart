@@ -1801,4 +1801,37 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'สื่อนี้ไม่อยู่ในอุปกรณ์แล้ว คุณสามารถนำออกจากประวัติได้';
+
+  @override
+  String get aiClearHistory => 'ล้างประวัติ';
+
+  @override
+  String get aiClearHistoryBody =>
+      'ลบข้อความ AI เสียง และความจำของบทสนทนาในอุปกรณ์นี้หรือไม่? สายปัจจุบันจะสิ้นสุด สื่อการเรียน โปรไฟล์ และสายที่นัดไว้จะยังอยู่';
+
+  @override
+  String get aiLocalHistory =>
+      'ประวัติแชต AI เก็บไว้ในอุปกรณ์นี้เท่านั้น ข้อมูลที่เกี่ยวข้องจะส่งให้ AI เพื่อตอบกลับ กำหนดเวลาโทรกลับเก็บไว้บนเซิร์ฟเวอร์';
+
+  @override
+  String get aiSayingGoodbye => 'กำลังบอกลา';
+
+  @override
+  String get aiSend => 'ส่ง';
+
+  @override
+  String get aiPlayAudio => 'เล่นเสียง';
+
+  @override
+  String get aiWelcome =>
+      'เพื่อนฝึกภาษาของคุณ ส่งข้อความเสียงหรือเริ่มสายเสียงเก้านาที';
+
+  @override
+  String get aiChatSubtitle => 'ข้อความเสียงและการโทรด้วยเสียง';
+
+  @override
+  String get aiRecordVoiceMessage => 'บันทึกข้อความเสียง';
+
+  @override
+  String get aiPrivacyNotice => 'ประกาศความเป็นส่วนตัว';
 }

@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "Deine nächste Übung beginnt hier",
   "practiceHistoryDeviceNote": "Übe eine Lektion, um hier deinen Fortschritt zu sehen. Der Verlauf wird auf diesem Gerät gespeichert.",
   "practiceHistoryRemoveBody": "Diese Lektion aus dem Verlauf entfernen und Fortschritt sowie Wiedergabeposition zurücksetzen? Gespeicherte Medien, Sätze und Wortzahlen bleiben erhalten.",
-  "practiceHistoryUnavailable": "Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen."
+  "practiceHistoryUnavailable": "Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen.",
+  "aiClearHistory": "Verlauf löschen",
+  "aiClearHistoryBody": "KI-Nachrichten, Audio und Gesprächserinnerungen auf diesem Gerät löschen? Das Gespräch wird beendet. Lernmaterial, Profil und Rückruftermine bleiben erhalten.",
+  "aiLocalHistory": "Der KI-Chatverlauf wird nur auf diesem Gerät gespeichert. Relevante Verlaufs- und Lerndaten werden für Antworten an die KI gesendet. Rückruftermine werden auf dem Server gespeichert.",
+  "aiSayingGoodbye": "Verabschiedung",
+  "aiSend": "Senden",
+  "aiPlayAudio": "Audio abspielen",
+  "aiWelcome": "Dein Sprachlernpartner. Sende eine Sprachnachricht oder starte ein neunminütiges Audiogespräch.",
+  "aiChatSubtitle": "Sprachnachrichten und Audioanrufe",
+  "aiRecordVoiceMessage": "Sprachnachricht aufnehmen",
+  "aiPrivacyNotice": "Datenschutzhinweis"
 }

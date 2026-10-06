@@ -3319,6 +3319,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This media is no longer on this device. You can remove it from history.'**
   String get practiceHistoryUnavailable;
+
+  /// No description provided for @aiClearHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history'**
+  String get aiClearHistory;
+
+  /// No description provided for @aiClearHistoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this device’s AI messages, audio and conversation memory? This ends the current call. Your learning library, profile and scheduled callbacks stay unchanged.'**
+  String get aiClearHistoryBody;
+
+  /// No description provided for @aiLocalHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'AI chat history is saved only on this device. Relevant history and learning data are sent to AI to reply. Callback schedules are stored on the server.'**
+  String get aiLocalHistory;
+
+  /// No description provided for @aiSayingGoodbye.
+  ///
+  /// In en, this message translates to:
+  /// **'Saying goodbye'**
+  String get aiSayingGoodbye;
+
+  /// No description provided for @aiSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get aiSend;
+
+  /// No description provided for @aiPlayAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Play audio'**
+  String get aiPlayAudio;
+
+  /// No description provided for @aiWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Your language practice partner. Send a voice message or start a nine-minute audio call.'**
+  String get aiWelcome;
+
+  /// No description provided for @aiChatSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice messages and audio calls'**
+  String get aiChatSubtitle;
+
+  /// No description provided for @aiRecordVoiceMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a voice message'**
+  String get aiRecordVoiceMessage;
+
+  /// No description provided for @aiPrivacyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy notice'**
+  String get aiPrivacyNotice;
 }
 
 class _AppLocalizationsDelegate

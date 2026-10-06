@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "從下一次練習開始記錄",
   "practiceHistoryDeviceNote": "練習課程後，即可在此查看進度。歷史記錄儲存在本裝置上。",
   "practiceHistoryRemoveBody": "要移除此課程的歷史記錄並重設進度和繼續位置嗎？收藏的媒體、字幕和詞數統計會保留。",
-  "practiceHistoryUnavailable": "此媒體已不在本裝置上，你可以將其從歷史記錄中移除。"
+  "practiceHistoryUnavailable": "此媒體已不在本裝置上，你可以將其從歷史記錄中移除。",
+  "aiClearHistory": "清空聊天記錄",
+  "aiClearHistoryBody": "刪除此裝置上的 AI 訊息、音訊和對話記憶？目前通話也會結束。學習資料、個人資料和預約回撥不會改變。",
+  "aiLocalHistory": "AI 聊天記錄僅儲存在此裝置上。相關記錄和學習資料會傳送給 AI 以產生回覆。回撥預約儲存在伺服器上。",
+  "aiSayingGoodbye": "正在道別",
+  "aiSend": "傳送",
+  "aiPlayAudio": "播放音訊",
+  "aiWelcome": "你的語言練習夥伴。傳送語音訊息，或開始九分鐘語音通話。",
+  "aiChatSubtitle": "語音訊息和語音通話",
+  "aiRecordVoiceMessage": "錄製語音訊息",
+  "aiPrivacyNotice": "私隱說明"
 }

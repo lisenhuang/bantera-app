@@ -801,5 +801,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "aiClearHistory": "Clear history",
+  "aiClearHistoryBody": "Delete this device’s AI messages, audio and conversation memory? This ends the current call. Your learning library, profile and scheduled callbacks stay unchanged.",
+  "aiLocalHistory": "AI chat history is saved only on this device. Relevant history and learning data are sent to AI to reply. Callback schedules are stored on the server.",
+  "aiSayingGoodbye": "Saying goodbye",
+  "aiSend": "Send",
+  "aiPlayAudio": "Play audio",
+  "aiWelcome": "Your language practice partner. Send a voice message or start a nine-minute audio call.",
+  "aiChatSubtitle": "Voice messages and audio calls",
+  "aiRecordVoiceMessage": "Record a voice message",
+  "aiPrivacyNotice": "Privacy notice"
 }

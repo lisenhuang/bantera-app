@@ -1734,4 +1734,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get practiceHistoryUnavailable => 'このメディアは端末にありません。履歴から削除できます。';
+
+  @override
+  String get aiClearHistory => '履歴を削除';
+
+  @override
+  String get aiClearHistoryBody =>
+      'この端末のAIメッセージ、音声、会話の記憶を削除しますか？通話も終了します。学習資料、プロフィール、折り返し予約は残ります。';
+
+  @override
+  String get aiLocalHistory =>
+      'AIチャット履歴はこの端末だけに保存されます。返信のため関連する履歴と学習データがAIに送信されます。折り返し予約はサーバーに保存されます。';
+
+  @override
+  String get aiSayingGoodbye => 'お別れの挨拶中';
+
+  @override
+  String get aiSend => '送信';
+
+  @override
+  String get aiPlayAudio => '音声を再生';
+
+  @override
+  String get aiWelcome => 'あなたの語学練習パートナー。ボイスメッセージを送るか、9分間の音声通話を始めましょう。';
+
+  @override
+  String get aiChatSubtitle => 'ボイスメッセージと音声通話';
+
+  @override
+  String get aiRecordVoiceMessage => 'ボイスメッセージを録音';
+
+  @override
+  String get aiPrivacyNotice => 'プライバシーに関するお知らせ';
 }

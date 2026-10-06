@@ -133,6 +133,47 @@ void main() {
   });
 
   test(
+    'AI speech events count once across retries, restart and account switches',
+    () async {
+      await notifier.record(
+        spoken: 7,
+        language: 'en-NZ',
+        speechEventId: 'ai-spoken:one',
+        at: day,
+      );
+      await notifier.record(
+        spoken: 7,
+        language: 'en-NZ',
+        speechEventId: 'ai-spoken:one',
+        at: day,
+      );
+      expect(notifier.summaryFor('en').today.spoken, 7);
+      notifier.dispose();
+      notifier = WordActivityNotifier.forTesting(
+        session: () => session,
+        file: (id) async => File('${dir.path}/$id.json'),
+        apiClient: client,
+      );
+      await notifier.record(
+        spoken: 7,
+        language: 'en-NZ',
+        speechEventId: 'ai-spoken:one',
+        at: day,
+      );
+      expect(notifier.summaryFor('en').today.spoken, 7);
+      session = sessionFor('user-b');
+      await notifier.record(
+        spoken: 20,
+        language: 'en-NZ',
+        ownerId: 'user-a',
+        speechEventId: 'ai-spoken:two',
+        at: day,
+      );
+      expect(notifier.summaryFor('en').today.spoken, 0);
+    },
+  );
+
+  test(
     'language snapshots survive offline restart and sync without mixing accents',
     () async {
       await notifier.record(

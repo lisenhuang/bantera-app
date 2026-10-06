@@ -1822,4 +1822,37 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.';
+
+  @override
+  String get aiClearHistory => 'Hapus riwayat';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Hapus pesan AI, audio, dan ingatan percakapan di perangkat ini? Panggilan akan berakhir. Materi belajar, profil, dan jadwal panggilan tetap tersimpan.';
+
+  @override
+  String get aiLocalHistory =>
+      'Riwayat chat AI hanya disimpan di perangkat ini. Riwayat dan data belajar yang relevan dikirim ke AI untuk menjawab. Jadwal panggilan disimpan di server.';
+
+  @override
+  String get aiSayingGoodbye => 'Mengucapkan salam perpisahan';
+
+  @override
+  String get aiSend => 'Kirim';
+
+  @override
+  String get aiPlayAudio => 'Putar audio';
+
+  @override
+  String get aiWelcome =>
+      'Teman latihan bahasa Anda. Kirim pesan suara atau mulai panggilan audio sembilan menit.';
+
+  @override
+  String get aiChatSubtitle => 'Pesan suara dan panggilan audio';
+
+  @override
+  String get aiRecordVoiceMessage => 'Rekam pesan suara';
+
+  @override
+  String get aiPrivacyNotice => 'Pemberitahuan privasi';
 }

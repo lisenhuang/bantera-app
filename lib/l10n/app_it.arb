@@ -540,5 +540,15 @@
   "practiceHistoryEmpty": "La tua prossima pratica inizia qui",
   "practiceHistoryDeviceNote": "Esercitati con una lezione per vedere i progressi qui. La cronologia è salvata su questo dispositivo.",
   "practiceHistoryRemoveBody": "Rimuovere questa lezione dalla cronologia e azzerare i progressi e il punto di ripresa? I contenuti, le frasi salvate e i totali delle parole resteranno.",
-  "practiceHistoryUnavailable": "Questo contenuto non è più sul dispositivo. Puoi rimuoverlo dalla cronologia."
+  "practiceHistoryUnavailable": "Questo contenuto non è più sul dispositivo. Puoi rimuoverlo dalla cronologia.",
+  "aiClearHistory": "Cancella cronologia",
+  "aiClearHistoryBody": "Eliminare messaggi, audio e ricordi della conversazione AI da questo dispositivo? La chiamata terminerà. Materiali, profilo e richiamate programmate resteranno invariati.",
+  "aiLocalHistory": "La cronologia AI è salvata solo su questo dispositivo. I dati pertinenti vengono inviati all’AI per rispondere. Le richiamate programmate sono salvate sul server.",
+  "aiSayingGoodbye": "Saluto finale",
+  "aiSend": "Invia",
+  "aiPlayAudio": "Riproduci audio",
+  "aiWelcome": "Il tuo partner per praticare le lingue. Invia un messaggio vocale o avvia una chiamata audio di nove minuti.",
+  "aiChatSubtitle": "Messaggi vocali e chiamate audio",
+  "aiRecordVoiceMessage": "Registra un messaggio vocale",
+  "aiPrivacyNotice": "Informativa sulla privacy"
 }

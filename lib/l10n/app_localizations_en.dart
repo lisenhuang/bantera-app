@@ -1881,4 +1881,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'This media is no longer on this device. You can remove it from history.';
+
+  @override
+  String get aiClearHistory => 'Clear history';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Delete this device’s AI messages, audio and conversation memory? This ends the current call. Your learning library, profile and scheduled callbacks stay unchanged.';
+
+  @override
+  String get aiLocalHistory =>
+      'AI chat history is saved only on this device. Relevant history and learning data are sent to AI to reply. Callback schedules are stored on the server.';
+
+  @override
+  String get aiSayingGoodbye => 'Saying goodbye';
+
+  @override
+  String get aiSend => 'Send';
+
+  @override
+  String get aiPlayAudio => 'Play audio';
+
+  @override
+  String get aiWelcome =>
+      'Your language practice partner. Send a voice message or start a nine-minute audio call.';
+
+  @override
+  String get aiChatSubtitle => 'Voice messages and audio calls';
+
+  @override
+  String get aiRecordVoiceMessage => 'Record a voice message';
+
+  @override
+  String get aiPrivacyNotice => 'Privacy notice';
 }

@@ -1886,4 +1886,37 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get practiceHistoryUnavailable =>
       'Этого материала больше нет на устройстве. Его можно удалить из истории.';
+
+  @override
+  String get aiClearHistory => 'Очистить историю';
+
+  @override
+  String get aiClearHistoryBody =>
+      'Удалить сообщения ИИ, аудио и память беседы на этом устройстве? Звонок завершится. Учебные материалы, профиль и запланированные звонки сохранятся.';
+
+  @override
+  String get aiLocalHistory =>
+      'История чата с ИИ хранится только на этом устройстве. Нужные данные отправляются ИИ для ответа. Расписание звонков хранится на сервере.';
+
+  @override
+  String get aiSayingGoodbye => 'Прощается';
+
+  @override
+  String get aiSend => 'Отправить';
+
+  @override
+  String get aiPlayAudio => 'Воспроизвести аудио';
+
+  @override
+  String get aiWelcome =>
+      'Ваш партнёр для языковой практики. Отправьте голосовое сообщение или начните девятиминутный аудиозвонок.';
+
+  @override
+  String get aiChatSubtitle => 'Голосовые сообщения и аудиозвонки';
+
+  @override
+  String get aiRecordVoiceMessage => 'Записать голосовое сообщение';
+
+  @override
+  String get aiPrivacyNotice => 'Уведомление о конфиденциальности';
 }

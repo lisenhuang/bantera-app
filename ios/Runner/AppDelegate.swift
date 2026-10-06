@@ -2,6 +2,7 @@ import AVFoundation
 import CoreTelephony
 import Flutter
 import Network
+import NaturalLanguage
 import Photos
 import Speech
 @preconcurrency import Translation
@@ -17,6 +18,8 @@ import UserNotifications
   private var iosVersionBridge: BanteraIosVersionBridge?
   private var pushNotificationsBridge: BanteraPushNotificationsBridge?
   private var pendingNotificationTap: [String: String]?
+  private var aiCallActivityBridge: BanteraAiCallActivityBridge?
+  var aiAudioBridge: BanteraAiAudioBridge?
   private var photoSaveBridge: BanteraPhotoSaveBridge?
 
   override func application(
@@ -83,6 +86,8 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)
+    aiCallActivityBridge = BanteraAiCallActivityBridge(messenger: callEngine.binaryMessenger)
     photoSaveBridge = BanteraPhotoSaveBridge(binaryMessenger: callEngine.binaryMessenger)
     callKit.attach(messenger: callEngine.binaryMessenger)
     videoProcessingBridge = BanteraVideoProcessingBridge(
@@ -2418,5 +2423,322 @@ private extension AVAssetExportSession {
         }
       }
     }
+  }
+}
+
+// Full-duplex PCM for Bantera AI. All player state is confined to the main queue.
+final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
+  private var engine: AVAudioEngine?
+  private var player: AVAudioPlayerNode?
+  private var sink: FlutterEventSink?
+  private var pending = 0
+  private var queued: [(id: UUID, data: Data)] = []
+  private var configurationObserver: NSObjectProtocol?
+  private var healthTimer: Timer?
+  private var lastCapture = Date()
+  private var recoveries = 0
+  private var recoveryWork: DispatchWorkItem?
+  private var usesSpeaker = true
+  private var usesVoiceProcessing = true
+  private var startResult: FlutterResult?
+  private var captureBuffers = 0
+  private var capturedFrames = 0
+  private var playedFrames = 0
+  private var conversionError = ""
+  private var echoCancellationEnabled: Bool {
+    if usesVoiceProcessing { return engine?.inputNode.isVoiceProcessingEnabled == true }
+    if #available(iOS 18.2, *) { return AVAudioSession.sharedInstance().isEchoCancelledInputEnabled }
+    return false
+  }
+  private var speakerNeedsEchoCancellation: Bool {
+    AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
+  }
+  var diagnostics: String {
+    "echoCancellation=\(echoCancellationEnabled) voiceProcessing=\(usesVoiceProcessing) speaker=\(speakerNeedsEchoCancellation) running=\(engine?.isRunning == true) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(playedFrames) recoveries=\(recoveries) conversion=\(conversionError)"
+  }
+  private var generation = 0
+  private var playbackGeneration = 0
+  private var drain: FlutterResult?
+  private var interruptionObserver: NSObjectProtocol?
+  private let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 24000, channels: 1, interleaved: false)!
+
+  init(messenger: FlutterBinaryMessenger) {
+    super.init()
+    FlutterEventChannel(name: "bantera/ai_audio/input", binaryMessenger: messenger).setStreamHandler(self)
+    FlutterMethodChannel(name: "bantera/ai_audio", binaryMessenger: messenger).setMethodCallHandler { [weak self] call, result in
+      guard let self else { return }
+      do {
+        switch call.method {
+        case "identifyLanguages":
+          guard let texts = call.arguments as? [String], texts.count <= 250,
+                texts.allSatisfy({ $0.count <= 4000 }) else { result([]); return }
+          DispatchQueue.global(qos: .utility).async {
+            let evidence: [[String: Any]] = texts.map { text in
+              let recognizer = NLLanguageRecognizer()
+              recognizer.processString(text)
+              let hypotheses = recognizer.languageHypotheses(withMaximum: 3).map {
+                ["language": $0.key.rawValue, "confidence": $0.value] as [String: Any]
+              }
+              let tagger = NLTagger(tagSchemes: [.language])
+              tagger.string = text
+              var languages = Set<String>()
+              tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word,
+                                   scheme: .language, options: [.omitWhitespace, .omitPunctuation]) { tag, _ in
+                if let tag { languages.insert(tag.rawValue) }
+                return true
+              }
+              return ["hypotheses": hypotheses, "languages": Array(languages)]
+            }
+            DispatchQueue.main.async { result(evidence) }
+          }
+        case "storagePath":
+          var url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("bantera_ai", isDirectory: true)
+          try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
+          var values = URLResourceValues(); values.isExcludedFromBackup = true
+          try url.setResourceValues(values)
+          result(url.path)
+        case "diagnostics": result(self.diagnostics)
+        case "start": try self.start(); self.startResult = result
+        case "startPlayback": try self.startPlayback(); result(nil)
+        case "feed":
+          if let bytes = call.arguments as? FlutterStandardTypedData { try self.feed(bytes.data) }
+          result(nil)
+        case "clear": self.clear(); result(nil)
+        case "drain":
+          self.drain?(nil); self.drain = nil
+          if self.pending == 0 { result(nil) } else { self.drain = result }
+        case "speaker":
+          self.usesSpeaker = (call.arguments as? Bool) == true
+          let session = AVAudioSession.sharedInstance()
+          let options: AVAudioSession.CategoryOptions = self.usesSpeaker ? [.defaultToSpeaker, .allowBluetoothHFP] : [.allowBluetoothHFP]
+          try self.configureSession(options: options)
+          try session.overrideOutputAudioPort(self.usesSpeaker ? .speaker : .none)
+          result(nil)
+        case "stop": self.stop(); result(nil)
+        default: result(FlutterMethodNotImplemented)
+        }
+      } catch { self.stop(); result(FlutterError(code: "audio_unavailable", message: "Audio is unavailable.", details: nil)) }
+    }
+    interruptionObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
+      guard let self, self.engine != nil,
+        (note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt) == AVAudioSession.InterruptionType.began.rawValue else { return }
+      self.conversionError = "session-interruption"
+      self.sink?(FlutterError(code: "interrupted", message: "Audio was interrupted.", details: nil))
+      self.stop()
+    }
+  }
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? { sink = events; return nil }
+  func onCancel(withArguments arguments: Any?) -> FlutterError? { sink = nil; stop(); return nil }
+  func startPlayback() throws {
+    stop()
+    let session = AVAudioSession.sharedInstance()
+    try session.setCategory(.playback, mode: .spokenAudio)
+    try session.setActive(true)
+    let engine = AVAudioEngine(), player = AVAudioPlayerNode()
+    self.engine = engine; self.player = player
+    engine.attach(player)
+    engine.connect(player, to: engine.mainMixerNode, format: format)
+    engine.prepare()
+    try engine.start()
+    player.play()
+  }
+  func start() throws {
+    stop()
+    usesSpeaker = true
+    usesVoiceProcessing = true
+    captureBuffers = 0; capturedFrames = 0; playedFrames = 0; conversionError = ""
+    recoveries = 0
+    // Newer iPhones expose built-in echo-cancelled input without VoiceProcessingIO.
+    // Query in its required category/mode, then verify the active state below.
+    let session = AVAudioSession.sharedInstance()
+    try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
+    if #available(iOS 18.2, *), session.isEchoCancelledInputAvailable {
+      do {
+        try session.setPrefersEchoCancelledInput(true)
+        usesVoiceProcessing = false
+      } catch { usesVoiceProcessing = true }
+    }
+    try buildEngine()
+    healthTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+      guard let self, let engine = self.engine else { return }
+      if !engine.isRunning || Date().timeIntervalSince(self.lastCapture) > 3 ||
+          (self.speakerNeedsEchoCancellation && !self.echoCancellationEnabled) {
+        self.recoverAudio()
+      }
+    }
+  }
+  private func configureSession(options: AVAudioSession.CategoryOptions) throws {
+    let session = AVAudioSession.sharedInstance()
+    try session.setCategory(.playAndRecord, mode: usesVoiceProcessing ? .voiceChat : .default, options: options)
+    if #available(iOS 18.2, *), !usesVoiceProcessing {
+      try session.setPrefersEchoCancelledInput(true)
+    }
+  }
+  private func buildEngine() throws {
+    let session = AVAudioSession.sharedInstance()
+    let options: AVAudioSession.CategoryOptions = usesSpeaker ? [.defaultToSpeaker, .allowBluetoothHFP] : [.allowBluetoothHFP]
+    try configureSession(options: options)
+    try session.setActive(true)
+    if !usesVoiceProcessing && speakerNeedsEchoCancellation && !echoCancellationEnabled {
+      // The preference is not a guarantee. Never silently stream uncancelled
+      // speaker echo if iOS declines it; use the standard voice processor.
+      usesVoiceProcessing = true
+      try configureSession(options: options)
+    }
+    let engine = AVAudioEngine(), player = AVAudioPlayerNode()
+    self.engine = engine; self.player = player
+    // Both paths provide system echo cancellation while preserving duplex audio.
+    if usesVoiceProcessing {
+      try engine.inputNode.setVoiceProcessingEnabled(true)
+      engine.inputNode.isVoiceProcessingInputMuted = false
+    }
+    engine.attach(player); engine.connect(player, to: engine.mainMixerNode, format: format)
+    let inputFormat = engine.inputNode.outputFormat(forBus: 0)
+    guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
+      throw NSError(domain: "Audio", code: 2)
+    }
+    // Keep the input branch in the render graph even before Gemini sends its
+    // first output buffer. The muted mixer prevents microphone monitoring.
+    let captureMixer = AVAudioMixerNode()
+    engine.attach(captureMixer)
+    engine.connect(engine.inputNode, to: captureMixer, format: inputFormat)
+    captureMixer.outputVolume = 0
+    engine.connect(captureMixer, to: engine.mainMixerNode, fromBus: 0, toBus: 1, format: inputFormat)
+    let target = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000, channels: 1, interleaved: false)!
+    guard let converter = AVAudioConverter(from: inputFormat, to: target) else { throw NSError(domain: "Audio", code: 1) }
+    let captureGeneration = generation
+    engine.inputNode.installTap(onBus: 0, bufferSize: 2048, format: inputFormat) { [weak self] buffer, _ in
+      let capacity = AVAudioFrameCount(ceil(Double(buffer.frameLength) * 16000 / inputFormat.sampleRate) + 32)
+      guard let converted = AVAudioPCMBuffer(pcmFormat: target, frameCapacity: capacity) else { return }
+      var supplied = false
+      var error: NSError?
+      converter.convert(to: converted, error: &error) { _, status in
+        if supplied { status.pointee = .noDataNow; return nil }
+        supplied = true; status.pointee = .haveData; return buffer
+      }
+      let frameCount = Int(converted.frameLength)
+      let errorCode = error.map { String($0.code) } ?? "none"
+      DispatchQueue.main.async { [weak self] in
+        self?.captureBuffers += 1
+        self?.capturedFrames += frameCount
+        self?.conversionError = errorCode
+      }
+      guard error == nil, converted.frameLength > 0, let samples = converted.int16ChannelData?[0] else { return }
+      let data = Data(bytes: samples, count: Int(converted.frameLength) * 2)
+      DispatchQueue.main.async { [weak self] in
+        guard let self, self.engine != nil, self.generation == captureGeneration else { return }
+        self.lastCapture = Date()
+        if !self.speakerNeedsEchoCancellation || self.echoCancellationEnabled {
+          self.recoveries = 0
+        }
+        self.startResult?(nil); self.startResult = nil
+        self.sink?(FlutterStandardTypedData(bytes: data))
+      }
+    }
+    // iOS can stop both capture and playback when hardware formats change.
+    // Rebuild on the main queue after the notification, never inside its callback.
+    configurationObserver = NotificationCenter.default.addObserver(
+      forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil
+    ) { [weak self, weak engine] _ in
+      DispatchQueue.main.async {
+        guard let self, let engine, self.engine === engine, !engine.isRunning else { return }
+        self.recoverAudio()
+      }
+    }
+    lastCapture = Date()
+    engine.prepare()
+    try engine.start()
+    player.play()
+  }
+  private func recoverAudio() {
+    guard engine != nil, recoveryWork == nil else { return }
+    // Route changes arrive before iOS has finished negotiating its new input
+    // format. Rebuilding immediately can see zero channels and lose both paths.
+    let work = DispatchWorkItem { [weak self] in
+      guard let self else { return }
+      self.recoveryWork = nil
+      self.recoveries += 1
+      if self.recoveries >= 2 { self.usesVoiceProcessing = true }
+      guard self.recoveries <= 3 else { self.failAudio(); return }
+      let remaining = self.queued
+      self.tearDownEngine()
+      do {
+        try self.buildEngine()
+        for item in remaining { self.schedule(item) }
+      } catch {
+        self.conversionError = "restart-\((error as NSError).domain)-\((error as NSError).code)"
+        if self.engine == nil { self.failAudio() } else { self.recoverAudio() }
+      }
+    }
+    recoveryWork = work
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
+  }
+  private func failAudio() {
+    sink?(FlutterError(code: "audio_unavailable", message: "Audio is unavailable.", details: nil))
+    stop()
+  }
+  func feed(_ data: Data) throws {
+    guard let engine else { throw NSError(domain: "Audio", code: 3) }
+    if !engine.isRunning { recoverAudio() }
+    guard !data.isEmpty, data.count % 2 == 0 else { return }
+    let item = (id: UUID(), data: data)
+    queued.append(item)
+    pending = queued.count
+    if engine.isRunning && recoveryWork == nil { schedule(item) }
+  }
+  private func schedule(_ item: (id: UUID, data: Data)) {
+    let data = item.data
+    guard let player, data.count > 0, data.count % 2 == 0,
+          let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(data.count / 2)),
+          let floats = buffer.floatChannelData?[0] else { return }
+    buffer.frameLength = buffer.frameCapacity
+    data.withUnsafeBytes { raw in
+      for index in 0..<Int(buffer.frameLength) {
+        let value = UInt16(raw[index * 2]) | UInt16(raw[index * 2 + 1]) << 8
+        floats[index] = Float(Int16(bitPattern: value)) / 32768
+      }
+    }
+    let version = playbackGeneration
+    player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+      DispatchQueue.main.async {
+        guard let self, self.playbackGeneration == version else { return }
+        self.playedFrames += item.data.count / 2
+        self.queued.removeAll { $0.id == item.id }
+        self.pending = self.queued.count
+        if self.pending == 0 { self.drain?(nil); self.drain = nil }
+      }
+    }
+  }
+  func clear() {
+    // Keep capture generation stable: clearing output must not disable microphone events.
+    playbackGeneration += 1
+    player?.stop(); queued.removeAll(); pending = 0; drain?(nil); drain = nil
+    player?.play()
+  }
+  private func tearDownEngine() {
+    generation += 1; playbackGeneration += 1
+    if let observer = configurationObserver {
+      NotificationCenter.default.removeObserver(observer)
+      configurationObserver = nil
+    }
+    if let engine { engine.inputNode.removeTap(onBus: 0); engine.stop() }
+    player?.stop(); engine = nil; player = nil
+  }
+  func stop() {
+    let ownedSession = engine != nil
+    recoveryWork?.cancel(); recoveryWork = nil
+    startResult?(FlutterError(code: "audio_unavailable", message: "Microphone could not start.", details: diagnostics))
+    startResult = nil
+    healthTimer?.invalidate(); healthTimer = nil
+    tearDownEngine()
+    queued.removeAll(); pending = 0; drain?(nil); drain = nil
+    if ownedSession {
+      try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+  }
+  deinit {
+    healthTimer?.invalidate()
+    if let configurationObserver { NotificationCenter.default.removeObserver(configurationObserver) }
+    if let interruptionObserver { NotificationCenter.default.removeObserver(interruptionObserver) }
   }
 }

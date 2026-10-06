@@ -1,0 +1,9 @@
+"ai.call.audio" = "Appel audio";
+"ai.call.connecting" = "Connexion...";
+"ai.call.goodbye" = "Au revoir";
+"ai.call.mute" = "Couper le micro";
+"ai.call.unmute" = "Activer le micro";
+"ai.call.speaker" = "Haut-parleur";
+"ai.call.end" = "Raccrocher";
+"ai.call.ended" = "Appel terminé";
+"ai.call.earpiece" = "Écouteur";
