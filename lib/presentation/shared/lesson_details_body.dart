@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../domain/activity/listening_word_tracker.dart';
 import '../../domain/models/models.dart';
 import '../../l10n/app_localizations.dart';
 import 'audio_level_selector.dart';
+import 'locale_flag.dart';
 
 /// Shared content for Discover lessons and the user's own audio details.
 class LessonDetailsBody extends StatefulWidget {
@@ -42,6 +44,13 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final media = widget.mediaItem;
+    final wordCount = media.cues.fold<int>(
+      0,
+      (count, cue) => count + activityWordCount(cue.originalText),
+    );
+    final formattedWordCount = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(wordCount);
     final hasCover = media.coverUrl.trim().isNotEmpty;
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -116,7 +125,20 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
                           ),
                         _MetaChip(
                           label: media.spokenLanguage,
-                          icon: Icons.translate_outlined,
+                          leading: Text(
+                            flagEmojiForLocale(
+                              media.accent.trim().isNotEmpty
+                                  ? media.accent.trim()
+                                  : media.spokenLanguage.trim(),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamilyFallback: [
+                                'Apple Color Emoji',
+                                'Noto Color Emoji',
+                              ],
+                            ),
+                          ),
                         ),
                         _MetaChip(
                           label: l10n.createVideoMetaCues(media.cues.length),
@@ -125,6 +147,11 @@ class _LessonDetailsBodyState extends State<LessonDetailsBody> {
                         _MetaChip(
                           label: _formatDuration(media.durationMs),
                           icon: Icons.schedule_outlined,
+                        ),
+                        _MetaChip(
+                          label:
+                              '${l10n.wordActivityWords}: $formattedWordCount',
+                          icon: Icons.text_fields_rounded,
                         ),
                         if (media.level != null)
                           _MetaChip(

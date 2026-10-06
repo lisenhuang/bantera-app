@@ -88,6 +88,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('2:05'), findsOneWidget);
+      expect(find.text('Words: 9'), findsOneWidget);
+      expect(find.text('🇳🇿'), findsOneWidget);
+      expect(find.byIcon(Icons.translate_outlined), findsNothing);
       expect(find.text('Beginner'), findsOneWidget);
       expect(find.byType(AudioLevelIcon), findsOneWidget);
       expect(find.textContaining('EN-NZ'), findsNothing);
