@@ -565,5 +565,15 @@
   "wordActivityThirtyDays": "30일",
   "wordActivityWords": "단어 수",
   "wordActivityTrendEmpty": "이 기간에는 아직 연습 기록이 없어요.",
-  "wordActivityAllTime": "전체"
+  "wordActivityAllTime": "전체",
+  "profileLibraryTitle": "내 연습 보관함",
+  "practiceHistoryTitle": "연습 기록",
+  "practiceHistorySubtitle": "진행 상황을 확인하고 이어서 연습하세요",
+  "profileSavedMediaSubtitle": "저장한 오디오와 동영상",
+  "profileSavedCuesSubtitle": "연습하고 싶은 문장 복습",
+  "practiceHistoryProgress": "자막 {completed}/{total}개 청취 완료",
+  "practiceHistoryEmpty": "다음 연습부터 기록해 보세요",
+  "practiceHistoryDeviceNote": "레슨을 연습하면 진행 상황이 표시됩니다. 기록은 이 기기에 저장됩니다.",
+  "practiceHistoryRemoveBody": "이 레슨을 기록에서 삭제하고 진행 상황과 재개 위치를 초기화할까요? 저장한 미디어, 자막과 단어 수 합계는 유지됩니다.",
+  "practiceHistoryUnavailable": "이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다."
 }

@@ -1779,4 +1779,41 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'Tümü';
+
+  @override
+  String get profileLibraryTitle => 'Alıştırma kitaplığın';
+
+  @override
+  String get practiceHistoryTitle => 'Alıştırma Geçmişi';
+
+  @override
+  String get practiceHistorySubtitle =>
+      'İlerlemeni gör ve kaldığın yerden devam et';
+
+  @override
+  String get profileSavedMediaSubtitle => 'Kaydettiğin sesler ve videolar';
+
+  @override
+  String get profileSavedCuesSubtitle =>
+      'Çalışmak istediğin cümleleri tekrar et';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '$completed/$total bölüm dinlendi';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'Bir sonraki alıştırman burada başlıyor';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'İlerlemeni burada görmek için bir ders çalış. Geçmiş bu cihazda saklanır.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'Bu ders geçmişten kaldırılsın ve ilerleme ile devam noktası sıfırlansın mı? Kayıtlı medya, cümleler ve toplam kelime sayıları korunur.';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.';
 }

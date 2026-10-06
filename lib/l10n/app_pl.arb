@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 dni",
   "wordActivityWords": "Słowa",
   "wordActivityTrendEmpty": "Brak zapisanych ćwiczeń w tym okresie.",
-  "wordActivityAllTime": "Cały okres"
+  "wordActivityAllTime": "Cały okres",
+  "profileLibraryTitle": "Twoja biblioteka ćwiczeń",
+  "practiceHistoryTitle": "Historia ćwiczeń",
+  "practiceHistorySubtitle": "Sprawdź postępy i kontynuuj naukę",
+  "profileSavedMediaSubtitle": "Zapisane nagrania audio i wideo",
+  "profileSavedCuesSubtitle": "Powtórz zdania, które chcesz ćwiczyć",
+  "practiceHistoryProgress": "Odsłuchano {completed}/{total} fragmentów",
+  "practiceHistoryEmpty": "Tutaj zaczyna się kolejne ćwiczenie",
+  "practiceHistoryDeviceNote": "Przećwicz lekcję, aby zobaczyć postępy. Historia jest zapisywana na tym urządzeniu.",
+  "practiceHistoryRemoveBody": "Usunąć lekcję z historii i zresetować jej postępy oraz punkt wznowienia? Zapisane multimedia, zdania i sumy słów pozostaną.",
+  "practiceHistoryUnavailable": "Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii."
 }

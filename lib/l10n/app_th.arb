@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 วัน",
   "wordActivityWords": "จำนวนคำ",
   "wordActivityTrendEmpty": "ยังไม่มีบันทึกการฝึกในช่วงเวลานี้",
-  "wordActivityAllTime": "ทั้งหมด"
+  "wordActivityAllTime": "ทั้งหมด",
+  "profileLibraryTitle": "คลังฝึกฝนของคุณ",
+  "practiceHistoryTitle": "ประวัติการฝึก",
+  "practiceHistorySubtitle": "ดูความคืบหน้าและฝึกต่อจากจุดเดิม",
+  "profileSavedMediaSubtitle": "เสียงและวิดีโอที่บันทึกไว้",
+  "profileSavedCuesSubtitle": "ทบทวนประโยคที่ต้องการฝึก",
+  "practiceHistoryProgress": "ฟังแล้ว {completed}/{total} ช่วง",
+  "practiceHistoryEmpty": "เริ่มการฝึกครั้งต่อไปที่นี่",
+  "practiceHistoryDeviceNote": "ฝึกบทเรียนเพื่อดูความคืบหน้าที่นี่ ประวัติจะบันทึกไว้ในอุปกรณ์นี้",
+  "practiceHistoryRemoveBody": "นำบทเรียนนี้ออกจากประวัติและรีเซ็ตความคืบหน้ากับจุดที่ฝึกค้างไว้หรือไม่? สื่อ ประโยคที่บันทึก และจำนวนคำรวมจะยังอยู่",
+  "practiceHistoryUnavailable": "สื่อนี้ไม่อยู่ในอุปกรณ์แล้ว คุณสามารถนำออกจากประวัติได้"
 }

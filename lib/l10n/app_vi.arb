@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 ngày",
   "wordActivityWords": "Số từ",
   "wordActivityTrendEmpty": "Chưa có buổi luyện tập nào trong khoảng thời gian này.",
-  "wordActivityAllTime": "Tất cả"
+  "wordActivityAllTime": "Tất cả",
+  "profileLibraryTitle": "Thư viện luyện tập",
+  "practiceHistoryTitle": "Lịch sử luyện tập",
+  "practiceHistorySubtitle": "Xem tiến độ và tiếp tục luyện tập",
+  "profileSavedMediaSubtitle": "Âm thanh và video đã lưu",
+  "profileSavedCuesSubtitle": "Ôn lại những câu bạn muốn luyện tập",
+  "practiceHistoryProgress": "Đã nghe {completed}/{total} đoạn",
+  "practiceHistoryEmpty": "Bắt đầu buổi luyện tập tiếp theo",
+  "practiceHistoryDeviceNote": "Luyện tập một bài học để xem tiến độ tại đây. Lịch sử được lưu trên thiết bị này.",
+  "practiceHistoryRemoveBody": "Xóa bài học này khỏi lịch sử và đặt lại tiến độ cùng vị trí tiếp tục? Nội dung, câu đã lưu và tổng số từ sẽ được giữ lại.",
+  "practiceHistoryUnavailable": "Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử."
 }

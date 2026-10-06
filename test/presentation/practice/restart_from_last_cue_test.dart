@@ -217,12 +217,19 @@ void main() {
     expect(find.text('1/2'), findsOneWidget);
     expect(seeks.last, 300);
     expect(resumes, playsBeforeRestart + 1);
-    expect(
+    // Resume writes are now serialised with history snapshots. Let filesystem
+    // callbacks and their queued microtasks finish outside the fake clock.
+    int? persistedIndex;
+    PracticeProgressStore.instance
+        .getCueIndex(mediaId)
+        .then((value) => persistedIndex = value);
+    for (var i = 0; i < 100 && persistedIndex == null; i++) {
+      await tester.pump();
       await tester.runAsync(
-        () => PracticeProgressStore.instance.getCueIndex(mediaId),
-      ),
-      0,
-    );
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+    }
+    expect(persistedIndex, 0);
     for (final ms in [800, 1300, 1800, 2200]) {
       position = ms;
       await tester.pump(const Duration(milliseconds: 16));

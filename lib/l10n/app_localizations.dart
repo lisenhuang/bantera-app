@@ -3259,6 +3259,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All time'**
   String get wordActivityAllTime;
+
+  /// No description provided for @profileLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your practice library'**
+  String get profileLibraryTitle;
+
+  /// No description provided for @practiceHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice History'**
+  String get practiceHistoryTitle;
+
+  /// No description provided for @practiceHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See your progress and pick up where you left off'**
+  String get practiceHistorySubtitle;
+
+  /// No description provided for @profileSavedMediaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your collection of audio and video'**
+  String get profileSavedMediaSubtitle;
+
+  /// No description provided for @profileSavedCuesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Revisit phrases you want to practise'**
+  String get profileSavedCuesSubtitle;
+
+  /// Original transcript cues actually heard, not a fluency score. Counts are locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed}/{total} cues heard'**
+  String practiceHistoryProgress(String completed, String total);
+
+  /// No description provided for @practiceHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next practice starts here'**
+  String get practiceHistoryEmpty;
+
+  /// No description provided for @practiceHistoryDeviceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice a lesson to see your progress here. History is saved on this device.'**
+  String get practiceHistoryDeviceNote;
+
+  /// No description provided for @practiceHistoryRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this lesson from history and reset its progress and resume point? Your saved media, saved cues and word totals will stay.'**
+  String get practiceHistoryRemoveBody;
+
+  /// No description provided for @practiceHistoryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This media is no longer on this device. You can remove it from history.'**
+  String get practiceHistoryUnavailable;
 }
 
 class _AppLocalizationsDelegate

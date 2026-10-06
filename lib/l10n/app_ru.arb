@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 дней",
   "wordActivityWords": "Слова",
   "wordActivityTrendEmpty": "За этот период пока нет записей о практике.",
-  "wordActivityAllTime": "Всё время"
+  "wordActivityAllTime": "Всё время",
+  "profileLibraryTitle": "Ваша библиотека практики",
+  "practiceHistoryTitle": "История практики",
+  "practiceHistorySubtitle": "Следите за прогрессом и продолжайте занятия",
+  "profileSavedMediaSubtitle": "Сохранённые аудио и видео",
+  "profileSavedCuesSubtitle": "Повторяйте нужные фразы",
+  "practiceHistoryProgress": "Прослушано {completed}/{total} фрагментов",
+  "practiceHistoryEmpty": "Начните следующую тренировку",
+  "practiceHistoryDeviceNote": "Позанимайтесь с уроком, чтобы увидеть прогресс. История хранится на этом устройстве.",
+  "practiceHistoryRemoveBody": "Удалить урок из истории и сбросить его прогресс и позицию продолжения? Сохранённые материалы, фразы и общее число слов останутся.",
+  "practiceHistoryUnavailable": "Этого материала больше нет на устройстве. Его можно удалить из истории."
 }

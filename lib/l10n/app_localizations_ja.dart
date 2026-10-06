@@ -1701,4 +1701,37 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => '全期間';
+
+  @override
+  String get profileLibraryTitle => '練習ライブラリ';
+
+  @override
+  String get practiceHistoryTitle => '練習履歴';
+
+  @override
+  String get practiceHistorySubtitle => '進捗を確認して、続きから練習';
+
+  @override
+  String get profileSavedMediaSubtitle => '保存した音声と動画';
+
+  @override
+  String get profileSavedCuesSubtitle => '練習したいフレーズを復習';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '$total 個中 $completed 個の字幕を聞きました';
+  }
+
+  @override
+  String get practiceHistoryEmpty => '次の練習から記録しましょう';
+
+  @override
+  String get practiceHistoryDeviceNote => 'レッスンを練習すると進捗が表示されます。履歴はこの端末に保存されます。';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'このレッスンを履歴から削除し、進捗と再開位置をリセットしますか？保存したメディア、字幕、単語数の合計は残ります。';
+
+  @override
+  String get practiceHistoryUnavailable => 'このメディアは端末にありません。履歴から削除できます。';
 }

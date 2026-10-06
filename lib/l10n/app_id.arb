@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 hari",
   "wordActivityWords": "Kata",
   "wordActivityTrendEmpty": "Belum ada latihan tercatat dalam periode ini.",
-  "wordActivityAllTime": "Semua"
+  "wordActivityAllTime": "Semua",
+  "profileLibraryTitle": "Koleksi latihan Anda",
+  "practiceHistoryTitle": "Riwayat Latihan",
+  "practiceHistorySubtitle": "Lihat progres dan lanjutkan latihan",
+  "profileSavedMediaSubtitle": "Audio dan video yang Anda simpan",
+  "profileSavedCuesSubtitle": "Ulangi frasa yang ingin dilatih",
+  "practiceHistoryProgress": "{completed}/{total} bagian didengarkan",
+  "practiceHistoryEmpty": "Latihan berikutnya dimulai di sini",
+  "practiceHistoryDeviceNote": "Latih sebuah pelajaran untuk melihat progres di sini. Riwayat disimpan di perangkat ini.",
+  "practiceHistoryRemoveBody": "Hapus pelajaran ini dari riwayat dan atur ulang progres serta posisi lanjutannya? Media, frasa tersimpan, dan total kata Anda akan tetap ada.",
+  "practiceHistoryUnavailable": "Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat."
 }

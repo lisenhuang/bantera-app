@@ -1766,4 +1766,39 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'ทั้งหมด';
+
+  @override
+  String get profileLibraryTitle => 'คลังฝึกฝนของคุณ';
+
+  @override
+  String get practiceHistoryTitle => 'ประวัติการฝึก';
+
+  @override
+  String get practiceHistorySubtitle => 'ดูความคืบหน้าและฝึกต่อจากจุดเดิม';
+
+  @override
+  String get profileSavedMediaSubtitle => 'เสียงและวิดีโอที่บันทึกไว้';
+
+  @override
+  String get profileSavedCuesSubtitle => 'ทบทวนประโยคที่ต้องการฝึก';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return 'ฟังแล้ว $completed/$total ช่วง';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'เริ่มการฝึกครั้งต่อไปที่นี่';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'ฝึกบทเรียนเพื่อดูความคืบหน้าที่นี่ ประวัติจะบันทึกไว้ในอุปกรณ์นี้';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'นำบทเรียนนี้ออกจากประวัติและรีเซ็ตความคืบหน้ากับจุดที่ฝึกค้างไว้หรือไม่? สื่อ ประโยคที่บันทึก และจำนวนคำรวมจะยังอยู่';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'สื่อนี้ไม่อยู่ในอุปกรณ์แล้ว คุณสามารถนำออกจากประวัติได้';
 }

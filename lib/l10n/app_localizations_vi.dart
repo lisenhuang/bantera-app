@@ -1784,4 +1784,39 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'Tất cả';
+
+  @override
+  String get profileLibraryTitle => 'Thư viện luyện tập';
+
+  @override
+  String get practiceHistoryTitle => 'Lịch sử luyện tập';
+
+  @override
+  String get practiceHistorySubtitle => 'Xem tiến độ và tiếp tục luyện tập';
+
+  @override
+  String get profileSavedMediaSubtitle => 'Âm thanh và video đã lưu';
+
+  @override
+  String get profileSavedCuesSubtitle => 'Ôn lại những câu bạn muốn luyện tập';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return 'Đã nghe $completed/$total đoạn';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'Bắt đầu buổi luyện tập tiếp theo';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'Luyện tập một bài học để xem tiến độ tại đây. Lịch sử được lưu trên thiết bị này.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'Xóa bài học này khỏi lịch sử và đặt lại tiến độ cùng vị trí tiếp tục? Nội dung, câu đã lưu và tổng số từ sẽ được giữ lại.';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.';
 }

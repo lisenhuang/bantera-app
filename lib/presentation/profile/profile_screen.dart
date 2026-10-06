@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../infrastructure/saved_cue_repository.dart';
+import '../../infrastructure/practice_progress_store.dart';
+import '../../core/auth_session_notifier.dart';
+import 'practice_history_screen.dart';
+import 'profile_library_section.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/profile_stats_notifier.dart';
 import '../../core/word_activity_notifier.dart';
@@ -26,10 +30,22 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool _historyLoaded = false;
+
+  Future<void> _loadHistory() async {
+    try {
+      await PracticeProgressStore.instance.load();
+      if (mounted) setState(() => _historyLoaded = true);
+    } catch (_) {
+      // The history destination provides a retry if local storage is unavailable.
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     WordActivityNotifier.instance.retain();
+    unawaited(_loadHistory());
     unawaited(ProfileStatsNotifier.instance.refresh());
     unawaited(SavedCueRepository.instance.load());
     unawaited(WordActivityNotifier.instance.sync());
@@ -50,6 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         WordActivityNotifier.instance,
         AppResumeNotifier.instance,
         SavedCueRepository.instance,
+        PracticeProgressStore.instance,
+        AuthSessionNotifier.instance,
       ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
@@ -61,12 +79,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
 
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.navProfile),
             actions: [
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
+                tooltip: l10n.settingsTitle,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -167,39 +186,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SavedScreen()),
-                      ),
-                      child: _buildStatColumn(
-                        context,
-                        l10n.savedTitle,
-                        stats.savedCount != null ? '${stats.savedCount}' : '–',
-                        tappable: true,
-                      ),
+                ProfileLibrarySection(
+                  savedCount: stats.savedCount,
+                  cueCount: SavedCueRepository.instance.entries.length,
+                  historyCount: _historyLoaded
+                      ? PracticeProgressStore.instance.entries.length
+                      : null,
+                  recent: PracticeProgressStore.instance.entries.firstOrNull,
+                  onSavedMedia: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SavedScreen()),
+                  ),
+                  onSavedCues: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SavedCuesScreen()),
+                  ),
+                  onHistory: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PracticeHistoryScreen(),
                     ),
-                    const SizedBox(width: 32),
-                    GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SavedCuesScreen(),
-                        ),
-                      ),
-                      child: _buildStatColumn(
-                        context,
-                        l10n.savedCuesTitle,
-                        '${SavedCueRepository.instance.entries.length}',
-                        tappable: true,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 DailyWordGoalSection(
                   goal: WordActivityNotifier.instance.dailyGoal,
                   today: activity.today,
@@ -239,34 +248,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildStatColumn(
-    BuildContext context,
-    String label,
-    String value, {
-    bool tappable = false,
-  }) {
-    return Column(
-      children: [
-        Text(value, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.bodyMedium),
-            if (tappable) ...[
-              const SizedBox(width: 2),
-              Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ],
-          ],
-        ),
-      ],
     );
   }
 }

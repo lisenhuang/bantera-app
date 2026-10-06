@@ -1710,4 +1710,38 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => '전체';
+
+  @override
+  String get profileLibraryTitle => '내 연습 보관함';
+
+  @override
+  String get practiceHistoryTitle => '연습 기록';
+
+  @override
+  String get practiceHistorySubtitle => '진행 상황을 확인하고 이어서 연습하세요';
+
+  @override
+  String get profileSavedMediaSubtitle => '저장한 오디오와 동영상';
+
+  @override
+  String get profileSavedCuesSubtitle => '연습하고 싶은 문장 복습';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '자막 $completed/$total개 청취 완료';
+  }
+
+  @override
+  String get practiceHistoryEmpty => '다음 연습부터 기록해 보세요';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      '레슨을 연습하면 진행 상황이 표시됩니다. 기록은 이 기기에 저장됩니다.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      '이 레슨을 기록에서 삭제하고 진행 상황과 재개 위치를 초기화할까요? 저장한 미디어, 자막과 단어 수 합계는 유지됩니다.';
+
+  @override
+  String get practiceHistoryUnavailable => '이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다.';
 }

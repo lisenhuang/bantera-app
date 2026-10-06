@@ -1850,4 +1850,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'Всё время';
+
+  @override
+  String get profileLibraryTitle => 'Ваша библиотека практики';
+
+  @override
+  String get practiceHistoryTitle => 'История практики';
+
+  @override
+  String get practiceHistorySubtitle =>
+      'Следите за прогрессом и продолжайте занятия';
+
+  @override
+  String get profileSavedMediaSubtitle => 'Сохранённые аудио и видео';
+
+  @override
+  String get profileSavedCuesSubtitle => 'Повторяйте нужные фразы';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return 'Прослушано $completed/$total фрагментов';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'Начните следующую тренировку';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'Позанимайтесь с уроком, чтобы увидеть прогресс. История хранится на этом устройстве.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'Удалить урок из истории и сбросить его прогресс и позицию продолжения? Сохранённые материалы, фразы и общее число слов останутся.';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'Этого материала больше нет на устройстве. Его можно удалить из истории.';
 }

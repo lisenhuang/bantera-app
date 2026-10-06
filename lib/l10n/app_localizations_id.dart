@@ -1787,4 +1787,39 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'Semua';
+
+  @override
+  String get profileLibraryTitle => 'Koleksi latihan Anda';
+
+  @override
+  String get practiceHistoryTitle => 'Riwayat Latihan';
+
+  @override
+  String get practiceHistorySubtitle => 'Lihat progres dan lanjutkan latihan';
+
+  @override
+  String get profileSavedMediaSubtitle => 'Audio dan video yang Anda simpan';
+
+  @override
+  String get profileSavedCuesSubtitle => 'Ulangi frasa yang ingin dilatih';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '$completed/$total bagian didengarkan';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'Latihan berikutnya dimulai di sini';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'Latih sebuah pelajaran untuk melihat progres di sini. Riwayat disimpan di perangkat ini.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'Hapus pelajaran ini dari riwayat dan atur ulang progres serta posisi lanjutannya? Media, frasa tersimpan, dan total kata Anda akan tetap ada.';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.';
 }

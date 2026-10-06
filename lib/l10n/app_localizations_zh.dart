@@ -1708,6 +1708,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => '全部';
+
+  @override
+  String get profileLibraryTitle => '我的练习库';
+
+  @override
+  String get practiceHistoryTitle => '练习历史';
+
+  @override
+  String get practiceHistorySubtitle => '查看进度，接着上次继续练习';
+
+  @override
+  String get profileSavedMediaSubtitle => '收藏的音频和视频';
+
+  @override
+  String get profileSavedCuesSubtitle => '重温想要练习的句子';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '已听完 $completed/$total 条字幕';
+  }
+
+  @override
+  String get practiceHistoryEmpty => '从下一次练习开始记录';
+
+  @override
+  String get practiceHistoryDeviceNote => '练习课程后，即可在此查看进度。历史记录保存在本设备上。';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      '要移除此课程的历史记录并重置进度和继续位置吗？收藏的媒体、字幕和词数统计会保留。';
+
+  @override
+  String get practiceHistoryUnavailable => '此媒体已不在本设备上，你可以将其从历史记录中移除。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3418,4 +3451,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get wordActivityAllTime => '全部';
+
+  @override
+  String get profileLibraryTitle => '我的練習庫';
+
+  @override
+  String get practiceHistoryTitle => '練習歷史';
+
+  @override
+  String get practiceHistorySubtitle => '查看進度，接著上次繼續練習';
+
+  @override
+  String get profileSavedMediaSubtitle => '收藏的音訊和影片';
+
+  @override
+  String get profileSavedCuesSubtitle => '重溫想要練習的句子';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '已聽完 $completed/$total 條字幕';
+  }
+
+  @override
+  String get practiceHistoryEmpty => '從下一次練習開始記錄';
+
+  @override
+  String get practiceHistoryDeviceNote => '練習課程後，即可在此查看進度。歷史記錄儲存在本裝置上。';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      '要移除此課程的歷史記錄並重設進度和繼續位置嗎？收藏的媒體、字幕和詞數統計會保留。';
+
+  @override
+  String get practiceHistoryUnavailable => '此媒體已不在本裝置上，你可以將其從歷史記錄中移除。';
 }

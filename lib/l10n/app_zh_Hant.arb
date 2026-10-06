@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "近30天",
   "wordActivityWords": "詞數",
   "wordActivityTrendEmpty": "這個時段還沒有練習記錄。",
-  "wordActivityAllTime": "全部"
+  "wordActivityAllTime": "全部",
+  "profileLibraryTitle": "我的練習庫",
+  "practiceHistoryTitle": "練習歷史",
+  "practiceHistorySubtitle": "查看進度，接著上次繼續練習",
+  "profileSavedMediaSubtitle": "收藏的音訊和影片",
+  "profileSavedCuesSubtitle": "重溫想要練習的句子",
+  "practiceHistoryProgress": "已聽完 {completed}/{total} 條字幕",
+  "practiceHistoryEmpty": "從下一次練習開始記錄",
+  "practiceHistoryDeviceNote": "練習課程後，即可在此查看進度。歷史記錄儲存在本裝置上。",
+  "practiceHistoryRemoveBody": "要移除此課程的歷史記錄並重設進度和繼續位置嗎？收藏的媒體、字幕和詞數統計會保留。",
+  "practiceHistoryUnavailable": "此媒體已不在本裝置上，你可以將其從歷史記錄中移除。"
 }

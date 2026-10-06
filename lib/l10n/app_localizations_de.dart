@@ -1843,4 +1843,40 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get wordActivityAllTime => 'Gesamt';
+
+  @override
+  String get profileLibraryTitle => 'Deine Übungsbibliothek';
+
+  @override
+  String get practiceHistoryTitle => 'Übungsverlauf';
+
+  @override
+  String get practiceHistorySubtitle => 'Fortschritt ansehen und weiterüben';
+
+  @override
+  String get profileSavedMediaSubtitle =>
+      'Deine gespeicherten Audios und Videos';
+
+  @override
+  String get profileSavedCuesSubtitle => 'Gespeicherte Sätze wiederholen';
+
+  @override
+  String practiceHistoryProgress(String completed, String total) {
+    return '$completed/$total Abschnitte gehört';
+  }
+
+  @override
+  String get practiceHistoryEmpty => 'Deine nächste Übung beginnt hier';
+
+  @override
+  String get practiceHistoryDeviceNote =>
+      'Übe eine Lektion, um hier deinen Fortschritt zu sehen. Der Verlauf wird auf diesem Gerät gespeichert.';
+
+  @override
+  String get practiceHistoryRemoveBody =>
+      'Diese Lektion aus dem Verlauf entfernen und Fortschritt sowie Wiedergabeposition zurücksetzen? Gespeicherte Medien, Sätze und Wortzahlen bleiben erhalten.';
+
+  @override
+  String get practiceHistoryUnavailable =>
+      'Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen.';
 }

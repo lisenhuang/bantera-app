@@ -68,6 +68,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   String? _wordActivityOwnerId;
   int _activitySeekDepth = 0;
 
+  late final String _historyOwner;
+  bool _historyReady = false;
+
   int _currentCueIndex = 0;
   SubtitleState _subtitleState = SubtitleState.hidden;
   bool _isPlaying = false;
@@ -234,26 +237,27 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           _activitySeekDepth == 0,
       speed: _playbackSpeed,
     );
-    if (_reviewService.enabled) {
-      final completedCues = _lessonCompletionTracker.advance(
-        positionMs.clamp(0, stopMs),
-        playing:
-            _isPlaying &&
-            (nativePlaying || completed) &&
-            !_playAllInBetweenCueGap &&
-            _activitySeekDepth == 0,
-        speed: _playbackSpeed,
+    final completedCues = _lessonCompletionTracker.advance(
+      positionMs.clamp(0, stopMs),
+      playing:
+          _isPlaying &&
+          (nativePlaying || completed) &&
+          !_playAllInBetweenCueGap &&
+          _activitySeekDepth == 0,
+      speed: _playbackSpeed,
+    );
+    if (completedCues.isNotEmpty) {
+      unawaited(_savePracticeProgress(completedCueKeys: completedCues));
+    }
+    if (_reviewService.enabled && completedCues.isNotEmpty) {
+      unawaited(
+        _reviewService.recordCompletedCues(
+          owner: _reviewOwner,
+          lessonId: widget.mediaItem.id,
+          completedCueKeys: completedCues,
+          requiredCueKeys: _lessonCompletionTracker.requiredCueKeys,
+        ),
       );
-      if (completedCues.isNotEmpty) {
-        unawaited(
-          _reviewService.recordCompletedCues(
-            owner: _reviewOwner,
-            lessonId: widget.mediaItem.id,
-            completedCueKeys: completedCues,
-            requiredCueKeys: _lessonCompletionTracker.requiredCueKeys,
-          ),
-        );
-      }
     }
     if (words > 0 && _wordActivityOwnerId != null) {
       unawaited(
@@ -296,6 +300,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   void initState() {
     super.initState();
     WordActivityNotifier.instance.retain();
+    _historyOwner = PracticeProgressStore.instance.currentOwner;
     _wordActivityOwnerId = AuthSessionNotifier.instance.session?.userId;
     _wordActivityTracker = ListeningWordTracker.forMedia(widget.mediaItem);
     _lessonCompletionTracker = LessonCompletionTracker(widget.mediaItem.cues);
@@ -447,7 +452,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       return;
     }
     setState(() => _playbackSpeed = savedSpeed);
-    await _restoreProgress();
+    try {
+      await _restoreProgress();
+    } catch (error) {
+      debugPrint('Could not restore practice history: $error');
+    }
     if (!mounted) {
       return;
     }
@@ -455,6 +464,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (!mounted) {
       return;
     }
+    _historyReady = true;
+    if (_mediaError == null) unawaited(_savePracticeProgress());
     await _applyPlaybackSpeedToMedia();
     unawaited(_loadPersistedTranslations());
   }
@@ -488,11 +499,44 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (mounted) setState(() => _currentCueIndex = initial);
       return;
     }
-    final saved = await PracticeProgressStore.instance.getCueIndex(
+    final store = PracticeProgressStore.instance;
+    final entry = await store.getEntry(
       widget.mediaItem.id,
+      owner: _historyOwner,
+    );
+    if (!mounted) return;
+    if (entry != null) {
+      // Resolve by media time when the user has changed sentence mode.
+      setState(
+        () => _currentCueIndex = entry.resolveCueIndex(cues, _activeCueMode),
+      );
+      return;
+    }
+    final saved = await store.getCueIndex(
+      widget.mediaItem.id,
+      owner: _historyOwner,
     );
     if (saved > 0 && saved < cues.length && mounted) {
       setState(() => _currentCueIndex = saved);
+    }
+  }
+
+  Future<void> _savePracticeProgress({
+    Set<String> completedCueKeys = const {},
+  }) async {
+    if (!_historyReady || _activeCues.isEmpty) return;
+    try {
+      await PracticeProgressStore.instance.record(
+        mediaItem: widget.mediaItem,
+        cueIndex: _currentCueIndex,
+        cueStartMs: _activeCues[_currentCueIndex].startTimeMs,
+        cueMode: _activeCueMode,
+        owner: _historyOwner,
+        completedCueKeys: completedCueKeys,
+      );
+    } catch (error) {
+      // A storage failure must not interrupt audio playback.
+      debugPrint('Could not save practice history: $error');
     }
   }
 
@@ -916,9 +960,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _currentCueIndex = next;
         _playAllInBetweenCueGap = false;
       });
-      unawaited(
-        PracticeProgressStore.instance.setCueIndex(widget.mediaItem.id, next),
-      );
+      unawaited(_savePracticeProgress());
       await audioPlayer.resume();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -961,9 +1003,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _currentCueIndex = next;
         _playAllInBetweenCueGap = false;
       });
-      unawaited(
-        PracticeProgressStore.instance.setCueIndex(widget.mediaItem.id, next),
-      );
+      unawaited(_savePracticeProgress());
       await controller.play();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -1113,12 +1153,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           }
           if (newIndex != _currentCueIndex) {
             setState(() => _currentCueIndex = newIndex);
-            unawaited(
-              PracticeProgressStore.instance.setCueIndex(
-                widget.mediaItem.id,
-                newIndex,
-              ),
-            );
+            unawaited(_savePracticeProgress());
           }
           if (posMs >= _playbackStopMsForCueIndex(cues.length - 1)) {
             unawaited(_stopPlayAll());
@@ -1219,12 +1254,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         }
         if (newIndex != _currentCueIndex) {
           setState(() => _currentCueIndex = newIndex);
-          unawaited(
-            PracticeProgressStore.instance.setCueIndex(
-              widget.mediaItem.id,
-              newIndex,
-            ),
-          );
+          unawaited(_savePracticeProgress());
         }
         if (posMs >= _playbackStopMsForCueIndex(cues.length - 1)) {
           unawaited(_stopPlayAll());
@@ -3783,12 +3813,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _foregroundTranslationToken++;
     });
 
-    unawaited(
-      PracticeProgressStore.instance.setCueIndex(
-        widget.mediaItem.id,
-        nextIndex,
-      ),
-    );
+    unawaited(_savePracticeProgress());
 
     // Auto-play the new cue.
     await _togglePlayback();

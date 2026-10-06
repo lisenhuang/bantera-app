@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 gün",
   "wordActivityWords": "Kelime",
   "wordActivityTrendEmpty": "Bu dönemde henüz kayıtlı pratik yok.",
-  "wordActivityAllTime": "Tümü"
+  "wordActivityAllTime": "Tümü",
+  "profileLibraryTitle": "Alıştırma kitaplığın",
+  "practiceHistoryTitle": "Alıştırma Geçmişi",
+  "practiceHistorySubtitle": "İlerlemeni gör ve kaldığın yerden devam et",
+  "profileSavedMediaSubtitle": "Kaydettiğin sesler ve videolar",
+  "profileSavedCuesSubtitle": "Çalışmak istediğin cümleleri tekrar et",
+  "practiceHistoryProgress": "{completed}/{total} bölüm dinlendi",
+  "practiceHistoryEmpty": "Bir sonraki alıştırman burada başlıyor",
+  "practiceHistoryDeviceNote": "İlerlemeni burada görmek için bir ders çalış. Geçmiş bu cihazda saklanır.",
+  "practiceHistoryRemoveBody": "Bu ders geçmişten kaldırılsın ve ilerleme ile devam noktası sıfırlansın mı? Kayıtlı medya, cümleler ve toplam kelime sayıları korunur.",
+  "practiceHistoryUnavailable": "Bu medya artık cihazda yok. Geçmişten kaldırabilirsin."
 }

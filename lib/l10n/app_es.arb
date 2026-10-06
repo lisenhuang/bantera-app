@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 días",
   "wordActivityWords": "Palabras",
   "wordActivityTrendEmpty": "Aún no hay práctica registrada en este período.",
-  "wordActivityAllTime": "Todo"
+  "wordActivityAllTime": "Todo",
+  "profileLibraryTitle": "Tu biblioteca de práctica",
+  "practiceHistoryTitle": "Historial de práctica",
+  "practiceHistorySubtitle": "Consulta tu progreso y retoma la práctica",
+  "profileSavedMediaSubtitle": "Tus audios y vídeos guardados",
+  "profileSavedCuesSubtitle": "Repasa las frases que quieres practicar",
+  "practiceHistoryProgress": "{completed}/{total} fragmentos escuchados",
+  "practiceHistoryEmpty": "Tu próxima práctica empieza aquí",
+  "practiceHistoryDeviceNote": "Practica una lección para ver tu progreso aquí. El historial se guarda en este dispositivo.",
+  "practiceHistoryRemoveBody": "¿Eliminar esta lección del historial y restablecer su progreso y punto de reanudación? Se conservarán tus medios, frases guardadas y recuentos de palabras.",
+  "practiceHistoryUnavailable": "Este contenido ya no está en el dispositivo. Puedes eliminarlo del historial."
 }

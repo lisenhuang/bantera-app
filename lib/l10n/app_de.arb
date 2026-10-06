@@ -530,5 +530,15 @@
   "wordActivityThirtyDays": "30 Tage",
   "wordActivityWords": "Wörter",
   "wordActivityTrendEmpty": "Für diesen Zeitraum gibt es noch keine Übungen.",
-  "wordActivityAllTime": "Gesamt"
+  "wordActivityAllTime": "Gesamt",
+  "profileLibraryTitle": "Deine Übungsbibliothek",
+  "practiceHistoryTitle": "Übungsverlauf",
+  "practiceHistorySubtitle": "Fortschritt ansehen und weiterüben",
+  "profileSavedMediaSubtitle": "Deine gespeicherten Audios und Videos",
+  "profileSavedCuesSubtitle": "Gespeicherte Sätze wiederholen",
+  "practiceHistoryProgress": "{completed}/{total} Abschnitte gehört",
+  "practiceHistoryEmpty": "Deine nächste Übung beginnt hier",
+  "practiceHistoryDeviceNote": "Übe eine Lektion, um hier deinen Fortschritt zu sehen. Der Verlauf wird auf diesem Gerät gespeichert.",
+  "practiceHistoryRemoveBody": "Diese Lektion aus dem Verlauf entfernen und Fortschritt sowie Wiedergabeposition zurücksetzen? Gespeicherte Medien, Sätze und Wortzahlen bleiben erhalten.",
+  "practiceHistoryUnavailable": "Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen."
 }

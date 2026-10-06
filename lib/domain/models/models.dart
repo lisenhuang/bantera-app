@@ -471,7 +471,10 @@ class MediaItem {
     this.wordTiming,
   });
 
-  factory MediaItem.fromJson(Map<String, dynamic> json) {
+  factory MediaItem.fromJson(
+    Map<String, dynamic> json, {
+    Map<String, String> mediaHeaders = const {},
+  }) {
     return MediaItem(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
@@ -480,6 +483,7 @@ class MediaItem {
       coverUrl: json['coverUrl']?.toString() ?? '',
       videoUrl: json['videoUrl']?.toString(),
       localVideoPath: json['localVideoPath']?.toString(),
+      mediaHeaders: mediaHeaders,
       spokenLanguage: json['spokenLanguage']?.toString() ?? '',
       accent: json['accent']?.toString() ?? '',
       level:
