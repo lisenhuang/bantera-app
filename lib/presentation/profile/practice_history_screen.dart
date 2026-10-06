@@ -265,11 +265,6 @@ class _PracticeHistoryScreenState extends State<PracticeHistoryScreen> {
                               ],
                             ),
                           ),
-                          IconButton(
-                            tooltip: l10n.removeFromListLabel,
-                            icon: const Icon(Icons.delete_outline_rounded),
-                            onPressed: _removing ? null : () => _remove(entry),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 18),
@@ -286,13 +281,26 @@ class _PracticeHistoryScreenState extends State<PracticeHistoryScreen> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 12),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: FilledButton.tonalIcon(
-                          onPressed: () => _resume(entry),
-                          icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                          label: Text(l10n.continueLabel),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            tooltip: l10n.removeFromListLabel,
+                            icon: const Icon(Icons.delete_outline_rounded),
+                            onPressed: _removing ? null : () => _remove(entry),
+                          ),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: FilledButton.tonalIcon(
+                              onPressed: () => _resume(entry),
+                              icon: const Icon(
+                                Icons.play_arrow_rounded,
+                                size: 20,
+                              ),
+                              label: Text(l10n.continueLabel),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
