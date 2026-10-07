@@ -20,7 +20,14 @@ class AiSpokenWords {
         final evidence = await _channel
             .invokeListMethod<dynamic>('identifyLanguages', batch)
             .timeout(const Duration(seconds: 10));
-        if (!accepts(evidence, batch.length, target)) return 0;
+        if (!accepts(
+          evidence,
+          batch.length,
+          target,
+          requireTargetAtStart: offset == 0,
+        )) {
+          return 0;
+        }
       }
       return activityWordCount(text);
     } catch (_) {
@@ -36,7 +43,9 @@ class AiSpokenWords {
         activityWordCount(clean) < 3) {
       return [];
     }
-    final probes = <String>{if (clean.length <= 4000) clean};
+    // Keep a substantial context first. Tiny clauses such as "Hi" cannot
+    // independently establish the language of an otherwise clear utterance.
+    final probes = <String>{clean.substring(0, clean.length.clamp(0, 4000))};
     // Check every clause; a different-language clause rejects the whole message.
     for (final clause in clean.split(RegExp(r'[.!?。！？;；,，\n]+'))) {
       if (clause.trim().isNotEmpty && clause.trim().length <= 4000) {
@@ -51,11 +60,17 @@ class AiSpokenWords {
     return probes.toList();
   }
 
-  static bool accepts(List<dynamic>? evidence, int expected, String target) {
+  static bool accepts(
+    List<dynamic>? evidence,
+    int expected,
+    String target, {
+    bool requireTargetAtStart = true,
+  }) {
     if (evidence == null || evidence.length != expected || expected == 0) {
       return false;
     }
-    for (final item in evidence) {
+    for (var index = 0; index < evidence.length; index++) {
+      final item = evidence[index];
       if (item is! Map) return false;
       final hypotheses = item['hypotheses'];
       if (hypotheses is! List || hypotheses.isEmpty) return false;
@@ -65,15 +80,21 @@ class AiSpokenWords {
             (a['confidence'] as num?) ?? 0,
           ),
         );
-      if (ranked.isEmpty ||
-          wordActivityLanguageKey(ranked.first['language']?.toString()) !=
-              target ||
-          ((ranked.first['confidence'] as num?) ?? 0) < 0.85) {
-        return false;
-      }
-      // iOS additionally supplies context-aware word-level language tags.
+      if (ranked.isEmpty) return false;
+      final best = ranked.first;
+      final confident = ((best['confidence'] as num?) ?? 0) >= 0.85;
+      final matches =
+          wordActivityLanguageKey(best['language']?.toString()) == target;
+      final isContext = requireTargetAtStart && index == 0;
+      // Require positive evidence for the complete utterance. For short
+      // fragments, uncertainty is not evidence that the user switched language.
+      if (isContext && (!confident || !matches)) return false;
+      if (confident && !matches) return false;
+      // Whole-context tags can expose mixed speech even when its dominant
+      // language is the target. Fragment tags lack that disambiguating context.
       final tags = item['languages'];
-      if (tags is List &&
+      if (isContext &&
+          tags is List &&
           tags.any(
             (tag) => wordActivityLanguageKey(tag.toString()) != target,
           )) {

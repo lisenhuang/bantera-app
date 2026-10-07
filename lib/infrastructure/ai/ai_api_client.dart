@@ -7,6 +7,7 @@ import 'ai_device_data.dart';
 import '../callkit_service.dart';
 import '../push_notifications_service.dart';
 import '../../core/api_config_notifier.dart';
+import '../../core/settings_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 
 class AiApiClient {
@@ -42,6 +43,7 @@ class AiApiClient {
     required bool hasMetBanteraAi,
   }) async => {
     'hasMetBanteraAi': hasMetBanteraAi,
+    'learningLevel': SettingsNotifier.instance.audioLevel?.name,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
     'alertPushToken':

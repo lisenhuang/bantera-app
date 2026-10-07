@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../infrastructure/ai/ai_voice_stream.dart';
 import '../../../core/auth_session_notifier.dart';
 import '../../../core/ai_callback_notifier.dart';
@@ -54,6 +55,20 @@ class AiChatController extends ChangeNotifier {
   WebSocket? _socket;
   StreamSubscription? _socketEvents, _micEvents;
   Timer? _countdown, _connectTimeout;
+  Future<void> _screenAwakeUpdates = Future.value();
+
+  // Serialize platform updates so ending a call during startup cannot leave
+  // auto-lock disabled after a slow enable operation completes.
+  void _keepScreenAwake(bool enabled) {
+    _screenAwakeUpdates = _screenAwakeUpdates.then((_) async {
+      try {
+        await WakelockPlus.toggle(enable: enabled);
+      } catch (_) {
+        // A display setting failure must not prevent starting/ending audio.
+      }
+    });
+  }
+
   int recordingRemaining = AiRecordingCountdown.limitSeconds;
   late final _recordTimer = AiRecordingCountdown(
     onTick: (remaining) {
@@ -120,8 +135,11 @@ class AiChatController extends ChangeNotifier {
   final BytesBuilder _recordPcm = BytesBuilder(copy: false);
   bool _replyAudioStarted = false;
   final voiceReply = AiVoiceReplyState();
+  AiMessage? _liveModelMessage;
   bool get sendingVoice => busy && !voiceReply.received;
-  bool isReceiving(AiMessage message) => identical(voiceReply.message, message);
+  bool isReceiving(AiMessage message) =>
+      identical(voiceReply.message, message) ||
+      identical(_liveModelMessage, message);
   final BytesBuilder _input = BytesBuilder(copy: false),
       _output = BytesBuilder(copy: false);
   bool _speech = false;
@@ -165,7 +183,11 @@ class AiChatController extends ChangeNotifier {
   bool get available =>
       !_disposed &&
       (_testing || AuthSessionNotifier.instance.session?.cacheKey == owner);
-  List<AiMessage> get messages => [...store.messages, ?voiceReply.message];
+  List<AiMessage> get messages => [
+    ...store.messages,
+    ?voiceReply.message,
+    ?_liveModelMessage,
+  ];
   void changed() {
     if (available) notifyListeners();
   }
@@ -621,7 +643,12 @@ class AiChatController extends ChangeNotifier {
   }) async {
     if (!available || epoch != _epoch) return;
     message.failed = false;
-    message.text = reply['inputText'] as String? ?? message.text;
+    final inputText = reply['inputText'] as String?;
+    if (inputText != null && inputText.trim().isNotEmpty) {
+      message.text = inputText;
+    }
+    // Credit the completed input independently of storing/playing the reply.
+    unawaited(_countSpeech(message));
     final name = await store.saveAudio(base64Decode(reply['audio'] as String));
     if (!available || epoch != _epoch) return;
     final answer = voiceReply.complete(
@@ -632,7 +659,6 @@ class AiChatController extends ChangeNotifier {
     store.messages.add(answer);
     await store.save();
     if (autoplay) requestReplyPlayback(answer);
-    unawaited(_countSpeech(message));
     changed();
   }
 
@@ -793,6 +819,7 @@ class AiChatController extends ChangeNotifier {
       return;
     }
     calling = true;
+    _keepScreenAwake(true);
     AiCallbackNotifier.instance.aiActive = true;
     connected = false;
     farewell = false;
@@ -957,12 +984,25 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  @visibleForTesting
+  Future<void> receiveCallEventForTesting(dynamic event) {
+    assert(_testing);
+    return _event(event, _epoch);
+  }
+
+  AiMessage _liveBubble() => _liveModelMessage ??= AiMessage(
+    role: 'model',
+    language: UserProfileNotifier.instance.learningLanguage ?? '',
+  );
+
   Future<void> _event(dynamic event, int epoch) async {
     if (event is List<int>) {
       if (_output.length + event.length > 24000 * 2 * 90) {
         throw StateError('Audio too long');
       }
       _output.add(event);
+      _liveBubble().durationMs = _output.length * 1000 ~/ 48000;
+      changed();
       _queuedFrames += event.length ~/ 2;
       await audio.invokeMethod<void>('feed', Uint8List.fromList(event));
       if (!store.hasMetBanteraAi) {
@@ -1005,6 +1045,7 @@ class AiChatController extends ChangeNotifier {
           draftUser += data['text'] as String? ?? '';
         } else {
           draftModel += data['text'] as String? ?? '';
+          if (draftModel.isNotEmpty) _liveBubble().text = draftModel;
         }
       case 'turnComplete':
         await _saveTurn();
@@ -1098,11 +1139,14 @@ class AiChatController extends ChangeNotifier {
     _modelStartFrame = _queuedFrames;
     draftModel = '';
     if (text.isNotEmpty || pcm.isNotEmpty) {
-      final message = AiMessage(
-        role: 'model',
-        text: text,
-        language: UserProfileNotifier.instance.learningLanguage ?? '',
-      );
+      final message = _liveBubble();
+      message.text = text;
+      message.durationMs = pcm.length * 1000 ~/ 48000;
+      // Transfer the visible bubble synchronously before any disk/platform work.
+      // Interruption or a slow/failed save must not remove the partial response.
+      _liveModelMessage = null;
+      store.messages.add(message);
+      changed();
       if (pcm.isNotEmpty) {
         message.audio = await store.saveAudio(aiWave(pcm, 24000));
         _callListening.add(
@@ -1112,7 +1156,6 @@ class AiChatController extends ChangeNotifier {
           message.language,
         );
       }
-      store.messages.add(message);
       await store.save();
       changed();
     }
@@ -1149,6 +1192,7 @@ class AiChatController extends ChangeNotifier {
   Future<void> endCall() async {
     if (!calling) return;
     calling = false;
+    _keepScreenAwake(false);
     unawaited(_endCallActivity());
     AiCallbackNotifier.instance.aiActive = false;
     connected = false;

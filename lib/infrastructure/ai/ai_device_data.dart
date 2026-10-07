@@ -1,5 +1,6 @@
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
+import '../../core/settings_notifier.dart';
 import '../../core/word_activity_notifier.dart';
 import '../auth_api_client.dart';
 import '../local_practice_repository.dart';
@@ -33,6 +34,9 @@ class AiDeviceData {
           'name': profile.displayName,
           'learningLanguageAndAccent': profile.learningLanguage,
           'nativeLanguage': profile.nativeLanguage,
+          'learningLevel': SettingsNotifier.instance.audioLevel?.name,
+          'learningLevelStorage':
+              'device-only Discover preference; null means all levels',
         };
       case 'get_practice_history':
         final store = PracticeProgressStore.instance;

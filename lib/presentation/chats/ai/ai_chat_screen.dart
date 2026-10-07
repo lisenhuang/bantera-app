@@ -557,8 +557,6 @@ class _AiChatScreenState extends State<AiChatScreen>
                         for (final m in _chat.messages) _bubble(m),
                         if (_chat.draftUser.isNotEmpty)
                           _draft(_chat.draftUser, true),
-                        if (_chat.draftModel.isNotEmpty)
-                          _draft(_chat.draftModel, false),
                         if (_chat.sendingVoice)
                           Padding(
                             padding: const EdgeInsets.all(12),
@@ -801,7 +799,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (m.audio != null || receiving)
+            if (m.audio != null || receiving || (m.durationMs ?? 0) > 0)
               ChatAudioHeader(
                 receiving: receiving,
                 playing: selected && _player.state == PlayerState.playing,
