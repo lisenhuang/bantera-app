@@ -188,6 +188,19 @@ void main() {
       controller.changed();
       await tester.pump();
       expect(find.text('A streamed reply'), findsOneWidget);
+      final recordButton = tester.widget<IconButton>(
+        find.byKey(const Key('voice-tap-record-send')),
+      );
+      expect(recordButton.onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('voice-tap-record-send')));
+      await tester.pump();
+      expect(controller.recording, isTrue);
+      expect(find.text('3:00'), findsOneWidget);
+      expect(find.text('Bantera AI is replying…'), findsOneWidget);
+      await tester.tap(find.byTooltip('Cancel'));
+      await tester.pump();
+      expect(controller.recording, isFalse);
+      controller.cancelledRecordings = 0;
       expect(find.text('I live in Auckland.'), findsOneWidget);
       controller.voiceReply.clear();
       controller.busy = false;

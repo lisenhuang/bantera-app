@@ -126,6 +126,42 @@ lib/
 
 ## 🔑 Technical Deep Dives
 
+### Bantera AI: web search on the device
+
+Bantera AI can call `search_web(query)` during real-time audio calls and streamed
+voice-message replies. **No DuckDuckGo API key is required.** The app makes a
+direct HTTPS GET request to `https://html.duckduckgo.com/html/?q=<encoded-query>`
+and parses the returned search-results HTML with Dart's `html` package. This is
+HTML page parsing, not a dedicated DuckDuckGo search API or Gemini's built-in
+Google Search grounding.
+
+1. Gemini requests the custom `search_web` function through the existing backend
+   WebSocket relay.
+2. The app searches DuckDuckGo directly and extracts up to five titles, HTTPS
+   links and short excerpts. It does not automatically fetch the linked pages.
+3. The app sends these results back through the relay so Gemini can answer.
+   The chat bubble displays tappable source links alongside the response.
+
+The backend registers and relays the tool; it does not execute the search.
+No search API secret, Bantera authentication headers or cookies are sent to
+DuckDuckGo. Existing Gemini credentials are still required on the backend for
+the AI conversation. DuckDuckGo receives the query and the device's network
+connection; the query and returned excerpts also pass through Bantera's backend
+to Gemini. Source cards are saved in the device's chat history.
+
+**Reliability:** DuckDuckGo documents its [non-JavaScript search interface](https://duckduckgo.com/duckduckgo-help-pages/features/non-javascript),
+but this integration depends on its HTML layout and has no search API service
+guarantee. Markup changes, rate limits, bot challenges or network failures can
+make search unavailable. The app returns an unavailable result instead of
+bypassing challenges. It limits uncached requests to four per minute, caches
+successful results in memory for five minutes, and uses an eight-second timeout.
+Search excerpts are treated as untrusted content, not instructions or full articles.
+
+Implementation: [`AiWebSearch`](lib/infrastructure/ai/ai_web_search.dart).
+See [device web-search design](docs/ai-device-web-search.md) for protocol,
+privacy, bounds and release requirements. No additional search configuration or
+environment variable is needed.
+
 ### 🎙️ Practice Player — Word-Level Highlight Sync
 
 The core of the app. The practice player maps each character in a transcript to a millisecond timestamp, enabling word-by-word highlight sync during playback. Unicode-aware tokenization handles CJK and apostrophe-contracted words:

@@ -603,7 +603,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   }
 
   Future<void> _startRecording() async {
-    if (_startingRecord || !_chat.loaded || _chat.busy || _chat.recording) {
+    if (_startingRecord || !_chat.canRecord) {
       return;
     }
     _startingRecord = true;
@@ -629,14 +629,16 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   Widget _composer(BuildContext context, AppLocalizations l) =>
       VoiceMessageComposer(
-        enabled: _chat.loaded && !_chat.busy,
+        enabled: _chat.recording || _chat.canRecord,
         recording: _chat.recording,
         remainingSeconds: _chat.recordingRemaining,
-        busyLabel: _chat.busy
+        busyLabel: _chat.busy && !_chat.recording
             ? (_chat.sendingVoice ? l.chatSendingAudio : l.aiReplying)
             : null,
         onStart: _startRecording,
-        onSend: _chat.sendRecording,
+        onSend: () async {
+          unawaited(_chat.sendRecording());
+        },
         onCancel: _chat.cancelRecording,
       );
 
