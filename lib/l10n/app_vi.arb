@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Đã hủy",
   "aiReminderFailed": "Chưa gửi",
   "aiReminderScheduleHelp": "Yêu cầu nhắc luyện tập sau mười phút để nhận tin nhắn thoại. Chỉ nói “Gọi cho tôi” khi muốn cuộc gọi. Giờ hiển thị theo múi giờ hiện tại. Lời nhắc được giữ trong bảy ngày.",
-  "aiReplyInterrupted": "Phản hồi bị gián đoạn."
+  "aiReplyInterrupted": "Phản hồi bị gián đoạn.",
+  "aiWebSearching": "Đang tìm trên web…",
+  "aiWebUnavailable": "Không thể tìm kiếm",
+  "aiWebSources": "Nguồn",
+  "aiWebSearchHelp": "Bạn có thể nhờ Bantera AI tìm trên web. Thiết bị gửi truy vấn đến DuckDuckGo và đoạn trích kết quả đến AI. Chạm vào nguồn để mở. Đôi khi tính năng tìm kiếm không khả dụng."
 }

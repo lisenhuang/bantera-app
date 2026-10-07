@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Dibatalkan",
   "aiReminderFailed": "Tidak terkirim",
   "aiReminderScheduleHelp": "Minta diingatkan berlatih sepuluh menit lagi untuk menerima pesan suara. Katakan “Telepon saya” hanya jika ingin panggilan. Waktu mengikuti zona waktu Anda saat ini. Pengingat disimpan tujuh hari.",
-  "aiReplyInterrupted": "Balasan terputus."
+  "aiReplyInterrupted": "Balasan terputus.",
+  "aiWebSearching": "Mencari di web…",
+  "aiWebUnavailable": "Pencarian tidak tersedia",
+  "aiWebSources": "Sumber",
+  "aiWebSearchHelp": "Minta Bantera AI mencari di web. Perangkat ini mengirim kueri ke DuckDuckGo dan cuplikan hasil ke AI. Ketuk sumber untuk membukanya. Pencarian terkadang tidak tersedia."
 }

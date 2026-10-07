@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Cancelado",
   "aiReminderFailed": "No entregado",
   "aiReminderScheduleHelp": "Pide que te recuerde practicar en diez minutos para recibir un mensaje de voz. Di «Llámame» solo si quieres una llamada. Las horas usan tu zona horaria actual. Los recordatorios se conservan siete días.",
-  "aiReplyInterrupted": "Respuesta interrumpida."
+  "aiReplyInterrupted": "Respuesta interrumpida.",
+  "aiWebSearching": "Buscando en la web…",
+  "aiWebUnavailable": "Búsqueda no disponible",
+  "aiWebSources": "Fuentes",
+  "aiWebSearchHelp": "Puedes pedir a Bantera AI que busque en la web. Este dispositivo envía la consulta a DuckDuckGo y los extractos a la IA. Toca una fuente para abrirla. La búsqueda puede no estar disponible."
 }

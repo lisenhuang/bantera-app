@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Abgebrochen",
   "aiReminderFailed": "Nicht zugestellt",
   "aiReminderScheduleHelp": "Bitte um eine Erinnerung in zehn Minuten, um eine Sprachnachricht zu erhalten. Sage ausdrücklich „Ruf mich an“, wenn du einen Anruf möchtest. Zeiten gelten für deine aktuelle Zeitzone. Erinnerungen bleiben sieben Tage sichtbar.",
-  "aiReplyInterrupted": "Antwort unterbrochen."
+  "aiReplyInterrupted": "Antwort unterbrochen.",
+  "aiWebSearching": "Websuche läuft…",
+  "aiWebUnavailable": "Suche nicht verfügbar",
+  "aiWebSources": "Quellen",
+  "aiWebSearchHelp": "Bitte Bantera AI um eine Websuche. Dieses Gerät sendet die Suchanfrage an DuckDuckGo und Auszüge der Ergebnisse an die KI. Tippe auf eine Quelle, um sie zu öffnen. Die Suche kann zeitweise nicht verfügbar sein."
 }

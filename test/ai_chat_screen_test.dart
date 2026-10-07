@@ -14,6 +14,7 @@ class _TranslationController extends AiChatController {
   final translationRequests = <bool>[];
   int sentRecordings = 0,
       cancelledRecordings = 0,
+      cancelRequests = 0,
       endedCalls = 0,
       startedCalls = 0;
   @override
@@ -51,6 +52,7 @@ class _TranslationController extends AiChatController {
 
   @override
   Future<void> cancelRecording() async {
+    cancelRequests++;
     if (!recording) return;
     cancelledRecordings++;
     recording = false;
@@ -353,6 +355,18 @@ void main() {
       expect(tester.takeException(), isNull);
       controller.calling = false;
       controller.connected = false;
+      controller.busy = true;
+      final cancelsBeforeBackground = controller.cancelRequests;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      expect(controller.cancelRequests, cancelsBeforeBackground);
+      expect(controller.busy, isTrue);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      controller.busy = false;
       controller.changed();
       await tester.pump();
       await tester.tap(find.byIcon(Icons.more_horiz));

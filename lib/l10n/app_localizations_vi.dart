@@ -1912,4 +1912,17 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Phản hồi bị gián đoạn.';
+
+  @override
+  String get aiWebSearching => 'Đang tìm trên web…';
+
+  @override
+  String get aiWebUnavailable => 'Không thể tìm kiếm';
+
+  @override
+  String get aiWebSources => 'Nguồn';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Bạn có thể nhờ Bantera AI tìm trên web. Thiết bị gửi truy vấn đến DuckDuckGo và đoạn trích kết quả đến AI. Chạm vào nguồn để mở. Đôi khi tính năng tìm kiếm không khả dụng.';
 }

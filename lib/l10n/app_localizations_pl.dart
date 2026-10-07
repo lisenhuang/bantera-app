@@ -1986,4 +1986,17 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Odpowiedź została przerwana.';
+
+  @override
+  String get aiWebSearching => 'Wyszukiwanie w sieci…';
+
+  @override
+  String get aiWebUnavailable => 'Wyszukiwanie niedostępne';
+
+  @override
+  String get aiWebSources => 'Źródła';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Poproś Bantera AI o wyszukanie informacji w sieci. Urządzenie wysyła zapytanie do DuckDuckGo, a fragmenty wyników do AI. Dotknij źródła, aby je otworzyć. Wyszukiwanie może być czasowo niedostępne.';
 }

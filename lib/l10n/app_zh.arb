@@ -604,5 +604,9 @@
   "aiReminderCancelled": "已取消",
   "aiReminderFailed": "未送达",
   "aiReminderScheduleHelp": "说“10分钟后提醒我练习”即可收到语音消息。只有明确说“打电话给我”才会来电。以下时间按你当前时区显示，近期提醒保留7天。",
-  "aiReplyInterrupted": "回复中断。"
+  "aiReplyInterrupted": "回复中断。",
+  "aiWebSearching": "正在搜索网页…",
+  "aiWebUnavailable": "暂时无法搜索",
+  "aiWebSources": "来源",
+  "aiWebSearchHelp": "你可以让 Bantera AI 搜索网页。搜索在本设备发起：查询发送给 DuckDuckGo，结果摘要发送给 AI。点按来源即可打开。搜索有时可能不可用。"
 }

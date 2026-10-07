@@ -1972,4 +1972,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Antwort unterbrochen.';
+
+  @override
+  String get aiWebSearching => 'Websuche läuft…';
+
+  @override
+  String get aiWebUnavailable => 'Suche nicht verfügbar';
+
+  @override
+  String get aiWebSources => 'Quellen';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Bitte Bantera AI um eine Websuche. Dieses Gerät sendet die Suchanfrage an DuckDuckGo und Auszüge der Ergebnisse an die KI. Tippe auf eine Quelle, um sie zu öffnen. Die Suche kann zeitweise nicht verfügbar sein.';
 }

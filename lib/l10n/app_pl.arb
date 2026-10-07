@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Anulowane",
   "aiReminderFailed": "Niedostarczone",
   "aiReminderScheduleHelp": "Poproś o przypomnienie za dziesięć minut, aby otrzymać wiadomość głosową. Powiedz „Zadzwoń do mnie” tylko, jeśli chcesz połączenia. Godziny są w bieżącej strefie czasowej. Przypomnienia pozostają przez siedem dni.",
-  "aiReplyInterrupted": "Odpowiedź została przerwana."
+  "aiReplyInterrupted": "Odpowiedź została przerwana.",
+  "aiWebSearching": "Wyszukiwanie w sieci…",
+  "aiWebUnavailable": "Wyszukiwanie niedostępne",
+  "aiWebSources": "Źródła",
+  "aiWebSearchHelp": "Poproś Bantera AI o wyszukanie informacji w sieci. Urządzenie wysyła zapytanie do DuckDuckGo, a fragmenty wyników do AI. Dotknij źródła, aby je otworzyć. Wyszukiwanie może być czasowo niedostępne."
 }

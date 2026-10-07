@@ -41,9 +41,11 @@ void main() {
       final played = <List<int>>[];
       final transcripts = <String>[];
       var resets = 0;
+      final searchGate = Completer<Map<String, dynamic>>();
       final stream = AiVoiceStream(
         connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
         onAudio: (bytes) async => played.add(bytes),
+        onToolCall: (_) => searchGate.future,
         onTranscript: (role, text) => transcripts.add("$role:$text"),
         onReset: () async {
           resets++;
@@ -73,6 +75,18 @@ void main() {
         socket.add(
           jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'lo'}),
         );
+        socket.add(
+          jsonEncode({
+            'type': 'toolCall',
+            'calls': [
+              {
+                'id': 'search-1',
+                'name': 'search_web',
+                'args': {'query': 'weather'},
+              },
+            ],
+          }),
+        );
         socket.add([10, 11]);
         await _until(() => played.length == 1);
         expect(transcripts, ["model:Hel", "model:lo"]);
@@ -84,6 +98,16 @@ void main() {
         socket.add([12, 13]);
         await _until(() => played.length == 2);
         expect(resets, 1);
+        searchGate.complete({
+          'results': [
+            {'title': 'Forecast', 'url': 'https://example.com'},
+          ],
+        });
+        expect(await incoming.moveNext(), true);
+        final tools = jsonDecode(incoming.current as String);
+        expect(tools['type'], 'toolResponse');
+        expect(tools['responses'][0]['id'], 'search-1');
+
         socket.add(
           jsonEncode({
             'type': 'complete',

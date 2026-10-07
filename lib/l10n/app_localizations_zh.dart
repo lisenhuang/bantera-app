@@ -1832,6 +1832,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => '回复中断。';
+
+  @override
+  String get aiWebSearching => '正在搜索网页…';
+
+  @override
+  String get aiWebUnavailable => '暂时无法搜索';
+
+  @override
+  String get aiWebSources => '来源';
+
+  @override
+  String get aiWebSearchHelp =>
+      '你可以让 Bantera AI 搜索网页。搜索在本设备发起：查询发送给 DuckDuckGo，结果摘要发送给 AI。点按来源即可打开。搜索有时可能不可用。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3666,4 +3679,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiReplyInterrupted => '回覆中斷。';
+
+  @override
+  String get aiWebSearching => '正在搜尋網頁…';
+
+  @override
+  String get aiWebUnavailable => '暫時無法搜尋';
+
+  @override
+  String get aiWebSources => '來源';
+
+  @override
+  String get aiWebSearchHelp =>
+      '你可以請 Bantera AI 搜尋網頁。搜尋由本裝置發起：查詢傳送給 DuckDuckGo，結果摘要傳送給 AI。點按來源即可開啟。搜尋有時可能無法使用。';
 }

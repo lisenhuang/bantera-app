@@ -3493,6 +3493,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reply interrupted.'**
   String get aiReplyInterrupted;
+
+  /// No description provided for @aiWebSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching the web…'**
+  String get aiWebSearching;
+
+  /// No description provided for @aiWebUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Search unavailable'**
+  String get aiWebUnavailable;
+
+  /// No description provided for @aiWebSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get aiWebSources;
+
+  /// No description provided for @aiWebSearchHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'You can ask Bantera AI to search the web. Searches run on this device: queries go to DuckDuckGo, and result excerpts go to AI. Tap a source to open it. Search may sometimes be unavailable.'**
+  String get aiWebSearchHelp;
 }
 
 class _AppLocalizationsDelegate

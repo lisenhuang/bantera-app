@@ -1977,4 +1977,17 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Відповідь перервано.';
+
+  @override
+  String get aiWebSearching => 'Пошук в інтернеті…';
+
+  @override
+  String get aiWebUnavailable => 'Пошук недоступний';
+
+  @override
+  String get aiWebSources => 'Джерела';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Попросіть Bantera AI знайти інформацію в інтернеті. Пристрій надсилає запит до DuckDuckGo, а уривки результатів до ШІ. Натисніть джерело, щоб відкрити його. Іноді пошук недоступний.';
 }

@@ -7,18 +7,18 @@ class AiVoiceReplyState {
   bool received = false;
   int _bytes = 0;
 
-  AiMessage _ensure(String language) {
+  AiMessage ensure(String language) {
     received = true;
     return message ??= AiMessage(role: 'model', language: language);
   }
 
   void addAudio(int bytes, String language) {
     _bytes += bytes;
-    _ensure(language).durationMs = _bytes * 1000 ~/ 48000;
+    ensure(language).durationMs = _bytes * 1000 ~/ 48000;
   }
 
   void addTranscript(String text, String language) {
-    if (text.isNotEmpty) _ensure(language).text += text;
+    if (text.isNotEmpty) ensure(language).text += text;
   }
 
   void resetAttempt() {
@@ -28,7 +28,7 @@ class AiVoiceReplyState {
   }
 
   AiMessage complete(String text, String audio, String language) {
-    final result = _ensure(language);
+    final result = ensure(language);
     result.text = text;
     result.audio = audio;
     // The final WAV duration is filled from the history store's audio cache.

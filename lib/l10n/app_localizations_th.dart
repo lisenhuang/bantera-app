@@ -1894,4 +1894,17 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'การตอบกลับถูกขัดจังหวะ';
+
+  @override
+  String get aiWebSearching => 'กำลังค้นหาเว็บ…';
+
+  @override
+  String get aiWebUnavailable => 'ค้นหาไม่ได้ในขณะนี้';
+
+  @override
+  String get aiWebSources => 'แหล่งข้อมูล';
+
+  @override
+  String get aiWebSearchHelp =>
+      'ขอให้ Bantera AI ค้นหาเว็บได้ อุปกรณ์นี้จะส่งคำค้นไปยัง DuckDuckGo และส่งข้อความสรุปผลให้ AI แตะแหล่งข้อมูลเพื่อเปิด บางครั้งการค้นหาอาจไม่พร้อมใช้งาน';
 }

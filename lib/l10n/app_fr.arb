@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Annulé",
   "aiReminderFailed": "Non remis",
   "aiReminderScheduleHelp": "Demandez un rappel dans dix minutes pour recevoir un message vocal. Dites « Appelle-moi » uniquement pour un appel. Les heures suivent votre fuseau actuel. Les rappels restent visibles sept jours.",
-  "aiReplyInterrupted": "Réponse interrompue."
+  "aiReplyInterrupted": "Réponse interrompue.",
+  "aiWebSearching": "Recherche sur le Web…",
+  "aiWebUnavailable": "Recherche indisponible",
+  "aiWebSources": "Sources",
+  "aiWebSearchHelp": "Demandez à Bantera AI de chercher sur le Web. Cet appareil envoie la recherche à DuckDuckGo, puis les extraits à l’IA. Touchez une source pour l’ouvrir. La recherche peut être indisponible."
 }

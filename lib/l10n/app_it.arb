@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Annullato",
   "aiReminderFailed": "Non consegnato",
   "aiReminderScheduleHelp": "Chiedi un promemoria tra dieci minuti per ricevere un messaggio vocale. Di’ “Chiamami” solo se vuoi una chiamata. Gli orari usano il tuo fuso attuale. I promemoria restano visibili sette giorni.",
-  "aiReplyInterrupted": "Risposta interrotta."
+  "aiReplyInterrupted": "Risposta interrotta.",
+  "aiWebSearching": "Ricerca sul web…",
+  "aiWebUnavailable": "Ricerca non disponibile",
+  "aiWebSources": "Fonti",
+  "aiWebSearchHelp": "Puoi chiedere a Bantera AI di cercare sul web. Questo dispositivo invia la ricerca a DuckDuckGo e gli estratti all’IA. Tocca una fonte per aprirla. La ricerca potrebbe non essere disponibile."
 }

@@ -2,13 +2,15 @@ import 'dart:async';
 
 /// Uses elapsed time rather than counting timer ticks, so a delayed UI tick does
 /// not extend the recording. Cancellation and expiry both consume the timer.
-class AiRecordingCountdown {
-  AiRecordingCountdown({
+class ChatRecordingCountdown {
+  ChatRecordingCountdown({
     required this.onTick,
     required this.onExpired,
     int Function()? elapsedMilliseconds,
+    this.maxSeconds = limitSeconds,
   }) : _elapsedMilliseconds = elapsedMilliseconds;
   static const limitSeconds = 180;
+  final int maxSeconds;
   final void Function(int) onTick;
   final void Function() onExpired;
   final int Function()? _elapsedMilliseconds;
@@ -19,13 +21,13 @@ class AiRecordingCountdown {
     _watch
       ..reset()
       ..start();
-    onTick(limitSeconds);
+    onTick(maxSeconds);
     _timer = Timer.periodic(const Duration(milliseconds: 250), (_) {
       final elapsed =
           _elapsedMilliseconds?.call() ?? _watch.elapsedMilliseconds;
-      final remaining = ((limitSeconds * 1000 - elapsed) / 1000).ceil().clamp(
+      final remaining = ((maxSeconds * 1000 - elapsed) / 1000).ceil().clamp(
         0,
-        limitSeconds,
+        maxSeconds,
       );
       onTick(remaining);
       if (remaining == 0) {

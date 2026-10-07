@@ -29,6 +29,8 @@ import 'chat_image_message.dart';
 import 'chat_bubble_parts.dart';
 import 'group_chat_presentation.dart';
 import 'newest_message_list.dart';
+import 'voice_message_composer.dart';
+import 'chat_recording_countdown.dart';
 
 class ChatConversationScreen extends StatefulWidget {
   const ChatConversationScreen.thread({super.key, required this.thread})
@@ -62,7 +64,17 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   String? _groupKind;
   ChatUserSummary? _partner;
   DateTime? _recordingStartedAt;
-  Timer? _maxRecordingTimer;
+  bool _startingRecording = false, _stoppingRecording = false;
+  int _recordingRemaining = ChatRecordingCountdown.limitSeconds;
+  late final _recordingCountdown = ChatRecordingCountdown(
+    maxSeconds: _isGroup ? 60 : ChatRecordingCountdown.limitSeconds,
+    onTick: (remaining) {
+      if (mounted && _recordingRemaining != remaining) {
+        setState(() => _recordingRemaining = remaining);
+      }
+    },
+    onExpired: () => unawaited(_stopRecording()),
+  );
 
   @override
   void initState() {
@@ -103,7 +115,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   @override
   void dispose() {
     WordActivityNotifier.instance.release();
-    _maxRecordingTimer?.cancel();
+    _recordingCountdown.cancel();
     _playerCompleteSubscription?.cancel();
     _playerPositionSubscription?.cancel();
     if (_threadId != null) {
@@ -315,6 +327,20 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Widget _buildComposer(BuildContext context, AppLocalizations l10n) {
+    if (!_isGroup) {
+      return SafeArea(
+        top: false,
+        child: VoiceMessageComposer(
+          enabled: !_isSending && !_stoppingRecording,
+          recording: _isRecording,
+          remainingSeconds: _recordingRemaining,
+          busyLabel: _isSending ? l10n.chatSendingAudio : null,
+          onStart: _startRecording,
+          onSend: _stopRecording,
+          onCancel: _cancelRecording,
+        ),
+      );
+    }
     return SafeArea(
       top: false,
       child: Container(
@@ -606,20 +632,21 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _startRecording() async {
-    if (_isRecording || _isSending) {
+    if (_isRecording ||
+        _isSending ||
+        _startingRecording ||
+        _stoppingRecording ||
+        DmCallNotifier.instance.isActive) {
       return;
     }
-    if (!await _ensureMicrophonePermission()) {
-      return;
-    }
-
-    final dir = await getTemporaryDirectory();
-    final path =
-        '${dir.path}/bantera-chat-${DateTime.now().millisecondsSinceEpoch}.m4a';
-
-    if (mounted) setState(() => _isRecording = true);
-
+    _startingRecording = true;
     try {
+      if (!await _ensureMicrophonePermission() || !mounted) return;
+      final dir = await getTemporaryDirectory();
+      await _player.stop();
+      if (!mounted) return;
+      final path =
+          '${dir.path}/bantera-chat-${DateTime.now().microsecondsSinceEpoch}.m4a';
       await _recorder.start(
         const RecordConfig(
           encoder: AudioEncoder.aacLc,
@@ -628,100 +655,87 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         ),
         path: path,
       );
+      if (!mounted) {
+        await _recorder.cancel();
+        return;
+      }
+      _recordingStartedAt = DateTime.now();
+      setState(() {
+        _isRecording = true;
+        _currentPlayingMessageId = null;
+        _currentPlaybackPosition = Duration.zero;
+      });
+      if (_isGroup && !_isPressing) {
+        await _cancelRecording();
+        return;
+      }
+      _recordingCountdown.start();
+      if (_threadId != null && !_isGroup) {
+        unawaited(
+          _chat.sendRecordingEvent(threadId: _threadId!, isRecording: true),
+        );
+      }
     } catch (_) {
       if (mounted) setState(() => _isRecording = false);
-      return;
-    }
-
-    _recordingStartedAt = DateTime.now();
-    _maxRecordingTimer?.cancel();
-    _maxRecordingTimer = Timer(const Duration(seconds: 60), _stopRecording);
-    if (_threadId != null && !_isGroup) {
-      unawaited(
-        _chat.sendRecordingEvent(threadId: _threadId!, isRecording: true),
-      );
+    } finally {
+      _startingRecording = false;
     }
   }
 
   Future<void> _cancelRecording() async {
     if (mounted) setState(() => _isPressing = false);
-    if (!_isRecording) {
-      return;
-    }
-
-    _maxRecordingTimer?.cancel();
-    _maxRecordingTimer = null;
-    final path = await _recorder.stop();
-    if (_threadId != null && !_isGroup) {
-      unawaited(
-        _chat.sendRecordingEvent(threadId: _threadId!, isRecording: false),
-      );
-    }
-    if (path != null) {
-      unawaited(() async {
-        try {
-          await File(path).delete();
-        } catch (_) {}
-      }());
-    }
-    if (mounted) {
-      setState(() {
-        _isRecording = false;
-      });
+    if (!_isRecording || _stoppingRecording) return;
+    _recordingCountdown.cancel();
+    _stoppingRecording = true;
+    if (mounted) setState(() => _isRecording = false);
+    try {
+      await _recorder.cancel();
+    } finally {
+      if (_threadId != null && !_isGroup) {
+        unawaited(
+          _chat.sendRecordingEvent(threadId: _threadId!, isRecording: false),
+        );
+      }
+      _stoppingRecording = false;
+      if (mounted) setState(() {});
     }
   }
 
   Future<void> _stopRecording() async {
     final activityOwnerId = AuthSessionNotifier.instance.session?.userId;
     final activityAt = DateTime.now();
-    if (!_isRecording) {
-      return;
-    }
-
-    _maxRecordingTimer?.cancel();
-    _maxRecordingTimer = null;
-    final path = await _recorder.stop();
-    if (_threadId != null && !_isGroup) {
-      unawaited(
-        _chat.sendRecordingEvent(threadId: _threadId!, isRecording: false),
-      );
-    }
-
-    if (mounted) {
-      setState(() {
-        _isRecording = false;
-        _isPressing = false;
-      });
-    }
-
-    if (path == null) {
-      return;
-    }
-
-    final audioFile = File(path);
+    if (!_isRecording || _stoppingRecording || _isSending) return;
+    _recordingCountdown.cancel();
+    // Consume the take before awaiting the recorder: timeout, release and tap
+    // may arrive together, but must never upload the same recording twice.
+    setState(() {
+      _isRecording = false;
+      _isPressing = false;
+      _isSending = true;
+    });
+    File? audioFile;
     final durationMs = DateTime.now()
         .difference(_recordingStartedAt ?? DateTime.now())
         .inMilliseconds
-        .clamp(1, 60000);
-
-    if (_isGroup && _groupKind == null) {
-      if (mounted) {
+        .clamp(1, (_isGroup ? 60 : ChatRecordingCountdown.limitSeconds) * 1000);
+    try {
+      final path = await _recorder.stop();
+      if (_threadId != null && !_isGroup) {
+        unawaited(
+          _chat.sendRecordingEvent(threadId: _threadId!, isRecording: false),
+        );
+      }
+      if (path == null) return;
+      audioFile = File(path);
+      if (!mounted) return;
+      if (_isGroup && _groupKind == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.chatGroupNotReady),
           ),
         );
+        return;
       }
-      return;
-    }
-
-    try {
-      if (mounted) {
-        setState(() {
-          _isSending = true;
-        });
-      }
-
       ChatMessageItem message;
       if (_isGroup) {
         message = await _chat.sendGroupAudio(
@@ -762,7 +776,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       }
       unawaited(() async {
         try {
-          await audioFile.delete();
+          await audioFile?.delete();
         } catch (_) {}
       }());
     }

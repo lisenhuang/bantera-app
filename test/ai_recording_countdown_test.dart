@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app/presentation/chats/ai/ai_recording_countdown.dart';
+import 'package:app/presentation/chats/chat_recording_countdown.dart';
 
 void main() {
   testWidgets(
     '180 seconds counts down, expires once, and cancellation prevents sending',
     (tester) async {
       var elapsed = 0, remaining = -1, sends = 0;
-      final timer = AiRecordingCountdown(
+      final timer = ChatRecordingCountdown(
         elapsedMilliseconds: () => elapsed,
         onTick: (value) => remaining = value,
         onExpired: () => sends++,

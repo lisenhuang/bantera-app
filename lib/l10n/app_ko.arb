@@ -604,5 +604,9 @@
   "aiReminderCancelled": "취소됨",
   "aiReminderFailed": "전달되지 않음",
   "aiReminderScheduleHelp": "“10분 후에 연습하라고 알려 줘”라고 하면 음성 메시지가 와요. 통화를 원할 때만 “전화해 줘”라고 하세요. 현재 시간대로 표시되며 최근 알림은 7일간 보관돼요.",
-  "aiReplyInterrupted": "응답이 중단되었습니다."
+  "aiReplyInterrupted": "응답이 중단되었습니다.",
+  "aiWebSearching": "웹 검색 중…",
+  "aiWebUnavailable": "검색할 수 없습니다",
+  "aiWebSources": "출처",
+  "aiWebSearchHelp": "Bantera AI에게 웹 검색을 요청할 수 있습니다. 기기에서 검색어를 DuckDuckGo로 보내고 결과 요약을 AI에 전달합니다. 출처를 누르면 열립니다. 검색이 불가능할 때도 있습니다."
 }

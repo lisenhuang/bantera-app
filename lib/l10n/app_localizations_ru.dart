@@ -1979,4 +1979,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Ответ прерван.';
+
+  @override
+  String get aiWebSearching => 'Поиск в интернете…';
+
+  @override
+  String get aiWebUnavailable => 'Поиск недоступен';
+
+  @override
+  String get aiWebSources => 'Источники';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Попросите Bantera AI найти информацию в интернете. Устройство отправляет запрос в DuckDuckGo, а выдержки из результатов — ИИ. Нажмите на источник, чтобы открыть его. Иногда поиск недоступен.';
 }

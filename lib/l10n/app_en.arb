@@ -830,5 +830,9 @@
   "aiReminderCancelled": "Cancelled",
   "aiReminderFailed": "Not delivered",
   "aiReminderScheduleHelp": "Ask “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.",
-  "aiReplyInterrupted": "Reply interrupted."
+  "aiReplyInterrupted": "Reply interrupted.",
+  "aiWebSearching": "Searching the web…",
+  "aiWebUnavailable": "Search unavailable",
+  "aiWebSources": "Sources",
+  "aiWebSearchHelp": "You can ask Bantera AI to search the web. Searches run on this device: queries go to DuckDuckGo, and result excerpts go to AI. Tap a source to open it. Search may sometimes be unavailable."
 }

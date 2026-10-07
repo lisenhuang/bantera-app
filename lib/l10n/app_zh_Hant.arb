@@ -569,5 +569,9 @@
   "aiReminderCancelled": "已取消",
   "aiReminderFailed": "未送達",
   "aiReminderScheduleHelp": "說「10分鐘後提醒我練習」即可收到語音訊息。只有明確說「打電話給我」才會來電。以下時間按你目前的時區顯示，近期提醒保留7天。",
-  "aiReplyInterrupted": "回覆中斷。"
+  "aiReplyInterrupted": "回覆中斷。",
+  "aiWebSearching": "正在搜尋網頁…",
+  "aiWebUnavailable": "暫時無法搜尋",
+  "aiWebSources": "來源",
+  "aiWebSearchHelp": "你可以請 Bantera AI 搜尋網頁。搜尋由本裝置發起：查詢傳送給 DuckDuckGo，結果摘要傳送給 AI。點按來源即可開啟。搜尋有時可能無法使用。"
 }

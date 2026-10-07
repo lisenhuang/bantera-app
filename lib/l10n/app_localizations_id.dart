@@ -1915,4 +1915,17 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Balasan terputus.';
+
+  @override
+  String get aiWebSearching => 'Mencari di web…';
+
+  @override
+  String get aiWebUnavailable => 'Pencarian tidak tersedia';
+
+  @override
+  String get aiWebSources => 'Sumber';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Minta Bantera AI mencari di web. Perangkat ini mengirim kueri ke DuckDuckGo dan cuplikan hasil ke AI. Ketuk sumber untuk membukanya. Pencarian terkadang tidak tersedia.';
 }

@@ -569,5 +569,9 @@
   "aiReminderCancelled": "İptal edildi",
   "aiReminderFailed": "İletilemedi",
   "aiReminderScheduleHelp": "Sesli mesaj için on dakika sonra pratik yapmayı hatırlatmasını iste. Yalnızca arama istiyorsan “Beni ara” de. Saatler mevcut saat dilimindedir. Hatırlatıcılar yedi gün görünür.",
-  "aiReplyInterrupted": "Yanıt kesildi."
+  "aiReplyInterrupted": "Yanıt kesildi.",
+  "aiWebSearching": "Web’de aranıyor…",
+  "aiWebUnavailable": "Arama kullanılamıyor",
+  "aiWebSources": "Kaynaklar",
+  "aiWebSearchHelp": "Bantera AI’dan web’de arama yapmasını isteyebilirsiniz. Bu cihaz sorguyu DuckDuckGo’ya, sonuç alıntılarını ise yapay zekâya gönderir. Açmak için kaynağa dokunun. Arama bazen kullanılamayabilir."
 }

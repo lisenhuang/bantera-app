@@ -1,3 +1,4 @@
+import 'ai_web_search.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -16,7 +17,11 @@ class AiMessage {
     String? id,
     DateTime? createdAt,
     this.failed = false,
-  }) : id = id ?? const Uuid().v4(),
+    this.webSearchQuery,
+    this.webSearchStatus,
+    List<AiWebSource>? sources,
+  }) : sources = sources ?? [],
+       id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now();
   final String id, role;
   final DateTime createdAt;
@@ -24,6 +29,8 @@ class AiMessage {
   String? audio;
   int? durationMs;
   bool failed;
+  String? webSearchQuery, webSearchStatus;
+  final List<AiWebSource> sources;
   Map<String, dynamic> toJson() => {
     'id': id,
     'role': role,
@@ -35,6 +42,11 @@ class AiMessage {
     'translationLanguage': translationLanguage,
     'createdAt': createdAt.toIso8601String(),
     'failed': failed,
+    'webSearchQuery': webSearchQuery,
+    'webSearchStatus': webSearchStatus == 'searching'
+        ? 'unavailable'
+        : webSearchStatus,
+    'sources': sources.map((s) => s.toJson()).toList(),
   };
   factory AiMessage.fromJson(Map<String, dynamic> j) => AiMessage(
     id: j['id'],
@@ -49,6 +61,13 @@ class AiMessage {
     translationLanguage: j['translationLanguage'] ?? '',
     createdAt: DateTime.parse(j['createdAt']),
     failed: j['failed'] == true,
+    webSearchQuery: j['webSearchQuery'] as String?,
+    webSearchStatus: j['webSearchStatus'] as String?,
+    sources: (j['sources'] as List? ?? [])
+        .map(AiWebSource.fromJson)
+        .whereType<AiWebSource>()
+        .take(5)
+        .toList(),
   );
 }
 

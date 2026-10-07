@@ -1,5 +1,6 @@
+import '../../../infrastructure/ai/ai_web_search.dart';
 import 'dart:async';
-import 'ai_recording_countdown.dart';
+import '../chat_recording_countdown.dart';
 import 'ai_voice_reply_state.dart';
 import 'ai_listening_progress.dart';
 import '../../../domain/activity/listening_word_tracker.dart';
@@ -50,6 +51,7 @@ class AiChatController extends ChangeNotifier {
   static const microphone = EventChannel('bantera/ai_audio/input');
   final String owner;
   final AiHistoryStore store;
+  final _webSearch = AiWebSearch();
   AiApiClient _api = AiApiClient();
   final AudioRecorder _recorder = AudioRecorder();
   WebSocket? _socket;
@@ -69,8 +71,8 @@ class AiChatController extends ChangeNotifier {
     });
   }
 
-  int recordingRemaining = AiRecordingCountdown.limitSeconds;
-  late final _recordTimer = AiRecordingCountdown(
+  int recordingRemaining = ChatRecordingCountdown.limitSeconds;
+  late final _recordTimer = ChatRecordingCountdown(
     onTick: (remaining) {
       if (recordingRemaining == remaining) return;
       recordingRemaining = remaining;
@@ -133,7 +135,7 @@ class AiChatController extends ChangeNotifier {
   AiMessage? _recordMessage;
   StreamSubscription<Uint8List>? _recordEvents;
   final BytesBuilder _recordPcm = BytesBuilder(copy: false);
-  bool _replyAudioStarted = false;
+  bool _replyAudioStarted = false, _replyPlaybackUnavailable = false;
   final voiceReply = AiVoiceReplyState();
   AiMessage? _liveModelMessage;
   bool get sendingVoice => busy && !voiceReply.received;
@@ -274,6 +276,7 @@ class AiChatController extends ChangeNotifier {
   void _accountChanged() {
     if (!available) {
       _epoch++;
+      _webSearch.cancel();
       _api.close();
       unawaited(endCall());
       unawaited(cancelRecording());
@@ -306,6 +309,7 @@ class AiChatController extends ChangeNotifier {
       language: UserProfileNotifier.instance.learningLanguage ?? '',
     );
     _recordMessage = message;
+    _replyPlaybackUnavailable = false;
     voiceReply.clear();
     _recordPcm.clear();
     _voiceStream = AiVoiceStream(
@@ -315,15 +319,41 @@ class AiChatController extends ChangeNotifier {
         message.id,
         hasMetBanteraAi: await store.hasMetBefore(),
       ),
+      onToolCall: (call) async {
+        if (!available || epoch != _epoch || !busy) {
+          return {'unavailable': true};
+        }
+        return _search(
+          call,
+          voiceReply.ensure(message.language),
+          () => available && epoch == _epoch && busy,
+        );
+      },
       onAudio: (bytes) async {
         if (!available || epoch != _epoch || !busy) return;
         voiceReply.addAudio(bytes.length, message.language);
         changed();
-        if (!_replyAudioStarted) {
-          await audio.invokeMethod<void>('startPlayback');
-          _replyAudioStarted = true;
+        if (!_replyPlaybackUnavailable) {
+          try {
+            if (!_replyAudioStarted) {
+              await audio.invokeMethod<void>('startPlayback');
+              _replyAudioStarted = true;
+            }
+            await audio.invokeMethod<void>('feed', bytes);
+          } catch (error) {
+            // Playback is optional; receiving and saving the reply is not.
+            // A system interruption must not destroy streamed audio/captions.
+            _replyPlaybackUnavailable = true;
+            _reportVoiceFailure(
+              message,
+              _voiceStream,
+              'playback_failed',
+              'playback',
+              0,
+              error: error,
+            );
+          }
         }
-        await audio.invokeMethod<void>('feed', bytes);
         if (!store.hasMetBanteraAi) {
           unawaited(store.markMet().catchError((Object _) {}));
         }
@@ -341,7 +371,13 @@ class AiChatController extends ChangeNotifier {
         voiceReply.resetAttempt();
         message.text = '';
         changed();
-        if (_replyAudioStarted) await audio.invokeMethod<void>('clear');
+        if (_replyAudioStarted && !_replyPlaybackUnavailable) {
+          try {
+            await audio.invokeMethod<void>('clear');
+          } catch (_) {
+            _replyPlaybackUnavailable = true;
+          }
+        }
       },
     );
     try {
@@ -457,14 +493,39 @@ class AiChatController extends ChangeNotifier {
         savedReply = true;
         phase = 'playback';
         if (_replyAudioStarted) {
-          await audio
-              .invokeMethod<void>('drain')
-              .timeout(const Duration(seconds: 95));
+          if (!_replyPlaybackUnavailable) {
+            try {
+              await audio
+                  .invokeMethod<void>('drain')
+                  .timeout(const Duration(seconds: 95));
+            } catch (error) {
+              _replyPlaybackUnavailable = true;
+              _reportVoiceFailure(
+                message,
+                stream,
+                'playback_drain_failed',
+                'playback',
+                elapsed.elapsedMilliseconds,
+                error: error,
+              );
+            }
+          }
           if (available && epoch == _epoch) {
-            await recordListened(
-              activityWordCount(reply['outputText'] as String? ?? ''),
-              message.language,
-            );
+            // Count only the audio actually rendered, including an interruption.
+            try {
+              final played = await audio.invokeMethod<int>('playedFrames') ?? 0;
+              final total = (stream?.outputBytes ?? 0) ~/ 2;
+              if (total > 0) {
+                await recordListened(
+                  (activityWordCount(reply['outputText'] as String? ?? '') *
+                          (played / total).clamp(0.0, 1.0))
+                      .floor(),
+                  message.language,
+                );
+              }
+            } catch (_) {
+              /* A playback statistic must not fail a saved reply. */
+            }
           }
         }
       }
@@ -490,9 +551,13 @@ class AiChatController extends ChangeNotifier {
         );
       }
       if (available && epoch == _epoch) {
-        failed = true;
+        final partialReply = voiceReply.message;
+        final hasPartialReply =
+            partialReply != null &&
+            (partialReply.text.isNotEmpty || (stream?.outputBytes ?? 0) > 0);
+        failed = !savedReply && !hasPartialReply;
         if (message != null && store.messages.contains(message)) {
-          message.failed = !savedReply;
+          message.failed = !savedReply && !hasPartialReply;
           // Keep the portion already heard. Failed model messages are excluded
           // from future model context and never offered as input for Retry.
           if (!savedReply && voiceReply.message != null) {
@@ -1081,16 +1146,56 @@ class AiChatController extends ChangeNotifier {
     changed();
   }
 
+  Future<Map<String, dynamic>> _search(
+    Map<String, dynamic> call,
+    AiMessage message,
+    bool Function() active,
+  ) async {
+    if (!active() || call['name'] != 'search_web') return {'unavailable': true};
+    final args = call['args'];
+    final query = args is Map ? args['query'] : null;
+    if (query is! String || query.length > 240) return {'unavailable': true};
+    message.webSearchQuery = query;
+    message.webSearchStatus = 'searching';
+    changed();
+    final result = await _webSearch.search(query);
+    if (!active()) return {'unavailable': true};
+    message.webSearchStatus = result['unavailable'] == true
+        ? 'unavailable'
+        : 'complete';
+    for (final item in result['results'] as List? ?? []) {
+      final source = AiWebSource.fromJson(item);
+      if (source != null &&
+          message.sources.length < 5 &&
+          !message.sources.any((s) => s.url == source.url)) {
+        message.sources.add(source);
+      }
+    }
+    changed();
+    if (store.messages.contains(message)) await store.save();
+    return result;
+  }
+
   Future<void> _tools(List<Map> calls, int epoch) async {
     final destination = _socket;
     final responses = <Map<String, dynamic>>[];
     for (final call in calls) {
       Map<String, dynamic> result;
       try {
-        result = await AiDeviceData.read(
-          call['name'] as String,
-          owner,
-        ).timeout(const Duration(seconds: 10));
+        result = call['name'] == 'search_web'
+            ? await _search(
+                Map<String, dynamic>.from(call),
+                _liveBubble(),
+                () =>
+                    available &&
+                    epoch == _epoch &&
+                    calling &&
+                    identical(_socket, destination),
+              )
+            : await AiDeviceData.read(
+                call['name'] as String,
+                owner,
+              ).timeout(const Duration(seconds: 10));
       } catch (_) {
         result = {'unavailable': true};
       }
@@ -1138,7 +1243,9 @@ class AiChatController extends ChangeNotifier {
     final startFrame = _modelStartFrame;
     _modelStartFrame = _queuedFrames;
     draftModel = '';
-    if (text.isNotEmpty || pcm.isNotEmpty) {
+    if (text.isNotEmpty ||
+        pcm.isNotEmpty ||
+        _liveModelMessage?.webSearchQuery != null) {
       final message = _liveBubble();
       message.text = text;
       message.durationMs = pcm.length * 1000 ~/ 48000;
@@ -1197,6 +1304,7 @@ class AiChatController extends ChangeNotifier {
     AiCallbackNotifier.instance.aiActive = false;
     connected = false;
     _epoch++;
+    _webSearch.cancel();
     _elapsed.stop();
     _countdown?.cancel();
     _connectTimeout?.cancel();
@@ -1219,6 +1327,7 @@ class AiChatController extends ChangeNotifier {
   Future<void> clear() async {
     _playbackRequest = null;
     _epoch++;
+    _webSearch.cancel();
     _api.close();
     _api = AiApiClient();
     await cancelRecording();
@@ -1246,6 +1355,7 @@ class AiChatController extends ChangeNotifier {
     _reminderTimer?.cancel();
     unawaited(_reminderEvents?.cancel());
     _epoch++;
+    _webSearch.cancel();
     _api.close();
     _recordTimer.cancel();
     _elapsed.stop();

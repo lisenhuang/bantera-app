@@ -1836,4 +1836,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => '응답이 중단되었습니다.';
+
+  @override
+  String get aiWebSearching => '웹 검색 중…';
+
+  @override
+  String get aiWebUnavailable => '검색할 수 없습니다';
+
+  @override
+  String get aiWebSources => '출처';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Bantera AI에게 웹 검색을 요청할 수 있습니다. 기기에서 검색어를 DuckDuckGo로 보내고 결과 요약을 AI에 전달합니다. 출처를 누르면 열립니다. 검색이 불가능할 때도 있습니다.';
 }

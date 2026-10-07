@@ -569,5 +569,9 @@
   "aiReminderCancelled": "Cancelado",
   "aiReminderFailed": "Não entregue",
   "aiReminderScheduleHelp": "Peça um lembrete daqui a dez minutos para receber uma mensagem de voz. Diga “Liga-me” apenas se quiser uma chamada. Os horários usam o seu fuso atual. Os lembretes ficam visíveis por sete dias.",
-  "aiReplyInterrupted": "Resposta interrompida."
+  "aiReplyInterrupted": "Resposta interrompida.",
+  "aiWebSearching": "Pesquisando na web…",
+  "aiWebUnavailable": "Pesquisa indisponível",
+  "aiWebSources": "Fontes",
+  "aiWebSearchHelp": "Peça ao Bantera AI para pesquisar na web. Este dispositivo envia a consulta ao DuckDuckGo e os trechos à IA. Toque numa fonte para abrir. A pesquisa pode estar indisponível."
 }

@@ -1825,4 +1825,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => '応答が中断されました。';
+
+  @override
+  String get aiWebSearching => 'ウェブを検索中…';
+
+  @override
+  String get aiWebUnavailable => '検索できません';
+
+  @override
+  String get aiWebSources => '情報源';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Bantera AI にウェブ検索を頼めます。この端末から検索語を DuckDuckGo に送り、結果の抜粋を AI に送信します。情報源をタップして開けます。検索できない場合もあります。';
 }

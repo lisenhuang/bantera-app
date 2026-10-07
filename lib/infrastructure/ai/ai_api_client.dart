@@ -43,6 +43,7 @@ class AiApiClient {
     required bool hasMetBanteraAi,
   }) async => {
     'hasMetBanteraAi': hasMetBanteraAi,
+    'deviceWebSearch': true,
     'learningLevel': SettingsNotifier.instance.audioLevel?.name,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
@@ -112,7 +113,7 @@ class AiApiClient {
     );
     field('history', jsonEncode(history));
     field('deviceData', jsonEncode(deviceData));
-    field('metadata', jsonEncode(meta));
+    field('metadata', jsonEncode({...meta, 'deviceWebSearch': false}));
     field('requestId', requestId);
     request.add(
       utf8.encode(

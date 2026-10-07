@@ -1909,4 +1909,17 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Yanıt kesildi.';
+
+  @override
+  String get aiWebSearching => 'Web’de aranıyor…';
+
+  @override
+  String get aiWebUnavailable => 'Arama kullanılamıyor';
+
+  @override
+  String get aiWebSources => 'Kaynaklar';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Bantera AI’dan web’de arama yapmasını isteyebilirsiniz. Bu cihaz sorguyu DuckDuckGo’ya, sonuç alıntılarını ise yapay zekâya gönderir. Açmak için kaynağa dokunun. Arama bazen kullanılamayabilir.';
 }

@@ -33,6 +33,7 @@ class AiVoiceStream {
     required this.onAudio,
     required this.onReset,
     this.onTranscript,
+    this.onToolCall,
   }) {
     _ready.future.ignore();
     _reply.future.ignore();
@@ -41,6 +42,7 @@ class AiVoiceStream {
   final Future<void> Function(Uint8List) onAudio;
   final Future<void> Function() onReset;
   final void Function(String role, String text)? onTranscript;
+  final Future<Map<String, dynamic>> Function(Map<String, dynamic>)? onToolCall;
   final _ready = Completer<void>();
   final _reply = Completer<Map<String, dynamic>>();
   final _pending = <Uint8List>[];
@@ -150,6 +152,11 @@ class AiVoiceStream {
           throw StateError('Invalid voice transcript');
         }
         onTranscript?.call(role as String, text);
+      case 'toolCall':
+        if (!committed || onToolCall == null) {
+          throw const AiVoiceFailure('invalid_frame');
+        }
+        unawaited(_tools((json['calls'] as List).cast<Map>()));
       case 'complete':
         if (!committed || _output.isEmpty || _reply.isCompleted) {
           throw const AiVoiceFailure('invalid_frame');
@@ -184,6 +191,39 @@ class AiVoiceStream {
       const Duration(seconds: 110),
       onTimeout: () => throw const AiVoiceFailure('reply_timeout'),
     );
+  }
+
+  Future<void> _tools(List<Map> calls) async {
+    if (calls.length > 4) {
+      _fail('invalid_frame');
+      return;
+    }
+    final responses = <Map<String, dynamic>>[];
+    for (final call in calls) {
+      Map<String, dynamic> result;
+      try {
+        result = await onToolCall!(
+          Map<String, dynamic>.from(call),
+        ).timeout(const Duration(seconds: 10));
+      } catch (_) {
+        result = {'unavailable': true};
+      }
+      if (_closed || _failed) return;
+      responses.add({
+        'id': call['id'],
+        'name': call['name'],
+        'response': {'result': result},
+      });
+    }
+    if (!_closed && !_failed) {
+      try {
+        _socket?.add(
+          jsonEncode({'type': 'toolResponse', 'responses': responses}),
+        );
+      } catch (_) {
+        _fail('socket_error');
+      }
+    }
   }
 
   void _fail(String code, {Object? error}) {

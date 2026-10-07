@@ -604,5 +604,9 @@
   "aiReminderCancelled": "キャンセル済み",
   "aiReminderFailed": "未配信",
   "aiReminderScheduleHelp": "「10分後に練習するようリマインドして」と頼むと音声メッセージが届きます。通話を希望する場合のみ「電話して」と伝えてください。時刻は現在のタイムゾーンで表示され、履歴は7日間残ります。",
-  "aiReplyInterrupted": "応答が中断されました。"
+  "aiReplyInterrupted": "応答が中断されました。",
+  "aiWebSearching": "ウェブを検索中…",
+  "aiWebUnavailable": "検索できません",
+  "aiWebSources": "情報源",
+  "aiWebSearchHelp": "Bantera AI にウェブ検索を頼めます。この端末から検索語を DuckDuckGo に送り、結果の抜粋を AI に送信します。情報源をタップして開けます。検索できない場合もあります。"
 }

@@ -1972,4 +1972,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiReplyInterrupted => 'Resposta interrompida.';
+
+  @override
+  String get aiWebSearching => 'Pesquisando na web…';
+
+  @override
+  String get aiWebUnavailable => 'Pesquisa indisponível';
+
+  @override
+  String get aiWebSources => 'Fontes';
+
+  @override
+  String get aiWebSearchHelp =>
+      'Peça ao Bantera AI para pesquisar na web. Este dispositivo envia a consulta ao DuckDuckGo e os trechos à IA. Toque numa fonte para abrir. A pesquisa pode estar indisponível.';
 }
