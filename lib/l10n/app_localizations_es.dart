@@ -1891,7 +1891,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'El historial del chat con IA se guarda solo en este dispositivo. Los datos relevantes se envían a la IA para responder. Las llamadas programadas se guardan en el servidor.';
+      'El historial de IA recibido queda en este dispositivo. Se envía contexto relevante a la IA para responder. Los horarios y notas de recordatorios se guardan en el servidor. El audio se conserva hasta recibirlo o cancelarlo, como máximo siete días.';
 
   @override
   String get aiSayingGoodbye => 'Despidiéndose';
@@ -1914,4 +1914,64 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Aviso de privacidad';
+
+  @override
+  String get aiUsageTitle => 'Cómo usarlo';
+
+  @override
+  String get aiUsageBody =>
+      'Mantén pulsado el botón de voz y suéltalo para enviar, o toca el micrófono para grabar. Se envía automáticamente a los 3 minutos. Practica conversación y comprensión oral con Bantera AI en el idioma y acento que aprendes.\n\nToca el teléfono para una llamada de 9 minutos. La IA te saluda primero. Toca Traducir en un mensaje cuando lo necesites.\n\nDi «Llámame dentro de 10 minutos para recordarme que practique inglés», o indica una hora concreta. Incluye el motivo del recordatorio. Si solo dices la hora, la IA preguntará el motivo antes de programar la llamada.\n\nActiva las notificaciones de llamadas en tu iPhone y mantén la conexión a Internet. Responde a la llamada para escuchar el recordatorio. La llamada puede retrasarse.\n\nPide que te recuerde practicar en diez minutos para recibir un mensaje de voz. Di «Llámame» solo si quieres una llamada. Las horas usan tu zona horaria actual. Los recordatorios se conservan siete días.\n\nEl historial de IA recibido queda en este dispositivo. Se envía contexto relevante a la IA para responder. Los horarios y notas de recordatorios se guardan en el servidor. El audio se conserva hasta recibirlo o cancelarlo, como máximo siete días.';
+
+  @override
+  String get aiCallConfirmTitle => '¿Iniciar una llamada de audio?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Habla con Bantera AI durante un máximo de 9 minutos. La IA te saluda primero.';
+
+  @override
+  String get aiCallConfirmStart => 'Iniciar llamada';
+
+  @override
+  String get aiReplying => 'Bantera AI está respondiendo…';
+
+  @override
+  String get aiRemindersTitle => 'Recordatorios';
+
+  @override
+  String get aiReminderMessage => 'Mensaje de voz';
+
+  @override
+  String get aiReminderCall => 'Llamada de audio';
+
+  @override
+  String get aiReminderEmpty => 'Aún no hay recordatorios';
+
+  @override
+  String get aiReminderCancelTitle => '¿Cancelar este recordatorio?';
+
+  @override
+  String get aiReminderPending => 'Programado';
+
+  @override
+  String get aiReminderPreparing => 'En curso';
+
+  @override
+  String get aiReminderReady => 'Listo';
+
+  @override
+  String get aiReminderDelivered => 'Entregado';
+
+  @override
+  String get aiReminderCancelled => 'Cancelado';
+
+  @override
+  String get aiReminderFailed => 'No entregado';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Pide que te recuerde practicar en diez minutos para recibir un mensaje de voz. Di «Llámame» solo si quieres una llamada. Las horas usan tu zona horaria actual. Los recordatorios se conservan siete días.';
+
+  @override
+  String get aiReplyInterrupted => 'Respuesta interrumpida.';
 }

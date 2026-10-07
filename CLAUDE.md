@@ -36,7 +36,7 @@ Every time any code is modified in this codebase, bump **both** the version name
 version: 1.2.1+112  →  version: 1.2.2+113
 ```
 
-- Increment the patch segment of the version name (third number)
+- Choose the version name from the changes: patch for fixes, minor for new features, major for a substantial product redesign or breaking changes. Reset lower segments when increasing minor or major; do not automatically use another patch for a feature release.
 - Increment the build number (number after `+`)
 - Do this as part of the same edit batch — not only before commits
 - After changing the version, run `flutter build ios --debug --no-codesign` so `ios/Flutter/Generated.xcconfig` is regenerated with the new version before opening Xcode

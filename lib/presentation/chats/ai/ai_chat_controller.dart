@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'ai_recording_countdown.dart';
+import 'ai_voice_reply_state.dart';
+import 'ai_listening_progress.dart';
+import '../../../domain/activity/listening_word_tracker.dart';
+import '../../../core/chat_session_notifier.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -21,17 +25,21 @@ import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../infrastructure/translation_service.dart';
 
 class AiChatController extends ChangeNotifier {
-  AiChatController({this.callKitManaged = false})
+  AiChatController({this.callKitManaged = false, this.callbackId})
     : owner = AuthSessionNotifier.instance.session!.cacheKey,
       store = AiHistoryStore(AuthSessionNotifier.instance.session!.cacheKey) {
     AuthSessionNotifier.instance.addListener(_accountChanged);
     DmCallNotifier.instance.addListener(_humanCallChanged);
   }
   @visibleForTesting
-  AiChatController.forTesting(this.store, {this.callKitManaged = false})
-    : owner = 'test',
-      _testing = true;
+  AiChatController.forTesting(
+    this.store, {
+    this.callKitManaged = false,
+    this.callbackId,
+  }) : owner = 'test',
+       _testing = true;
   final bool callKitManaged;
+  final String? callbackId;
   bool _testing = false;
   static const audio = MethodChannel('bantera/ai_audio');
   static const callActivity = MethodChannel('bantera/ai_call_activity');
@@ -56,6 +64,44 @@ class AiChatController extends ChangeNotifier {
     onExpired: () => unawaited(sendRecording()),
   );
   final Stopwatch _elapsed = Stopwatch();
+  final _callListening = AiListeningProgress();
+  Timer? _listeningTimer;
+  int _queuedFrames = 0, _modelStartFrame = 0;
+  Future<void> _listeningWrites = Future.value();
+  Future<void> recordListened(int words, String language) async {
+    if (_testing || !available || words <= 0) return;
+    try {
+      await WordActivityNotifier.instance.record(
+        listened: words,
+        language: language,
+        ownerId: AuthSessionNotifier.instance.session?.userId,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _pollListening({bool discard = false}) {
+    final next = _listeningWrites.then((_) async {
+      try {
+        final frames = await audio.invokeMethod<int>('playedFrames') ?? 0;
+        for (final entry in _callListening.advance(frames).entries) {
+          await recordListened(entry.value, entry.key);
+        }
+        if (discard) {
+          _callListening.clear();
+          _queuedFrames = frames;
+          _modelStartFrame = frames;
+        }
+      } catch (_) {
+        if (discard) _callListening.clear();
+      }
+    });
+    _listeningWrites = next.catchError((Object _) {});
+    return next;
+  }
+
+  Timer? _reminderTimer;
+  StreamSubscription? _reminderEvents;
+  bool _syncingReminders = false;
   bool loaded = false,
       busy = false,
       recording = false,
@@ -73,6 +119,9 @@ class AiChatController extends ChangeNotifier {
   StreamSubscription<Uint8List>? _recordEvents;
   final BytesBuilder _recordPcm = BytesBuilder(copy: false);
   bool _replyAudioStarted = false;
+  final voiceReply = AiVoiceReplyState();
+  bool get sendingVoice => busy && !voiceReply.received;
+  bool isReceiving(AiMessage message) => identical(voiceReply.message, message);
   final BytesBuilder _input = BytesBuilder(copy: false),
       _output = BytesBuilder(copy: false);
   bool _speech = false;
@@ -116,7 +165,7 @@ class AiChatController extends ChangeNotifier {
   bool get available =>
       !_disposed &&
       (_testing || AuthSessionNotifier.instance.session?.cacheKey == owner);
-  List<AiMessage> get messages => store.messages;
+  List<AiMessage> get messages => [...store.messages, ?voiceReply.message];
   void changed() {
     if (available) notifyListeners();
   }
@@ -128,10 +177,76 @@ class AiChatController extends ChangeNotifier {
       if (!available) return;
       privacyNoticeVisible = !store.privacyNoticeDismissed;
       loaded = true;
+      if (!_testing) {
+        _reminderTimer = Timer.periodic(
+          const Duration(seconds: 30),
+          (_) => unawaited(syncReminders()),
+        );
+        _reminderEvents = ChatSessionNotifier.instance.realtimeEvents.listen((
+          event,
+        ) {
+          if (event['type'] == 'ai.reminder') unawaited(syncReminders());
+        });
+        unawaited(syncReminders());
+      }
     } catch (_) {
       failed = true;
     }
     changed();
+  }
+
+  Future<void> syncReminders() async {
+    if (_testing ||
+        !available ||
+        !loaded ||
+        busy ||
+        recording ||
+        calling ||
+        _syncingReminders) {
+      return;
+    }
+    _syncingReminders = true;
+    final epoch = _epoch;
+    try {
+      final list = await _api.reminderRequest(owner, 'GET') as List;
+      for (final item in list.whereType<Map>()) {
+        if (!available || epoch != _epoch || busy || recording || calling) {
+          return;
+        }
+        if (item['delivery'] != 'message' || item['status'] != 'ready') {
+          continue;
+        }
+        final id = item['id'] as String;
+        if (!store.messages.any((m) => m.id == id)) {
+          final reply =
+              await _api.reminderRequest(owner, 'GET', '/$id/audio') as Map;
+          if (!available || epoch != _epoch) return;
+          final name = await store.saveAudio(
+            base64Decode(reply['audio'] as String),
+          );
+          if (!available || epoch != _epoch) return;
+          store.messages.add(
+            AiMessage(
+              id: id,
+              role: 'model',
+              text: reply['text'] as String? ?? '',
+              audio: name,
+              language: reply['language'] as String? ?? '',
+              createdAt: DateTime.parse(reply['createdAt'] as String),
+            ),
+          );
+          store.messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+          await store.save();
+          changed();
+        }
+        // Acknowledge only after durable local storage; retries reuse the same ID.
+        await _api.reminderRequest(owner, 'POST', '/$id/received');
+      }
+    } catch (_) {
+      // Offline/older servers are retried on foreground refresh without breaking chat.
+    } finally {
+      _syncingReminders = false;
+    }
   }
 
   void _accountChanged() {
@@ -169,18 +284,41 @@ class AiChatController extends ChangeNotifier {
       language: UserProfileNotifier.instance.learningLanguage ?? '',
     );
     _recordMessage = message;
+    voiceReply.clear();
     _recordPcm.clear();
     _voiceStream = AiVoiceStream(
-      connect: () => _api.voice(owner, store.context(), message.id),
+      connect: () async => _api.voice(
+        owner,
+        store.context(),
+        message.id,
+        hasMetBanteraAi: await store.hasMetBefore(),
+      ),
       onAudio: (bytes) async {
         if (!available || epoch != _epoch || !busy) return;
+        voiceReply.addAudio(bytes.length, message.language);
+        changed();
         if (!_replyAudioStarted) {
           await audio.invokeMethod<void>('startPlayback');
           _replyAudioStarted = true;
         }
         await audio.invokeMethod<void>('feed', bytes);
+        if (!store.hasMetBanteraAi) {
+          unawaited(store.markMet().catchError((Object _) {}));
+        }
+      },
+      onTranscript: (role, text) {
+        if (!available || epoch != _epoch || !busy) return;
+        if (role == 'user') {
+          message.text += text;
+        } else {
+          voiceReply.addTranscript(text, message.language);
+        }
+        changed();
       },
       onReset: () async {
+        voiceReply.resetAttempt();
+        message.text = '';
+        changed();
         if (_replyAudioStarted) await audio.invokeMethod<void>('clear');
       },
     );
@@ -232,6 +370,7 @@ class AiChatController extends ChangeNotifier {
     await _recordEvents?.cancel();
     _recordEvents = null;
     _recordPcm.clear();
+    voiceReply.clear();
     await stream?.close();
     if (_replyAudioStarted) {
       _replyAudioStarted = false;
@@ -245,6 +384,9 @@ class AiChatController extends ChangeNotifier {
     final epoch = _epoch;
     final stream = _voiceStream;
     final message = _recordMessage;
+    final elapsed = Stopwatch()..start();
+    var phase = 'save';
+    var savedReply = false;
     _recordTimer.cancel();
     recording = false;
     busy = true;
@@ -261,12 +403,24 @@ class AiChatController extends ChangeNotifier {
       store.messages.add(message);
       await store.save();
       changed();
+      phase = 'reply';
       Map<String, dynamic>? reply;
       if (stream != null) {
         try {
-          reply = await stream.send(await AiApiClient.metadata());
-        } catch (_) {
+          reply = await stream.send(
+            await AiApiClient.metadata(
+              hasMetBanteraAi: await store.hasMetBefore(),
+            ),
+          );
+        } catch (error) {
           if (stream.committed) rethrow;
+          _reportVoiceFailure(
+            message,
+            stream,
+            error is AiVoiceFailure ? error.code : 'connect_failed',
+            'send',
+            elapsed.elapsedMilliseconds,
+          );
         }
       }
       if (!available || epoch != _epoch) return;
@@ -276,42 +430,150 @@ class AiChatController extends ChangeNotifier {
         await stream?.close();
         await _reply(message);
       } else {
+        phase = 'save';
         await _saveReply(message, reply, epoch, autoplay: false);
+        savedReply = true;
+        phase = 'playback';
         if (_replyAudioStarted) {
           await audio
               .invokeMethod<void>('drain')
               .timeout(const Duration(seconds: 95));
+          if (available && epoch == _epoch) {
+            await recordListened(
+              activityWordCount(reply['outputText'] as String? ?? ''),
+              message.language,
+            );
+          }
         }
       }
-    } catch (_) {
+    } catch (error) {
+      // Freeze the stream before snapshotting partial audio or writing history.
+      try {
+        await stream?.close();
+      } catch (_) {}
+      if (message != null) {
+        _reportVoiceFailure(
+          message,
+          stream,
+          error is AiVoiceFailure
+              ? error.code
+              : phase == 'playback'
+              ? 'playback_drain_failed'
+              : phase == 'save'
+              ? 'save_failed'
+              : 'send_failed',
+          phase,
+          elapsed.elapsedMilliseconds,
+          error: error,
+        );
+      }
       if (available && epoch == _epoch) {
         failed = true;
         if (message != null && store.messages.contains(message)) {
-          message.failed = true;
-          await store.save();
+          message.failed = !savedReply;
+          // Keep the portion already heard. Failed model messages are excluded
+          // from future model context and never offered as input for Retry.
+          if (!savedReply && voiceReply.message != null) {
+            String? audioName;
+            try {
+              final partial = stream?.partialAudio;
+              if (partial != null) audioName = await store.saveAudio(partial);
+            } catch (_) {
+              /* Still retain the partial caption in memory. */
+            }
+            if (available && epoch == _epoch) {
+              final partial = voiceReply.interrupted(audioName);
+              if (partial != null) store.messages.add(partial);
+            }
+          }
+          try {
+            await store.save();
+          } catch (_) {
+            /* Retain visible messages. */
+          }
         }
       }
     } finally {
-      await stream?.close();
+      try {
+        await stream?.close();
+      } catch (_) {
+        if (message != null) {
+          _reportVoiceFailure(
+            message,
+            stream,
+            'cleanup_failed',
+            'cleanup',
+            elapsed.elapsedMilliseconds,
+          );
+        }
+      }
       if (identical(_voiceStream, stream)) _voiceStream = null;
       _recordMessage = null;
       if (_replyAudioStarted) {
         _replyAudioStarted = false;
-        await audio.invokeMethod<void>('stop');
+        try {
+          await audio.invokeMethod<void>('stop');
+        } catch (_) {
+          if (message != null) {
+            _reportVoiceFailure(
+              message,
+              stream,
+              'cleanup_failed',
+              'cleanup',
+              elapsed.elapsedMilliseconds,
+            );
+          }
+        }
       }
+      voiceReply.clear();
       busy = false;
       changed();
     }
   }
 
+  void _reportVoiceFailure(
+    AiMessage message,
+    AiVoiceStream? stream,
+    String code,
+    String phase,
+    int elapsedMs, {
+    Object? error,
+  }) {
+    if (_testing || AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      return;
+    }
+    final detail = error == null ? null : AiVoiceFailure.from(code, error);
+    unawaited(
+      _api.reportVoiceFailure(owner, {
+        'requestId': message.id,
+        'code': code,
+        'phase': phase,
+        'inputBytes': stream?.inputBytes ?? 0,
+        'outputBytes': stream?.outputBytes ?? 0,
+        'elapsedMs': elapsedMs.clamp(0, 3600000),
+        'committed': stream?.committed ?? false,
+        'closeCode': stream?.closeCode,
+        'errorType': detail?.errorType,
+        'nativeCode': detail?.nativeCode,
+      }),
+    );
+  }
+
   Future<void> retry(AiMessage message) async {
-    if (busy || calling || !available || message.audio == null) return;
+    if (busy ||
+        calling ||
+        !available ||
+        message.audio == null ||
+        message.role != 'user') {
+      return;
+    }
     busy = true;
     failed = false;
     changed();
     try {
       await _reply(message);
     } finally {
+      voiceReply.clear();
       busy = false;
       changed();
     }
@@ -320,16 +582,28 @@ class AiChatController extends ChangeNotifier {
   Future<void> _reply(AiMessage message) async {
     if (message.audio == null) return;
     final epoch = _epoch;
+    final elapsed = Stopwatch()..start();
+    var phase = 'reply';
     try {
       final reply = await _api.reply(
         owner: owner,
         history: store.context(excluding: message.id),
         audioPath: store.path(message.audio!),
         requestId: message.id,
+        hasMetBanteraAi: await store.hasMetBefore(),
       );
       if (!available || epoch != _epoch) return;
+      phase = 'save';
       await _saveReply(message, reply, epoch);
-    } catch (_) {
+    } catch (error) {
+      _reportVoiceFailure(
+        message,
+        null,
+        phase == 'save' ? 'save_failed' : 'send_failed',
+        phase,
+        elapsed.elapsedMilliseconds,
+        error: error,
+      );
       if (available && epoch == _epoch) {
         message.failed = true;
         failed = true;
@@ -350,11 +624,10 @@ class AiChatController extends ChangeNotifier {
     message.text = reply['inputText'] as String? ?? message.text;
     final name = await store.saveAudio(base64Decode(reply['audio'] as String));
     if (!available || epoch != _epoch) return;
-    final answer = AiMessage(
-      role: 'model',
-      text: reply['outputText'] as String? ?? '',
-      audio: name,
-      language: message.language,
+    final answer = voiceReply.complete(
+      reply['outputText'] as String? ?? '',
+      name,
+      message.language,
     );
     store.messages.add(answer);
     await store.save();
@@ -364,12 +637,19 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> _countSpeech(AiMessage message) async {
-    if (_testing || !available || message.role != 'user') return;
-    final epoch = _epoch;
+    // A completed utterance still counts if the call ends or this screen closes
+    // while on-device language detection is finishing. Account changes do not.
+    if (_testing ||
+        AuthSessionNotifier.instance.session?.cacheKey != owner ||
+        message.role != 'user') {
+      return;
+    }
     final userId = AuthSessionNotifier.instance.session?.userId;
     if (userId == null) return;
     final count = await AiSpokenWords.count(message.text, message.language);
-    if (!available || epoch != _epoch || count == 0) return;
+    if (AuthSessionNotifier.instance.session?.cacheKey != owner || count == 0) {
+      return;
+    }
     try {
       await WordActivityNotifier.instance.record(
         spoken: count,
@@ -569,6 +849,14 @@ class AiChatController extends ChangeNotifier {
         await audio.invokeMethod<void>('stop');
         return;
       }
+      _callListening.clear();
+      _queuedFrames = 0;
+      _modelStartFrame = 0;
+      _listeningTimer?.cancel();
+      _listeningTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => unawaited(_pollListening()),
+      );
       await _openCallSocket(epoch);
     } catch (_) {
       if (epoch == _epoch) {
@@ -584,6 +872,8 @@ class AiChatController extends ChangeNotifier {
       store.context(),
       resuming: resuming,
       remainingSeconds: remaining,
+      callbackId: callbackId,
+      hasMetBanteraAi: await store.hasMetBefore(),
     );
     if (!available || epoch != _epoch) {
       await socket.close();
@@ -638,8 +928,9 @@ class AiChatController extends ChangeNotifier {
     unawaited(_updateCallActivity());
     changed();
     try {
-      await audio.invokeMethod<void>('clear');
       await _saveTurn();
+      await _pollListening(discard: true);
+      await audio.invokeMethod<void>('clear');
       await _socketEvents?.cancel();
       _socket = null;
       // Let the previous server request release its per-account call lease.
@@ -672,7 +963,11 @@ class AiChatController extends ChangeNotifier {
         throw StateError('Audio too long');
       }
       _output.add(event);
+      _queuedFrames += event.length ~/ 2;
       await audio.invokeMethod<void>('feed', Uint8List.fromList(event));
+      if (!store.hasMetBanteraAi) {
+        unawaited(store.markMet().catchError((Object _) {}));
+      }
       return;
     }
     final data = jsonDecode(event as String) as Map<String, dynamic>;
@@ -695,7 +990,16 @@ class AiChatController extends ChangeNotifier {
         }
         unawaited(_updateCallActivity());
       case 'reconnect':
-        if (data['reason'] == 'session_expired') _renewRequested = true;
+        if (const {
+          'session_expired',
+          'quota_exceeded',
+          'response_timeout',
+        }.contains(data['reason'])) {
+          _renewRequested = true;
+        }
+      case 'error':
+        failed = true;
+        unawaited(endCall());
       case 'transcript':
         if (data['role'] == 'user') {
           draftUser += data['text'] as String? ?? '';
@@ -705,13 +1009,15 @@ class AiChatController extends ChangeNotifier {
       case 'turnComplete':
         await _saveTurn();
       case 'interrupted':
-        await audio.invokeMethod<void>('clear');
         await _saveModel();
+        await _pollListening(discard: true);
+        await audio.invokeMethod<void>('clear');
       case 'farewell':
         farewell = true;
         unawaited(_updateCallActivity());
-        await audio.invokeMethod<void>('clear');
         await _saveTurn();
+        await _pollListening(discard: true);
+        await audio.invokeMethod<void>('clear');
       case 'goodbyeComplete':
         await _saveTurn();
         // Do not block the event queue during playback; the hard deadline can still close it.
@@ -788,6 +1094,8 @@ class AiChatController extends ChangeNotifier {
   Future<void> _saveModel() async {
     final pcm = _output.takeBytes();
     final text = draftModel.trim();
+    final startFrame = _modelStartFrame;
+    _modelStartFrame = _queuedFrames;
     draftModel = '';
     if (text.isNotEmpty || pcm.isNotEmpty) {
       final message = AiMessage(
@@ -797,6 +1105,12 @@ class AiChatController extends ChangeNotifier {
       );
       if (pcm.isNotEmpty) {
         message.audio = await store.saveAudio(aiWave(pcm, 24000));
+        _callListening.add(
+          startFrame,
+          _modelStartFrame,
+          activityWordCount(text),
+          message.language,
+        );
       }
       store.messages.add(message);
       await store.save();
@@ -847,12 +1161,14 @@ class AiChatController extends ChangeNotifier {
     await _socketEvents?.cancel();
     _socketEvents = null;
     unawaited(socket?.close() ?? Future.value());
+    _listeningTimer?.cancel();
+    if (loaded) await _saveTurn();
+    await _pollListening(discard: true);
     await _micEvents?.cancel();
     _micEvents = null;
     try {
       await audio.invokeMethod<void>('stop');
     } catch (_) {}
-    if (loaded) await _saveTurn();
     changed();
   }
 
@@ -883,6 +1199,8 @@ class AiChatController extends ChangeNotifier {
       return;
     }
     _disposed = true;
+    _reminderTimer?.cancel();
+    unawaited(_reminderEvents?.cancel());
     _epoch++;
     _api.close();
     _recordTimer.cancel();

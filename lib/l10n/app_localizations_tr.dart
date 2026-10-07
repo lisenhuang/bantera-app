@@ -1826,7 +1826,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'AI sohbet geçmişi yalnızca bu cihazda saklanır. Yanıt vermek için ilgili veriler AI ile paylaşılır. Arama planları sunucuda saklanır.';
+      'Alınan AI sohbet geçmişi bu cihazda kalır. Yanıt için ilgili bağlam AI’a gönderilir. Hatırlatıcı zamanları ve notları sunucuda saklanır. Ses, alınana veya iptal edilene kadar en fazla yedi gün geçici tutulur.';
 
   @override
   String get aiSayingGoodbye => 'Vedalaşıyor';
@@ -1849,4 +1849,64 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Gizlilik bildirimi';
+
+  @override
+  String get aiUsageTitle => 'Kullanım';
+
+  @override
+  String get aiUsageBody =>
+      'Ses düğmesini basılı tutup gönderirken bırakın veya kayıt için mikrofona dokunun. Kayıt 3 dakika sonra otomatik gönderilir. Bantera AI ile öğrendiğiniz dil ve aksanda konuşma ve dinleme pratiği yapın.\n\n9 dakikalık sesli görüşme için telefon simgesine dokunun. İlk selamı yapay zekâ verir. Gerektiğinde mesajdaki Çevir düğmesine dokunun.\n\n“10 dakika sonra arayıp İngilizce çalışmamı hatırlat” deyin veya bir saat belirtin. Hatırlatılacak konuyu da söyleyin. Yalnızca saat verirseniz AI aramayı planlamadan önce konuyu sorar.\n\niPhone’da arama bildirimlerini açın ve internete bağlı kalın. Hatırlatmayı duymak için aramayı yanıtlayın. Arama gecikebilir.\n\nSesli mesaj için on dakika sonra pratik yapmayı hatırlatmasını iste. Yalnızca arama istiyorsan “Beni ara” de. Saatler mevcut saat dilimindedir. Hatırlatıcılar yedi gün görünür.\n\nAlınan AI sohbet geçmişi bu cihazda kalır. Yanıt için ilgili bağlam AI’a gönderilir. Hatırlatıcı zamanları ve notları sunucuda saklanır. Ses, alınana veya iptal edilene kadar en fazla yedi gün geçici tutulur.';
+
+  @override
+  String get aiCallConfirmTitle => 'Sesli görüşme başlatılsın mı?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Bantera AI ile 9 dakikaya kadar konuşun. İlk selamı yapay zekâ verir.';
+
+  @override
+  String get aiCallConfirmStart => 'Aramayı başlat';
+
+  @override
+  String get aiReplying => 'Bantera AI yanıtlıyor…';
+
+  @override
+  String get aiRemindersTitle => 'Hatırlatıcılar';
+
+  @override
+  String get aiReminderMessage => 'Sesli mesaj';
+
+  @override
+  String get aiReminderCall => 'Sesli arama';
+
+  @override
+  String get aiReminderEmpty => 'Henüz hatırlatıcı yok';
+
+  @override
+  String get aiReminderCancelTitle => 'Bu hatırlatıcı iptal edilsin mi?';
+
+  @override
+  String get aiReminderPending => 'Planlandı';
+
+  @override
+  String get aiReminderPreparing => 'İşleniyor';
+
+  @override
+  String get aiReminderReady => 'Hazır';
+
+  @override
+  String get aiReminderDelivered => 'İletildi';
+
+  @override
+  String get aiReminderCancelled => 'İptal edildi';
+
+  @override
+  String get aiReminderFailed => 'İletilemedi';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Sesli mesaj için on dakika sonra pratik yapmayı hatırlatmasını iste. Yalnızca arama istiyorsan “Beni ara” de. Saatler mevcut saat dilimindedir. Hatırlatıcılar yedi gün görünür.';
+
+  @override
+  String get aiReplyInterrupted => 'Yanıt kesildi.';
 }

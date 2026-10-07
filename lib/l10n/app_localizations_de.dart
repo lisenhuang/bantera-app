@@ -1889,7 +1889,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'Der KI-Chatverlauf wird nur auf diesem Gerät gespeichert. Relevante Verlaufs- und Lerndaten werden für Antworten an die KI gesendet. Rückruftermine werden auf dem Server gespeichert.';
+      'Empfangene KI-Chats bleiben auf diesem Gerät. Relevanter Kontext wird für Antworten an die KI gesendet. Erinnerungszeiten und Notizen liegen auf dem Server. Erinnerungs-Audio wird bis zum Empfang oder Abbruch, höchstens sieben Tage, zwischengespeichert.';
 
   @override
   String get aiSayingGoodbye => 'Verabschiedung';
@@ -1912,4 +1912,64 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Datenschutzhinweis';
+
+  @override
+  String get aiUsageTitle => 'Anleitung';
+
+  @override
+  String get aiUsageBody =>
+      'Halte die Sprachtaste gedrückt und lasse sie zum Senden los, oder tippe zum Aufnehmen auf das Mikrofon. Nach 3 Minuten wird automatisch gesendet. Übe mit Bantera AI Sprechen und Hörverstehen in deiner Lernsprache und deinem gewählten Akzent.\n\nTippe auf das Telefon für ein 9-minütiges Audiogespräch. Die KI begrüßt dich zuerst. Tippe bei Bedarf bei einer Nachricht auf Übersetzen.\n\nSage „Ruf mich in 10 Minuten an und erinnere mich daran, Englisch zu üben“, oder nenne eine Uhrzeit. Gib auch den Anlass an. Ohne Anlass fragt die KI vor der Planung nach.\n\nAktiviere Anrufmitteilungen auf deinem iPhone und bleibe mit dem Internet verbunden. Nimm den Anruf an, um die Erinnerung zu hören. Der Anruf kann sich verzögern.\n\nBitte um eine Erinnerung in zehn Minuten, um eine Sprachnachricht zu erhalten. Sage ausdrücklich „Ruf mich an“, wenn du einen Anruf möchtest. Zeiten gelten für deine aktuelle Zeitzone. Erinnerungen bleiben sieben Tage sichtbar.\n\nEmpfangene KI-Chats bleiben auf diesem Gerät. Relevanter Kontext wird für Antworten an die KI gesendet. Erinnerungszeiten und Notizen liegen auf dem Server. Erinnerungs-Audio wird bis zum Empfang oder Abbruch, höchstens sieben Tage, zwischengespeichert.';
+
+  @override
+  String get aiCallConfirmTitle => 'Audiogespräch starten?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Sprich bis zu 9 Minuten mit Bantera AI. Die KI begrüßt dich zuerst.';
+
+  @override
+  String get aiCallConfirmStart => 'Anruf starten';
+
+  @override
+  String get aiReplying => 'Bantera AI antwortet…';
+
+  @override
+  String get aiRemindersTitle => 'Erinnerungen';
+
+  @override
+  String get aiReminderMessage => 'Sprachnachricht';
+
+  @override
+  String get aiReminderCall => 'Audioanruf';
+
+  @override
+  String get aiReminderEmpty => 'Noch keine Erinnerungen';
+
+  @override
+  String get aiReminderCancelTitle => 'Diese Erinnerung abbrechen?';
+
+  @override
+  String get aiReminderPending => 'Geplant';
+
+  @override
+  String get aiReminderPreparing => 'In Bearbeitung';
+
+  @override
+  String get aiReminderReady => 'Bereit';
+
+  @override
+  String get aiReminderDelivered => 'Zugestellt';
+
+  @override
+  String get aiReminderCancelled => 'Abgebrochen';
+
+  @override
+  String get aiReminderFailed => 'Nicht zugestellt';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Bitte um eine Erinnerung in zehn Minuten, um eine Sprachnachricht zu erhalten. Sage ausdrücklich „Ruf mich an“, wenn du einen Anruf möchtest. Zeiten gelten für deine aktuelle Zeitzone. Erinnerungen bleiben sieben Tage sichtbar.';
+
+  @override
+  String get aiReplyInterrupted => 'Antwort unterbrochen.';
 }

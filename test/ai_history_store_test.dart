@@ -80,6 +80,121 @@ void main() {
       );
     },
   );
+  test(
+    'meeting flag is shared across modes and persists after clearing history',
+    () async {
+      final voice = AiHistoryStore('alice');
+      final call = AiHistoryStore('alice');
+      await voice.load();
+      await call.load();
+      expect(await voice.hasMetBefore(), isFalse);
+      // Receiving the first reply counts even before its transcript is saved.
+      await voice.markMet();
+      expect(await call.hasMetBefore(), isTrue);
+      await voice.clear();
+      final reopened = AiHistoryStore('alice');
+      await reopened.load();
+      expect(await reopened.hasMetBefore(), isTrue);
+      expect(reopened.context(), isEmpty);
+      final bob = AiHistoryStore('bob');
+      await bob.load();
+      expect(await bob.hasMetBefore(), isFalse);
+    },
+  );
+  test(
+    'cancelled or failed attempts do not consume the first meeting',
+    () async {
+      final store = AiHistoryStore('alice');
+      await store.load();
+      store.messages.add(AiMessage(role: 'user', text: 'Hi', failed: true));
+      store.messages.add(
+        AiMessage(role: 'model', text: 'Failed reply', failed: true),
+      );
+      await store.save();
+      final reopened = AiHistoryStore('alice');
+      await reopened.load();
+      expect(await reopened.hasMetBefore(), isFalse);
+    },
+  );
+  test(
+    'existing model history migrates and deleting local data resets meeting',
+    () async {
+      final store = AiHistoryStore('alice');
+      await store.load();
+      // Simulate a history file created before the meeting flag existed.
+      await File(store.path('history.json')).writeAsString(
+        jsonEncode([AiMessage(role: 'model', text: 'Hello there').toJson()]),
+      );
+      final upgraded = AiHistoryStore('alice');
+      await upgraded.load();
+      expect(await upgraded.hasMetBefore(), isTrue);
+      await root.delete(recursive: true);
+      await root.create();
+      final reinstalled = AiHistoryStore('alice');
+      await reinstalled.load();
+      expect(await reinstalled.hasMetBefore(), isFalse);
+    },
+  );
+  test(
+    'new audio duration is saved before playback and survives reopening',
+    () async {
+      final store = AiHistoryStore('duration');
+      await store.load();
+      final name = await store.saveAudio(
+        aiWave(Uint8List(16000 * 2 * 7), 16000),
+      );
+      store.messages.add(AiMessage(role: 'user', audio: name));
+      await store.save();
+      expect(store.messages.single.durationMs, 7000);
+      final reopened = AiHistoryStore('duration');
+      await reopened.load();
+      expect(reopened.messages.single.durationMs, 7000);
+    },
+  );
+  test(
+    'legacy call and reply WAV headers supply duration without playback',
+    () async {
+      final store = AiHistoryStore('legacy');
+      await store.load();
+      await File(
+        store.path('reply.wav'),
+      ).writeAsBytes(aiWave(Uint8List(24000 * 2 * 11), 24000));
+      await File(store.path('history.json')).writeAsString(
+        jsonEncode([
+          AiMessage(role: 'model', audio: 'reply.wav').toJson(),
+          AiMessage(role: 'user', audio: 'missing.wav').toJson(),
+        ]),
+      );
+      final reopened = AiHistoryStore('legacy');
+      await reopened.load();
+      expect(reopened.messages.first.durationMs, 11000);
+      expect(reopened.messages.last.durationMs, isNull);
+      final persisted =
+          jsonDecode(await File(store.path('history.json')).readAsString())
+              as List;
+      expect(persisted.first['durationMs'], 11000);
+    },
+  );
+  test(
+    'WAV duration accepts extra chunks and rejects truncated or invalid audio',
+    () {
+      final wave = aiWave(Uint8List(16000), 16000);
+      expect(aiWaveDurationMs(wave), 500);
+      expect(
+        aiWaveDurationMs(wave.sublist(0, 44), fileLength: wave.length),
+        500,
+      );
+      expect(aiWaveDurationMs(wave.sublist(0, 44)), isNull);
+      expect(aiWaveDurationMs(Uint8List(44)), isNull);
+      final extra = Uint8List(wave.length + 12);
+      extra.setRange(0, 12, wave);
+      extra.setRange(12, 16, ascii.encode('JUNK'));
+      ByteData.sublistView(extra).setUint32(16, 4, Endian.little);
+      extra.setRange(24, extra.length, wave.sublist(12));
+      ByteData.sublistView(extra).setUint32(4, extra.length - 8, Endian.little);
+      expect(aiWaveDurationMs(extra), 500);
+    },
+  );
   test('PCM recordings have correct sample-rate and WAV byte counts', () {
     final wave = aiWave(Uint8List.fromList([1, 2, 3, 4]), 16000);
     final data = ByteData.sublistView(wave);

@@ -12,7 +12,17 @@ import 'package:app/core/theme.dart';
 class _TranslationController extends AiChatController {
   _TranslationController(super.store) : super.forTesting();
   final translationRequests = <bool>[];
-  int sentRecordings = 0, cancelledRecordings = 0, endedCalls = 0;
+  int sentRecordings = 0,
+      cancelledRecordings = 0,
+      endedCalls = 0,
+      startedCalls = 0;
+  @override
+  Future<void> startCall() async {
+    startedCalls++;
+    calling = true;
+    changed();
+  }
+
   @override
   Future<void> endCall() async {
     if (!calling) return;
@@ -128,6 +138,7 @@ void main() {
           role: 'user',
           text: 'I live in Auckland.',
           audio: 'test.wav',
+          durationMs: 66000,
           translation: 'Previously generated translation',
           translationLanguage: 'zh-CN',
         ),
@@ -144,7 +155,43 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('I live in Auckland.'), findsOneWidget);
+      expect(find.text('1:06'), findsOneWidget);
+      expect(playbackCalls.where((c) => c.method == 'resume'), isEmpty);
+      final playRect = tester.getRect(find.byIcon(Icons.play_arrow_rounded));
+      final durationRect = tester.getRect(find.text('1:06'));
+      final progressRect = tester.getRect(find.byType(LinearProgressIndicator));
+      final translateRect = tester.getRect(find.byTooltip('Translate'));
+      expect(playRect.center.dx, lessThan(durationRect.center.dx));
+      expect(durationRect.right, lessThan(progressRect.left));
+      expect(progressRect.right, lessThan(translateRect.left));
+      expect(progressRect.width, greaterThan(100));
+      for (final rect in [durationRect, progressRect, translateRect]) {
+        expect(rect.center.dy, closeTo(playRect.center.dy, 1));
+      }
       expect(find.text('Previously generated translation'), findsNothing);
+      controller.busy = true;
+      controller.changed();
+      await tester.pump();
+      expect(find.text('Sending audio...'), findsWidgets);
+      controller.voiceReply.addAudio(48000, 'en-NZ');
+      controller.changed();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.text('Sending audio...'), findsNothing);
+      expect(find.text('Bantera AI is replying…'), findsWidgets);
+      expect(find.byIcon(Icons.graphic_eq), findsOneWidget);
+      expect(controller.messages.length, 2);
+      expect(store.messages.length, 1);
+      controller.voiceReply.addTranscript('A streamed reply', 'en-NZ');
+      controller.changed();
+      await tester.pump();
+      expect(find.text('A streamed reply'), findsOneWidget);
+      expect(find.text('I live in Auckland.'), findsOneWidget);
+      controller.voiceReply.clear();
+      controller.busy = false;
+      controller.changed();
+      await tester.pumpAndSettle();
+
       for (final theme in [BanteraTheme.lightTheme, BanteraTheme.darkTheme]) {
         await tester.pumpWidget(
           MaterialApp(
@@ -199,7 +246,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(controller.translationRequests, [false, true]);
       final notice = find.textContaining(
-        'AI chat history is saved only on this device.',
+        'Received AI chat history stays on this device.',
       );
       expect(notice, findsOneWidget);
       await tester.tap(find.byTooltip('Close'));
@@ -212,6 +259,17 @@ void main() {
       await tester.runAsync(reopened.initialize);
       expect(reopened.privacyNoticeVisible, isFalse);
       reopened.dispose();
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Usage'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.textContaining('what the reminder is for before scheduling'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Close'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Privacy notice'));
@@ -228,6 +286,7 @@ void main() {
       controller.changed();
       await tester.pumpAndSettle();
       expect(find.text('1:30'), findsOneWidget);
+      expect(find.byTooltip('Cancel'), findsOneWidget);
       expect(tester.takeException(), isNull);
       controller.recording = false;
       controller.changed();
@@ -238,6 +297,8 @@ void main() {
       await tester.pump();
       expect(controller.recording, isTrue);
       expect(find.text('3:00'), findsOneWidget);
+      expect(find.byTooltip('Cancel'), findsNothing);
+      expect(find.textContaining('Release to send'), findsNothing);
       await gesture.up();
       await tester.pumpAndSettle();
       expect(controller.sentRecordings, 1);
@@ -292,6 +353,26 @@ void main() {
       expect(tester.takeException(), isNull);
       controller.calling = false;
       controller.connected = false;
+      controller.changed();
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      // Close the menu and verify that a call does not start before confirmation.
+      await tester.tapAt(const Offset(10, 400));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Audio Call'));
+      await tester.pumpAndSettle();
+      expect(find.text('Start an audio call?'), findsOneWidget);
+      expect(controller.startedCalls, 0);
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+      expect(controller.startedCalls, 0);
+      await tester.tap(find.byTooltip('Audio Call'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Start call'));
+      await tester.pumpAndSettle();
+      expect(controller.startedCalls, 1);
+      controller.calling = false;
       controller.changed();
       await tester.pump();
       await tester.tap(find.byIcon(Icons.more_horiz));

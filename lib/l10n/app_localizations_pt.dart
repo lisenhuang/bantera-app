@@ -1889,7 +1889,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'O histórico de chat com IA é guardado apenas neste dispositivo. Os dados relevantes são enviados à IA para responder. As chamadas agendadas são guardadas no servidor.';
+      'O histórico de IA recebido fica neste dispositivo. O contexto relevante é enviado à IA. Horários e notas de lembretes ficam no servidor. O áudio é guardado até ser recebido ou cancelado, no máximo sete dias.';
 
   @override
   String get aiSayingGoodbye => 'A despedir-se';
@@ -1912,4 +1912,64 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Aviso de privacidade';
+
+  @override
+  String get aiUsageTitle => 'Como usar';
+
+  @override
+  String get aiUsageBody =>
+      'Mantenha o botão de voz premido e solte para enviar, ou toque no microfone para gravar. O envio é automático após 3 minutos. Pratique conversação e compreensão oral com Bantera AI no idioma e sotaque que está a aprender.\n\nToque no telefone para uma chamada de 9 minutos. A IA cumprimenta primeiro. Toque em Traduzir numa mensagem quando precisar.\n\nDiga «Liga-me daqui a 10 minutos para me lembrar de praticar inglês», ou indique uma hora. Inclua o assunto do lembrete. Caso indique apenas a hora, a IA perguntará o assunto antes de agendar.\n\nAtive as notificações de chamadas no iPhone e mantenha a ligação à Internet. Atenda para ouvir o lembrete. A chamada pode atrasar-se.\n\nPeça um lembrete daqui a dez minutos para receber uma mensagem de voz. Diga “Liga-me” apenas se quiser uma chamada. Os horários usam o seu fuso atual. Os lembretes ficam visíveis por sete dias.\n\nO histórico de IA recebido fica neste dispositivo. O contexto relevante é enviado à IA. Horários e notas de lembretes ficam no servidor. O áudio é guardado até ser recebido ou cancelado, no máximo sete dias.';
+
+  @override
+  String get aiCallConfirmTitle => 'Iniciar uma chamada de áudio?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Converse com Bantera AI durante até 9 minutos. A IA cumprimenta primeiro.';
+
+  @override
+  String get aiCallConfirmStart => 'Iniciar chamada';
+
+  @override
+  String get aiReplying => 'Bantera AI está a responder…';
+
+  @override
+  String get aiRemindersTitle => 'Lembretes';
+
+  @override
+  String get aiReminderMessage => 'Mensagem de voz';
+
+  @override
+  String get aiReminderCall => 'Chamada de áudio';
+
+  @override
+  String get aiReminderEmpty => 'Ainda não há lembretes';
+
+  @override
+  String get aiReminderCancelTitle => 'Cancelar este lembrete?';
+
+  @override
+  String get aiReminderPending => 'Agendado';
+
+  @override
+  String get aiReminderPreparing => 'Em curso';
+
+  @override
+  String get aiReminderReady => 'Pronto';
+
+  @override
+  String get aiReminderDelivered => 'Entregue';
+
+  @override
+  String get aiReminderCancelled => 'Cancelado';
+
+  @override
+  String get aiReminderFailed => 'Não entregue';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Peça um lembrete daqui a dez minutos para receber uma mensagem de voz. Diga “Liga-me” apenas se quiser uma chamada. Os horários usam o seu fuso atual. Os lembretes ficam visíveis por sete dias.';
+
+  @override
+  String get aiReplyInterrupted => 'Resposta interrompida.';
 }

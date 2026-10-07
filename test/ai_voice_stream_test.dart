@@ -3,9 +3,30 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:app/infrastructure/ai/ai_voice_stream.dart';
 
 void main() {
+  test(
+    'technical error metadata excludes native messages and unsafe codes',
+    () {
+      final error = AiVoiceFailure.from(
+        'playback_failed',
+        PlatformException(
+          code: 'audio_start_failed',
+          message: 'secret conversation',
+        ),
+      );
+      expect(error.errorType, 'PlatformException');
+      expect(error.nativeCode, 'audio_start_failed');
+      expect(error.toString(), isNot(contains('secret')));
+      final unsafe = AiVoiceFailure.from(
+        'playback_failed',
+        PlatformException(code: 'https://secret?token=private'),
+      );
+      expect(unsafe.nativeCode, isNull);
+    },
+  );
   test(
     'uploads before send, streams playback before completion, and resets partial retries',
     () async {
@@ -18,10 +39,12 @@ void main() {
         socket.listen(received.add);
       });
       final played = <List<int>>[];
+      final transcripts = <String>[];
       var resets = 0;
       final stream = AiVoiceStream(
         connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
         onAudio: (bytes) async => played.add(bytes),
+        onTranscript: (role, text) => transcripts.add("$role:$text"),
         onReset: () async {
           resets++;
         },
@@ -44,8 +67,15 @@ void main() {
         });
         expect(await incoming.moveNext(), true);
         expect(jsonDecode(incoming.current as String)['type'], 'commit');
+        socket.add(
+          jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'Hel'}),
+        );
+        socket.add(
+          jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'lo'}),
+        );
         socket.add([10, 11]);
         await _until(() => played.length == 1);
+        expect(transcripts, ["model:Hel", "model:lo"]);
         expect(played.single, [
           10,
           11,
@@ -74,6 +104,53 @@ void main() {
       }
     },
   );
+
+  for (final failure in ['server_error', 'playback_failed', 'socket_closed']) {
+    test('retains received audio and identifies $failure', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      server.listen((request) async {
+        final socket = await WebSocketTransformer.upgrade(request);
+        socket.add(jsonEncode({'type': 'ready'}));
+        socket.listen((event) {
+          if (event is String && jsonDecode(event)['type'] == 'commit') {
+            socket.add([10, 11, 12, 13]);
+            if (failure == 'server_error') {
+              socket.add(
+                jsonEncode({
+                  'type': 'error',
+                  'message': 'private provider detail',
+                }),
+              );
+            } else if (failure == 'socket_closed') {
+              socket.close();
+            }
+          }
+        });
+      });
+      final stream = AiVoiceStream(
+        connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
+        onAudio: (_) async {
+          if (failure == 'playback_failed')
+            throw StateError('native output unavailable');
+        },
+        onReset: () async {},
+      );
+      try {
+        stream.add(Uint8List(320));
+        await expectLater(
+          stream.send({}),
+          throwsA(isA<AiVoiceFailure>().having((e) => e.code, 'code', failure)),
+        );
+        expect(stream.partialAudio!.sublist(44), [10, 11, 12, 13]);
+        expect(stream.outputBytes, 4);
+        expect(stream.inputBytes, 320);
+        expect(stream.committed, true);
+      } finally {
+        await stream.close();
+        await server.close(force: true);
+      }
+    });
+  }
 
   test(
     'cancel before connection completes closes it without committing',
@@ -130,7 +207,12 @@ void main() {
         onReset: () async {},
       );
       stream.add(Uint8List(320));
-      await expectLater(stream.send({}), throwsStateError);
+      await expectLater(
+        stream.send({}),
+        throwsA(
+          isA<AiVoiceFailure>().having((e) => e.code, 'code', 'socket_closed'),
+        ),
+      );
       expect(stream.committed, true);
       await stream.close();
       await server.close(force: true);

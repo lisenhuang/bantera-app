@@ -1903,7 +1903,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'Historia czatu AI jest zapisana tylko na tym urządzeniu. Potrzebne dane są wysyłane do AI w celu odpowiedzi. Harmonogramy połączeń są przechowywane na serwerze.';
+      'Odebrana historia AI pozostaje na urządzeniu. Kontekst jest wysyłany do AI w celu odpowiedzi. Terminy i notatki przypomnień są na serwerze. Dźwięk jest przechowywany do odbioru lub anulowania, maksymalnie siedem dni.';
 
   @override
   String get aiSayingGoodbye => 'Pożegnanie';
@@ -1926,4 +1926,64 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Informacja o prywatności';
+
+  @override
+  String get aiUsageTitle => 'Jak korzystać';
+
+  @override
+  String get aiUsageBody =>
+      'Przytrzymaj przycisk głosowy i puść, aby wysłać, albo dotknij mikrofonu, aby nagrać. Nagranie wysyła się automatycznie po 3 minutach. Ćwicz mówienie i słuchanie z Bantera AI w wybranym języku i akcencie.\n\nDotknij telefonu, aby rozpocząć 9-minutową rozmowę. AI przywita Cię jako pierwsza. W razie potrzeby dotknij Tłumacz przy wiadomości.\n\nPowiedz „Zadzwoń za 10 minut i przypomnij mi o ćwiczeniu angielskiego” lub podaj konkretną godzinę. Dodaj temat przypomnienia. Jeśli podasz tylko czas, AI zapyta o temat przed zaplanowaniem połączenia.\n\nWłącz powiadomienia o połączeniach na iPhonie i utrzymuj połączenie z Internetem. Odbierz telefon, aby usłyszeć przypomnienie. Połączenie może się opóźnić.\n\nPoproś o przypomnienie za dziesięć minut, aby otrzymać wiadomość głosową. Powiedz „Zadzwoń do mnie” tylko, jeśli chcesz połączenia. Godziny są w bieżącej strefie czasowej. Przypomnienia pozostają przez siedem dni.\n\nOdebrana historia AI pozostaje na urządzeniu. Kontekst jest wysyłany do AI w celu odpowiedzi. Terminy i notatki przypomnień są na serwerze. Dźwięk jest przechowywany do odbioru lub anulowania, maksymalnie siedem dni.';
+
+  @override
+  String get aiCallConfirmTitle => 'Rozpocząć rozmowę głosową?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Rozmawiaj z Bantera AI przez maksymalnie 9 minut. AI przywita Cię jako pierwsza.';
+
+  @override
+  String get aiCallConfirmStart => 'Rozpocznij rozmowę';
+
+  @override
+  String get aiReplying => 'Bantera AI odpowiada…';
+
+  @override
+  String get aiRemindersTitle => 'Przypomnienia';
+
+  @override
+  String get aiReminderMessage => 'Wiadomość głosowa';
+
+  @override
+  String get aiReminderCall => 'Połączenie audio';
+
+  @override
+  String get aiReminderEmpty => 'Brak przypomnień';
+
+  @override
+  String get aiReminderCancelTitle => 'Anulować to przypomnienie?';
+
+  @override
+  String get aiReminderPending => 'Zaplanowane';
+
+  @override
+  String get aiReminderPreparing => 'W toku';
+
+  @override
+  String get aiReminderReady => 'Gotowe';
+
+  @override
+  String get aiReminderDelivered => 'Dostarczone';
+
+  @override
+  String get aiReminderCancelled => 'Anulowane';
+
+  @override
+  String get aiReminderFailed => 'Niedostarczone';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Poproś o przypomnienie za dziesięć minut, aby otrzymać wiadomość głosową. Powiedz „Zadzwoń do mnie” tylko, jeśli chcesz połączenia. Godziny są w bieżącej strefie czasowej. Przypomnienia pozostają przez siedem dni.';
+
+  @override
+  String get aiReplyInterrupted => 'Odpowiedź została przerwana.';
 }

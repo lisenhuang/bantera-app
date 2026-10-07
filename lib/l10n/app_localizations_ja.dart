@@ -1744,7 +1744,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'AIチャット履歴はこの端末だけに保存されます。返信のため関連する履歴と学習データがAIに送信されます。折り返し予約はサーバーに保存されます。';
+      '受信済みのAIチャット履歴はこの端末に保存されます。返信に必要な文脈はAIに送信されます。リマインダーの予定と内容はサーバーに保存され、音声は受信またはキャンセルまで、最長7日間一時保存されます。';
 
   @override
   String get aiSayingGoodbye => 'お別れの挨拶中';
@@ -1766,4 +1766,63 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'プライバシーに関するお知らせ';
+
+  @override
+  String get aiUsageTitle => '使い方';
+
+  @override
+  String get aiUsageBody =>
+      '音声ボタンを長押しし、離すと送信できます。マイクをタップして録音することもできます。3分で自動送信されます。Bantera AIと、学習中の言語とアクセントで会話や聞き取りを練習しましょう。\n\n電話アイコンから9分間の音声通話を始められます。AIが先に挨拶します。必要なときはメッセージの翻訳ボタンをタップしてください。\n\n「10分後に電話して、英語の練習を思い出させて」のように、時刻と用件を伝えてください。時刻だけの場合、AIは予約する前に何を知らせるか尋ねます。\n\niPhoneの着信通知を有効にし、インターネット接続を維持してください。着信に応答すると用件を聞けます。着信が遅れる場合があります。\n\n「10分後に練習するようリマインドして」と頼むと音声メッセージが届きます。通話を希望する場合のみ「電話して」と伝えてください。時刻は現在のタイムゾーンで表示され、履歴は7日間残ります。\n\n受信済みのAIチャット履歴はこの端末に保存されます。返信に必要な文脈はAIに送信されます。リマインダーの予定と内容はサーバーに保存され、音声は受信またはキャンセルまで、最長7日間一時保存されます。';
+
+  @override
+  String get aiCallConfirmTitle => '音声通話を始めますか？';
+
+  @override
+  String get aiCallConfirmBody => 'Bantera AIと最大9分間話せます。AIが先に挨拶します。';
+
+  @override
+  String get aiCallConfirmStart => '通話を開始';
+
+  @override
+  String get aiReplying => 'Bantera AIが返信中…';
+
+  @override
+  String get aiRemindersTitle => 'リマインダー';
+
+  @override
+  String get aiReminderMessage => '音声メッセージ';
+
+  @override
+  String get aiReminderCall => '音声通話';
+
+  @override
+  String get aiReminderEmpty => 'リマインダーはありません';
+
+  @override
+  String get aiReminderCancelTitle => 'このリマインダーをキャンセルしますか？';
+
+  @override
+  String get aiReminderPending => '予定済み';
+
+  @override
+  String get aiReminderPreparing => '処理中';
+
+  @override
+  String get aiReminderReady => '準備完了';
+
+  @override
+  String get aiReminderDelivered => '配信済み';
+
+  @override
+  String get aiReminderCancelled => 'キャンセル済み';
+
+  @override
+  String get aiReminderFailed => '未配信';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      '「10分後に練習するようリマインドして」と頼むと音声メッセージが届きます。通話を希望する場合のみ「電話して」と伝えてください。時刻は現在のタイムゾーンで表示され、履歴は7日間残ります。';
+
+  @override
+  String get aiReplyInterrupted => '応答が中断されました。';
 }

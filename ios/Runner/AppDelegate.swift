@@ -2503,6 +2503,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
           try url.setResourceValues(values)
           result(url.path)
         case "diagnostics": result(self.diagnostics)
+        case "playedFrames": result(self.phoneAudio?.renderedFrames ?? self.playedFrames)
         case "start":
           try self.start(callKitManaged: (call.arguments as? [String: Any])?["callKitManaged"] as? Bool == true)
           self.startResult = result
@@ -2538,6 +2539,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
   func onCancel(withArguments arguments: Any?) -> FlutterError? { sink = nil; stop(); return nil }
   func startPlayback() throws {
     stop()
+    playedFrames = 0
     let session = AVAudioSession.sharedInstance()
     try session.setCategory(.playback, mode: .spokenAudio)
     try session.setActive(true)

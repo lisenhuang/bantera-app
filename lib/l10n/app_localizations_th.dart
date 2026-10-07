@@ -1811,7 +1811,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'ประวัติแชต AI เก็บไว้ในอุปกรณ์นี้เท่านั้น ข้อมูลที่เกี่ยวข้องจะส่งให้ AI เพื่อตอบกลับ กำหนดเวลาโทรกลับเก็บไว้บนเซิร์ฟเวอร์';
+      'ประวัติแชต AI ที่ได้รับเก็บในอุปกรณ์นี้ บริบทที่เกี่ยวข้องถูกส่งให้ AI ตอบ ตารางและบันทึกการเตือนเก็บบนเซิร์ฟเวอร์ เสียงเตือนเก็บชั่วคราวจนกว่าจะได้รับหรือยกเลิก ไม่เกินเจ็ดวัน';
 
   @override
   String get aiSayingGoodbye => 'กำลังบอกลา';
@@ -1834,4 +1834,64 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'ประกาศความเป็นส่วนตัว';
+
+  @override
+  String get aiUsageTitle => 'วิธีใช้งาน';
+
+  @override
+  String get aiUsageBody =>
+      'กดปุ่มเสียงค้างไว้แล้วปล่อยเพื่อส่ง หรือแตะไมโครโฟนเพื่อบันทึก ระบบจะส่งอัตโนมัติเมื่อครบ 3 นาที ฝึกพูดและฟังกับ Bantera AI ในภาษาและสำเนียงที่คุณกำลังเรียน\n\nแตะรูปโทรศัพท์เพื่อเริ่มสายเสียง 9 นาที AI จะทักทายก่อน แตะแปลที่ข้อความเมื่อคุณต้องการ\n\nพูดว่า “โทรหาฉันในอีก 10 นาทีเพื่อเตือนให้ฝึกภาษาอังกฤษ” หรือระบุเวลาที่ต้องการ พร้อมบอกเรื่องที่จะให้เตือน หากบอกแค่เวลา AI จะถามเรื่องที่ต้องเตือนก่อนนัดหมาย\n\nเปิดการแจ้งเตือนสายเรียกเข้าบน iPhone และเชื่อมต่ออินเทอร์เน็ต รับสายเพื่อฟังการเตือน สายอาจมาถึงล่าช้าได้\n\nขอให้เตือนให้ฝึกในอีกสิบนาทีเพื่อรับข้อความเสียง พูดว่า “โทรหาฉัน” เฉพาะเมื่อต้องการให้โทร เวลาใช้เขตเวลาปัจจุบันของคุณ การเตือนล่าสุดจะอยู่ที่นี่เจ็ดวัน\n\nประวัติแชต AI ที่ได้รับเก็บในอุปกรณ์นี้ บริบทที่เกี่ยวข้องถูกส่งให้ AI ตอบ ตารางและบันทึกการเตือนเก็บบนเซิร์ฟเวอร์ เสียงเตือนเก็บชั่วคราวจนกว่าจะได้รับหรือยกเลิก ไม่เกินเจ็ดวัน';
+
+  @override
+  String get aiCallConfirmTitle => 'เริ่มสายเสียงหรือไม่?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'พูดคุยกับ Bantera AI ได้นานถึง 9 นาที โดย AI จะทักทายคุณก่อน';
+
+  @override
+  String get aiCallConfirmStart => 'เริ่มโทร';
+
+  @override
+  String get aiReplying => 'Bantera AI กำลังตอบ…';
+
+  @override
+  String get aiRemindersTitle => 'การเตือน';
+
+  @override
+  String get aiReminderMessage => 'ข้อความเสียง';
+
+  @override
+  String get aiReminderCall => 'การโทรด้วยเสียง';
+
+  @override
+  String get aiReminderEmpty => 'ยังไม่มีการเตือน';
+
+  @override
+  String get aiReminderCancelTitle => 'ยกเลิกการเตือนนี้ไหม?';
+
+  @override
+  String get aiReminderPending => 'กำหนดแล้ว';
+
+  @override
+  String get aiReminderPreparing => 'กำลังดำเนินการ';
+
+  @override
+  String get aiReminderReady => 'พร้อมแล้ว';
+
+  @override
+  String get aiReminderDelivered => 'ส่งแล้ว';
+
+  @override
+  String get aiReminderCancelled => 'ยกเลิกแล้ว';
+
+  @override
+  String get aiReminderFailed => 'ยังไม่ได้ส่ง';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'ขอให้เตือนให้ฝึกในอีกสิบนาทีเพื่อรับข้อความเสียง พูดว่า “โทรหาฉัน” เฉพาะเมื่อต้องการให้โทร เวลาใช้เขตเวลาปัจจุบันของคุณ การเตือนล่าสุดจะอยู่ที่นี่เจ็ดวัน';
+
+  @override
+  String get aiReplyInterrupted => 'การตอบกลับถูกขัดจังหวะ';
 }

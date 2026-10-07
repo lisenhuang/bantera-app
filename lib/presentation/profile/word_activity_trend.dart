@@ -64,6 +64,13 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
     );
     if (selected < 0) selected = points.length - 1;
     final current = points[selected];
+    final totals = points.fold(
+      const WordTotals(),
+      (sum, point) => WordTotals(
+        listened: sum.listened + point.totals.listened,
+        spoken: sum.spoken + point.totals.spoken,
+      ),
+    );
     final maximum = points.fold<int>(
       0,
       (max, p) => math.max(max, math.max(p.totals.listened, p.totals.spoken)),
@@ -77,7 +84,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
         const SizedBox(width: 6),
         Flexible(
           child: Text(
-            '${listening ? l10n.wordActivityListening : l10n.wordActivitySpeaking}  ${number.format(listening ? current.totals.listened : current.totals.spoken)}',
+            '${listening ? l10n.wordActivityListening : l10n.wordActivitySpeaking}  ${number.format(listening ? totals.listened : totals.spoken)}',
             style: theme.textTheme.labelLarge,
           ),
         ),
@@ -119,29 +126,11 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
             ),
           )
         else ...[
-          Row(
-            children: [
-              IconButton(
-                onPressed: selected > 0 ? () => select(selected - 1) : null,
-                tooltip: MaterialLocalizations.of(context).previousPageTooltip,
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Expanded(
-                child: Text(
-                  DateFormat.yMMMd(locale).format(current.date),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.labelLarge,
-                ),
-              ),
-              IconButton(
-                onPressed: selected < points.length - 1
-                    ? () => select(selected + 1)
-                    : null,
-                tooltip: MaterialLocalizations.of(context).nextPageTooltip,
-                icon: const Icon(Icons.chevron_right),
-              ),
-            ],
+          Text(
+            '${DateFormat.yMMMd(locale).format(points.first.date)} – ${DateFormat.yMMMd(locale).format(points.last.date)}',
+            style: theme.textTheme.labelLarge,
           ),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 20,
             runSpacing: 8,
@@ -180,6 +169,14 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
             ),
           ),
           Text('0', style: theme.textTheme.labelSmall),
+          if (_selectedDate != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '${DateFormat.yMMMd(locale).format(current.date)} · ${l10n.wordActivityListening} ${number.format(current.totals.listened)} · ${l10n.wordActivitySpeaking} ${number.format(current.totals.spoken)}',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
         ],
         Row(
           children: [

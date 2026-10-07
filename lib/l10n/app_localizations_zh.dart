@@ -1751,7 +1751,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'AI 聊天记录仅保存在此设备上。相关记录和学习数据会发送给 AI 以生成回复。回拨预约保存在服务器上。';
+      '已接收的AI聊天记录保存在本机。相关上下文会发送给AI生成回复。提醒时间和备注保存在服务器上；语音提醒音频仅临时保存至接收或取消，最长7天。';
 
   @override
   String get aiSayingGoodbye => '正在道别';
@@ -1773,6 +1773,65 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => '隐私说明';
+
+  @override
+  String get aiUsageTitle => '使用指南';
+
+  @override
+  String get aiUsageBody =>
+      '长按语音按钮，松开发送；也可以点击麦克风录音。录音满 3 分钟后会自动发送。Bantera AI 会使用你正在学习的语言和口音，帮助你练习口语和听力。\n\n点击电话图标，开始 9 分钟语音通话。AI 会先向你问好。需要时，点击消息上的翻译按钮。\n\n你可以说：“10 分钟后打电话提醒我练习英语”，也可以指定具体时间。请说明要提醒的事情。如果只说了时间，AI 会先询问提醒内容，再安排回拨。\n\n使用回拨功能时，请在 iPhone 上开启来电通知并保持网络连接。接听来电后即可听到提醒；来电可能会有延迟。\n\n说“10分钟后提醒我练习”即可收到语音消息。只有明确说“打电话给我”才会来电。以下时间按你当前时区显示，近期提醒保留7天。\n\n已接收的AI聊天记录保存在本机。相关上下文会发送给AI生成回复。提醒时间和备注保存在服务器上；语音提醒音频仅临时保存至接收或取消，最长7天。';
+
+  @override
+  String get aiCallConfirmTitle => '开始语音通话？';
+
+  @override
+  String get aiCallConfirmBody => '与 Bantera AI 进行最多 9 分钟的语音通话。AI 会先向你问好。';
+
+  @override
+  String get aiCallConfirmStart => '开始通话';
+
+  @override
+  String get aiReplying => 'Bantera AI 正在回复…';
+
+  @override
+  String get aiRemindersTitle => '提醒';
+
+  @override
+  String get aiReminderMessage => '语音消息';
+
+  @override
+  String get aiReminderCall => '语音通话';
+
+  @override
+  String get aiReminderEmpty => '暂无提醒';
+
+  @override
+  String get aiReminderCancelTitle => '取消这条提醒？';
+
+  @override
+  String get aiReminderPending => '已安排';
+
+  @override
+  String get aiReminderPreparing => '进行中';
+
+  @override
+  String get aiReminderReady => '已就绪';
+
+  @override
+  String get aiReminderDelivered => '已送达';
+
+  @override
+  String get aiReminderCancelled => '已取消';
+
+  @override
+  String get aiReminderFailed => '未送达';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      '说“10分钟后提醒我练习”即可收到语音消息。只有明确说“打电话给我”才会来电。以下时间按你当前时区显示，近期提醒保留7天。';
+
+  @override
+  String get aiReplyInterrupted => '回复中断。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3526,7 +3585,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiLocalHistory =>
-      'AI 聊天記錄僅儲存在此裝置上。相關記錄和學習資料會傳送給 AI 以產生回覆。回撥預約儲存在伺服器上。';
+      '已接收的AI聊天記錄保存在本機。相關上下文會傳送給AI生成回覆。提醒時間和備註保存在伺服器上；語音提醒音訊僅暫存至接收或取消，最長7天。';
 
   @override
   String get aiSayingGoodbye => '正在道別';
@@ -3548,4 +3607,63 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiPrivacyNotice => '私隱說明';
+
+  @override
+  String get aiUsageTitle => '使用指南';
+
+  @override
+  String get aiUsageBody =>
+      '長按語音按鈕，放開即可傳送；也可以點擊麥克風錄音。錄音滿 3 分鐘後會自動傳送。Bantera AI 會使用你正在學習的語言和口音，幫助你練習口語和聽力。\n\n點擊電話圖示，開始 9 分鐘語音通話。AI 會先向你問好。需要時，點擊訊息上的翻譯按鈕。\n\n你可以說：「10 分鐘後打電話提醒我練習英語」，也可以指定時間。請說明要提醒的事情。如果只說了時間，AI 會先詢問提醒內容，再安排回撥。\n\n使用回撥功能時，請在 iPhone 上開啟來電通知並保持網絡連線。接聽來電即可聽到提醒；來電可能會延遲。\n\n說「10分鐘後提醒我練習」即可收到語音訊息。只有明確說「打電話給我」才會來電。以下時間按你目前的時區顯示，近期提醒保留7天。\n\n已接收的AI聊天記錄保存在本機。相關上下文會傳送給AI生成回覆。提醒時間和備註保存在伺服器上；語音提醒音訊僅暫存至接收或取消，最長7天。';
+
+  @override
+  String get aiCallConfirmTitle => '開始語音通話？';
+
+  @override
+  String get aiCallConfirmBody => '與 Bantera AI 進行最多 9 分鐘的語音通話。AI 會先向你問好。';
+
+  @override
+  String get aiCallConfirmStart => '開始通話';
+
+  @override
+  String get aiReplying => 'Bantera AI 正在回覆…';
+
+  @override
+  String get aiRemindersTitle => '提醒';
+
+  @override
+  String get aiReminderMessage => '語音訊息';
+
+  @override
+  String get aiReminderCall => '語音通話';
+
+  @override
+  String get aiReminderEmpty => '暫無提醒';
+
+  @override
+  String get aiReminderCancelTitle => '取消這項提醒？';
+
+  @override
+  String get aiReminderPending => '已安排';
+
+  @override
+  String get aiReminderPreparing => '進行中';
+
+  @override
+  String get aiReminderReady => '已就緒';
+
+  @override
+  String get aiReminderDelivered => '已送達';
+
+  @override
+  String get aiReminderCancelled => '已取消';
+
+  @override
+  String get aiReminderFailed => '未送達';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      '說「10分鐘後提醒我練習」即可收到語音訊息。只有明確說「打電話給我」才會來電。以下時間按你目前的時區顯示，近期提醒保留7天。';
+
+  @override
+  String get aiReplyInterrupted => '回覆中斷。';
 }

@@ -12,10 +12,16 @@ class AiSpokenWords {
     final target = wordActivityLanguageKey(learningLanguage);
     if (probes.isEmpty || target.isEmpty) return 0;
     try {
-      final evidence = await _channel
-          .invokeListMethod<dynamic>('identifyLanguages', probes)
-          .timeout(const Duration(seconds: 10));
-      if (!accepts(evidence, probes.length, target)) return 0;
+      for (var offset = 0; offset < probes.length; offset += 200) {
+        final batch = probes.sublist(
+          offset,
+          (offset + 200).clamp(0, probes.length),
+        );
+        final evidence = await _channel
+            .invokeListMethod<dynamic>('identifyLanguages', batch)
+            .timeout(const Duration(seconds: 10));
+        if (!accepts(evidence, batch.length, target)) return 0;
+      }
       return activityWordCount(text);
     } catch (_) {
       return 0; // No guess or cloud fallback when local detection is unavailable.
@@ -26,15 +32,16 @@ class AiSpokenWords {
     final clean = text.trim();
     final words = clean.split(RegExp(r'\s+'));
     if (clean.length < 8 ||
-        clean.length > 4000 ||
-        activityWordCount(clean) < 3 ||
-        words.length > 200) {
+        clean.length > 12000 ||
+        activityWordCount(clean) < 3) {
       return [];
     }
-    final probes = <String>{clean};
+    final probes = <String>{if (clean.length <= 4000) clean};
     // Check every clause; a different-language clause rejects the whole message.
     for (final clause in clean.split(RegExp(r'[.!?。！？;；,，\n]+'))) {
-      if (clause.trim().isNotEmpty) probes.add(clause.trim());
+      if (clause.trim().isNotEmpty && clause.trim().length <= 4000) {
+        probes.add(clause.trim());
+      }
     }
     // Short overlapping windows help expose code-switching within a sentence.
     for (var i = 0; i + 3 <= words.length; i += 2) {

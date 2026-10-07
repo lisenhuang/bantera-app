@@ -1896,7 +1896,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'История чата с ИИ хранится только на этом устройстве. Нужные данные отправляются ИИ для ответа. Расписание звонков хранится на сервере.';
+      'Полученная история ИИ остаётся на устройстве. Контекст передаётся ИИ для ответа. Расписание и заметки напоминаний хранятся на сервере. Аудио хранится до получения или отмены, не более семи дней.';
 
   @override
   String get aiSayingGoodbye => 'Прощается';
@@ -1919,4 +1919,64 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Уведомление о конфиденциальности';
+
+  @override
+  String get aiUsageTitle => 'Как пользоваться';
+
+  @override
+  String get aiUsageBody =>
+      'Удерживайте голосовую кнопку и отпустите для отправки или нажмите микрофон для записи. Через 3 минуты запись отправится автоматически. Практикуйте речь и восприятие на слух с Bantera AI на изучаемом языке и с выбранным акцентом.\n\nНажмите телефон для 9-минутного аудиозвонка. ИИ поздоровается первым. При необходимости нажмите «Перевести» в сообщении.\n\nСкажите «Позвони через 10 минут и напомни позаниматься английским» или укажите точное время. Назовите тему напоминания. Если указано только время, ИИ уточнит тему перед планированием звонка.\n\nВключите уведомления о звонках на iPhone и сохраняйте подключение к Интернету. Ответьте на звонок, чтобы услышать напоминание. Звонок может задержаться.\n\nПопросите напомнить о практике через десять минут, чтобы получить голосовое сообщение. Скажите «Позвони мне», только если хотите звонок. Время указано в текущем часовом поясе. Напоминания хранятся семь дней.\n\nПолученная история ИИ остаётся на устройстве. Контекст передаётся ИИ для ответа. Расписание и заметки напоминаний хранятся на сервере. Аудио хранится до получения или отмены, не более семи дней.';
+
+  @override
+  String get aiCallConfirmTitle => 'Начать аудиозвонок?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Поговорите с Bantera AI до 9 минут. ИИ поздоровается первым.';
+
+  @override
+  String get aiCallConfirmStart => 'Начать звонок';
+
+  @override
+  String get aiReplying => 'Bantera AI отвечает…';
+
+  @override
+  String get aiRemindersTitle => 'Напоминания';
+
+  @override
+  String get aiReminderMessage => 'Голосовое сообщение';
+
+  @override
+  String get aiReminderCall => 'Аудиозвонок';
+
+  @override
+  String get aiReminderEmpty => 'Напоминаний пока нет';
+
+  @override
+  String get aiReminderCancelTitle => 'Отменить напоминание?';
+
+  @override
+  String get aiReminderPending => 'Запланировано';
+
+  @override
+  String get aiReminderPreparing => 'В процессе';
+
+  @override
+  String get aiReminderReady => 'Готово';
+
+  @override
+  String get aiReminderDelivered => 'Доставлено';
+
+  @override
+  String get aiReminderCancelled => 'Отменено';
+
+  @override
+  String get aiReminderFailed => 'Не доставлено';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Попросите напомнить о практике через десять минут, чтобы получить голосовое сообщение. Скажите «Позвони мне», только если хотите звонок. Время указано в текущем часовом поясе. Напоминания хранятся семь дней.';
+
+  @override
+  String get aiReplyInterrupted => 'Ответ прерван.';
 }

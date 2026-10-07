@@ -188,6 +188,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: l10n.generateWithAiTitle,
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const GenerateAiAudioScreen(),
+                  ),
+                ),
+              ),
+            ],
             title: Text(AppLocalizations.of(context)!.navDiscover),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(60.0),

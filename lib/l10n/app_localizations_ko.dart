@@ -1754,7 +1754,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'AI 채팅 기록은 이 기기에만 저장됩니다. 답변을 위해 관련 기록과 학습 데이터가 AI로 전송됩니다. 통화 예약은 서버에 저장됩니다.';
+      '받은 AI 대화 기록은 이 기기에 저장돼요. 답변에 필요한 맥락은 AI로 전송돼요. 알림 일정과 메모는 서버에 저장되며, 알림 음성은 수신하거나 취소할 때까지 최대 7일간 임시 보관돼요.';
 
   @override
   String get aiSayingGoodbye => '작별 인사 중';
@@ -1776,4 +1776,64 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => '개인정보 안내';
+
+  @override
+  String get aiUsageTitle => '사용 방법';
+
+  @override
+  String get aiUsageBody =>
+      '음성 버튼을 길게 누른 뒤 놓으면 전송됩니다. 마이크를 눌러 녹음할 수도 있습니다. 3분이 되면 자동 전송됩니다. Bantera AI와 학습 중인 언어와 억양으로 말하기와 듣기를 연습하세요.\n\n전화 아이콘을 누르면 9분 음성 통화가 시작되고 AI가 먼저 인사합니다. 필요할 때 메시지의 번역 버튼을 누르세요.\n\n“10분 후에 전화해서 영어 연습하라고 알려 줘”처럼 시간과 알림 내용을 말하세요. 시간만 말하면 AI가 예약 전에 무엇을 알려 줄지 물어봅니다.\n\niPhone에서 통화 알림을 켜고 인터넷 연결을 유지하세요. 전화를 받으면 알림을 들을 수 있습니다. 전화가 늦게 올 수도 있습니다.\n\n“10분 후에 연습하라고 알려 줘”라고 하면 음성 메시지가 와요. 통화를 원할 때만 “전화해 줘”라고 하세요. 현재 시간대로 표시되며 최근 알림은 7일간 보관돼요.\n\n받은 AI 대화 기록은 이 기기에 저장돼요. 답변에 필요한 맥락은 AI로 전송돼요. 알림 일정과 메모는 서버에 저장되며, 알림 음성은 수신하거나 취소할 때까지 최대 7일간 임시 보관돼요.';
+
+  @override
+  String get aiCallConfirmTitle => '음성 통화를 시작할까요?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Bantera AI와 최대 9분 동안 대화할 수 있어요. AI가 먼저 인사합니다.';
+
+  @override
+  String get aiCallConfirmStart => '통화 시작';
+
+  @override
+  String get aiReplying => 'Bantera AI가 답변 중…';
+
+  @override
+  String get aiRemindersTitle => '알림';
+
+  @override
+  String get aiReminderMessage => '음성 메시지';
+
+  @override
+  String get aiReminderCall => '음성 통화';
+
+  @override
+  String get aiReminderEmpty => '예약된 알림이 없어요';
+
+  @override
+  String get aiReminderCancelTitle => '이 알림을 취소할까요?';
+
+  @override
+  String get aiReminderPending => '예약됨';
+
+  @override
+  String get aiReminderPreparing => '진행 중';
+
+  @override
+  String get aiReminderReady => '준비됨';
+
+  @override
+  String get aiReminderDelivered => '전달됨';
+
+  @override
+  String get aiReminderCancelled => '취소됨';
+
+  @override
+  String get aiReminderFailed => '전달되지 않음';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      '“10분 후에 연습하라고 알려 줘”라고 하면 음성 메시지가 와요. 통화를 원할 때만 “전화해 줘”라고 하세요. 현재 시간대로 표시되며 최근 알림은 7일간 보관돼요.';
+
+  @override
+  String get aiReplyInterrupted => '응답이 중단되었습니다.';
 }

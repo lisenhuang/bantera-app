@@ -1892,7 +1892,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'L’historique du chat IA est enregistré uniquement sur cet appareil. Les données utiles sont envoyées à l’IA pour répondre. Les rappels programmés sont enregistrés sur le serveur.';
+      'Les échanges IA reçus restent sur cet appareil. Le contexte utile est envoyé à l’IA. Les horaires et notes des rappels sont sur le serveur. Leur audio y reste temporairement jusqu’à réception ou annulation, pendant sept jours au maximum.';
 
   @override
   String get aiSayingGoodbye => 'Au revoir';
@@ -1915,4 +1915,64 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Avis de confidentialité';
+
+  @override
+  String get aiUsageTitle => 'Utilisation';
+
+  @override
+  String get aiUsageBody =>
+      'Maintenez le bouton vocal puis relâchez pour envoyer, ou touchez le micro pour enregistrer. L’envoi est automatique après 3 minutes. Pratiquez l’expression et la compréhension orales avec Bantera AI dans la langue et l’accent que vous apprenez.\n\nTouchez le téléphone pour un appel audio de 9 minutes. L’IA vous salue en premier. Touchez Traduire sur un message si nécessaire.\n\nDites « Appelle-moi dans 10 minutes pour me rappeler de pratiquer l’anglais », ou indiquez une heure précise. Donnez aussi le sujet du rappel. Sinon, l’IA vous le demandera avant de programmer l’appel.\n\nActivez les notifications d’appel sur votre iPhone et restez connecté à Internet. Répondez à l’appel pour entendre le rappel. L’appel peut être retardé.\n\nDemandez un rappel dans dix minutes pour recevoir un message vocal. Dites « Appelle-moi » uniquement pour un appel. Les heures suivent votre fuseau actuel. Les rappels restent visibles sept jours.\n\nLes échanges IA reçus restent sur cet appareil. Le contexte utile est envoyé à l’IA. Les horaires et notes des rappels sont sur le serveur. Leur audio y reste temporairement jusqu’à réception ou annulation, pendant sept jours au maximum.';
+
+  @override
+  String get aiCallConfirmTitle => 'Démarrer un appel audio ?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Discutez avec Bantera AI pendant 9 minutes maximum. L’IA vous salue en premier.';
+
+  @override
+  String get aiCallConfirmStart => 'Démarrer l’appel';
+
+  @override
+  String get aiReplying => 'Bantera AI répond…';
+
+  @override
+  String get aiRemindersTitle => 'Rappels';
+
+  @override
+  String get aiReminderMessage => 'Message vocal';
+
+  @override
+  String get aiReminderCall => 'Appel audio';
+
+  @override
+  String get aiReminderEmpty => 'Aucun rappel';
+
+  @override
+  String get aiReminderCancelTitle => 'Annuler ce rappel ?';
+
+  @override
+  String get aiReminderPending => 'Programmé';
+
+  @override
+  String get aiReminderPreparing => 'En cours';
+
+  @override
+  String get aiReminderReady => 'Prêt';
+
+  @override
+  String get aiReminderDelivered => 'Remis';
+
+  @override
+  String get aiReminderCancelled => 'Annulé';
+
+  @override
+  String get aiReminderFailed => 'Non remis';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Demandez un rappel dans dix minutes pour recevoir un message vocal. Dites « Appelle-moi » uniquement pour un appel. Les heures suivent votre fuseau actuel. Les rappels restent visibles sept jours.';
+
+  @override
+  String get aiReplyInterrupted => 'Réponse interrompue.';
 }

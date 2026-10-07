@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../core/apple_system_version.dart';
 import '../core/app_resume_notifier.dart';
 import '../core/goal_reminder_service.dart';
 import '../core/dm_call_notifier.dart';
@@ -14,7 +13,6 @@ import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
-import 'create/create_hub_screen.dart';
 import 'discover/discover_screen.dart';
 import 'profile/profile_screen.dart';
 
@@ -36,13 +34,6 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   List<ChatThreadSummary> _groups = [];
   List<ChatThreadSummary> _dms = [];
 
-  static const List<Widget> _fourTabs = [
-    DiscoverScreen(),
-    CreateHubScreen(),
-    ChatsScreen(),
-    ProfileScreen(),
-  ];
-
   static const List<Widget> _threeTabs = [
     DiscoverScreen(),
     ChatsScreen(),
@@ -52,9 +43,6 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      _migrateTabIndexIfCreateHidden,
-    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
     AppResumeNotifier.instance.addListener(_onResume);
     GoalReminderService.instance.profileRequested.addListener(_openGoalProfile);
@@ -73,7 +61,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     final request = GoalReminderService.instance.profileRequested;
     if (!mounted || !request.value) return;
     request.value = false;
-    setState(() => _currentIndex = supportsCreateTabOnApple ? 3 : 2);
+    setState(() => _currentIndex = 2);
   }
 
   void _updateUnread() {
@@ -107,8 +95,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       (_reviewRoute?.isCurrent ?? false) &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed &&
       !DmCallNotifier.instance.isActive &&
-      (_currentIndex == 0 ||
-          _currentIndex == (supportsCreateTabOnApple ? 3 : 2));
+      (_currentIndex == 0 || _currentIndex == (2));
 
   void _schedulePracticeReview() {
     _reviewTimer?.cancel();
@@ -179,23 +166,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     );
   }
 
-  /// If state ever held Chats/Profile as indices 2/3 (4-tab), remap to 1/2
-  /// when Create is hidden. Index 1 naturally becomes Chats in the 3-tab layout.
-  void _migrateTabIndexIfCreateHidden(Duration _) {
-    if (!mounted) return;
-    if (supportsCreateTabOnApple) return;
-    if (_currentIndex == 2) {
-      setState(() => _currentIndex = 1);
-    } else if (_currentIndex == 3) {
-      setState(() => _currentIndex = 2);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final showCreateTab = supportsCreateTabOnApple;
-    final screens = showCreateTab ? _fourTabs : _threeTabs;
+    const screens = _threeTabs;
     final maxIndex = screens.length - 1;
     final stackIndex = _currentIndex.clamp(0, maxIndex);
 
@@ -214,12 +188,6 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
             icon: const Icon(CupertinoIcons.compass),
             label: l10n.navDiscover,
           ),
-          if (showCreateTab) ...[
-            BottomNavigationBarItem(
-              icon: const Icon(CupertinoIcons.add_circled_solid),
-              label: l10n.navCreate,
-            ),
-          ],
           BottomNavigationBarItem(
             icon: Stack(
               clipBehavior: Clip.none,

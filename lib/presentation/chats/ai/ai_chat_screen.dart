@@ -6,7 +6,23 @@ import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../l10n/app_localizations.dart';
 import 'ai_chat_controller.dart';
 import 'ai_avatar.dart';
+import 'ai_reminders_screen.dart';
+import '../../../domain/activity/listening_word_tracker.dart';
 import '../chat_bubble_parts.dart';
+
+final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
+Route<dynamic>? _activeAiRoute;
+void openAiReminderChat() {
+  final navigator = aiReminderNavigatorKey.currentState;
+  if (navigator == null) return;
+  if (_activeAiRoute != null) {
+    navigator.popUntil(
+      (route) => identical(route, _activeAiRoute) || route.isFirst,
+    );
+    return;
+  }
+  navigator.push(MaterialPageRoute<void>(builder: (_) => const AiChatScreen()));
+}
 
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({
@@ -28,12 +44,15 @@ class _AiChatScreenState extends State<AiChatScreen>
   final _scroll = ScrollController();
   final _player = AudioPlayer();
   String? _playing;
+  ListeningWordTracker? _listening;
+  String _listeningLanguage = '';
   StreamSubscription? _completion, _positionEvents, _durationEvents;
   Duration _position = Duration.zero;
   final Map<String, Duration> _durations = {};
   bool _holdingRecord = false, _startingRecord = false;
   int _count = 0;
   bool _historyLoaded = false;
+  bool _confirmingCall = false;
   @override
   void initState() {
     super.initState();
@@ -42,6 +61,18 @@ class _AiChatScreenState extends State<AiChatScreen>
     _historyLoaded = _chat.loaded;
     _chat.addListener(_changed);
     _completion = _player.onPlayerComplete.listen((_) {
+      final message = _chat.messages.where((m) => m.id == _playing).firstOrNull;
+      final duration =
+          _durations[_playing] ??
+          (message?.durationMs == null
+              ? null
+              : Duration(milliseconds: message!.durationMs!));
+      if (duration != null) {
+        final words =
+            _listening?.advance(duration.inMilliseconds, playing: true) ?? 0;
+        unawaited(_chat.recordListened(words, _listeningLanguage));
+      }
+      _listening = null;
       if (mounted) {
         setState(() {
           _playing = null;
@@ -50,6 +81,13 @@ class _AiChatScreenState extends State<AiChatScreen>
       }
     });
     _positionEvents = _player.onPositionChanged.listen((position) {
+      final words =
+          _listening?.advance(
+            position.inMilliseconds,
+            playing: _player.state == PlayerState.playing,
+          ) ??
+          0;
+      unawaited(_chat.recordListened(words, _listeningLanguage));
       if (mounted) setState(() => _position = position);
     });
     _durationEvents = _player.onDurationChanged.listen((duration) {
@@ -60,10 +98,16 @@ class _AiChatScreenState extends State<AiChatScreen>
     if (widget.controller == null) {
       unawaited(
         _chat.initialize().then((_) async {
-          if (mounted && widget.startWithCall) await _chat.startCall();
+          if (mounted && widget.startWithCall) await _call();
         }),
       );
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.controller == null) _activeAiRoute = ModalRoute.of(context);
   }
 
   void _changed() {
@@ -95,6 +139,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_chat.syncReminders());
     // iOS playAndRecord + UIBackgroundModes audio keeps a user-started call
     // duplex while locked. Stopping either player here can deactivate the
     // shared audio session. The call's deadline and interruption handling remain active.
@@ -113,6 +158,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
+    if (widget.controller == null) _activeAiRoute = null;
     WidgetsBinding.instance.removeObserver(this);
     _chat.removeListener(_changed);
     if (widget.controller == null) _chat.dispose();
@@ -168,6 +214,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         if (_player.state == PlayerState.playing) {
           await _player.pause();
         } else {
+          _listening?.seek(_position.inMilliseconds);
           await _player.resume();
         }
         if (mounted) setState(() {});
@@ -185,6 +232,14 @@ class _AiChatScreenState extends State<AiChatScreen>
         _playing = m.id;
         _position = Duration.zero;
       });
+      _listeningLanguage = m.language;
+      final durationMs = m.durationMs ?? _durations[m.id]?.inMilliseconds ?? 0;
+      _listening = m.role == 'model'
+          ? ListeningWordTracker(
+              ListeningWordTracker.estimatedUnits(m.text, 0, durationMs),
+            )
+          : null;
+      _listening?.seek(0);
       await _player.play(DeviceFileSource(_chat.store.path(m.audio!)));
     } catch (_) {
       if (mounted) {
@@ -199,9 +254,48 @@ class _AiChatScreenState extends State<AiChatScreen>
   }
 
   Future<void> _call() async {
-    await _player.stop();
-    _playing = null;
-    await _chat.startCall();
+    if (_confirmingCall ||
+        !_chat.loaded ||
+        _chat.busy ||
+        _chat.recording ||
+        _chat.calling) {
+      return;
+    }
+    _confirmingCall = true;
+    try {
+      final l = AppLocalizations.of(context)!;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l.aiCallConfirmTitle),
+          content: Text(l.aiCallConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.aiCallConfirmStart),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true ||
+          !mounted ||
+          !_chat.loaded ||
+          _chat.busy ||
+          _chat.recording ||
+          _chat.calling) {
+        return;
+      }
+      await _player.stop();
+      if (!mounted || _chat.busy || _chat.recording || _chat.calling) return;
+      _playing = null;
+      await _chat.startCall();
+    } finally {
+      _confirmingCall = false;
+    }
   }
 
   @override
@@ -261,8 +355,30 @@ class _AiChatScreenState extends State<AiChatScreen>
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_horiz),
             onSelected: (value) {
-              if (value == 'clear') {
+              if (value == 'reminders') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AiRemindersScreen(),
+                  ),
+                );
+              } else if (value == 'clear') {
                 _clear();
+              } else if (value == 'usage') {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(l.aiUsageTitle),
+                    scrollable: true,
+                    content: Text(l.aiUsageBody),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(l.closeLabel),
+                      ),
+                    ],
+                  ),
+                );
               } else if (value == 'privacy') {
                 showDialog<void>(
                   context: context,
@@ -280,6 +396,26 @@ class _AiChatScreenState extends State<AiChatScreen>
               }
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'reminders',
+                child: Row(
+                  children: [
+                    const Icon(Icons.notifications_active_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.aiRemindersTitle),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'usage',
+                child: Row(
+                  children: [
+                    const Icon(Icons.help_outline),
+                    const SizedBox(width: 12),
+                    Text(l.aiUsageTitle),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'privacy',
                 child: Row(
@@ -423,7 +559,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                           _draft(_chat.draftUser, true),
                         if (_chat.draftModel.isNotEmpty)
                           _draft(_chat.draftModel, false),
-                        if (_chat.busy)
+                        if (_chat.sendingVoice)
                           Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
@@ -545,11 +681,11 @@ class _AiChatScreenState extends State<AiChatScreen>
                     Expanded(
                       child: Text(
                         _chat.busy
-                            ? l.chatSendingAudio
+                            ? (_chat.sendingVoice
+                                  ? l.chatSendingAudio
+                                  : l.aiReplying)
                             : _chat.recording
-                            ? (_holdingRecord
-                                  ? l.chatRecordingReleaseToSend
-                                  : l.chatRecordingStatus)
+                            ? l.chatRecordingStatus
                             : l.chatHoldToRecordAudio,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium?.copyWith(
@@ -577,7 +713,7 @@ class _AiChatScreenState extends State<AiChatScreen>
               ),
             ),
           ),
-          if (_chat.recording)
+          if (_chat.recording && !_holdingRecord)
             IconButton(
               tooltip: l.cancel,
               onPressed: _chat.cancelRecording,
@@ -614,13 +750,18 @@ class _AiChatScreenState extends State<AiChatScreen>
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final user = m.role == 'user';
+    final receiving = _chat.isReceiving(m);
     final selected = _playing == m.id;
-    final duration = _durations[m.id];
+    final duration =
+        _durations[m.id] ??
+        (m.durationMs == null ? null : Duration(milliseconds: m.durationMs!));
     final progress = selected && duration != null && duration.inMilliseconds > 0
         ? (_position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
         : 0.0;
     final translationAction =
-        defaultTargetPlatform == TargetPlatform.iOS && m.text.isNotEmpty
+        defaultTargetPlatform == TargetPlatform.iOS &&
+            m.text.isNotEmpty &&
+            !receiving
         ? IconButton(
             tooltip:
                 _chat.visibleTranslations.contains(m.id) ||
@@ -644,6 +785,7 @@ class _AiChatScreenState extends State<AiChatScreen>
           )
         : null;
     return Align(
+      key: ValueKey(m.id),
       alignment: user ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 340),
@@ -659,8 +801,9 @@ class _AiChatScreenState extends State<AiChatScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (m.audio != null)
+            if (m.audio != null || receiving)
               ChatAudioHeader(
+                receiving: receiving,
                 playing: selected && _player.state == PlayerState.playing,
                 progress: progress,
                 duration: duration == null ? null : _durationLabel(duration),
@@ -672,6 +815,11 @@ class _AiChatScreenState extends State<AiChatScreen>
               )
             else if (translationAction != null)
               Align(alignment: Alignment.centerRight, child: translationAction),
+            if (receiving)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(l.aiReplying, style: theme.textTheme.labelMedium),
+              ),
             if (m.text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
@@ -700,7 +848,17 @@ class _AiChatScreenState extends State<AiChatScreen>
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
-            if (m.failed && m.audio != null)
+            if (m.failed && !user)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  l.aiReplyInterrupted,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.error,
+                  ),
+                ),
+              ),
+            if (m.failed && user && m.audio != null)
               TextButton.icon(
                 onPressed: _chat.busy || _chat.calling
                     ? null

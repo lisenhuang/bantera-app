@@ -58,6 +58,40 @@ void main() {
     },
   );
 
+  testWidgets('selected ranges change both summary totals', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: WordActivityTrend(
+            now: now,
+            history: {
+              '2026-10-01': const WordTotals(listened: 10, spoken: 5),
+              '2026-09-15': const WordTotals(listened: 20, spoken: 8),
+              '2026-08-01': const WordTotals(listened: 30, spoken: 9),
+              '2026-10-02': const WordTotals(listened: 900, spoken: 900),
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l = AppLocalizations.of(
+      tester.element(find.byType(WordActivityTrend)),
+    )!;
+    expect(find.text('Listening  10'), findsOneWidget);
+    expect(find.text('Speaking  5'), findsOneWidget);
+    await tester.tap(find.text(l.wordActivityThirtyDays));
+    await tester.pumpAndSettle();
+    expect(find.text('Listening  30'), findsOneWidget);
+    expect(find.text('Speaking  13'), findsOneWidget);
+    await tester.tap(find.text(l.wordActivityAllTime));
+    await tester.pumpAndSettle();
+    expect(find.text('Listening  60'), findsOneWidget);
+    expect(find.text('Speaking  22'), findsOneWidget);
+  });
+
   for (final locale in AppLocalizations.supportedLocales) {
     testWidgets(
       'populated chart is accessible and fits enlarged text: $locale',
@@ -138,8 +172,8 @@ void main() {
       );
       await tester.tapAt(Offset(plot.left + 6, plot.center.dy));
       await tester.pump();
-      expect(find.text('Listening  420'), findsOneWidget);
-      expect(find.text('Speaking  160'), findsOneWidget);
+      expect(find.text('Listening  5,420'), findsOneWidget);
+      expect(find.text('Speaking  1,850'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

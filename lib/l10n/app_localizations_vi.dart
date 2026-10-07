@@ -1829,7 +1829,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'Lịch sử trò chuyện AI chỉ lưu trên thiết bị này. Dữ liệu liên quan được gửi đến AI để trả lời. Lịch gọi lại được lưu trên máy chủ.';
+      'Lịch sử AI đã nhận nằm trên thiết bị này. Ngữ cảnh liên quan được gửi cho AI để trả lời. Lịch và nội dung nhắc được lưu trên máy chủ. Âm thanh được giữ tạm đến khi nhận hoặc hủy, tối đa bảy ngày.';
 
   @override
   String get aiSayingGoodbye => 'Đang chào tạm biệt';
@@ -1852,4 +1852,64 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Thông báo quyền riêng tư';
+
+  @override
+  String get aiUsageTitle => 'Cách sử dụng';
+
+  @override
+  String get aiUsageBody =>
+      'Giữ nút thoại rồi thả để gửi, hoặc chạm micrô để ghi âm. Bản ghi tự gửi sau 3 phút. Luyện nói và nghe với Bantera AI bằng ngôn ngữ và giọng bạn đang học.\n\nChạm biểu tượng điện thoại để gọi thoại trong 9 phút. AI sẽ chào trước. Chạm Dịch trên tin nhắn khi cần.\n\nNói “Gọi tôi sau 10 phút để nhắc tôi luyện tiếng Anh”, hoặc nêu giờ cụ thể. Hãy nói cả việc cần nhắc. Nếu chỉ nói thời gian, AI sẽ hỏi nội dung trước khi lên lịch.\n\nBật thông báo cuộc gọi trên iPhone và duy trì kết nối Internet. Trả lời cuộc gọi để nghe lời nhắc. Cuộc gọi có thể đến trễ.\n\nYêu cầu nhắc luyện tập sau mười phút để nhận tin nhắn thoại. Chỉ nói “Gọi cho tôi” khi muốn cuộc gọi. Giờ hiển thị theo múi giờ hiện tại. Lời nhắc được giữ trong bảy ngày.\n\nLịch sử AI đã nhận nằm trên thiết bị này. Ngữ cảnh liên quan được gửi cho AI để trả lời. Lịch và nội dung nhắc được lưu trên máy chủ. Âm thanh được giữ tạm đến khi nhận hoặc hủy, tối đa bảy ngày.';
+
+  @override
+  String get aiCallConfirmTitle => 'Bắt đầu cuộc gọi thoại?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Trò chuyện với Bantera AI tối đa 9 phút. AI sẽ chào bạn trước.';
+
+  @override
+  String get aiCallConfirmStart => 'Bắt đầu gọi';
+
+  @override
+  String get aiReplying => 'Bantera AI đang trả lời…';
+
+  @override
+  String get aiRemindersTitle => 'Lời nhắc';
+
+  @override
+  String get aiReminderMessage => 'Tin nhắn thoại';
+
+  @override
+  String get aiReminderCall => 'Cuộc gọi thoại';
+
+  @override
+  String get aiReminderEmpty => 'Chưa có lời nhắc';
+
+  @override
+  String get aiReminderCancelTitle => 'Hủy lời nhắc này?';
+
+  @override
+  String get aiReminderPending => 'Đã lên lịch';
+
+  @override
+  String get aiReminderPreparing => 'Đang xử lý';
+
+  @override
+  String get aiReminderReady => 'Sẵn sàng';
+
+  @override
+  String get aiReminderDelivered => 'Đã gửi';
+
+  @override
+  String get aiReminderCancelled => 'Đã hủy';
+
+  @override
+  String get aiReminderFailed => 'Chưa gửi';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Yêu cầu nhắc luyện tập sau mười phút để nhận tin nhắn thoại. Chỉ nói “Gọi cho tôi” khi muốn cuộc gọi. Giờ hiển thị theo múi giờ hiện tại. Lời nhắc được giữ trong bảy ngày.';
+
+  @override
+  String get aiReplyInterrupted => 'Phản hồi bị gián đoạn.';
 }

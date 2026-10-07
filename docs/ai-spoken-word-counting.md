@@ -202,3 +202,77 @@ Playback drain waits for the final hardware output interval before ending a
 call. Stop/interruption releases the audio unit; failures report through the
 existing audio error path. Diagnostics include actual output and microphone/
 render counters so future investigations do not rely only on the speaker icon.
+
+
+### First meeting and returning greetings (2.0.129 / 317)
+
+A per-account, device-local `hasMetBanteraAi` preference is shared by streamed
+voice messages, uploaded voice-message retries, in-app calls and CallKit
+callbacks. Receiving the first AI audio response marks the meeting; successful
+stored model replies also mark it. Opening chat, connecting, recording then
+cancelling, or a failed request without a reply does not consume the first meeting.
+Existing model history migrates the preference on load. New conversations refresh
+it from disk so a different callback/chat controller cannot use stale state.
+
+The boolean survives Clear History but contains no name or conversation text.
+Clearing history still deletes all transcripts, audio and personal chat context;
+reinstalling/removing local app data resets the flag. Account switching is isolated.
+It is sent as optional request metadata, not stored as a new server record.
+
+Backend 1.0.164 introduces once across both modes. Each new call still starts with
+an AI greeting; an expiry reconnection continues without another greeting.
+The model prefers the latest name the learner explicitly gave in available
+context, then their profile's personal name, and never uses an email as a spoken
+name. Names absent from retained context are not invented. The tone is a friendly
+language coach focused on speaking/listening, with short turns and gentle help.
+
+
+### Audio row, Usage guide and reminder callbacks (2.0.130 / 318)
+
+AI audio messages store duration before playback. Existing local PCM WAV messages
+read a bounded header on history load and persist the duration, without opening a
+player or changing the audio session. Missing/invalid files do not block history.
+AI and human DM bubbles share one row: play, duration, expanded progress, translate.
+The timestamp stays at the bottom right. Compact duration text has bounded scaling
+to preserve an operable progress bar at large accessibility text sizes.
+
+The chat menu includes Usage in all 17 locales, with voice-message/call instructions,
+manual translation and a timed reminder example. Both the guide and privacy notice
+explain that callback reminders are stored with server-side schedules. Chat audio
+and transcripts remain local. A callback controller sends its callback ID on each
+Live handshake so the server can load only the signed-in user's answered reminder.
+Backend 1.0.165 is required for topic validation and reminder-specific greetings.
+
+
+In-app call buttons now require confirmation before stopping message playback or
+opening the microphone/network call. The dialog explains the nine-minute limit
+and first greeting, with Cancel and Start call actions in all 17 locales. Native
+incoming CallKit callbacks keep their existing answer flow without another modal.
+
+## Streaming, reminders and goals (2.0.133+321)
+
+Voice-message replies create a second bubble at the first incoming audio/transcript
+fragment, replace Sending with replying, and append captions progressively. Reset
+replaces partial output in that same bubble. Only completed replies are saved.
+Hold recording shows the recording state/countdown without Release to send or the
+cancel icon; tap recording retains cancellation.
+
+AI listening now contributes to daily goals. Saved-message playback uses actual
+player progress and the existing transcript-derived word estimator. Streamed voice
+replies receive listening credit after native playback drains. Live calls use native
+rendered PCM frames, not downloaded/queued frames; interruptions discard unheard
+output. Word boundaries are estimates because Live transcription has no word timing.
+Spoken messages and call turns retain account-scoped, idempotent credit only after
+local language checks accept every probe. Longer recordings are checked in bounded
+batches instead of being rejected solely for exceeding 200 words.
+
+The AI menu includes Reminders with local date/time, voice-message or call labels,
+status and cancellation confirmation. Plain reminder requests produce standard push
+notifications and voice messages, never CallKit. Explicit call requests retain
+CallKit. Temporary server audio is acknowledged only after durable local saving;
+privacy/help explain its receipt/cancellation cleanup and seven-day expiry.
+
+Discover now opens Generate with AI through its top-right plus button. Main
+navigation contains Discover, Chats and Profile. Practice over time shows totals
+for the selected 7-day, 30-day or all-time range; a chart tap shows daily detail
+separately and future days are excluded.

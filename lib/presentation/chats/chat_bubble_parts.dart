@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Keep controls above the timeline so it can use the entire bubble width.
+/// Keep audio actions on one row and give the timeline all remaining width.
 class ChatAudioHeader extends StatelessWidget {
   const ChatAudioHeader({
     super.key,
@@ -10,9 +10,11 @@ class ChatAudioHeader extends StatelessWidget {
     this.duration,
     this.playTooltip,
     this.trailing,
+    this.receiving = false,
   });
 
   final bool playing;
+  final bool receiving;
   final double progress;
   final VoidCallback? onPlay;
   final String? duration, playTooltip;
@@ -21,38 +23,44 @@ class ChatAudioHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
       children: [
-        Row(
-          children: [
-            IconButton.filled(
-              tooltip: playTooltip,
-              onPressed: onPlay,
-              icon: Icon(
-                playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              ),
-            ),
-            if (duration != null) ...[
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(duration!, style: theme.textTheme.bodySmall),
-              ),
-            ],
-            const Spacer(),
-            ?trailing,
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99),
-          child: LinearProgressIndicator(
-            value: progress.clamp(0.0, 1.0),
-            minHeight: 6,
-            backgroundColor: theme.colorScheme.outlineVariant,
-            color: theme.colorScheme.primary,
+        IconButton.filled(
+          tooltip: playTooltip,
+          onPressed: onPlay,
+          icon: Icon(
+            receiving
+                ? Icons.graphic_eq
+                : playing
+                ? Icons.pause_rounded
+                : Icons.play_arrow_rounded,
           ),
         ),
+        if (duration != null) ...[
+          const SizedBox(width: 4),
+          Text(
+            duration!,
+            style: theme.textTheme.bodySmall,
+            textScaler: MediaQuery.textScalerOf(
+              context,
+            ).clamp(maxScaleFactor: 1.6),
+          ),
+        ],
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: receiving ? null : progress.clamp(0.0, 1.0),
+                minHeight: 6,
+                backgroundColor: theme.colorScheme.outlineVariant,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+        ?trailing,
       ],
     );
   }

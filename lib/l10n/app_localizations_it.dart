@@ -1893,7 +1893,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'La cronologia AI è salvata solo su questo dispositivo. I dati pertinenti vengono inviati all’AI per rispondere. Le richiamate programmate sono salvate sul server.';
+      'La cronologia IA ricevuta resta su questo dispositivo. Il contesto utile viene inviato all’IA. Orari e note dei promemoria sono sul server. L’audio resta temporaneamente fino alla ricezione o all’annullamento, al massimo sette giorni.';
 
   @override
   String get aiSayingGoodbye => 'Saluto finale';
@@ -1916,4 +1916,64 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Informativa sulla privacy';
+
+  @override
+  String get aiUsageTitle => 'Come si usa';
+
+  @override
+  String get aiUsageBody =>
+      'Tieni premuto il pulsante vocale e rilascialo per inviare, oppure tocca il microfono per registrare. L’invio è automatico dopo 3 minuti. Esercita conversazione e ascolto con Bantera AI nella lingua e nell’accento che studi.\n\nTocca il telefono per una chiamata audio di 9 minuti. L’IA ti saluta per prima. Tocca Traduci su un messaggio quando serve.\n\nDi’ «Chiamami tra 10 minuti per ricordarmi di esercitare l’inglese», oppure indica un orario. Specifica anche cosa ricordarti. Altrimenti l’IA te lo chiederà prima di programmare la chiamata.\n\nAttiva le notifiche delle chiamate sul tuo iPhone e mantieni la connessione Internet. Rispondi per ascoltare il promemoria. La chiamata potrebbe arrivare in ritardo.\n\nChiedi un promemoria tra dieci minuti per ricevere un messaggio vocale. Di’ “Chiamami” solo se vuoi una chiamata. Gli orari usano il tuo fuso attuale. I promemoria restano visibili sette giorni.\n\nLa cronologia IA ricevuta resta su questo dispositivo. Il contesto utile viene inviato all’IA. Orari e note dei promemoria sono sul server. L’audio resta temporaneamente fino alla ricezione o all’annullamento, al massimo sette giorni.';
+
+  @override
+  String get aiCallConfirmTitle => 'Avviare una chiamata audio?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Parla con Bantera AI per un massimo di 9 minuti. L’IA ti saluta per prima.';
+
+  @override
+  String get aiCallConfirmStart => 'Avvia chiamata';
+
+  @override
+  String get aiReplying => 'Bantera AI sta rispondendo…';
+
+  @override
+  String get aiRemindersTitle => 'Promemoria';
+
+  @override
+  String get aiReminderMessage => 'Messaggio vocale';
+
+  @override
+  String get aiReminderCall => 'Chiamata audio';
+
+  @override
+  String get aiReminderEmpty => 'Nessun promemoria';
+
+  @override
+  String get aiReminderCancelTitle => 'Annullare questo promemoria?';
+
+  @override
+  String get aiReminderPending => 'Programmato';
+
+  @override
+  String get aiReminderPreparing => 'In corso';
+
+  @override
+  String get aiReminderReady => 'Pronto';
+
+  @override
+  String get aiReminderDelivered => 'Consegnato';
+
+  @override
+  String get aiReminderCancelled => 'Annullato';
+
+  @override
+  String get aiReminderFailed => 'Non consegnato';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Chiedi un promemoria tra dieci minuti per ricevere un messaggio vocale. Di’ “Chiamami” solo se vuoi una chiamata. Gli orari usano il tuo fuso attuale. I promemoria restano visibili sette giorni.';
+
+  @override
+  String get aiReplyInterrupted => 'Risposta interrotta.';
 }

@@ -3335,7 +3335,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiLocalHistory.
   ///
   /// In en, this message translates to:
-  /// **'AI chat history is saved only on this device. Relevant history and learning data are sent to AI to reply. Callback schedules are stored on the server.'**
+  /// **'Received AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.'**
   String get aiLocalHistory;
 
   /// No description provided for @aiSayingGoodbye.
@@ -3379,6 +3379,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy notice'**
   String get aiPrivacyNotice;
+
+  /// No description provided for @aiUsageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get aiUsageTitle;
+
+  /// No description provided for @aiUsageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the voice button and release to send, or tap the microphone to record. Recordings send automatically after 3 minutes. Bantera AI helps you practise speaking and listening in your learning language and accent.\n\nTap the phone for a 9-minute audio call. AI greets you first. Tap Translate on a message whenever you need help.\n\nAsk “Call me in 10 minutes to remind me to practise English,” or give a specific time. Include what you want to be reminded about. If you only give a time, AI will ask what the reminder is for before scheduling.\n\nFor callbacks, enable call notifications on your iPhone and keep an internet connection. Answer the incoming call to hear your reminder; delivery may be delayed.\n\nAsk “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.\n\nReceived AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.'**
+  String get aiUsageBody;
+
+  /// No description provided for @aiCallConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start an audio call?'**
+  String get aiCallConfirmTitle;
+
+  /// No description provided for @aiCallConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk with Bantera AI for up to 9 minutes. It will greet you first.'**
+  String get aiCallConfirmBody;
+
+  /// No description provided for @aiCallConfirmStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start call'**
+  String get aiCallConfirmStart;
+
+  /// No description provided for @aiReplying.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera AI is replying…'**
+  String get aiReplying;
+
+  /// No description provided for @aiRemindersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get aiRemindersTitle;
+
+  /// No description provided for @aiReminderMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice message'**
+  String get aiReminderMessage;
+
+  /// No description provided for @aiReminderCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio call'**
+  String get aiReminderCall;
+
+  /// No description provided for @aiReminderEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get aiReminderEmpty;
+
+  /// No description provided for @aiReminderCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this reminder?'**
+  String get aiReminderCancelTitle;
+
+  /// No description provided for @aiReminderPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get aiReminderPending;
+
+  /// No description provided for @aiReminderPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get aiReminderPreparing;
+
+  /// No description provided for @aiReminderReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get aiReminderReady;
+
+  /// No description provided for @aiReminderDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get aiReminderDelivered;
+
+  /// No description provided for @aiReminderCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get aiReminderCancelled;
+
+  /// No description provided for @aiReminderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not delivered'**
+  String get aiReminderFailed;
+
+  /// No description provided for @aiReminderScheduleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.'**
+  String get aiReminderScheduleHelp;
+
+  /// No description provided for @aiReplyInterrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply interrupted.'**
+  String get aiReplyInterrupted;
 }
 
 class _AppLocalizationsDelegate

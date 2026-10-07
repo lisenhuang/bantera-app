@@ -211,7 +211,10 @@ class AiCallbackNotifier extends ChangeNotifier {
       // answer a VoIP wake-up while the screen remains locked.
       final chat =
           _createController?.call() ??
-          AiChatController(callKitManaged: _callKit.supported);
+          AiChatController(
+            callKitManaged: _callKit.supported,
+            callbackId: current,
+          );
       controller = chat;
       await chat.initialize();
       if (id != current || !chat.loaded) {

@@ -12,6 +12,7 @@ class AiMessage {
     this.audio,
     this.language = '',
     this.translationLanguage = '',
+    this.durationMs,
     String? id,
     DateTime? createdAt,
     this.failed = false,
@@ -21,6 +22,7 @@ class AiMessage {
   final DateTime createdAt;
   String text, translation, language, translationLanguage;
   String? audio;
+  int? durationMs;
   bool failed;
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -28,6 +30,7 @@ class AiMessage {
     'text': text,
     'translation': translation,
     'audio': audio,
+    'durationMs': durationMs,
     'language': language,
     'translationLanguage': translationLanguage,
     'createdAt': createdAt.toIso8601String(),
@@ -39,6 +42,9 @@ class AiMessage {
     text: j['text'] ?? '',
     translation: j['translation'] ?? '',
     audio: j['audio'],
+    durationMs: j['durationMs'] is int && j['durationMs'] >= 0
+        ? j['durationMs'] as int
+        : null,
     language: j['language'] ?? '',
     translationLanguage: j['translationLanguage'] ?? '',
     createdAt: DateTime.parse(j['createdAt']),
@@ -50,7 +56,27 @@ class AiHistoryStore {
   AiHistoryStore(this.owner);
   final String owner;
   Directory? _directory;
+  final Map<String, int> _audioDurations = {};
   File? _privacyNoticeFile;
+  File? _hasMetFile;
+  bool hasMetBanteraAi = false;
+  Future<bool> hasMetBefore() async =>
+      hasMetBanteraAi = hasMetBanteraAi || await _hasMetFile!.exists();
+
+  // Shared by voice messages and calls; do not consume it for failed connects
+  // or cancelled recordings. Keep this one-bit preference when history clears.
+  Future<void> markMet() => _enqueue(() async {
+    if (hasMetBanteraAi) return;
+    await _hasMetFile!.writeAsString('met', flush: true);
+    hasMetBanteraAi = true;
+  });
+
+  bool get _hasModelReply => messages.any(
+    (m) =>
+        m.role == 'model' &&
+        !m.failed &&
+        (m.text.trim().isNotEmpty || m.audio != null),
+  );
   bool privacyNoticeDismissed = false;
 
   Future<void> dismissPrivacyNotice() => _enqueue(() async {
@@ -68,6 +94,8 @@ class AiHistoryStore {
     // Keep notice preferences separate from deletable conversation history.
     _privacyNoticeFile = File('$root/$key.privacy-notice-v1-dismissed');
     privacyNoticeDismissed = await _privacyNoticeFile!.exists();
+    _hasMetFile = File('$root/$key.has-met-ai-v1');
+    hasMetBanteraAi = await _hasMetFile!.exists();
     _directory = Directory('$root/$key');
     await _directory!.create(recursive: true);
     final file = File('${_directory!.path}/history.json');
@@ -77,6 +105,27 @@ class AiHistoryStore {
         list.map((v) => AiMessage.fromJson(Map<String, dynamic>.from(v))),
       );
     }
+    var migrated = false;
+    for (final message in messages) {
+      if (message.audio == null || message.durationMs != null) continue;
+      // Read only the WAV header, without loading a player or activating audio.
+      // This also fills durations for messages saved by earlier app versions.
+      try {
+        final file = await File(path(message.audio!)).open();
+        try {
+          final length = await file.length();
+          final header = await file.read(4096);
+          message.durationMs = aiWaveDurationMs(header, fileLength: length);
+          migrated = migrated || message.durationMs != null;
+        } finally {
+          await file.close();
+        }
+      } on FileSystemException {
+        // A missing old attachment must not prevent opening the conversation.
+      }
+    }
+    if (migrated) await save();
+    if (_hasModelReply) await markMet();
   }
 
   String path(String filename) {
@@ -93,20 +142,31 @@ class AiHistoryStore {
     await _enqueue(() async {
       await File(path(name)).writeAsBytes(audio, flush: true);
     });
+    final duration = aiWaveDurationMs(audio);
+    if (duration != null) _audioDurations[name] = duration;
     return name;
   }
 
   Future<void> save() {
+    for (final message in messages) {
+      message.durationMs ??= _audioDurations[message.audio];
+    }
     final contents = jsonEncode(messages.map((m) => m.toJson()).toList());
+    final met = _hasModelReply;
     return _enqueue(() async {
       final file = File('${_directory!.path}/history.json.tmp');
       await file.writeAsString(contents, flush: true);
       await file.rename('${_directory!.path}/history.json');
+      if (met && !hasMetBanteraAi) {
+        await _hasMetFile!.writeAsString('met', flush: true);
+        hasMetBanteraAi = true;
+      }
     });
   }
 
   Future<void> clear() {
     messages.clear();
+    _audioDurations.clear();
     return _enqueue(() async {
       if (await _directory!.exists()) await _directory!.delete(recursive: true);
       await _directory!.create(recursive: true);
@@ -161,4 +221,47 @@ Uint8List aiWave(Uint8List pcm, int rate) {
   data.setUint32(40, pcm.length, Endian.little);
   bytes.setRange(44, bytes.length, pcm);
   return bytes;
+}
+
+// Bantera stores voice messages and call turns as PCM WAV. Accept ancillary RIFF
+// chunks, validate lengths, and calculate duration from the format's byte rate.
+// fileLength lets history migration inspect just a bounded header prefix.
+int? aiWaveDurationMs(Uint8List bytes, {int? fileLength}) {
+  final length = fileLength ?? bytes.length;
+  if (bytes.length < 12) return null;
+  bool tag(int offset, String value) {
+    if (offset + value.length > bytes.length) return false;
+    for (var i = 0; i < value.length; i++) {
+      if (bytes[offset + i] != value.codeUnitAt(i)) return false;
+    }
+    return true;
+  }
+
+  if (!tag(0, 'RIFF') || !tag(8, 'WAVE')) return null;
+  final data = ByteData.sublistView(bytes);
+  final riffEnd = data.getUint32(4, Endian.little) + 8;
+  if (riffEnd > length) return null;
+  int? byteRate;
+  int? audioBytes;
+  var offset = 12;
+  while (offset + 8 <= bytes.length && offset + 8 <= riffEnd) {
+    final size = data.getUint32(offset + 4, Endian.little);
+    final start = offset + 8;
+    if (start + size > riffEnd) return null;
+    if (tag(offset, 'fmt ')) {
+      if (size < 16 ||
+          start + 16 > bytes.length ||
+          data.getUint16(start, Endian.little) != 1) {
+        return null;
+      }
+      byteRate = data.getUint32(start + 8, Endian.little);
+    } else if (tag(offset, 'data')) {
+      audioBytes = size;
+    }
+    if (byteRate != null && audioBytes != null) {
+      return byteRate > 0 ? audioBytes * 1000 ~/ byteRate : null;
+    }
+    offset = start + size + (size.isOdd ? 1 : 0);
+  }
+  return null;
 }

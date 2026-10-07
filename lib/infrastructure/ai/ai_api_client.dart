@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'ai_device_data.dart';
 import '../callkit_service.dart';
+import '../push_notifications_service.dart';
 import '../../core/api_config_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 
@@ -35,18 +38,60 @@ class AiApiClient {
     };
   }
 
-  static Future<Map<String, dynamic>> metadata() async => {
+  static Future<Map<String, dynamic>> metadata({
+    required bool hasMetBanteraAi,
+  }) async => {
+    'hasMetBanteraAi': hasMetBanteraAi,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
+    'alertPushToken':
+        (await PushNotificationsService.instance.getCachedToken())?.token,
   };
+  // Best effort, bounded, metadata-only. Never upload chat text or audio here.
+  Future<void> reportVoiceFailure(
+    String owner,
+    Map<String, dynamic> detail,
+  ) async {
+    try {
+      final token = await _token(owner);
+      final info = await PackageInfo.fromPlatform();
+      final request = await _http
+          .postUrl(
+            Uri.parse(
+              '${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/diagnostics',
+            ),
+          )
+          .timeout(const Duration(seconds: 5));
+      if (_closed || AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        request.abort();
+        return;
+      }
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      request.headers.contentType = ContentType.json;
+      request.write(
+        jsonEncode({
+          ...detail,
+          'appVersion': '${info.version}+${info.buildNumber}',
+        }),
+      );
+      final response = await request.close().timeout(
+        const Duration(seconds: 5),
+      );
+      await response.drain<void>().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Offline, old servers, or diagnostic failures must not break the chat.
+    }
+  }
+
   Future<Map<String, dynamic>> reply({
     required String owner,
     required List<Map<String, String>> history,
     required String audioPath,
     required String requestId,
+    required bool hasMetBanteraAi,
   }) async {
     final deviceData = await AiDeviceData.snapshot(owner);
-    final meta = await metadata();
+    final meta = await metadata(hasMetBanteraAi: hasMetBanteraAi);
     final token = await _token(owner);
     final uri = Uri.parse(
       '${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/reply',
@@ -91,8 +136,10 @@ class AiApiClient {
   Future<WebSocket> call(
     String owner,
     List<Map<String, String>> history, {
+    required bool hasMetBanteraAi,
     bool resuming = false,
     int remainingSeconds = 540,
+    String? callbackId,
   }) async {
     final token = await _token(owner);
     final base = Uri.parse(ApiConfigNotifier.instance.baseUrl);
@@ -113,9 +160,10 @@ class AiApiClient {
       jsonEncode({
         'type': 'start',
         'resuming': resuming,
+        'callbackId': ?callbackId,
         'remainingSeconds': remainingSeconds,
         'history': history,
-        'metadata': await metadata(),
+        'metadata': await metadata(hasMetBanteraAi: hasMetBanteraAi),
       }),
     );
     return socket;
@@ -124,11 +172,12 @@ class AiApiClient {
   Future<WebSocket> voice(
     String owner,
     List<Map<String, String>> history,
-    String requestId,
-  ) async {
+    String requestId, {
+    required bool hasMetBanteraAi,
+  }) async {
     final token = await _token(owner);
     final deviceData = await AiDeviceData.snapshot(owner);
-    final meta = await metadata();
+    final meta = await metadata(hasMetBanteraAi: hasMetBanteraAi);
     if (_closed) throw StateError('Cancelled');
     final base = Uri.parse(ApiConfigNotifier.instance.baseUrl);
     final socket = await WebSocket.connect(
@@ -148,12 +197,37 @@ class AiApiClient {
       jsonEncode({
         'type': 'start',
         'requestId': requestId,
+        'streamTranscripts': true,
         'history': history,
         'deviceData': deviceData,
         'metadata': meta,
       }),
     );
     return socket;
+  }
+
+  Future<dynamic> reminderRequest(
+    String owner,
+    String method, [
+    String path = '',
+  ]) async {
+    final token = await _token(owner);
+    final request = await _http.openUrl(
+      method,
+      Uri.parse(
+        '${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/reminders$path',
+      ),
+    );
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+    final response = await request.close().timeout(const Duration(seconds: 20));
+    final body = await utf8.decoder
+        .bind(response)
+        .join()
+        .timeout(const Duration(seconds: 20));
+    if (_closed || response.statusCode < 200 || response.statusCode >= 300) {
+      throw StateError('Reminders unavailable');
+    }
+    return body.isEmpty ? null : jsonDecode(body);
   }
 
   void close() {

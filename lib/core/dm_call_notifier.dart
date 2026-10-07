@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -11,6 +11,7 @@ import '../infrastructure/callkit_service.dart';
 import '../infrastructure/push_notifications_service.dart';
 import 'auth_session_notifier.dart';
 import 'ai_callback_notifier.dart';
+import '../presentation/chats/ai/ai_chat_screen.dart';
 import 'chat_session_notifier.dart';
 
 enum DmCallMediaKind { audio, video }
@@ -304,6 +305,20 @@ class DmCallNotifier extends ChangeNotifier {
     Map<String, String> payload, {
     bool fromSystem = false,
   }) async {
+    if (payload['type'] == 'ai.reminder') {
+      if (!AuthSessionNotifier.instance.isAuthenticated) {
+        _pendingNotificationPayload = payload;
+        return;
+      }
+      if (payload['recipientUserId'] ==
+          AuthSessionNotifier.instance.session?.userId) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => openAiReminderChat(),
+        );
+        WidgetsBinding.instance.scheduleFrame();
+      }
+      return;
+    }
     if (payload['callerUserId'] == AiCallbackNotifier.identity) {
       await AiCallbackNotifier.instance.incoming(payload, system: fromSystem);
       return;

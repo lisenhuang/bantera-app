@@ -1891,7 +1891,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiLocalHistory =>
-      'AI chat history is saved only on this device. Relevant history and learning data are sent to AI to reply. Callback schedules are stored on the server.';
+      'Received AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.';
 
   @override
   String get aiSayingGoodbye => 'Saying goodbye';
@@ -1914,4 +1914,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiPrivacyNotice => 'Privacy notice';
+
+  @override
+  String get aiUsageTitle => 'Usage';
+
+  @override
+  String get aiUsageBody =>
+      'Hold the voice button and release to send, or tap the microphone to record. Recordings send automatically after 3 minutes. Bantera AI helps you practise speaking and listening in your learning language and accent.\n\nTap the phone for a 9-minute audio call. AI greets you first. Tap Translate on a message whenever you need help.\n\nAsk “Call me in 10 minutes to remind me to practise English,” or give a specific time. Include what you want to be reminded about. If you only give a time, AI will ask what the reminder is for before scheduling.\n\nFor callbacks, enable call notifications on your iPhone and keep an internet connection. Answer the incoming call to hear your reminder; delivery may be delayed.\n\nAsk “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.\n\nReceived AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.';
+
+  @override
+  String get aiCallConfirmTitle => 'Start an audio call?';
+
+  @override
+  String get aiCallConfirmBody =>
+      'Talk with Bantera AI for up to 9 minutes. It will greet you first.';
+
+  @override
+  String get aiCallConfirmStart => 'Start call';
+
+  @override
+  String get aiReplying => 'Bantera AI is replying…';
+
+  @override
+  String get aiRemindersTitle => 'Reminders';
+
+  @override
+  String get aiReminderMessage => 'Voice message';
+
+  @override
+  String get aiReminderCall => 'Audio call';
+
+  @override
+  String get aiReminderEmpty => 'No reminders yet';
+
+  @override
+  String get aiReminderCancelTitle => 'Cancel this reminder?';
+
+  @override
+  String get aiReminderPending => 'Scheduled';
+
+  @override
+  String get aiReminderPreparing => 'In progress';
+
+  @override
+  String get aiReminderReady => 'Ready';
+
+  @override
+  String get aiReminderDelivered => 'Delivered';
+
+  @override
+  String get aiReminderCancelled => 'Cancelled';
+
+  @override
+  String get aiReminderFailed => 'Not delivered';
+
+  @override
+  String get aiReminderScheduleHelp =>
+      'Ask “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.';
+
+  @override
+  String get aiReplyInterrupted => 'Reply interrupted.';
 }

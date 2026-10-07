@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/api_config_notifier.dart';
 import 'core/ai_callback_notifier.dart';
+import 'presentation/chats/ai/ai_chat_screen.dart';
 import 'presentation/chats/ai/ai_callback_host.dart';
 import 'core/app_locale.dart';
 import 'core/app_resume_notifier.dart';
@@ -95,6 +96,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         );
         return MaterialApp(
           title: 'Bantera',
+          navigatorKey: aiReminderNavigatorKey,
           navigatorObservers: [practiceReviewRouteObserver],
           builder: (context, child) {
             return Stack(
