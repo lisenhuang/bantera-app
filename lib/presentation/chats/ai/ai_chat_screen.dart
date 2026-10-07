@@ -57,11 +57,13 @@ class _AiChatScreenState extends State<AiChatScreen>
         setState(() => _durations[_playing!] = duration);
       }
     });
-    unawaited(
-      _chat.initialize().then((_) async {
-        if (mounted && widget.startWithCall) await _chat.startCall();
-      }),
-    );
+    if (widget.controller == null) {
+      unawaited(
+        _chat.initialize().then((_) async {
+          if (mounted && widget.startWithCall) await _chat.startCall();
+        }),
+      );
+    }
   }
 
   void _changed() {
@@ -113,7 +115,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _chat.removeListener(_changed);
-    _chat.dispose();
+    if (widget.controller == null) _chat.dispose();
     _completion?.cancel();
     _positionEvents?.cancel();
     _durationEvents?.cancel();

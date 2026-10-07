@@ -17,8 +17,10 @@ class AiCallbackHost extends StatelessWidget {
           child: Navigator(
             key: ValueKey(callback.id),
             onGenerateRoute: (_) => MaterialPageRoute<void>(
-              builder: (_) =>
-                  AiChatScreen(startWithCall: true, onClose: callback.close),
+              builder: (_) => AiChatScreen(
+                controller: callback.controller,
+                onClose: callback.close,
+              ),
             ),
           ),
         );

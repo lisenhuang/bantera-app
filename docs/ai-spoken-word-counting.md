@@ -134,3 +134,71 @@ partial-output reset and early playback), clean targeted analysis, signed iOS
 release with embedded widget. A synthetic real Gemini streaming test delivered
 first audio 2.1 s after commit and completed in 3.6 s on this run; this is not a
 latency guarantee for production mobile networks.
+
+### Answering scheduled AI calls through CallKit (2.0.126 / 314)
+
+`AiCallbackNotifier` now owns the callback conversation independently of Flutter
+widgets. It restores local history, accepts the server callback, fulfills the
+CallKit answer, and starts PCM audio only after `provider(_:didActivate:)`.
+The chat page attaches to that existing controller if visible. Opening the page
+is not required to establish an answered call. The normal headless Flutter
+engine remains the entrypoint; no diagnostic screen or automatic test runs.
+
+CallKit stays active until the conversation ends. System mute updates the
+controller, in-chat mute updates CallKit, and either hang-up path stops audio
+and the WebSocket. Native AI audio leaves activation/deactivation to CallKit
+and preserves the supported-device hardware echo-cancellation path. Human calls
+continue using their existing WebRTC activation path. The nine-minute deadline
+and local transcript history remain unchanged.
+
+Tests cover answer/activation ordering without any mounted chat widget, duplicate
+activation, stale events, bidirectional mute, and both hang-up paths. Physical
+locked-screen callback delivery, receiver/speaker routing and conversational
+audio must be checked by the user after installation; a build or mocked event
+test cannot establish physical-device behaviour.
+
+### Callback receiver routing (2.0.127 / 315)
+
+Before answering an AI callback, clear a previous speaker override and configure
+playAndRecord without defaultToSpeaker. Preserve connected headset routing.
+Once CallKit activates audio, engine startup/recovery respects that route;
+unchanged category and echo preferences are not repeatedly reapplied. In-chat
+speaker selection uses a temporary output override, while the CallKit session's
+base options remain receiver-first so selecting receiver can clear that override.
+
+Native route-change notifications keep both the audio controller and chat's
+speaker indicator aligned with the actual output. Observing a route never writes
+it back to iOS, preventing a feedback loop with the system route picker.
+Callback tests verify speaker/receiver events update state without sending a
+routing command back. Real earpiece output and speaker switching still require
+the user's physical-device listening check; simulator/build checks do not prove it.
+
+
+### CallKit voice processor and verified routing (2.0.128 / 316)
+
+The user-authorised iPhone 17 Pro check reproduced the remaining 315 defect:
+with default-mode hardware echo cancellation active, requesting receiver still
+reported `outputs=Speaker`. AVAudioEngine voice processing selected Receiver but
+captured zero frames and exhausted its recovery attempts. The earlier routing
+change alone was insufficient on this phone.
+
+AI callbacks now use a single native VoiceProcessingIO Audio Unit for capture
+and playback, with playAndRecord/voiceChat and no defaultToSpeaker option. It
+uses Apple's voice processing for echo cancellation, resamples microphone PCM
+to Gemini's 16 kHz input, and renders Gemini's 24 kHz PCM through the selected
+CallKit route. CallKit still owns session activation. Both its route picker and
+the in-chat speaker toggle preserve receiver/headset selection. In-app calls
+and human WebRTC calls keep their existing audio paths.
+
+The authorised physical check verified Receiver → Speaker → Receiver, continued
+microphone capture (32,741 → 52,981 → 73,589 frames), and completion of three quiet
+0.25-second PCM clips without a render stall or audio recovery. This establishes
+native routing and duplex operation, not a subjective assessment of speech
+quality or echo under every environment. The check saved only route/counter
+information, not microphone recordings. Its temporary entrypoint is outside the
+repository and must never be included in the delivered normal app.
+
+Playback drain waits for the final hardware output interval before ending a
+call. Stop/interruption releases the audio unit; failures report through the
+existing audio error path. Diagnostics include actual output and microphone/
+render counters so future investigations do not rely only on the speaker icon.

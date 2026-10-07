@@ -21,14 +21,17 @@ import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../infrastructure/translation_service.dart';
 
 class AiChatController extends ChangeNotifier {
-  AiChatController()
+  AiChatController({this.callKitManaged = false})
     : owner = AuthSessionNotifier.instance.session!.cacheKey,
       store = AiHistoryStore(AuthSessionNotifier.instance.session!.cacheKey) {
     AuthSessionNotifier.instance.addListener(_accountChanged);
     DmCallNotifier.instance.addListener(_humanCallChanged);
   }
   @visibleForTesting
-  AiChatController.forTesting(this.store) : owner = 'test', _testing = true;
+  AiChatController.forTesting(this.store, {this.callKitManaged = false})
+    : owner = 'test',
+      _testing = true;
+  final bool callKitManaged;
   bool _testing = false;
   static const audio = MethodChannel('bantera/ai_audio');
   static const callActivity = MethodChannel('bantera/ai_call_activity');
@@ -462,7 +465,7 @@ class AiChatController extends ChangeNotifier {
   };
 
   Future<void> _startCallActivity(int epoch) async {
-    if (!Platform.isIOS) return;
+    if (!Platform.isIOS || callKitManaged) return;
     callActivity.setMethodCallHandler((call) async {
       if (call.method != 'control' ||
           !available ||
@@ -486,14 +489,14 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> _updateCallActivity() async {
-    if (!Platform.isIOS || !calling) return;
+    if (!Platform.isIOS || callKitManaged || !calling) return;
     try {
       await callActivity.invokeMethod<void>('update', _activityState);
     } catch (_) {}
   }
 
   Future<void> _endCallActivity() async {
-    if (!Platform.isIOS) return;
+    if (!Platform.isIOS || callKitManaged) return;
     callActivity.setMethodCallHandler(null);
     try {
       await callActivity.invokeMethod<void>('stop');
@@ -513,8 +516,8 @@ class AiChatController extends ChangeNotifier {
     AiCallbackNotifier.instance.aiActive = true;
     connected = false;
     farewell = false;
-    muted = false;
-    speaker = true;
+    if (!callKitManaged) muted = false;
+    speaker = !callKitManaged;
     remaining = 540;
     _renewals = 0;
     _renewRequested = false;
@@ -559,7 +562,9 @@ class AiChatController extends ChangeNotifier {
           unawaited(endCall());
         },
       );
-      await audio.invokeMethod<void>('start');
+      await audio.invokeMethod<void>('start', {
+        'callKitManaged': callKitManaged,
+      });
       if (!available || epoch != _epoch) {
         await audio.invokeMethod<void>('stop');
         return;
@@ -799,6 +804,14 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  // Route notifications describe the hardware; do not write them back and
+  // fight the CallKit route picker (or a connected Bluetooth headset).
+  void updateSpeakerRoute(bool enabled) {
+    if (speaker == enabled) return;
+    speaker = enabled;
+    changed();
+  }
+
   Future<void> setSpeaker() async {
     speaker = !speaker;
     try {
@@ -810,8 +823,11 @@ class AiChatController extends ChangeNotifier {
     changed();
   }
 
-  void toggleMute() {
-    muted = !muted;
+  void toggleMute() => setMuted(!muted);
+
+  void setMuted(bool value) {
+    if (muted == value) return;
+    muted = value;
     unawaited(_updateCallActivity());
     changed();
   }

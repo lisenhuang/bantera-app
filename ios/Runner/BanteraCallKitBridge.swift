@@ -18,6 +18,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   private var outgoing = Set<UUID>()
   private var token: String?
   private var audioActive = false
+  private var routeObserver: NSObjectProtocol?
   private let defaults = UserDefaults.standard
 
   override init() {
@@ -30,6 +31,12 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     provider = CXProvider(configuration: config)
     super.init()
     provider.setDelegate(self, queue: .main)
+    routeObserver = NotificationCenter.default.addObserver(
+      forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
+    ) { [weak self] _ in
+      guard let self, self.audioActive else { return }
+      self.emitAiRoute()
+    }
     registry = PKPushRegistry(queue: .main)
     registry.delegate = self
     registry.desiredPushTypes = [.voIP]
@@ -76,6 +83,11 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       case "requestAnswer":
         guard let id else { return result(false) }
         self.controller.request(CXTransaction(action: CXAnswerCallAction(call: id))) { error in
+          DispatchQueue.main.async { result(error == nil) }
+        }
+      case "requestMute":
+        guard let id else { return result(false) }
+        self.controller.request(CXTransaction(action: CXSetMutedCallAction(call: id, muted: args["muted"] as? Bool == true))) { error in
           DispatchQueue.main.async { result(error == nil) }
         }
       case "answerReady":
@@ -167,11 +179,41 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     }
   }
 
+  private var hasAiCall: Bool {
+    calls.values.contains { ($0["callerUserId"] as? String)?.lowercased() == "ba07e2a0-a100-4000-8000-000000000001" }
+  }
+
+  private func emitAiAudio(_ event: String) {
+    for data in calls.values where (data["callerUserId"] as? String)?.lowercased() == "ba07e2a0-a100-4000-8000-000000000001" {
+      emit(event, data)
+    }
+  }
+
+  private func emitAiRoute() {
+    let speaker = AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
+    for var data in calls.values where (data["callerUserId"] as? String)?.lowercased() == "ba07e2a0-a100-4000-8000-000000000001" {
+      data["speaker"] = speaker
+      emit("audioRoute", data)
+    }
+  }
+
+  deinit {
+    if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
+  }
+
   private func prepareAudio() {
     let rtc = RTCAudioSession.sharedInstance()
     rtc.useManualAudio = true
-    rtc.isAudioEnabled = audioActive
-    try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothHFP])
+    rtc.isAudioEnabled = audioActive && !hasAiCall
+    let session = AVAudioSession.sharedInstance()
+    // CallKit callbacks use the telephone voice processor in both directions.
+    // The newer default-mode hardware AEC path held this iPhone on Speaker even
+    // after clearing its output override. Do not use that path for phone calls.
+    if hasAiCall, #available(iOS 18.2, *), session.prefersEchoCancelledInput {
+      try? session.setPrefersEchoCancelledInput(false)
+    }
+    try? session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothHFP])
+    if hasAiCall { try? session.overrideOutputAudioPort(.none) }
   }
 
   private func finish(_ id: UUID, reason: CXCallEndedReason) {
@@ -212,7 +254,10 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
-    emit("mute", ["callId": action.callUUID.uuidString.lowercased(), "muted": action.isMuted])
+    var data = calls[action.callUUID] ?? [:]
+    data["callId"] = action.callUUID.uuidString.lowercased()
+    data["muted"] = action.isMuted
+    emit("mute", data)
     action.fulfill()
   }
 
@@ -224,12 +269,19 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
 
   func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
     audioActive = true
-    RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)
-    RTCAudioSession.sharedInstance().isAudioEnabled = true
+    if hasAiCall {
+      RTCAudioSession.sharedInstance().isAudioEnabled = false
+      emitAiAudio("audioActivated")
+      emitAiRoute()
+    } else {
+      RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)
+      RTCAudioSession.sharedInstance().isAudioEnabled = true
+    }
   }
 
   func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
     audioActive = false
+    emitAiAudio("audioDeactivated")
     RTCAudioSession.sharedInstance().isAudioEnabled = false
     RTCAudioSession.sharedInstance().audioSessionDidDeactivate(audioSession)
     if calls.isEmpty { RTCAudioSession.sharedInstance().useManualAudio = false }

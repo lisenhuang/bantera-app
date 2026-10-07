@@ -8,12 +8,11 @@ import 'api_config_notifier.dart';
 import 'auth_session_notifier.dart';
 import 'chat_session_notifier.dart';
 import 'dm_call_notifier.dart';
+import '../presentation/chats/ai/ai_chat_controller.dart';
 
 class AiCallbackNotifier extends ChangeNotifier {
   AiCallbackNotifier._() {
-    CallKitService.instance.events.listen((event) {
-      if (handles(event)) unawaited(_event(event));
-    });
+    _listenCallKit();
     ChatSessionNotifier.instance.realtimeEvents.listen((event) {
       if (event['type'] == 'ai.callback' && event['payload'] is Map) {
         unawaited(incoming(Map<String, dynamic>.from(event['payload'] as Map)));
@@ -29,9 +28,47 @@ class AiCallbackNotifier extends ChangeNotifier {
       if (p != null && p['callerUserId'] == identity) unawaited(incoming(p));
     });
   }
+  @visibleForTesting
+  AiCallbackNotifier.forTesting({
+    required CallKitService callKit,
+    required AiChatController Function() createController,
+    required Future<int> Function(String) acceptCallback,
+  }) : _callKitOverride = callKit,
+       _createController = createController,
+       _acceptCallback = acceptCallback {
+    _listenCallKit();
+  }
+  CallKitService? _callKitOverride;
+  AiChatController Function()? _createController;
+  Future<int> Function(String)? _acceptCallback;
+  CallKitService get _callKit => _callKitOverride ?? CallKitService.instance;
+  StreamSubscription<Map<String, dynamic>>? _callKitEvents;
+  void _listenCallKit() {
+    _callKitEvents = _callKit.events.listen((event) {
+      if (handles(event)) {
+        // Native cold starts can deliver incoming, answer and activation together.
+        _events = _events.then((_) => _event(event));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _callKitEvents?.cancel();
+    _expiry?.cancel();
+    _statusTimer?.cancel();
+    _activationTimeout?.cancel();
+    super.dispose();
+  }
+
   static final instance = AiCallbackNotifier._();
   static const identity = 'ba07e2a0-a100-4000-8000-000000000001';
   bool aiActive = false;
+  Future<void> _events = Future.value();
+  AiChatController? controller;
+  bool _started = false;
+  bool _lastMuted = false;
+  Timer? _activationTimeout;
   String? id;
   String? _owner;
   bool ringing = false, accepted = false, accepting = false;
@@ -52,7 +89,7 @@ class AiCallbackNotifier extends ChangeNotifier {
         !AuthSessionNotifier.instance.isAuthenticated ||
         payload['recipientUserId'] !=
             AuthSessionNotifier.instance.session?.userId) {
-      await CallKitService.instance.update('end', callId);
+      await _callKit.update('end', callId);
       return;
     }
     final expires = int.tryParse(payload['expiresAt']?.toString() ?? '') ?? 0;
@@ -60,7 +97,7 @@ class AiCallbackNotifier extends ChangeNotifier {
       expires * 1000,
     ).difference(DateTime.now());
     if (remaining.isNegative) {
-      await CallKitService.instance.update('end', callId);
+      await _callKit.update('end', callId);
       return;
     }
     id = callId;
@@ -69,7 +106,7 @@ class AiCallbackNotifier extends ChangeNotifier {
     accepted = false;
     notifyListeners();
     _expiry = Timer(remaining, () => unawaited(close()));
-    if (!system) await CallKitService.instance.report('incoming', payload);
+    if (!system) await _callKit.report('incoming', payload);
     _statusTimer = Timer.periodic(
       const Duration(seconds: 3),
       (_) => unawaited(_check()),
@@ -78,6 +115,10 @@ class AiCallbackNotifier extends ChangeNotifier {
 
   Future<void> _event(Map<String, dynamic> event) async {
     try {
+      if (event['event'] != 'incoming' &&
+          event['callId']?.toString().toLowerCase() != id) {
+        return;
+      }
       switch (event['event']) {
         case 'incoming':
           await incoming(event, system: true);
@@ -85,8 +126,18 @@ class AiCallbackNotifier extends ChangeNotifier {
           if (event['callId']?.toString().toLowerCase() == id) {
             await accept(system: true);
           }
+        case 'audioActivated':
+          if (accepted) unawaited(_startAudio());
+        case 'audioRoute':
+          controller?.updateSpeakerRoute(event['speaker'] == true);
+        case 'mute':
+          final chat = controller;
+          final muted = event['muted'] == true;
+          _lastMuted = muted;
+          chat?.setMuted(muted);
+        case 'audioDeactivated':
         case 'ended':
-          if (!accepted) await close();
+          await close();
       }
     } catch (_) {
       await close();
@@ -134,8 +185,8 @@ class AiCallbackNotifier extends ChangeNotifier {
 
   Future<void> accept({bool system = false}) async {
     if (id == null || !ringing || accepting) return;
-    if (CallKitService.instance.supported && !system) {
-      await CallKitService.instance.report('requestAnswer', {'callId': id});
+    if (_callKit.supported && !system) {
+      await _callKit.report('requestAnswer', {'callId': id});
       return;
     }
     accepting = true;
@@ -143,24 +194,72 @@ class AiCallbackNotifier extends ChangeNotifier {
     final current = id;
     final client = HttpClient();
     try {
-      final response = await _request(client, 'POST', '$current/accept');
-      await response.drain<void>();
-      if (response.statusCode != 200 || id != current) {
+      final int status;
+      if (_acceptCallback != null) {
+        status = await _acceptCallback!(current!);
+      } else {
+        final response = await _request(client, 'POST', '$current/accept');
+        status = response.statusCode;
+        await response.drain<void>();
+      }
+      if (status != 200 || id != current) {
         throw StateError('Expired');
       }
       _expiry?.cancel();
       _statusTimer?.cancel();
-      await CallKitService.instance.update('answerReady', id);
+      // The notifier owns the conversation, so no widget/frame is needed to
+      // answer a VoIP wake-up while the screen remains locked.
+      final chat =
+          _createController?.call() ??
+          AiChatController(callKitManaged: _callKit.supported);
+      controller = chat;
+      await chat.initialize();
+      if (id != current || !chat.loaded) {
+        throw StateError('Call no longer available');
+      }
+      chat.addListener(_callChanged);
       ringing = false;
       accepted = true;
-      // Hand audio ownership to the in-chat PCM session, not the human-call WebRTC engine.
-      await CallKitService.instance.update('end', id);
+      aiActive = true;
+      _started = false;
+      _lastMuted = false;
+      if (_callKit.supported) {
+        _activationTimeout = Timer(
+          const Duration(seconds: 12),
+          () => unawaited(close()),
+        );
+        await _callKit.update('answerReady', current);
+      } else {
+        unawaited(_startAudio());
+      }
     } catch (_) {
       await close();
     } finally {
       client.close(force: true);
       accepting = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _startAudio() async {
+    final chat = controller;
+    if (!accepted || chat == null || _started) return;
+    _started = true;
+    _activationTimeout?.cancel();
+    await chat.startCall();
+    if (identical(chat, controller) && !chat.calling) await close();
+  }
+
+  void _callChanged() {
+    final chat = controller;
+    if (chat == null || !_started) return;
+    if (!chat.calling) {
+      unawaited(close());
+    } else if (chat.muted != _lastMuted) {
+      _lastMuted = chat.muted;
+      unawaited(
+        _callKit.report('requestMute', {'callId': id, 'muted': chat.muted}),
+      );
     }
   }
 
@@ -172,12 +271,20 @@ class AiCallbackNotifier extends ChangeNotifier {
     _expiry?.cancel();
     _statusTimer?.cancel();
     final cancel = ringing;
+    final chat = controller;
+    controller = null;
+    chat?.removeListener(_callChanged);
+    _activationTimeout?.cancel();
+    _started = false;
+    aiActive = false;
     id = null;
     ringing = false;
     accepted = false;
     accepting = false;
     notifyListeners();
-    await CallKitService.instance.update('end', current);
+    await chat?.endCall();
+    chat?.dispose();
+    await _callKit.update('end', current);
     if (cancel) {
       final client = HttpClient();
       try {
