@@ -4,6 +4,13 @@ import SwiftUI
 import WidgetKit
 
 @main
+struct BanteraWidgetBundle: WidgetBundle {
+  var body: some Widget {
+    BanteraPracticeWidget()
+    BanteraAiCallWidget()
+  }
+}
+
 struct BanteraAiCallWidget: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: BanteraAiCallAttributes.self) { context in

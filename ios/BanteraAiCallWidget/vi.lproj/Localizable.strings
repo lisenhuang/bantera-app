@@ -7,3 +7,12 @@
 "ai.call.end" = "Kết thúc";
 "ai.call.ended" = "Cuộc gọi đã kết thúc";
 "ai.call.earpiece" = "Loa thoại";
+
+"practice.widget.title" = "Luyện tập hằng ngày";
+"practice.widget.description" = "Xem số từ đã nói và nghe hôm nay. Chạm để luyện tập với Bantera AI.";
+"practice.widget.today" = "Hôm nay";
+"practice.widget.words" = "Số từ";
+"practice.widget.spoken" = "Nói";
+"practice.widget.listened" = "Nghe";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "Đăng nhập";

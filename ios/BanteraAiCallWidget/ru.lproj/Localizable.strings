@@ -7,3 +7,12 @@
 "ai.call.end" = "Завершить";
 "ai.call.ended" = "Звонок завершён";
 "ai.call.earpiece" = "Динамик у уха";
+
+"practice.widget.title" = "Ежедневная практика";
+"practice.widget.description" = "Смотрите, сколько слов вы произнесли и прослушали сегодня. Нажмите, чтобы практиковаться с Bantera AI.";
+"practice.widget.today" = "Сегодня";
+"practice.widget.words" = "Слова";
+"practice.widget.spoken" = "Говорение";
+"practice.widget.listened" = "Аудирование";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "Войти";

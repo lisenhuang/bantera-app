@@ -75,7 +75,13 @@ class AiVoiceStream {
             _fail('invalid_frame', error: error);
           });
         },
-        onError: (Object error) => _fail('socket_error', error: error),
+        onError: (Object error) {
+          // A transport error can arrive while native playback is still handling
+          // an earlier frame. Honour any complete frame already in the queue.
+          _events = _events.then((_) {
+            if (!_reply.isCompleted) _fail('socket_error', error: error);
+          });
+        },
         onDone: () {
           // Drain the ordered audio/transcript events before checking completion.
           _events = _events.then((_) {
@@ -166,6 +172,13 @@ class AiVoiceStream {
           'inputText': json['inputText'],
           'outputText': json['outputText'],
         });
+        // Receiving is finished; the local player may still have seconds of
+        // queued audio. Finish the handshake now, independently of playback.
+        unawaited(
+          _socket
+              ?.close(WebSocketStatus.normalClosure)
+              .catchError((Object _) {}),
+        );
       case 'error':
         _fail('server_error');
       default:

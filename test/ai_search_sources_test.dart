@@ -37,7 +37,7 @@ void main() {
       );
       expect(find.text('Sources'), findsOneWidget);
       expect(find.text('www.example.com'), findsOneWidget);
-      expect(find.byIcon(Icons.open_in_new), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
       expect(tester.takeException(), isNull);
       message.webSearchStatus = 'unavailable';
       await tester.pumpWidget(const SizedBox());

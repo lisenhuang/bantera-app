@@ -45,6 +45,7 @@ For Android, open the downloaded APK and allow installation from your browser or
 | 💬 **Language Exchange Chat**       | Chat with native speakers directly in-app                           |
 | 🔖 **Saved Cues**                   | Bookmark cues for focused review sessions                           |
 | 📤 **Video Upload**                 | Upload your own videos to share with the community                  |
+| 📊 **iOS Practice Widget**         | Today’s spoken/listened words and one-tap access to Bantera AI; [setup and design](docs/ios-practice-widget.md) |
 | 🌙 **Dark Mode**                    | Full light/dark theme support                                       |
 | 🌏 **i18n**                         | UI available in English, Japanese, Korean, and Chinese              |
 
@@ -141,6 +142,7 @@ Google Search grounding.
    links and short excerpts. It does not automatically fetch the linked pages.
 3. The app sends these results back through the relay so Gemini can answer.
    The chat bubble displays tappable source links alongside the response.
+   Tapping a link opens an in-app browser so you can return directly to the chat.
 
 The backend registers and relays the tool; it does not execute the search.
 No search API secret, Bantera authentication headers or cookies are sent to

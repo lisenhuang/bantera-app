@@ -7,3 +7,12 @@
 "ai.call.end" = "Akhiri";
 "ai.call.ended" = "Panggilan berakhir";
 "ai.call.earpiece" = "Earpiece";
+
+"practice.widget.title" = "Latihan harian";
+"practice.widget.description" = "Lihat jumlah kata yang diucapkan dan didengar hari ini. Ketuk untuk berlatih dengan Bantera AI.";
+"practice.widget.today" = "Hari ini";
+"practice.widget.words" = "Kata";
+"practice.widget.spoken" = "Berbicara";
+"practice.widget.listened" = "Mendengarkan";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "Masuk";

@@ -7,3 +7,12 @@
 "ai.call.end" = "終了";
 "ai.call.ended" = "通話終了";
 "ai.call.earpiece" = "受話口";
+
+"practice.widget.title" = "毎日の練習";
+"practice.widget.description" = "今日話した単語数と聞いた単語数を確認。タップして Bantera AI と練習しましょう。";
+"practice.widget.today" = "今日";
+"practice.widget.words" = "語数";
+"practice.widget.spoken" = "スピーキング";
+"practice.widget.listened" = "リスニング";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "サインイン";

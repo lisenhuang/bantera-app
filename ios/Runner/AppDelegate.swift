@@ -20,6 +20,7 @@ import UserNotifications
   private var pushNotificationsBridge: BanteraPushNotificationsBridge?
   private var pendingNotificationTap: [String: String]?
   private var aiCallActivityBridge: BanteraAiCallActivityBridge?
+  var practiceWidgetBridge: BanteraPracticeWidgetBridge?
   var aiAudioBridge: BanteraAiAudioBridge?
   private var photoSaveBridge: BanteraPhotoSaveBridge?
 
@@ -87,6 +88,7 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    practiceWidgetBridge = BanteraPracticeWidgetBridge(messenger: callEngine.binaryMessenger)
     aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)
     aiCallActivityBridge = BanteraAiCallActivityBridge(messenger: callEngine.binaryMessenger)
     photoSaveBridge = BanteraPhotoSaveBridge(binaryMessenger: callEngine.binaryMessenger)

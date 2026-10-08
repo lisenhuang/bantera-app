@@ -7,3 +7,12 @@
 "ai.call.end" = "Encerrar";
 "ai.call.ended" = "Chamada terminada";
 "ai.call.earpiece" = "Auricular";
+
+"practice.widget.title" = "Prática diária";
+"practice.widget.description" = "Veja quantas palavras você falou e ouviu hoje. Toque para praticar com Bantera AI.";
+"practice.widget.today" = "Hoje";
+"practice.widget.words" = "Palavras";
+"practice.widget.spoken" = "Fala";
+"practice.widget.listened" = "Escuta";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "Entrar";

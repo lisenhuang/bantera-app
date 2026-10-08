@@ -17,6 +17,9 @@ not contact the search engine or fetch result pages.
    returns these to Gemini through the authenticated existing socket. This is
    online processing: DuckDuckGo receives the query and Gemini receives excerpts.
 4. The bubble shows searching/unavailable status and tappable source cards.
+   Tapping a source opens the system browser view inside Bantera, with browser
+   controls to return to the chat (Safari view on iOS, Custom Tabs on Android
+   with an in-app WebView fallback).
    Source cards persist only in account-scoped device history. Clearing chat
    history removes them. Usage help explains this data flow.
 

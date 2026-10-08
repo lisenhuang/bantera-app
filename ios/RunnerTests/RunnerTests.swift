@@ -2,6 +2,8 @@ import AVFoundation
 import Flutter
 import UIKit
 import XCTest
+import SwiftUI
+import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
@@ -41,5 +43,62 @@ class RunnerTests: XCTestCase {
     try await Task.sleep(nanoseconds: 2_000_000_000)
     XCTAssertGreaterThan(frames - previous, 16000, audio.diagnostics)
     XCTAssertTrue(errors.isEmpty, "\(errors) \(audio.diagnostics)")
+  }
+}
+
+
+class PracticeWidgetTests: XCTestCase {
+  func testMidnightAndSignOutNeverShowOldCounts() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Pacific/Auckland")!
+    let today = calendar.date(from: DateComponents(year: 2026, month: 10, day: 8, hour: 23, minute: 59))!
+    let tomorrow = calendar.date(byAdding: .minute, value: 2, to: today)!
+    var snapshot = BanteraPracticeSnapshot(dateKey: "2026-10-08", signedIn: true,
+      spoken: 128, listened: 640, locale: "en", labels: [:])
+    XCTAssertEqual(snapshot.forDate(today, calendar: calendar).spoken, 128)
+    var buddhist = Calendar(identifier: .buddhist)
+    buddhist.timeZone = calendar.timeZone
+    XCTAssertEqual(snapshot.forDate(today, calendar: buddhist).spoken, 128)
+    XCTAssertEqual(snapshot.forDate(tomorrow, calendar: calendar).spoken, 0)
+    XCTAssertEqual(snapshot.forDate(tomorrow, calendar: calendar).listened, 0)
+    snapshot.signedIn = false
+    XCTAssertEqual(snapshot.forDate(today, calendar: calendar).spoken, 0)
+  }
+
+  func testWidgetDeepLinkOnlyAcceptsChatDestination() {
+    XCTAssertTrue(BanteraPracticeSnapshot.isChatURL(URL(string: "bantera://ai-chat")!))
+    for raw in ["https://ai-chat", "bantera://other", "bantera://ai-chat/call", "bantera://ai-chat?call=true", "bantera://user@ai-chat"] {
+      XCTAssertFalse(BanteraPracticeSnapshot.isChatURL(URL(string: raw)!))
+    }
+  }
+
+  @MainActor
+  func testRenderSmallAndMediumPracticeWidgets() throws {
+    let snapshot = BanteraPracticeSnapshot(dateKey: BanteraPracticeSnapshot.dayKey(Date()),
+      signedIn: true, spoken: 1278, listened: 3257, locale: "en", labels: [
+        "today": "Today", "words": "Words", "spoken": "Speaking", "listened": "Listening", "chat": "Bantera AI"
+      ])
+    for (name, family, size) in [
+      ("small", WidgetFamily.systemSmall, CGSize(width: 170, height: 170)),
+      ("medium", WidgetFamily.systemMedium, CGSize(width: 364, height: 170))
+    ] {
+      for dark in [false, true] {
+        let view = BanteraPracticeWidgetView(snapshot: snapshot, family: family)
+          .environment(\.colorScheme, dark ? .dark : .light)
+          .padding(16)
+          .frame(width: size.width, height: size.height)
+          .background(dark ? Color.black : Color.white)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 3
+        let image = try XCTUnwrap(renderer.uiImage)
+        XCTAssertEqual(image.size.width, size.width)
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "practice-widget-\(name)-\(dark ? "dark" : "light")"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        try image.pngData()!.write(to: directory.appendingPathComponent("\(attachment.name!).png"))
+      }
+    }
   }
 }

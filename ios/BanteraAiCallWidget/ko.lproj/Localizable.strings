@@ -7,3 +7,12 @@
 "ai.call.end" = "종료";
 "ai.call.ended" = "통화 종료";
 "ai.call.earpiece" = "수화부";
+
+"practice.widget.title" = "오늘의 연습";
+"practice.widget.description" = "오늘 말하고 들은 단어 수를 확인하세요. 탭하여 Bantera AI와 연습하세요.";
+"practice.widget.today" = "오늘";
+"practice.widget.words" = "단어 수";
+"practice.widget.spoken" = "말하기";
+"practice.widget.listened" = "듣기";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "로그인";

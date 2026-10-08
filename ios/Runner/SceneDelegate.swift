@@ -13,5 +13,13 @@ class SceneDelegate: FlutterSceneDelegate {
     registerSceneLifeCycle(with: app.callEngine)
     super.scene(scene, willConnectTo: session, options: connectionOptions)
     window.makeKeyAndVisible()
+    for context in connectionOptions.urlContexts {
+      app.practiceWidgetBridge?.open(context.url)
+    }
+  }
+  override func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    let app = UIApplication.shared.delegate as? AppDelegate
+    let remaining = Set(URLContexts.filter { app?.practiceWidgetBridge?.open($0.url) != true })
+    if !remaining.isEmpty { super.scene(scene, openURLContexts: remaining) }
   }
 }

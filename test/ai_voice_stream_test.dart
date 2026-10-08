@@ -1,12 +1,62 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 import 'package:app/infrastructure/ai/ai_voice_stream.dart';
 
 void main() {
+  for (final complete in [true, false]) {
+    test(
+      'queued completion=$complete is respected before transport failure',
+      () async {
+        final socket = _FailingSocket();
+        final playing = Completer<void>();
+        final releasePlayback = Completer<void>();
+        final stream = AiVoiceStream(
+          connect: () async => socket,
+          onAudio: (_) async {
+            playing.complete();
+            await releasePlayback.future;
+          },
+          onReset: () async {},
+        );
+        try {
+          socket.events.add(jsonEncode({'type': 'ready'}));
+          final reply = stream.send({});
+          final checked = complete
+              ? expectLater(
+                  reply,
+                  completion(containsPair('outputText', 'Hello')),
+                )
+              : expectLater(reply, throwsA(isA<AiVoiceFailure>()));
+          await socket.committed.future;
+          socket.events.add([1, 2, 3, 4]);
+          await playing.future;
+          if (complete) {
+            socket.events.add(
+              jsonEncode({
+                'type': 'complete',
+                'inputText': 'Hi',
+                'outputText': 'Hello',
+              }),
+            );
+          }
+          socket.events.addError(const SocketException('Connection reset'));
+          await Future<void>.delayed(Duration.zero);
+          releasePlayback.complete();
+          await checked;
+          expect(stream.outputBytes, 4);
+          if (complete) {
+            expect(socket.closeStatus, WebSocketStatus.normalClosure);
+          }
+        } finally {
+          await stream.close();
+          await socket.events.close();
+        }
+      },
+    );
+  }
   test(
     'technical error metadata excludes native messages and unsafe codes',
     () {
@@ -154,8 +204,9 @@ void main() {
       final stream = AiVoiceStream(
         connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
         onAudio: (_) async {
-          if (failure == 'playback_failed')
+          if (failure == 'playback_failed') {
             throw StateError('native output unavailable');
+          }
         },
         onReset: () async {},
       );
@@ -242,6 +293,38 @@ void main() {
       await server.close(force: true);
     },
   );
+}
+
+class _FailingSocket extends Stream<dynamic> implements WebSocket {
+  final events = StreamController<dynamic>();
+  final committed = Completer<void>();
+  int? closeStatus;
+  @override
+  StreamSubscription<dynamic> listen(
+    void Function(dynamic)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) => events.stream.listen(
+    onData,
+    onError: onError,
+    onDone: onDone,
+    cancelOnError: cancelOnError,
+  );
+  @override
+  void add(dynamic data) {
+    if (data is String && jsonDecode(data)['type'] == 'commit') {
+      committed.complete();
+    }
+  }
+
+  @override
+  Future<void> close([int? code, String? reason]) async {
+    closeStatus = code;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Future<void> _until(bool Function() check) async {

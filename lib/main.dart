@@ -16,6 +16,7 @@ import 'core/settings_notifier.dart';
 import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
 import 'core/word_activity_notifier.dart';
+import 'core/practice_widget_service.dart';
 import 'core/practice_review_service.dart';
 import 'infrastructure/push_notifications_service.dart';
 import 'infrastructure/video_processing_service.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
     SettingsNotifier.instance.initialize(),
     AuthSessionNotifier.instance.initialize(),
   ]);
+  await PracticeWidgetService.instance.initialize();
   UserProfileNotifier.instance;
   WordActivityNotifier.instance;
   ChatSessionNotifier.instance;

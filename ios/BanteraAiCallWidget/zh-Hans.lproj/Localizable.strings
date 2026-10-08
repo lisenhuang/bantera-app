@@ -7,3 +7,12 @@
 "ai.call.end" = "结束";
 "ai.call.ended" = "通话已结束";
 "ai.call.earpiece" = "听筒";
+
+"practice.widget.title" = "每日练习";
+"practice.widget.description" = "查看今天的口语和听力词数。轻点即可与 Bantera AI 练习。";
+"practice.widget.today" = "今天";
+"practice.widget.words" = "词数";
+"practice.widget.spoken" = "口语";
+"practice.widget.listened" = "听力";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "登录";

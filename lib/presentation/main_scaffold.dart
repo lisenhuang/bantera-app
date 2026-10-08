@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_resume_notifier.dart';
+import '../core/practice_widget_service.dart';
+import 'chats/ai/ai_chat_screen.dart';
 import '../core/goal_reminder_service.dart';
 import '../core/dm_call_notifier.dart';
 import '../core/practice_review_service.dart';
@@ -47,6 +49,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     AppResumeNotifier.instance.addListener(_onResume);
     GoalReminderService.instance.profileRequested.addListener(_openGoalProfile);
     WidgetsBinding.instance.addPostFrameCallback((_) => _openGoalProfile());
+    PracticeWidgetService.instance.chatRequested.addListener(
+      _scheduleWidgetChat,
+    );
+    _scheduleWidgetChat();
     _groupsSub = LocalChatRepository.instance.watchGroups().listen((groups) {
       _groups = groups;
       _updateUnread();
@@ -55,6 +61,20 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       _dms = dms;
       _updateUnread();
     });
+  }
+
+  void _scheduleWidgetChat() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          !PracticeWidgetService.instance.chatRequested.value ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
+      PracticeWidgetService.instance.chatRequested.value = false;
+      setState(() => _currentIndex = 1);
+      openAiReminderChat();
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   void _openGoalProfile() {
@@ -116,13 +136,19 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     _groupsSub?.cancel();
     _dmsSub?.cancel();
     AppResumeNotifier.instance.removeListener(_onResume);
+    PracticeWidgetService.instance.chatRequested.removeListener(
+      _scheduleWidgetChat,
+    );
     GoalReminderService.instance.profileRequested.removeListener(
       _openGoalProfile,
     );
     super.dispose();
   }
 
-  void _onResume() => _checkForUpdate();
+  void _onResume() {
+    _scheduleWidgetChat();
+    _checkForUpdate();
+  }
 
   Future<void> _checkForUpdate() async {
     if (_checkingUpdate) return;

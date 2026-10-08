@@ -14,6 +14,7 @@ import 'auth_session_notifier.dart';
 import 'goal_reminder_service.dart';
 import 'user_profile_notifier.dart';
 import 'settings_notifier.dart';
+import 'practice_widget_service.dart';
 
 class WordActivityNotifier extends ChangeNotifier {
   WordActivityNotifier._()
@@ -59,6 +60,12 @@ class WordActivityNotifier extends ChangeNotifier {
   void _updateReminders() {
     if (_disposed || _testFile != null) return;
     final language = UserProfileNotifier.instance.learningLanguage;
+    unawaited(
+      PracticeWidgetService.instance.update(
+        signedIn: _userId != null && !_deletedUserIds.contains(_userId),
+        today: summaryFor(language).today,
+      ),
+    );
     unawaited(
       GoalReminderService.instance.update(
         ownerId: _deletedUserIds.contains(_userId) ? null : _userId,

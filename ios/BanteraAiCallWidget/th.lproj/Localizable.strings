@@ -7,3 +7,12 @@
 "ai.call.end" = "วางสาย";
 "ai.call.ended" = "สิ้นสุดการโทร";
 "ai.call.earpiece" = "หูฟังโทรศัพท์";
+
+"practice.widget.title" = "ฝึกประจำวัน";
+"practice.widget.description" = "ดูจำนวนคำที่พูดและฟังวันนี้ แตะเพื่อฝึกกับ Bantera AI";
+"practice.widget.today" = "วันนี้";
+"practice.widget.words" = "จำนวนคำ";
+"practice.widget.spoken" = "การพูด";
+"practice.widget.listened" = "การฟัง";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "ลงชื่อเข้า";

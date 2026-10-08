@@ -67,7 +67,10 @@ class AiSearchSources extends StatelessWidget {
                     try {
                       await launchUrl(
                         uri,
-                        mode: LaunchMode.externalApplication,
+                        mode: LaunchMode.inAppBrowserView,
+                        browserConfiguration: const BrowserConfiguration(
+                          showTitle: true,
+                        ),
                       );
                     } catch (_) {
                       /* The source remains visible if the browser is unavailable. */
@@ -97,7 +100,7 @@ class AiSearchSources extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.open_in_new, size: 16),
+                        const Icon(Icons.chevron_right, size: 20),
                       ],
                     ),
                   ),

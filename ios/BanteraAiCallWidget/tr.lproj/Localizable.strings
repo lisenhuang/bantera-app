@@ -7,3 +7,12 @@
 "ai.call.end" = "Bitir";
 "ai.call.ended" = "Arama sona erdi";
 "ai.call.earpiece" = "Ahize";
+
+"practice.widget.title" = "Günlük pratik";
+"practice.widget.description" = "Bugün söylediğiniz ve dinlediğiniz kelime sayılarını görün. Bantera AI ile pratik yapmak için dokunun.";
+"practice.widget.today" = "Bugün";
+"practice.widget.words" = "Kelime";
+"practice.widget.spoken" = "Konuşma";
+"practice.widget.listened" = "Dinleme";
+"practice.widget.chat" = "Bantera AI";
+"practice.widget.signIn" = "Giriş Yap";
