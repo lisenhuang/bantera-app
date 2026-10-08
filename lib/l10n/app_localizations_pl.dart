@@ -1999,4 +1999,20 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Poproś Bantera AI o wyszukanie informacji w sieci. Urządzenie wysyła zapytanie do DuckDuckGo, a fragmenty wyników do AI. Dotknij źródła, aby je otworzyć. Wyszukiwanie może być czasowo niedostępne.';
+
+  @override
+  String get aiImages => 'Obrazy';
+
+  @override
+  String get aiImagesSearching => 'Wyszukiwanie obrazów…';
+
+  @override
+  String get aiImagesUnavailable => 'Obrazy niedostępne. Spróbuj później.';
+
+  @override
+  String get aiImageShare => 'Zapisz lub udostępnij obraz';
+
+  @override
+  String get aiImagesHelp =>
+      'Poproś o obrazy, aby ćwiczyć opisywanie tego, co widzisz. Obrazy pochodzą z Wikimedia Commons i są zapisywane z czatem na tym urządzeniu. Dotknij obrazu, aby go powiększyć lub udostępnić, a źródła, aby sprawdzić autorstwo i licencję. Tematy obrazów trafiają do Wikimedia, a tytuły i linki do źródeł do AI.';
 }

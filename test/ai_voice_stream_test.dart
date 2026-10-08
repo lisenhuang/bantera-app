@@ -77,107 +77,128 @@ void main() {
       expect(unsafe.nativeCode, isNull);
     },
   );
-  test(
-    'uploads before send, streams playback before completion, and resets partial retries',
-    () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      final received = StreamController<dynamic>();
-      final peer = Completer<WebSocket>();
-      server.listen((request) async {
-        final socket = await WebSocketTransformer.upgrade(request);
-        peer.complete(socket);
-        socket.listen(received.add);
-      });
-      final played = <List<int>>[];
-      final transcripts = <String>[];
-      var resets = 0;
-      final searchGate = Completer<Map<String, dynamic>>();
-      final stream = AiVoiceStream(
-        connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
-        onAudio: (bytes) async => played.add(bytes),
-        onToolCall: (_) => searchGate.future,
-        onTranscript: (role, text) => transcripts.add("$role:$text"),
-        onReset: () async {
-          resets++;
-        },
-      );
-      final incoming = StreamIterator(received.stream);
-      try {
-        stream.add(
-          Uint8List.fromList([1, 2, 3, 4]),
-        ); // During connection setup.
-        final socket = await peer.future;
-        socket.add(jsonEncode({'type': 'ready'}));
-        expect(await incoming.moveNext(), true);
-        expect(incoming.current, [1, 2, 3, 4]);
-        expect(stream.committed, false);
-        stream.add(Uint8List.fromList([5, 6]));
-        expect(await incoming.moveNext(), true);
-        expect(incoming.current, [5, 6]);
-        final result = stream.send({
-          'clock': {'timeZone': 'Pacific/Auckland'},
+  for (final query in ['weather', 'images: kiwi bird']) {
+    test(
+      'streams audio during $query device search and resets partial retries',
+      () async {
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final received = StreamController<dynamic>();
+        final peer = Completer<WebSocket>();
+        server.listen((request) async {
+          final socket = await WebSocketTransformer.upgrade(request);
+          peer.complete(socket);
+          socket.listen(received.add);
         });
-        expect(await incoming.moveNext(), true);
-        expect(jsonDecode(incoming.current as String)['type'], 'commit');
-        socket.add(
-          jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'Hel'}),
+        final played = <List<int>>[];
+        final transcripts = <String>[];
+        var resets = 0;
+        final searchGate = Completer<Map<String, dynamic>>();
+        final stream = AiVoiceStream(
+          connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
+          onAudio: (bytes) async => played.add(bytes),
+          onToolCall: (call) {
+            expect(call['name'], 'search_web');
+            expect(call['args']['query'], query);
+            return searchGate.future;
+          },
+          onTranscript: (role, text) => transcripts.add("$role:$text"),
+          onReset: () async {
+            resets++;
+          },
         );
-        socket.add(
-          jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'lo'}),
-        );
-        socket.add(
-          jsonEncode({
-            'type': 'toolCall',
-            'calls': [
-              {
-                'id': 'search-1',
-                'name': 'search_web',
-                'args': {'query': 'weather'},
-              },
+        final incoming = StreamIterator(received.stream);
+        try {
+          stream.add(
+            Uint8List.fromList([1, 2, 3, 4]),
+          ); // During connection setup.
+          final socket = await peer.future;
+          socket.add(jsonEncode({'type': 'ready'}));
+          expect(await incoming.moveNext(), true);
+          expect(incoming.current, [1, 2, 3, 4]);
+          expect(stream.committed, false);
+          stream.add(Uint8List.fromList([5, 6]));
+          expect(await incoming.moveNext(), true);
+          expect(incoming.current, [5, 6]);
+          final result = stream.send({
+            'clock': {'timeZone': 'Pacific/Auckland'},
+          });
+          expect(await incoming.moveNext(), true);
+          expect(jsonDecode(incoming.current as String)['type'], 'commit');
+          socket.add(
+            jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'Hel'}),
+          );
+          socket.add(
+            jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'lo'}),
+          );
+          socket.add(
+            jsonEncode({
+              'type': 'toolCall',
+              'calls': [
+                {
+                  'id': 'search-1',
+                  'name': 'search_web',
+                  'args': {'query': query},
+                },
+              ],
+            }),
+          );
+          socket.add([10, 11]);
+          await _until(() => played.length == 1);
+          expect(transcripts, ["model:Hel", "model:lo"]);
+          expect(played.single, [
+            10,
+            11,
+          ]); // Playback starts without waiting for complete.
+          socket.add(jsonEncode({'type': 'reset'}));
+          socket.add([12, 13]);
+          await _until(() => played.length == 2);
+          expect(resets, 1);
+          final toolResult = {
+            if (query.startsWith('images:')) 'delivered': true,
+            if (query.startsWith('images:'))
+              'images': [
+                {
+                  'title': 'Kiwi',
+                  'url':
+                      'https://thumb.wikimedia.org/wikipedia/commons/a/ab/Kiwi.jpg',
+                },
+              ],
+            'results': [
+              {'title': 'Forecast', 'url': 'https://example.com'},
             ],
-          }),
-        );
-        socket.add([10, 11]);
-        await _until(() => played.length == 1);
-        expect(transcripts, ["model:Hel", "model:lo"]);
-        expect(played.single, [
-          10,
-          11,
-        ]); // Playback starts without waiting for complete.
-        socket.add(jsonEncode({'type': 'reset'}));
-        socket.add([12, 13]);
-        await _until(() => played.length == 2);
-        expect(resets, 1);
-        searchGate.complete({
-          'results': [
-            {'title': 'Forecast', 'url': 'https://example.com'},
-          ],
-        });
-        expect(await incoming.moveNext(), true);
-        final tools = jsonDecode(incoming.current as String);
-        expect(tools['type'], 'toolResponse');
-        expect(tools['responses'][0]['id'], 'search-1');
+          };
+          searchGate.complete(toolResult);
+          expect(await incoming.moveNext(), true);
+          final tools = jsonDecode(incoming.current as String);
+          expect(tools['type'], 'toolResponse');
+          expect(tools['responses'][0]['id'], 'search-1');
+          expect(tools['responses'][0]['name'], 'search_web');
+          expect(tools['responses'][0]['response']['result'], toolResult);
 
-        socket.add(
-          jsonEncode({
-            'type': 'complete',
-            'inputText': 'Hello',
-            'outputText': 'Hi',
-          }),
-        );
-        final reply = await result;
-        expect(reply['inputText'], 'Hello');
-        final wave = base64Decode(reply['audio'] as String);
-        expect(wave.sublist(44), [12, 13]); // Old partial output was discarded.
-        await socket.close();
-      } finally {
-        await stream.close();
-        await incoming.cancel();
-        await received.close();
-        await server.close(force: true);
-      }
-    },
-  );
+          socket.add(
+            jsonEncode({
+              'type': 'complete',
+              'inputText': 'Hello',
+              'outputText': 'Hi',
+            }),
+          );
+          final reply = await result;
+          expect(reply['inputText'], 'Hello');
+          final wave = base64Decode(reply['audio'] as String);
+          expect(wave.sublist(44), [
+            12,
+            13,
+          ]); // Old partial output was discarded.
+          await socket.close();
+        } finally {
+          await stream.close();
+          await incoming.cancel();
+          await received.close();
+          await server.close(force: true);
+        }
+      },
+    );
+  }
 
   for (final failure in ['server_error', 'playback_failed', 'socket_closed']) {
     test('retains received audio and identifies $failure', () async {

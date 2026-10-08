@@ -608,5 +608,10 @@
   "aiWebSearching": "ウェブを検索中…",
   "aiWebUnavailable": "検索できません",
   "aiWebSources": "情報源",
-  "aiWebSearchHelp": "Bantera AI にウェブ検索を頼めます。この端末から検索語を DuckDuckGo に送り、結果の抜粋を AI に送信します。情報源をタップして開けます。検索できない場合もあります。"
+  "aiWebSearchHelp": "Bantera AI にウェブ検索を頼めます。この端末から検索語を DuckDuckGo に送り、結果の抜粋を AI に送信します。情報源をタップして開けます。検索できない場合もあります。",
+  "aiImages": "画像",
+  "aiImagesSearching": "画像を検索中…",
+  "aiImagesUnavailable": "画像を取得できません。後でもう一度お試しください。",
+  "aiImageShare": "画像を保存・共有",
+  "aiImagesHelp": "画像をリクエストして、見えるものを説明する練習ができます。画像はWikimedia Commonsから取得し、この端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典をタップすると作者やライセンスを確認できます。画像の検索テーマはWikimediaに、タイトルと出典リンクはAIに送信されます。"
 }

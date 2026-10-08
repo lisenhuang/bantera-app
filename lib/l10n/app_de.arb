@@ -573,5 +573,10 @@
   "aiWebSearching": "Websuche läuft…",
   "aiWebUnavailable": "Suche nicht verfügbar",
   "aiWebSources": "Quellen",
-  "aiWebSearchHelp": "Bitte Bantera AI um eine Websuche. Dieses Gerät sendet die Suchanfrage an DuckDuckGo und Auszüge der Ergebnisse an die KI. Tippe auf eine Quelle, um sie zu öffnen. Die Suche kann zeitweise nicht verfügbar sein."
+  "aiWebSearchHelp": "Bitte Bantera AI um eine Websuche. Dieses Gerät sendet die Suchanfrage an DuckDuckGo und Auszüge der Ergebnisse an die KI. Tippe auf eine Quelle, um sie zu öffnen. Die Suche kann zeitweise nicht verfügbar sein.",
+  "aiImages": "Bilder",
+  "aiImagesSearching": "Bilder werden gesucht…",
+  "aiImagesUnavailable": "Bilder nicht verfügbar. Versuche es später erneut.",
+  "aiImageShare": "Bild speichern oder teilen",
+  "aiImagesHelp": "Bitte um Bilder, um zu üben, was du siehst, zu beschreiben. Bilder stammen von Wikimedia Commons und werden mit deinem Chat auf diesem Gerät gespeichert. Tippe auf ein Bild, um es zu vergrößern oder zu teilen, und auf die Quelle für Urheber- und Lizenzangaben. Bildthemen werden an Wikimedia und Bildtitel sowie Quellenlinks an die KI gesendet."
 }

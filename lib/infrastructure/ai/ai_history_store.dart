@@ -1,3 +1,4 @@
+import 'ai_image_search.dart';
 import 'ai_web_search.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -20,7 +21,10 @@ class AiMessage {
     this.webSearchQuery,
     this.webSearchStatus,
     List<AiWebSource>? sources,
-  }) : sources = sources ?? [],
+    this.imageSearchStatus,
+    List<AiImageAttachment>? images,
+  }) : images = images ?? [],
+       sources = sources ?? [],
        id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now();
   final String id, role;
@@ -31,6 +35,8 @@ class AiMessage {
   bool failed;
   String? webSearchQuery, webSearchStatus;
   final List<AiWebSource> sources;
+  String? imageSearchStatus;
+  final List<AiImageAttachment> images;
   Map<String, dynamic> toJson() => {
     'id': id,
     'role': role,
@@ -46,6 +52,10 @@ class AiMessage {
     'webSearchStatus': webSearchStatus == 'searching'
         ? 'unavailable'
         : webSearchStatus,
+    'imageSearchStatus': imageSearchStatus == 'searching'
+        ? 'unavailable'
+        : imageSearchStatus,
+    'images': images.map((i) => i.toJson()).toList(),
     'sources': sources.map((s) => s.toJson()).toList(),
   };
   factory AiMessage.fromJson(Map<String, dynamic> j) => AiMessage(
@@ -63,6 +73,13 @@ class AiMessage {
     failed: j['failed'] == true,
     webSearchQuery: j['webSearchQuery'] as String?,
     webSearchStatus: j['webSearchStatus'] as String?,
+    imageSearchStatus: j['imageSearchStatus'] as String?,
+    images: (j['images'] as List? ?? [])
+        .map(AiImageAttachment.fromJson)
+        .whereType<AiImageAttachment>()
+        .where((i) => i.file != null)
+        .take(4)
+        .toList(),
     sources: (j['sources'] as List? ?? [])
         .map(AiWebSource.fromJson)
         .whereType<AiWebSource>()
@@ -94,7 +111,7 @@ class AiHistoryStore {
     (m) =>
         m.role == 'model' &&
         !m.failed &&
-        (m.text.trim().isNotEmpty || m.audio != null),
+        (m.text.trim().isNotEmpty || m.audio != null || m.images.isNotEmpty),
   );
   bool privacyNoticeDismissed = false;
 
@@ -166,6 +183,32 @@ class AiHistoryStore {
     return name;
   }
 
+  Future<String?> saveImage(
+    Uint8List bytes,
+    String mime,
+    bool Function() active,
+  ) async {
+    final extension = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    }[mime];
+    if (extension == null || bytes.length > 3 * 1024 * 1024) return null;
+    final name = '${const Uuid().v4()}.$extension';
+    String? saved;
+    await _enqueue(() async {
+      if (!active()) return;
+      final file = File(path(name));
+      await file.writeAsBytes(bytes, flush: true);
+      if (active()) {
+        saved = name;
+      } else {
+        await file.delete();
+      }
+    });
+    return saved;
+  }
+
   Future<void> save() {
     for (final message in messages) {
       message.durationMs ??= _audioDurations[message.audio];
@@ -203,7 +246,9 @@ class AiHistoryStore {
       contextFor(messages.where((m) => m.id != excluding).toList());
   static List<Map<String, String>> contextFor(List<AiMessage> messages) {
     final valid = messages
-        .where((m) => !m.failed && m.text.trim().isNotEmpty)
+        .where(
+          (m) => !m.failed && (m.text.trim().isNotEmpty || m.images.isNotEmpty),
+        )
         .toList();
     final chosen = valid.length <= 80
         ? valid
@@ -211,7 +256,12 @@ class AiHistoryStore {
     final result = <Map<String, String>>[];
     var budget = 70000;
     for (final m in chosen) {
-      final text = m.text.substring(0, m.text.length.clamp(0, 2000));
+      final content = [
+        m.text,
+        for (final image in m.images)
+          '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
+      ].join('\n');
+      final text = content.substring(0, content.length.clamp(0, 2000));
       if (text.length > budget) break;
       budget -= text.length;
       result.add({'role': m.role, 'text': text});

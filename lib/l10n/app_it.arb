@@ -573,5 +573,10 @@
   "aiWebSearching": "Ricerca sul web…",
   "aiWebUnavailable": "Ricerca non disponibile",
   "aiWebSources": "Fonti",
-  "aiWebSearchHelp": "Puoi chiedere a Bantera AI di cercare sul web. Questo dispositivo invia la ricerca a DuckDuckGo e gli estratti all’IA. Tocca una fonte per aprirla. La ricerca potrebbe non essere disponibile."
+  "aiWebSearchHelp": "Puoi chiedere a Bantera AI di cercare sul web. Questo dispositivo invia la ricerca a DuckDuckGo e gli estratti all’IA. Tocca una fonte per aprirla. La ricerca potrebbe non essere disponibile.",
+  "aiImages": "Immagini",
+  "aiImagesSearching": "Ricerca di immagini…",
+  "aiImagesUnavailable": "Immagini non disponibili. Riprova più tardi.",
+  "aiImageShare": "Salva o condividi immagine",
+  "aiImagesHelp": "Chiedi immagini per esercitarti a descrivere ciò che vedi. Le immagini provengono da Wikimedia Commons e vengono salvate con la chat su questo dispositivo. Tocca un’immagine per ingrandirla o condividerla e la fonte per i crediti e la licenza. Gli argomenti delle immagini vengono inviati a Wikimedia; titoli e link alle fonti vengono inviati all’IA."
 }

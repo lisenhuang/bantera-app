@@ -331,3 +331,32 @@ Private — all rights reserved.
 ---
 
 _README last updated: 2026-09-29_
+
+### Device-side AI image replies (2.6.1)
+
+Image replies reuse the **existing** `search_web(query)` tool and deployed relay.
+No backend change, deployment, new endpoint or new Gemini function is required.
+The app includes a transient capability note in each streaming session's context:
+Gemini requests `search_web` with `images: <public topic>` for pictures, while
+ordinary queries keep using DuckDuckGo. This note is not a chat message, is not
+saved in local history, does not count as learner speech, and never completes a
+user turn by itself. The multipart fallback has no device tools and gets no note.
+
+The phone removes the prefix, searches the public Wikimedia Commons Action API,
+downloads up to two raster previews per search (four per reply), validates their
+size/dimensions and saves them beside account-specific local AI history. Tap a
+card to enlarge and save/share the image file. Source links open in-app and retain
+creator/licence attribution. Clearing AI history deletes its image files.
+
+No search API key is needed. Queries go directly from the phone to Wikimedia,
+and image bytes directly from Wikimedia to the phone. The existing Gemini relay
+still carries tool requests and result metadata (titles, URLs and attribution),
+as it does for ordinary web search; image files and local file paths are never
+uploaded. Gemini receives metadata, not pixels, and must not claim to have
+inspected the picture. This is device-executed internet search, not offline AI.
+
+HTTP uses fixed Wikimedia API/image hosts, no app authentication headers or
+redirects, an eight-second budget, four searches/minute, a 3 MiB/file ceiling and
+bounded decoded dimensions. Cancelled sessions cannot attach late downloads.
+Image failures do not fail the voice reply. The implementation uses Wikimedia's
+[Imageinfo API](https://www.mediawiki.org/wiki/API:Imageinfo).

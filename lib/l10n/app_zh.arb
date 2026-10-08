@@ -608,5 +608,10 @@
   "aiWebSearching": "正在搜索网页…",
   "aiWebUnavailable": "暂时无法搜索",
   "aiWebSources": "来源",
-  "aiWebSearchHelp": "你可以让 Bantera AI 搜索网页。搜索在本设备发起：查询发送给 DuckDuckGo，结果摘要发送给 AI。点按来源即可打开。搜索有时可能不可用。"
+  "aiWebSearchHelp": "你可以让 Bantera AI 搜索网页。搜索在本设备发起：查询发送给 DuckDuckGo，结果摘要发送给 AI。点按来源即可打开。搜索有时可能不可用。",
+  "aiImages": "图片",
+  "aiImagesSearching": "正在查找图片…",
+  "aiImagesUnavailable": "暂时无法获取图片，请稍后重试。",
+  "aiImageShare": "保存或分享图片",
+  "aiImagesHelp": "你可以让 AI 发图片，练习描述看到的内容。图片来自维基共享资源，并随聊天记录保存在本设备上。点按图片可放大或分享，点按来源可查看作者及许可信息。图片搜索主题会发送到维基共享资源，图片标题和来源链接会发送给 AI。"
 }

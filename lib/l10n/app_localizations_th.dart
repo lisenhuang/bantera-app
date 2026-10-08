@@ -1907,4 +1907,21 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'ขอให้ Bantera AI ค้นหาเว็บได้ อุปกรณ์นี้จะส่งคำค้นไปยัง DuckDuckGo และส่งข้อความสรุปผลให้ AI แตะแหล่งข้อมูลเพื่อเปิด บางครั้งการค้นหาอาจไม่พร้อมใช้งาน';
+
+  @override
+  String get aiImages => 'รูปภาพ';
+
+  @override
+  String get aiImagesSearching => 'กำลังค้นหารูปภาพ…';
+
+  @override
+  String get aiImagesUnavailable =>
+      'ไม่สามารถโหลดรูปภาพได้ โปรดลองอีกครั้งภายหลัง';
+
+  @override
+  String get aiImageShare => 'บันทึกหรือแชร์รูปภาพ';
+
+  @override
+  String get aiImagesHelp =>
+      'ขอรูปภาพเพื่อฝึกบรรยายสิ่งที่เห็น รูปภาพมาจาก Wikimedia Commons และบันทึกพร้อมแชทบนอุปกรณ์นี้ แตะรูปเพื่อขยายหรือแชร์ และแตะแหล่งที่มาเพื่อดูเครดิตและใบอนุญาต หัวข้อค้นหาจะส่งไปยัง Wikimedia ส่วนชื่อภาพและลิงก์แหล่งที่มาจะส่งไปยัง AI';
 }

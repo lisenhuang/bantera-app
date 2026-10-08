@@ -1922,4 +1922,21 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Bantera AI’dan web’de arama yapmasını isteyebilirsiniz. Bu cihaz sorguyu DuckDuckGo’ya, sonuç alıntılarını ise yapay zekâya gönderir. Açmak için kaynağa dokunun. Arama bazen kullanılamayabilir.';
+
+  @override
+  String get aiImages => 'Görseller';
+
+  @override
+  String get aiImagesSearching => 'Görseller aranıyor…';
+
+  @override
+  String get aiImagesUnavailable =>
+      'Görseller kullanılamıyor. Daha sonra tekrar dene.';
+
+  @override
+  String get aiImageShare => 'Görseli kaydet veya paylaş';
+
+  @override
+  String get aiImagesHelp =>
+      'Gördüklerini anlatma pratiği yapmak için görsel iste. Görseller Wikimedia Commons’tan gelir ve bu cihazdaki sohbetinle birlikte kaydedilir. Büyütmek veya paylaşmak için görsele, yazar ve lisans bilgileri için kaynağa dokun. Görsel konuları Wikimedia’ya, başlıklar ve kaynak bağlantıları yapay zekâya gönderilir.';
 }

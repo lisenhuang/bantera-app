@@ -1987,4 +1987,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'You can ask Bantera AI to search the web. Searches run on this device: queries go to DuckDuckGo, and result excerpts go to AI. Tap a source to open it. Search may sometimes be unavailable.';
+
+  @override
+  String get aiImages => 'Images';
+
+  @override
+  String get aiImagesSearching => 'Finding pictures…';
+
+  @override
+  String get aiImagesUnavailable => 'Pictures unavailable. Try again later.';
+
+  @override
+  String get aiImageShare => 'Save or share image';
+
+  @override
+  String get aiImagesHelp =>
+      'Ask for pictures to practise describing what you see. Images come from Wikimedia Commons and are saved with your chat on this device. Tap a picture to enlarge or share it; tap its source for credits and licence details. Image topics go to Wikimedia, and image titles and source links go to AI.';
 }

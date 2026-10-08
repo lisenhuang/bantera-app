@@ -1992,4 +1992,20 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Попросите Bantera AI найти информацию в интернете. Устройство отправляет запрос в DuckDuckGo, а выдержки из результатов — ИИ. Нажмите на источник, чтобы открыть его. Иногда поиск недоступен.';
+
+  @override
+  String get aiImages => 'Изображения';
+
+  @override
+  String get aiImagesSearching => 'Поиск изображений…';
+
+  @override
+  String get aiImagesUnavailable => 'Изображения недоступны. Попробуйте позже.';
+
+  @override
+  String get aiImageShare => 'Сохранить или поделиться';
+
+  @override
+  String get aiImagesHelp =>
+      'Попросите изображения, чтобы потренироваться описывать увиденное. Изображения берутся из Wikimedia Commons и сохраняются с чатом на этом устройстве. Нажмите на изображение, чтобы увеличить его или поделиться, а на источник — чтобы посмотреть авторство и лицензию. Темы поиска отправляются в Wikimedia, а названия и ссылки на источники — ИИ.';
 }

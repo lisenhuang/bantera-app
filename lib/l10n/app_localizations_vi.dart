@@ -1925,4 +1925,20 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Bạn có thể nhờ Bantera AI tìm trên web. Thiết bị gửi truy vấn đến DuckDuckGo và đoạn trích kết quả đến AI. Chạm vào nguồn để mở. Đôi khi tính năng tìm kiếm không khả dụng.';
+
+  @override
+  String get aiImages => 'Hình ảnh';
+
+  @override
+  String get aiImagesSearching => 'Đang tìm hình ảnh…';
+
+  @override
+  String get aiImagesUnavailable => 'Không có hình ảnh. Hãy thử lại sau.';
+
+  @override
+  String get aiImageShare => 'Lưu hoặc chia sẻ hình ảnh';
+
+  @override
+  String get aiImagesHelp =>
+      'Yêu cầu hình ảnh để luyện mô tả những gì bạn thấy. Hình ảnh đến từ Wikimedia Commons và được lưu cùng cuộc trò chuyện trên thiết bị này. Nhấn vào ảnh để phóng to hoặc chia sẻ, nhấn vào nguồn để xem tác giả và giấy phép. Chủ đề tìm kiếm được gửi đến Wikimedia; tiêu đề và liên kết nguồn được gửi đến AI.';
 }

@@ -3517,6 +3517,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You can ask Bantera AI to search the web. Searches run on this device: queries go to DuckDuckGo, and result excerpts go to AI. Tap a source to open it. Search may sometimes be unavailable.'**
   String get aiWebSearchHelp;
+
+  /// No description provided for @aiImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get aiImages;
+
+  /// No description provided for @aiImagesSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding pictures…'**
+  String get aiImagesSearching;
+
+  /// No description provided for @aiImagesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Pictures unavailable. Try again later.'**
+  String get aiImagesUnavailable;
+
+  /// No description provided for @aiImageShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Save or share image'**
+  String get aiImageShare;
+
+  /// No description provided for @aiImagesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for pictures to practise describing what you see. Images come from Wikimedia Commons and are saved with your chat on this device. Tap a picture to enlarge or share it; tap its source for credits and licence details. Image topics go to Wikimedia, and image titles and source links go to AI.'**
+  String get aiImagesHelp;
 }
 
 class _AppLocalizationsDelegate

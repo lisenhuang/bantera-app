@@ -1,3 +1,5 @@
+import '../../../infrastructure/ai/ai_search_capabilities.dart';
+import '../../../infrastructure/ai/ai_image_search.dart';
 import '../../../infrastructure/ai/ai_web_search.dart';
 import 'dart:async';
 import '../chat_recording_countdown.dart';
@@ -40,11 +42,13 @@ class AiChatController extends ChangeNotifier {
     this.callbackId,
     AudioRecorder? recorder,
     AiApiClient? api,
+    AiImageSearch? imageSearch,
     Future<Map<String, dynamic>> Function()? voiceMetadata,
   }) : owner = 'test',
        _testing = true {
     if (recorder != null) _recorder = recorder;
     if (api != null) _api = api;
+    if (imageSearch != null) _imageSearch = imageSearch;
     _voiceMetadata = voiceMetadata;
   }
   final bool callKitManaged;
@@ -59,6 +63,7 @@ class AiChatController extends ChangeNotifier {
   final String owner;
   final AiHistoryStore store;
   final _webSearch = AiWebSearch();
+  AiImageSearch _imageSearch = AiImageSearch();
   AiApiClient _api = AiApiClient();
   AudioRecorder _recorder = AudioRecorder();
   Future<Map<String, dynamic>> Function()? _voiceMetadata;
@@ -297,6 +302,7 @@ class AiChatController extends ChangeNotifier {
     if (!available) {
       _epoch++;
       _webSearch.cancel();
+      _imageSearch.cancel();
       _api.close();
       unawaited(_receivingStream?.close());
       unawaited(_stopReplyPlayback());
@@ -627,7 +633,9 @@ class AiChatController extends ChangeNotifier {
         final partialReply = voiceReply.message;
         final hasPartialReply =
             partialReply != null &&
-            (partialReply.text.isNotEmpty || (stream?.outputBytes ?? 0) > 0);
+            (partialReply.text.isNotEmpty ||
+                partialReply.images.isNotEmpty ||
+                (stream?.outputBytes ?? 0) > 0);
         failed = !savedReply && !hasPartialReply;
         if (message != null && store.messages.contains(message)) {
           message.failed = !savedReply && !hasPartialReply;
@@ -1248,10 +1256,13 @@ class AiChatController extends ChangeNotifier {
     AiMessage message,
     bool Function() active,
   ) async {
-    if (!active() || call['name'] != 'search_web') return {'unavailable': true};
+    if (!active()) return {'unavailable': true};
+    if (call['name'] != 'search_web') return {'unavailable': true};
     final args = call['args'];
     final query = args is Map ? args['query'] : null;
     if (query is! String || query.length > 240) return {'unavailable': true};
+    final imageQuery = AiSearchCapabilities.imageQuery(query);
+    if (imageQuery != null) return _findImages(imageQuery, message, active);
     message.webSearchQuery = query;
     message.webSearchStatus = 'searching';
     changed();
@@ -1271,6 +1282,60 @@ class AiChatController extends ChangeNotifier {
     changed();
     if (store.messages.contains(message)) await store.save();
     return result;
+  }
+
+  Future<Map<String, dynamic>> _findImages(
+    String query,
+    AiMessage message,
+    bool Function() active,
+  ) async {
+    if (query.trim().isEmpty ||
+        query.length > 240 ||
+        message.images.length >= 4) {
+      return {'unavailable': true};
+    }
+    message.imageSearchStatus = 'searching';
+    changed();
+    final delivered = <AiImageAttachment>[];
+    try {
+      final downloads = await _imageSearch.search(query);
+      for (final download in downloads) {
+        if (!active() || message.images.length >= 4) break;
+        if (message.images.any(
+          (i) => i.sourceUrl == download.image.sourceUrl,
+        )) {
+          continue;
+        }
+        final file = await store.saveImage(
+          download.bytes,
+          download.image.mime,
+          active,
+        );
+        if (file == null || !active()) break;
+        final image = download.image.saved(file);
+        message.images.add(image);
+        delivered.add(image);
+      }
+    } catch (_) {
+      // An unavailable picture must not terminate the audio reply.
+    } finally {
+      message.imageSearchStatus = delivered.isEmpty
+          ? 'unavailable'
+          : 'complete';
+      if (active()) {
+        changed();
+        if (store.messages.contains(message)) await store.save();
+      }
+    }
+    return {
+      'provider': 'Wikimedia Commons',
+      'untrusted': true,
+      'delivered': delivered.isNotEmpty && active(),
+      'unavailable': delivered.isEmpty || !active(),
+      'images': active()
+          ? delivered.map((i) => i.toJson(local: false)).toList()
+          : [],
+    };
   }
 
   Future<void> _tools(List<Map> calls, int epoch) async {
@@ -1342,7 +1407,8 @@ class AiChatController extends ChangeNotifier {
     draftModel = '';
     if (text.isNotEmpty ||
         pcm.isNotEmpty ||
-        _liveModelMessage?.webSearchQuery != null) {
+        _liveModelMessage?.webSearchQuery != null ||
+        _liveModelMessage?.imageSearchStatus != null) {
       final message = _liveBubble();
       message.text = text;
       message.durationMs = pcm.length * 1000 ~/ 48000;
@@ -1402,6 +1468,7 @@ class AiChatController extends ChangeNotifier {
     connected = false;
     _epoch++;
     _webSearch.cancel();
+    _imageSearch.cancel();
     _elapsed.stop();
     _countdown?.cancel();
     _connectTimeout?.cancel();
@@ -1425,6 +1492,7 @@ class AiChatController extends ChangeNotifier {
     _playbackRequest = null;
     _epoch++;
     _webSearch.cancel();
+    _imageSearch.cancel();
     _api.close();
     _api = AiApiClient();
     await _receivingStream?.close();
@@ -1455,6 +1523,7 @@ class AiChatController extends ChangeNotifier {
     unawaited(_reminderEvents?.cancel());
     _epoch++;
     _webSearch.cancel();
+    _imageSearch.cancel();
     _api.close();
     unawaited(_receivingStream?.close());
     unawaited(_stopReplyPlayback());

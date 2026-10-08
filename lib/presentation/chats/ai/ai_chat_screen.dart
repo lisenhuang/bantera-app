@@ -1,3 +1,4 @@
+import 'ai_image_cards.dart';
 import 'ai_search_sources.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -376,7 +377,9 @@ class _AiChatScreenState extends State<AiChatScreen>
                     title: Text(l.aiUsageTitle),
                     scrollable: true,
                     content: SingleChildScrollView(
-                      child: Text('${l.aiUsageBody}\n\n${l.aiWebSearchHelp}'),
+                      child: Text(
+                        '${l.aiUsageBody}\n\n${l.aiWebSearchHelp}\n\n${l.aiImagesHelp}',
+                      ),
                     ),
                     actions: [
                       TextButton(
@@ -775,6 +778,8 @@ class _AiChatScreenState extends State<AiChatScreen>
               ),
             if (m.webSearchStatus != null || m.sources.isNotEmpty)
               AiSearchSources(message: m),
+            if (m.imageSearchStatus != null || m.images.isNotEmpty)
+              AiImageCards(message: m, path: _chat.store.path),
             ChatMessageTimestamp(sentAt: m.createdAt),
           ],
         ),

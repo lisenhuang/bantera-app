@@ -1845,6 +1845,22 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       '你可以让 Bantera AI 搜索网页。搜索在本设备发起：查询发送给 DuckDuckGo，结果摘要发送给 AI。点按来源即可打开。搜索有时可能不可用。';
+
+  @override
+  String get aiImages => '图片';
+
+  @override
+  String get aiImagesSearching => '正在查找图片…';
+
+  @override
+  String get aiImagesUnavailable => '暂时无法获取图片，请稍后重试。';
+
+  @override
+  String get aiImageShare => '保存或分享图片';
+
+  @override
+  String get aiImagesHelp =>
+      '你可以让 AI 发图片，练习描述看到的内容。图片来自维基共享资源，并随聊天记录保存在本设备上。点按图片可放大或分享，点按来源可查看作者及许可信息。图片搜索主题会发送到维基共享资源，图片标题和来源链接会发送给 AI。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3692,4 +3708,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get aiWebSearchHelp =>
       '你可以請 Bantera AI 搜尋網頁。搜尋由本裝置發起：查詢傳送給 DuckDuckGo，結果摘要傳送給 AI。點按來源即可開啟。搜尋有時可能無法使用。';
+
+  @override
+  String get aiImages => '圖片';
+
+  @override
+  String get aiImagesSearching => '正在尋找圖片…';
+
+  @override
+  String get aiImagesUnavailable => '暫時無法取得圖片，請稍後再試。';
+
+  @override
+  String get aiImageShare => '儲存或分享圖片';
+
+  @override
+  String get aiImagesHelp =>
+      '你可以請 AI 傳送圖片，練習描述看到的內容。圖片來自維基共享資源，並隨聊天記錄儲存在本裝置上。點按圖片可放大或分享，點按來源可查看作者及授權資訊。圖片搜尋主題會傳送至維基共享資源，圖片標題和來源連結會傳送給 AI。';
 }

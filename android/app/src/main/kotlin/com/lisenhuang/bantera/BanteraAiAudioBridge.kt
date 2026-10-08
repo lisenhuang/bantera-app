@@ -25,7 +25,7 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
     private var track: AudioTrack? = null
     private var echo: AcousticEchoCanceler? = null
     private var noise: NoiseSuppressor? = null
-    private var writtenFrames = 0L
+    private val progress = AiPlaybackProgress()
     private var drain: MethodChannel.Result? = null
     private var oldMode = AudioManager.MODE_NORMAL
     init {
@@ -53,6 +53,7 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
                     "start" -> { start(); result.success(null) }
                     "startPlayback" -> { start(playbackOnly = true); result.success(null) }
                     "feed" -> { feed(call.arguments as ByteArray); result.success(null) }
+                    "playedFrames" -> result.success(progress.playedFrames(track?.playbackHeadPosition ?: 0))
                     "clear" -> { clear(); result.success(null) }
                     "drain" -> { drain?.success(null); drain = result; checkDrain() }
                     "speaker" -> { @Suppress("DEPRECATION")
@@ -114,7 +115,7 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
                     val count = output.write(bytes, offset, minOf(4800, bytes.size - offset))
                     if (count <= 0) break
                     offset += count
-                    main.post { if (token == outputVersion) writtenFrames += count / 2 }
+                    main.post { if (token == outputVersion) progress.written(count) }
                 }
             } catch (_: Exception) { main.post { if (token == outputVersion) { sink?.error("interrupted", "Audio was interrupted.", null); stop() } } }
         }
@@ -126,15 +127,17 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
             if (token != outputVersion || drain == null) return@post
             fun poll() {
                 if (token != outputVersion || drain == null) return
-                val head = (track?.playbackHeadPosition?.toLong() ?: 0L) and 0xffffffffL
-                if (head >= writtenFrames) { drain?.success(null); drain = null }
+                val head = progress.renderedInTrack(track?.playbackHeadPosition ?: 0)
+                if (head >= progress.writtenFrames) { drain?.success(null); drain = null }
                 else main.postDelayed({ poll() }, 25)
             }
             poll()
         } }
     }
     private fun clear() {
-        outputVersion++; track?.pause(); track?.flush(); writtenFrames = 0; track?.play()
+        outputVersion++; track?.pause()
+        progress.clear(track?.playbackHeadPosition ?: 0)
+        track?.flush(); track?.play()
         drain?.success(null); drain = null
     }
     @Suppress("DEPRECATION")
@@ -146,7 +149,7 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
         try { track?.pause(); track?.flush() } catch (_: Exception) { }
         track?.release(); track = null
         echo?.release(); echo = null; noise?.release(); noise = null
-        writtenFrames = 0; drain?.success(null); drain = null
+        progress.reset(); drain?.success(null); drain = null
         if (hadAudio) { val manager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             manager.isSpeakerphoneOn = false; manager.mode = oldMode }
     }

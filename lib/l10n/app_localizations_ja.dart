@@ -1838,4 +1838,20 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Bantera AI にウェブ検索を頼めます。この端末から検索語を DuckDuckGo に送り、結果の抜粋を AI に送信します。情報源をタップして開けます。検索できない場合もあります。';
+
+  @override
+  String get aiImages => '画像';
+
+  @override
+  String get aiImagesSearching => '画像を検索中…';
+
+  @override
+  String get aiImagesUnavailable => '画像を取得できません。後でもう一度お試しください。';
+
+  @override
+  String get aiImageShare => '画像を保存・共有';
+
+  @override
+  String get aiImagesHelp =>
+      '画像をリクエストして、見えるものを説明する練習ができます。画像はWikimedia Commonsから取得し、この端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典をタップすると作者やライセンスを確認できます。画像の検索テーマはWikimediaに、タイトルと出典リンクはAIに送信されます。';
 }

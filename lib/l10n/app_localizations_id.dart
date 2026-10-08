@@ -1928,4 +1928,20 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get aiWebSearchHelp =>
       'Minta Bantera AI mencari di web. Perangkat ini mengirim kueri ke DuckDuckGo dan cuplikan hasil ke AI. Ketuk sumber untuk membukanya. Pencarian terkadang tidak tersedia.';
+
+  @override
+  String get aiImages => 'Gambar';
+
+  @override
+  String get aiImagesSearching => 'Mencari gambar…';
+
+  @override
+  String get aiImagesUnavailable => 'Gambar tidak tersedia. Coba lagi nanti.';
+
+  @override
+  String get aiImageShare => 'Simpan atau bagikan gambar';
+
+  @override
+  String get aiImagesHelp =>
+      'Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Gambar berasal dari Wikimedia Commons dan disimpan bersama chat di perangkat ini. Ketuk gambar untuk memperbesar atau membagikannya, dan ketuk sumbernya untuk melihat kredit dan lisensi. Topik gambar dikirim ke Wikimedia; judul gambar dan tautan sumber dikirim ke AI.';
 }

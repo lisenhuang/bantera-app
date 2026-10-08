@@ -573,5 +573,10 @@
   "aiWebSearching": "正在搜尋網頁…",
   "aiWebUnavailable": "暫時無法搜尋",
   "aiWebSources": "來源",
-  "aiWebSearchHelp": "你可以請 Bantera AI 搜尋網頁。搜尋由本裝置發起：查詢傳送給 DuckDuckGo，結果摘要傳送給 AI。點按來源即可開啟。搜尋有時可能無法使用。"
+  "aiWebSearchHelp": "你可以請 Bantera AI 搜尋網頁。搜尋由本裝置發起：查詢傳送給 DuckDuckGo，結果摘要傳送給 AI。點按來源即可開啟。搜尋有時可能無法使用。",
+  "aiImages": "圖片",
+  "aiImagesSearching": "正在尋找圖片…",
+  "aiImagesUnavailable": "暫時無法取得圖片，請稍後再試。",
+  "aiImageShare": "儲存或分享圖片",
+  "aiImagesHelp": "你可以請 AI 傳送圖片，練習描述看到的內容。圖片來自維基共享資源，並隨聊天記錄儲存在本裝置上。點按圖片可放大或分享，點按來源可查看作者及授權資訊。圖片搜尋主題會傳送至維基共享資源，圖片標題和來源連結會傳送給 AI。"
 }

@@ -1,3 +1,4 @@
+import 'ai_search_capabilities.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -165,7 +166,7 @@ class AiApiClient {
         'resuming': resuming,
         'callbackId': ?callbackId,
         'remainingSeconds': remainingSeconds,
-        'history': history,
+        'history': AiSearchCapabilities.withContext(history),
         'metadata': await metadata(hasMetBanteraAi: hasMetBanteraAi),
       }),
     );
@@ -201,7 +202,7 @@ class AiApiClient {
         'type': 'start',
         'requestId': requestId,
         'streamTranscripts': true,
-        'history': history,
+        'history': AiSearchCapabilities.withContext(history),
         'deviceData': deviceData,
         'metadata': meta,
       }),
