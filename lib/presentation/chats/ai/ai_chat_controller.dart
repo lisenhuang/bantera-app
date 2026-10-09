@@ -59,6 +59,7 @@ class AiChatController extends ChangeNotifier {
   DateTime? _callEndsAt;
   bool _renewRequested = false;
   int _renewals = 0;
+  bool _speakerChanging = false;
   static const microphone = EventChannel('bantera/ai_audio/input');
   final String owner;
   final AiHistoryStore store;
@@ -219,6 +220,14 @@ class AiChatController extends ChangeNotifier {
     if (available) notifyListeners();
   }
 
+  Future<void> _refreshMemory() async {
+    if (_testing || !available) return;
+    await store.refreshMemory(
+      (previous, turns) => _api.summarize(owner, previous, turns),
+      active: () => available,
+    );
+  }
+
   Future<void> initialize() async {
     if (loaded) return;
     try {
@@ -226,6 +235,9 @@ class AiChatController extends ChangeNotifier {
       if (!available) return;
       privacyNoticeVisible = !store.privacyNoticeDismissed;
       loaded = true;
+      _api.conversationId = () => store.conversationId;
+      store.onSaved = _refreshMemory;
+      unawaited(_refreshMemory());
       if (!_testing) {
         _reminderTimer = Timer.periodic(
           const Duration(seconds: 30),
@@ -1011,6 +1023,15 @@ class AiChatController extends ChangeNotifier {
       if (!available || epoch != _epoch) return;
       _micEvents = microphone.receiveBroadcastStream().listen(
         (event) {
+          if (event is Map) {
+            if (available &&
+                epoch == _epoch &&
+                event['type'] == 'route' &&
+                event['speaker'] is bool) {
+              updateSpeakerRoute(event['speaker'] as bool);
+            }
+            return;
+          }
           if (!connected ||
               farewell ||
               muted ||
@@ -1436,18 +1457,26 @@ class AiChatController extends ChangeNotifier {
   void updateSpeakerRoute(bool enabled) {
     if (speaker == enabled) return;
     speaker = enabled;
+    unawaited(_updateCallActivity());
     changed();
   }
 
   Future<void> setSpeaker() async {
-    speaker = !speaker;
+    if (_speakerChanging || !calling) return;
+    _speakerChanging = true;
+    final epoch = _epoch;
+    final requested = !speaker;
     try {
-      await audio.invokeMethod<void>('speaker', speaker);
+      final actual = await audio.invokeMethod<bool>('speaker', requested);
+      if (available && calling && epoch == _epoch) {
+        // iOS reports the real hardware route; older/Android bridges return null.
+        updateSpeakerRoute(actual ?? requested);
+      }
     } catch (_) {
-      speaker = !speaker;
+      // Keep the last confirmed route; a failed switch must not end the call.
+    } finally {
+      _speakerChanging = false;
     }
-    unawaited(_updateCallActivity());
-    changed();
   }
 
   void toggleMute() => setMuted(!muted);
@@ -1494,7 +1523,7 @@ class AiChatController extends ChangeNotifier {
     _webSearch.cancel();
     _imageSearch.cancel();
     _api.close();
-    _api = AiApiClient();
+    _api = AiApiClient()..conversationId = () => store.conversationId;
     await _receivingStream?.close();
     await _replyFinished?.future;
     await cancelRecording();
@@ -1513,7 +1542,26 @@ class AiChatController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _replyPlaybackUnavailable = true;
+    if (loaded && busy) {
+      // Leaving is not a failed send. Keep captions already shown, and the
+      // received audio, before invalidating callbacks or closing the socket.
+      final partial = voiceReply.interrupted(null, failed: false);
+      final bytes = _receivingStream?.partialAudio;
+      if (partial != null &&
+          (partial.text.isNotEmpty ||
+              partial.images.isNotEmpty ||
+              bytes != null)) {
+        if (!store.messages.contains(partial)) store.messages.add(partial);
+      }
+      unawaited(
+        store
+            .save(audioMessage: partial, audioBytes: bytes)
+            .catchError((Object _) {}),
+      );
+    }
     if (_testing) {
+      unawaited(_receivingStream?.close());
       _disposed = true;
       super.dispose();
       return;

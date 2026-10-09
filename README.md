@@ -360,3 +360,50 @@ redirects, an eight-second budget, four searches/minute, a 3 MiB/file ceiling an
 bounded decoded dimensions. Cancelled sessions cannot attach late downloads.
 Image failures do not fail the voice reply. The implementation uses Wikimedia's
 [Imageinfo API](https://www.mediawiki.org/wiki/API:Imageinfo).
+
+### Conversation timing (2.7.0)
+
+AI context includes each saved message's UTC `createdAt`, across voice messages
+and real-time calls. Failed/unsent messages and synthetic capability notes do not
+become fresh interactions. The history budget prioritises the newest turns so
+long histories cannot drop the last interaction. Clearing history clears timing
+context too. Timestamps are sent with the existing bounded history; they add no
+server-side conversation storage. Backend 1.5.0 compares them with current server
+time and the learner's time zone to guide natural continuation or a welcome back.
+Old servers ignore the additive timestamp field.
+
+New messages also retain their original device time zone and UTC offset. The
+coach can interpret a dated future plan and ask whether it happened, without
+assuming attendance. A changed time zone is a conversational cue, not proof of
+travel or location. Historical zones missing from older messages remain unknown;
+clearing history removes these details. No automatic reminders are inferred.
+
+## AI rolling memory (2.8.0)
+
+AI chat keeps a local, account-isolated rolling summary plus the newest 20 messages for fresh sessions. Background summarisation sends the previous summary and bounded batches of older transcripts to the backend's stateless text-model endpoint. The complete chat and summary remain on this device; Gemini receives context to process it. Atomic summary replacement preserves the last successful checkpoint on network failure. Clear History removes the summary and rotates the device conversation ID, including invalidating pending writes. An eligible provider session can resume for up to two hours without replaying history; fresh sessions fall back to the summary/recent messages. Time and timezone still accompany each message. Session resumption uses separate voice-message/call modes and resets when learning/profile/model settings change.
+
+In 2.8.1, AI transcripts suppress the exact internal historical-timing marker produced by older history transport, including during streamed delivery and when restoring saved bubbles. Human transcripts are unchanged; existing audio recordings are not altered. The matching backend fix sends history as private background context, not assistant speech.
+
+Leaving AI chat during a voice reply checkpoints the visible input/output transcriptions and received reply audio before closing the stream. Reopening waits for pending writes for the same local account, so the partial bubble remains available without a false send error. Navigation may stop the remaining download; it never removes the received portion.
+
+### iOS live-call audio routing (2.8.3)
+
+In-app AI calls and CallKit callbacks both use `BanteraPhoneAudio`, with capture
+and AI playback passing through the same Apple VoiceProcessingIO audio unit.
+Voice processing remains enabled for receiver, speaker and headset routes; the
+system uses the rendered output as its acoustic echo-cancellation reference.
+Do not switch live calls back to the default-mode `prefersEchoCancelledInput`
+path or use a separate media player for live AI output.
+
+The session uses `playAndRecord` / `voiceChat` with Bluetooth HFP and **without**
+`defaultToSpeaker`. The in-app speaker button uses a transient output override;
+turning it off restores the normal receiver/headset route. Route notifications
+update the UI and lock-screen activity from the actual hardware route, and route
+switch failures do not stop an otherwise healthy call. CallKit retains ownership
+of activation and its route picker. Voice-message playback remains playback-only.
+
+References: [Apple speakerphone routing](https://developer.apple.com/library/archive/qa/qa1754/_index.html),
+[Apple voice processing](https://developer.apple.com/documentation/avfaudio/avaudiosession/mode-swift.struct/voicechat),
+[WebRTC's iOS duplex audio design](https://webrtc.googlesource.com/src/webrtc/+/f54860e9ef0b68e182a01edc994626d21961bc4b/modules/audio_device/ios/audio_device_ios.h).
+Physical receiver output and acoustic echo performance require user verification;
+builds and mocked route tests cannot establish those acoustic results.

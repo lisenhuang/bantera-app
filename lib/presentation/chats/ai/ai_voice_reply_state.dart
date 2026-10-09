@@ -1,6 +1,6 @@
 import '../../../infrastructure/ai/ai_history_store.dart';
 
-/// A provisional response stays out of saved history until the stream completes.
+/// A provisional response is saved when the stream completes or the chat closes.
 /// Keep its identity through retries and completion so the bubble does not jump.
 class AiVoiceReplyState {
   AiMessage? message;
@@ -18,7 +18,7 @@ class AiVoiceReplyState {
   }
 
   void addTranscript(String text, String language) {
-    if (text.isNotEmpty) ensure(language).text += text;
+    if (text.isNotEmpty) ensure(language).appendTranscript(text);
   }
 
   void resetAttempt() {
@@ -37,11 +37,11 @@ class AiVoiceReplyState {
     return result;
   }
 
-  AiMessage? interrupted(String? audio) {
+  AiMessage? interrupted(String? audio, {bool failed = true}) {
     final result = message;
     if (result == null) return null;
     result.audio = audio;
-    result.failed = true;
+    result.failed = failed;
     message = null;
     return result;
   }

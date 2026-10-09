@@ -15,6 +15,7 @@ class AiApiClient {
   final HttpClient _http = HttpClient()
     ..connectionTimeout = const Duration(seconds: 20);
   bool _closed = false;
+  String? Function()? conversationId;
   Future<String> _token(String owner) async {
     final token = await AuthSessionNotifier.instance.refreshAccessTokenForApi();
     if (_closed ||
@@ -87,6 +88,35 @@ class AiApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> summarize(
+    String owner,
+    String? previous,
+    List<Map<String, String>> turns,
+  ) async {
+    final token = await _token(owner);
+    final request = await _http.postUrl(
+      Uri.parse('${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/summary'),
+    );
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+    request.headers.contentType = ContentType.json;
+    request.write(jsonEncode({'previousSummary': previous, 'turns': turns}));
+    final response = await request.close().timeout(const Duration(seconds: 55));
+    if (response.statusCode != 200) {
+      await response.drain<void>();
+      throw StateError('Memory unavailable');
+    }
+    var body = '';
+    await for (final chunk
+        in utf8.decoder.bind(response).timeout(const Duration(seconds: 10))) {
+      body += chunk;
+      if (body.length > 30000) throw StateError('Memory response too large');
+    }
+    if (_closed || AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      throw StateError('Session changed');
+    }
+    return jsonDecode(body) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> reply({
     required String owner,
     required List<Map<String, String>> history,
@@ -114,7 +144,14 @@ class AiApiClient {
     );
     field('history', jsonEncode(history));
     field('deviceData', jsonEncode(deviceData));
-    field('metadata', jsonEncode({...meta, 'deviceWebSearch': false}));
+    field(
+      'metadata',
+      jsonEncode({
+        ...meta,
+        'deviceWebSearch': false,
+        'conversationId': conversationId?.call(),
+      }),
+    );
     field('requestId', requestId);
     request.add(
       utf8.encode(
@@ -167,7 +204,10 @@ class AiApiClient {
         'callbackId': ?callbackId,
         'remainingSeconds': remainingSeconds,
         'history': AiSearchCapabilities.withContext(history),
-        'metadata': await metadata(hasMetBanteraAi: hasMetBanteraAi),
+        'metadata': {
+          ...await metadata(hasMetBanteraAi: hasMetBanteraAi),
+          'conversationId': conversationId?.call(),
+        },
       }),
     );
     return socket;
@@ -204,7 +244,7 @@ class AiApiClient {
         'streamTranscripts': true,
         'history': AiSearchCapabilities.withContext(history),
         'deviceData': deviceData,
-        'metadata': meta,
+        'metadata': {...meta, 'conversationId': conversationId?.call()},
       }),
     );
     return socket;

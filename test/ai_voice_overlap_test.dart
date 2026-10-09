@@ -134,7 +134,7 @@ void main() {
           await until(
             () =>
                 calls.contains('feed') &&
-                chat.voiceReply.message?.text == 'First ',
+                chat.voiceReply.message?.text == 'First',
           );
           expect(chat.canRecord, true);
           final firstId = chat.voiceReply.message!.id;

@@ -81,6 +81,84 @@ void main() {
     },
   );
   test(
+    'context includes UTC timestamps and keeps the latest turn within the budget',
+    () async {
+      final last = DateTime.utc(2026, 10, 9, 1);
+      final messages = List.generate(
+        100,
+        (i) => AiMessage(
+          role: i.isEven ? 'user' : 'model',
+          text: 'message $i ${'x' * 3000}',
+          createdAt: last.subtract(Duration(minutes: 99 - i)),
+        ),
+      );
+      final context = AiHistoryStore.contextFor(messages);
+      expect(context.last['text'], startsWith('message 99 '));
+      expect(context.last['createdAt'], last.toIso8601String());
+      expect(
+        context.map((m) => m['createdAt']).toList(),
+        orderedEquals((context.map((m) => m['createdAt']!).toList()..sort())),
+      );
+      final store = AiHistoryStore('timing');
+      await store.load();
+      store.messages.addAll(messages);
+      await store.save();
+      final reopened = AiHistoryStore('timing');
+      await reopened.load();
+      expect(reopened.context().last['createdAt'], last.toIso8601String());
+      expect(
+        reopened.context(excluding: messages.last.id).last['text'],
+        startsWith('message 98 '),
+      );
+      await reopened.clear();
+      expect(reopened.context(), isEmpty);
+    },
+  );
+  test(
+    'new messages retain their original zone after travelling and reopening',
+    () async {
+      var zone = 'Pacific/Auckland';
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('flutter_timezone'),
+            (_) async => zone,
+          );
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+              const MethodChannel('flutter_timezone'),
+              null,
+            ),
+      );
+      final store = AiHistoryStore('traveller');
+      await store.load();
+      final before = AiMessage(role: 'user', text: 'I plan to fly tomorrow');
+      store.messages.add(before);
+      await store.save();
+      expect(before.timeZone, 'Pacific/Auckland');
+      zone = 'Asia/Shanghai';
+      store.messages.add(AiMessage(role: 'user', text: 'Hello again'));
+      await store.save();
+      final reopened = AiHistoryStore('traveller');
+      await reopened.load();
+      expect(reopened.context().first['timeZone'], 'Pacific/Auckland');
+      expect(reopened.context().last['timeZone'], 'Asia/Shanghai');
+      expect(
+        reopened.messages.first.createdAt.toUtc(),
+        before.createdAt.toUtc(),
+      );
+      expect(reopened.messages.first.toJson()['createdAt'], endsWith('Z'));
+      final legacy = AiMessage.fromJson({
+        'role': 'user',
+        'text': 'Old message',
+        'createdAt': '2026-10-08T10:00:00',
+      });
+      store.messages.add(legacy);
+      await store.save();
+      expect(legacy.timeZone, isNull); // Do not invent the zone of old history.
+    },
+  );
+  test(
     'meeting flag is shared across modes and persists after clearing history',
     () async {
       final voice = AiHistoryStore('alice');

@@ -264,7 +264,8 @@ void main() {
         'Received AI chat history stays on this device.',
       );
       expect(notice, findsOneWidget);
-      await tester.tap(find.byTooltip('Close'));
+      // The dismissal writes to disk; keep its queued futures outside fake time.
+      await tester.runAsync(() => tester.tap(find.byTooltip('Close')));
       await tester.pumpAndSettle();
       expect(notice, findsNothing);
       await tester.runAsync(
