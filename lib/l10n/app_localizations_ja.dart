@@ -1853,5 +1853,8 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '画像をリクエストして、見えるものを説明する練習ができます。画像はWikimedia Commonsから取得し、この端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典をタップすると作者やライセンスを確認できます。画像の検索テーマはWikimediaに、タイトルと出典リンクはAIに送信されます。';
+      '画像をリクエストして、見えるものを説明する練習ができます。この端末でウェブ上の画像を検索し、必要に応じて Wikimedia Commons を使います。画像は端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典から利用条件を確認できます。検索テーマは検索サービスに、タイトルと出典リンクは AI に送信されます。画像は Bantera にアップロードされません。';
+
+  @override
+  String get aiImagesRights => '利用条件は出典で確認してください';
 }

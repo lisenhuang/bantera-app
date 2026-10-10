@@ -311,6 +311,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               viewerNativeLanguageCode:
                   UserProfileNotifier.instance.nativeLanguage,
               onPlay: () => _playMessage(message),
+              loadAudioPath: () async =>
+                  (await _chat.ensureLocalAudio(message)).path,
               onTranscribe: () => _transcribeMessage(message),
               onTranslate: () => _translateMessage(message),
               onTapSender: _isGroup && !message.isMine
@@ -1138,6 +1140,7 @@ class _MessageBubble extends StatelessWidget {
     required this.isTranslating,
     required this.viewerNativeLanguageCode,
     required this.onPlay,
+    required this.loadAudioPath,
     required this.onTranscribe,
     required this.onTranslate,
     required this.onTapSender,
@@ -1152,6 +1155,7 @@ class _MessageBubble extends StatelessWidget {
   final bool isTranslating;
   final String? viewerNativeLanguageCode;
   final VoidCallback onPlay;
+  final Future<String> Function() loadAudioPath;
   final VoidCallback onTranscribe;
   final VoidCallback onTranslate;
   final VoidCallback? onTapSender;
@@ -1212,6 +1216,8 @@ class _MessageBubble extends StatelessWidget {
                 ChatImageMessage(message: message)
               else ...[
                 ChatAudioHeader(
+                  audioKey: message.messageId,
+                  loadAudioPath: loadAudioPath,
                   playing: isPlaying,
                   progress: progress,
                   onPlay: onPlay,

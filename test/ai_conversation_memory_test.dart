@@ -64,6 +64,7 @@ void main() {
       expect(store.context()[1]['text'], 'Message 50');
       expect(store.context().last['text'], 'Message 69');
       expect(store.context().first.containsKey('createdAt'), isFalse);
+      expect(store.context().first['contextKind'], 'summary');
       final restored = AiHistoryStore('alice');
       await restored.load();
       expect(restored.memory, store.memory);

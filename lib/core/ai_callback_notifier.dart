@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../infrastructure/callkit_service.dart';
+import '../infrastructure/ai/ai_api_client.dart';
 import '../infrastructure/push_notifications_service.dart';
 import 'api_config_notifier.dart';
 import 'auth_session_notifier.dart';
@@ -42,6 +43,7 @@ class AiCallbackNotifier extends ChangeNotifier {
   AiChatController Function()? _createController;
   Future<int> Function(String)? _acceptCallback;
   CallKitService get _callKit => _callKitOverride ?? CallKitService.instance;
+  bool get usesSystemCallInterface => _callKit.supported;
   StreamSubscription<Map<String, dynamic>>? _callKitEvents;
   void _listenCallKit() {
     _callKitEvents = _callKit.events.listen((event) {
@@ -67,7 +69,9 @@ class AiCallbackNotifier extends ChangeNotifier {
   Future<void> _events = Future.value();
   AiChatController? controller;
   bool _started = false;
+  bool _audioActive = false;
   bool _lastMuted = false;
+  bool _lastSpeaker = false;
   Timer? _activationTimeout;
   String? id;
   String? _owner;
@@ -104,6 +108,9 @@ class AiCallbackNotifier extends ChangeNotifier {
     _owner = AuthSessionNotifier.instance.session?.cacheKey;
     ringing = true;
     accepted = false;
+    _audioActive = false;
+    _lastMuted = false;
+    _lastSpeaker = false;
     notifyListeners();
     _expiry = Timer(remaining, () => unawaited(close()));
     if (!system) await _callKit.report('incoming', payload);
@@ -127,9 +134,14 @@ class AiCallbackNotifier extends ChangeNotifier {
             await accept(system: true);
           }
         case 'audioActivated':
+          _audioActive = true;
           if (accepted) unawaited(_startAudio());
+        case 'audioFailed':
+          _reportFailure('callback_audio_failed');
+          await close();
         case 'audioRoute':
-          controller?.updateSpeakerRoute(event['speaker'] == true);
+          _lastSpeaker = event['speaker'] == true;
+          controller?.updateSpeakerRoute(_lastSpeaker);
         case 'mute':
           final chat = controller;
           final muted = event['muted'] == true;
@@ -142,6 +154,26 @@ class AiCallbackNotifier extends ChangeNotifier {
     } catch (_) {
       await close();
     }
+  }
+
+  void _reportFailure(String code) {
+    final owner = _owner, callId = id;
+    if (owner == null || callId == null || _createController != null) return;
+    // No reminder text, audio, tokens, or private conversation data in logs.
+    final api = AiApiClient();
+    unawaited(
+      api
+          .reportVoiceFailure(owner, {
+            'requestId': callId,
+            'code': code,
+            'phase': 'callback',
+            'inputBytes': 0,
+            'outputBytes': 0,
+            'elapsedMs': 0,
+            'committed': accepted,
+          })
+          .whenComplete(api.close),
+    );
   }
 
   Future<HttpClientResponse> _request(
@@ -198,7 +230,11 @@ class AiCallbackNotifier extends ChangeNotifier {
       if (_acceptCallback != null) {
         status = await _acceptCallback!(current!);
       } else {
-        final response = await _request(client, 'POST', '$current/accept');
+        final response = await _request(
+          client,
+          'POST',
+          '$current/accept',
+        ).timeout(const Duration(seconds: 12));
         status = response.statusCode;
         await response.drain<void>();
       }
@@ -216,7 +252,7 @@ class AiCallbackNotifier extends ChangeNotifier {
             callbackId: current,
           );
       controller = chat;
-      await chat.initialize();
+      await chat.initialize().timeout(const Duration(seconds: 8));
       if (id != current || !chat.loaded) {
         throw StateError('Call no longer available');
       }
@@ -225,18 +261,22 @@ class AiCallbackNotifier extends ChangeNotifier {
       accepted = true;
       aiActive = true;
       _started = false;
-      _lastMuted = false;
+      chat.setMuted(_lastMuted);
       if (_callKit.supported) {
-        _activationTimeout = Timer(
-          const Duration(seconds: 12),
-          () => unawaited(close()),
-        );
+        _activationTimeout = Timer(const Duration(seconds: 12), () {
+          _reportFailure('callback_activation_timeout');
+          unawaited(close());
+        });
         await _callKit.update('answerReady', current);
+        if (_audioActive) unawaited(_startAudio());
       } else {
         unawaited(_startAudio());
       }
     } catch (_) {
-      await close();
+      if (id == current) {
+        _reportFailure('callback_accept_failed');
+        await close();
+      }
     } finally {
       client.close(force: true);
       accepting = false;
@@ -249,14 +289,29 @@ class AiCallbackNotifier extends ChangeNotifier {
     if (!accepted || chat == null || _started) return;
     _started = true;
     _activationTimeout?.cancel();
-    await chat.startCall();
-    if (identical(chat, controller) && !chat.calling) await close();
+    try {
+      await chat.startCall();
+      if (!identical(chat, controller)) return;
+      if (!chat.calling) {
+        _reportFailure('callback_audio_failed');
+        await close();
+      } else {
+        chat.updateSpeakerRoute(_lastSpeaker);
+        await _callKit.update('audioStarted', id);
+      }
+    } catch (_) {
+      if (identical(chat, controller)) {
+        _reportFailure('callback_audio_failed');
+        await close();
+      }
+    }
   }
 
   void _callChanged() {
     final chat = controller;
     if (chat == null || !_started) return;
     if (!chat.calling) {
+      if (chat.failed) _reportFailure('callback_audio_failed');
       unawaited(close());
     } else if (chat.muted != _lastMuted) {
       _lastMuted = chat.muted;
@@ -279,6 +334,7 @@ class AiCallbackNotifier extends ChangeNotifier {
     chat?.removeListener(_callChanged);
     _activationTimeout?.cancel();
     _started = false;
+    _audioActive = false;
     aiActive = false;
     id = null;
     ringing = false;

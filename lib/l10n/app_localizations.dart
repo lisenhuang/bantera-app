@@ -3545,8 +3545,14 @@ abstract class AppLocalizations {
   /// No description provided for @aiImagesHelp.
   ///
   /// In en, this message translates to:
-  /// **'Ask for pictures to practise describing what you see. Images come from Wikimedia Commons and are saved with your chat on this device. Tap a picture to enlarge or share it; tap its source for credits and licence details. Image topics go to Wikimedia, and image titles and source links go to AI.'**
+  /// **'Ask for pictures to practise describing what you see. Images are searched across the web on this device, with Wikimedia Commons as a fallback, and saved with your chat here. Tap an image to enlarge or share it, and its source for usage rights. Topics go to the search provider; titles and source links go to AI. Images are not uploaded to Bantera.'**
   String get aiImagesHelp;
+
+  /// No description provided for @aiImagesRights.
+  ///
+  /// In en, this message translates to:
+  /// **'Check source for usage rights'**
+  String get aiImagesRights;
 }
 
 class _AppLocalizationsDelegate

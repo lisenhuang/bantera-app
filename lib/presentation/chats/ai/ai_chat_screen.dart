@@ -1,4 +1,5 @@
 import 'ai_image_cards.dart';
+import 'ai_message_markdown.dart';
 import 'ai_search_sources.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -12,20 +13,36 @@ import 'ai_reminders_screen.dart';
 import '../../../domain/activity/listening_word_tracker.dart';
 import '../chat_bubble_parts.dart';
 import '../voice_message_composer.dart';
+import '../../../core/auth_session_notifier.dart';
+import '../../../core/ai_callback_notifier.dart';
+import 'ai_chat_navigation.dart';
 
 final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
-Route<dynamic>? _activeAiRoute;
-void openAiReminderChat() {
-  final navigator = aiReminderNavigatorKey.currentState;
+final _aiNavigation = AiChatNavigation();
+void openAiChat([BuildContext? context]) {
+  final navigator = context == null
+      ? aiReminderNavigatorKey.currentState
+      : Navigator.of(context, rootNavigator: true);
   if (navigator == null) return;
-  if (_activeAiRoute != null) {
-    navigator.popUntil(
-      (route) => identical(route, _activeAiRoute) || route.isFirst,
-    );
-    return;
-  }
-  navigator.push(MaterialPageRoute<void>(builder: (_) => const AiChatScreen()));
+  if (!AuthSessionNotifier.instance.isAuthenticated) return;
+  unawaited(
+    _aiNavigation.open(navigator, (_) {
+      final callback = AiCallbackNotifier.instance;
+      return ListenableBuilder(
+        listenable: callback,
+        builder: (_, _) {
+          final controller = callback.accepted ? callback.controller : null;
+          return AiChatScreen(
+            key: ObjectKey(controller),
+            controller: controller,
+          );
+        },
+      );
+    }),
+  );
 }
+
+void openAiReminderChat() => openAiChat();
 
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({
@@ -33,7 +50,16 @@ class AiChatScreen extends StatefulWidget {
     this.startWithCall = false,
     this.onClose,
     this.controller,
-  });
+  }) : _controllerFactory = null;
+  @visibleForTesting
+  const AiChatScreen.ownedControllerForTesting({
+    super.key,
+    required AiChatController Function() createController,
+  }) : _controllerFactory = createController,
+       controller = null,
+       startWithCall = false,
+       onClose = null;
+  final AiChatController Function()? _controllerFactory;
   final AiChatController? controller;
   final bool startWithCall;
   final VoidCallback? onClose;
@@ -43,7 +69,10 @@ class AiChatScreen extends StatefulWidget {
 
 class _AiChatScreenState extends State<AiChatScreen>
     with WidgetsBindingObserver {
-  late final AiChatController _chat = widget.controller ?? AiChatController();
+  late final AiChatController _chat =
+      widget.controller ??
+      widget._controllerFactory?.call() ??
+      AiChatController();
   final _scroll = ScrollController();
   final _player = AudioPlayer();
   String? _playing;
@@ -56,6 +85,8 @@ class _AiChatScreenState extends State<AiChatScreen>
   int _count = 0;
   bool _historyLoaded = false;
   bool _confirmingCall = false;
+  bool _initializationStarted = false;
+  Animation<double>? _openingAnimation;
   @override
   void initState() {
     super.initState();
@@ -99,18 +130,38 @@ class _AiChatScreenState extends State<AiChatScreen>
       }
     });
     if (widget.controller == null) {
-      unawaited(
-        _chat.initialize().then((_) async {
-          if (mounted && widget.startWithCall) await _call();
-        }),
+      // Present the page before reading/decoding history and starting sync.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _initializeWhenVisible(),
       );
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (widget.controller == null) _activeAiRoute = ModalRoute.of(context);
+  void _initializeWhenVisible() {
+    if (!mounted || _initializationStarted) return;
+    final route = ModalRoute.of(context);
+    final animation = route?.animation;
+    if (route?.offstage == true ||
+        (animation != null && !animation.isCompleted)) {
+      if (!identical(_openingAnimation, animation)) {
+        _openingAnimation?.removeStatusListener(_openingChanged);
+        _openingAnimation = animation;
+        animation?.addStatusListener(_openingChanged);
+      }
+      return;
+    }
+    _openingAnimation?.removeStatusListener(_openingChanged);
+    _openingAnimation = null;
+    _initializationStarted = true;
+    unawaited(
+      _chat.initialize().then((_) async {
+        if (mounted && widget.startWithCall) await _call();
+      }),
+    );
+  }
+
+  void _openingChanged(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _initializeWhenVisible();
   }
 
   void _changed() {
@@ -164,7 +215,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
-    if (widget.controller == null) _activeAiRoute = null;
+    _openingAnimation?.removeStatusListener(_openingChanged);
     WidgetsBinding.instance.removeObserver(this);
     _chat.removeListener(_changed);
     if (widget.controller == null) _chat.dispose();
@@ -540,52 +591,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                             )
                           : const CircularProgressIndicator(),
                     )
-                  : ListView(
-                      // Zero offset is the latest message from the first layout.
-                      // Reversing the children preserves chronological reading order.
-                      reverse: true,
-                      controller: _scroll,
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        if (_chat.messages.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            child: Column(
-                              children: [
-                                const AiAvatar(radius: 28),
-                                const SizedBox(height: 16),
-                                Text(
-                                  l.aiWelcome,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                        for (final m in _chat.messages) _bubble(m),
-                        if (_chat.draftUser.isNotEmpty)
-                          _draft(_chat.draftUser, true),
-                        if (_chat.sendingVoice)
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(l.chatSendingAudio),
-                              ],
-                            ),
-                          ),
-                      ].reversed.toList(),
-                    ),
+                  : _conversation(l),
             ),
             if (_chat.failed)
               Padding(
@@ -602,6 +608,74 @@ class _AiChatScreenState extends State<AiChatScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _conversation(AppLocalizations l) {
+    final messages = _chat.messages;
+    final sending = _chat.sendingVoice;
+    final draft = _chat.draftUser.isNotEmpty;
+    final extra = (sending ? 1 : 0) + (draft ? 1 : 0);
+    return ListView.builder(
+      // Offset zero is the newest message; only visible history builds bubbles.
+      reverse: true,
+      controller: _scroll,
+      padding: const EdgeInsets.all(16),
+      itemCount: extra + (messages.isEmpty ? 1 : messages.length),
+      findChildIndexCallback: (key) {
+        if (key == const ValueKey('ai-sending')) return sending ? 0 : null;
+        if (key == const ValueKey('ai-draft')) {
+          return draft ? (sending ? 1 : 0) : null;
+        }
+        if (key == const ValueKey('ai-welcome')) {
+          return messages.isEmpty ? extra : null;
+        }
+        final index = messages.indexWhere((m) => ValueKey(m.id) == key);
+        return index < 0 ? null : extra + messages.length - 1 - index;
+      },
+      itemBuilder: (context, index) {
+        if (sending && index == 0) {
+          return Padding(
+            key: const ValueKey('ai-sending'),
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 12),
+                Text(l.chatSendingAudio),
+              ],
+            ),
+          );
+        }
+        if (draft && index == (sending ? 1 : 0)) {
+          return KeyedSubtree(
+            key: const ValueKey('ai-draft'),
+            child: _draft(_chat.draftUser, true),
+          );
+        }
+        if (messages.isEmpty) {
+          return Padding(
+            key: const ValueKey('ai-welcome'),
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
+              children: [
+                const AiAvatar(radius: 28),
+                const SizedBox(height: 16),
+                Text(
+                  l.aiWelcome,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          );
+        }
+        return _bubble(messages[messages.length - 1 - (index - extra)]);
+      },
     );
   }
 
@@ -713,6 +787,10 @@ class _AiChatScreenState extends State<AiChatScreen>
           children: [
             if (m.audio != null || receiving || (m.durationMs ?? 0) > 0)
               ChatAudioHeader(
+                audioKey: m.audio == null ? null : _chat.store.path(m.audio!),
+                loadAudioPath: m.audio == null
+                    ? null
+                    : () async => _chat.store.path(m.audio!),
                 receiving: receiving,
                 playing: selected && _player.state == PlayerState.playing,
                 progress: progress,
@@ -733,22 +811,27 @@ class _AiChatScreenState extends State<AiChatScreen>
             if (m.text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: SelectableText(
-                  m.text,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colors.onSurface,
-                  ),
-                ),
+                child: user
+                    ? SelectableText(
+                        m.text,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colors.onSurface,
+                        ),
+                      )
+                    : AiMessageMarkdown(text: m.text),
               ),
             if (_chat.visibleTranslations.contains(m.id) &&
                 m.translation.isNotEmpty) ...[
               const Divider(height: 20),
-              SelectableText(
-                m.translation,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colors.onSurface,
-                ),
-              ),
+              if (user)
+                SelectableText(
+                  m.translation,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colors.onSurface,
+                  ),
+                )
+              else
+                AiMessageMarkdown(text: m.translation),
             ],
             if (_chat.translating.contains(m.id))
               Padding(

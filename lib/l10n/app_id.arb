@@ -578,5 +578,6 @@
   "aiImagesSearching": "Mencari gambar…",
   "aiImagesUnavailable": "Gambar tidak tersedia. Coba lagi nanti.",
   "aiImageShare": "Simpan atau bagikan gambar",
-  "aiImagesHelp": "Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Gambar berasal dari Wikimedia Commons dan disimpan bersama chat di perangkat ini. Ketuk gambar untuk memperbesar atau membagikannya, dan ketuk sumbernya untuk melihat kredit dan lisensi. Topik gambar dikirim ke Wikimedia; judul gambar dan tautan sumber dikirim ke AI."
+  "aiImagesHelp": "Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Perangkat ini mencari gambar di web dan menggunakan Wikimedia Commons jika diperlukan. Gambar disimpan di sini bersama chat. Ketuk gambar untuk memperbesar atau membagikannya, dan sumbernya untuk melihat hak penggunaan. Topik dikirim ke layanan pencarian; judul dan tautan sumber ke AI. Gambar tidak diunggah ke Bantera.",
+  "aiImagesRights": "Periksa hak penggunaan di sumber"
 }

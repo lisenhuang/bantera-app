@@ -1,4 +1,5 @@
 import AVFoundation
+import CallKit
 import Flutter
 import UIKit
 import XCTest
@@ -7,6 +8,20 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testAiCallKitIsAudioOnlyAndHumanCallsRetainVideo() {
+    XCTAssertFalse(BanteraCallKitBridge.configuration(ai: true).supportsVideo)
+    XCTAssertTrue(BanteraCallKitBridge.configuration(ai: false).supportsVideo)
+    let ai = BanteraCallKitBridge.callUpdate(for: [
+      "callerUserId": "BA07E2A0-A100-4000-8000-000000000001",
+      "callerName": "Bantera AI", "mediaKind": "video"
+    ])
+    XCTAssertFalse(ai.hasVideo)
+    XCTAssertEqual(ai.localizedCallerName, "Bantera AI")
+    XCTAssertFalse(ai.supportsHolding)
+    XCTAssertTrue(BanteraCallKitBridge.callUpdate(for: [
+      "callerUserId": "human", "mediaKind": "video"
+    ]).hasVideo)
+  }
   @MainActor
   func testAiAudioCapturesAndPlaysAfterSpeakerSwitch() async throws {
     guard ProcessInfo.processInfo.environment["BANTERA_TEST_AUDIO_HARDWARE"] == "1" else {
@@ -46,6 +61,82 @@ class RunnerTests: XCTestCase {
   }
 }
 
+
+// These tests resample in-memory PCM only. They never start an audio unit,
+// activate an audio session, or require microphone permission.
+final class AiAudioRateTests: XCTestCase {
+  let rates = [8000.0, 16000.0, 24000.0, 44100.0, 48000.0]
+  func pcm(_ frames: Int, rate: Double, start: Int = 0) -> Data {
+    var samples = [Int16](repeating: 0, count: frames)
+    for index in samples.indices { samples[index] = Int16(sin(Double(start + index) * 2 * .pi * 440 / rate) * 5000) }
+    return samples.withUnsafeBytes { Data($0) }
+  }
+  func testFragmentedPlaybackConvertsEveryFrame() throws {
+    for rate in rates {
+      let converter = try BanteraPhoneAudio.PcmConverter(from: 24000, to: rate)
+      var input = 0, output = 0
+      for n in [101,777,240,137,400,733,1024,380,2000,10000,8208] {
+        output += try converter.convert(pcm(n, rate: 24000, start: input)).count / 2
+        input += n
+      }
+      XCTAssertEqual(input, 24000)
+      XCTAssertEqual(output, Int(rate), "rate \(rate)")
+    }
+  }
+  func testOneLargePacketDoesNotTruncate() throws {
+    for rate in rates {
+      let converter = try BanteraPhoneAudio.PcmConverter(from: 24000, to: rate)
+      XCTAssertEqual(try converter.convert(pcm(24000 * 6, rate: 24000)).count / 2, Int(rate * 6))
+    }
+  }
+  func testCaptureStaysAt16kAcrossHardwareRates() throws {
+    for rate in rates {
+      let converter = try BanteraPhoneAudio.PcmConverter(from: rate, to: 16000)
+      var input = 0, output = 0
+      while input < Int(rate) {
+        let n = min(127, Int(rate) - input)
+        output += try converter.convert(pcm(n, rate: rate, start: input)).count / 2
+        input += n
+      }
+      XCTAssertEqual(output, 16000, "rate \(rate)")
+    }
+  }
+  func testAccountingPreservesSourceFramesAcrossRateChange() throws {
+    var progress = BanteraPhoneAudio.PlaybackProgress()
+    progress.enqueue(24000)
+    progress.render(24000, sampleRate: 48000, drained: false)
+    XCTAssertEqual(progress.frames, 12000)
+    let queued = pcm(24000, rate: 48000)
+    let newRoute = try BanteraPhoneAudio.PcmConverter(from: 48000, to: 16000).convert(queued)
+    XCTAssertEqual(newRoute.count / 2, 8000)
+    progress.render(4000, sampleRate: 16000, drained: false)
+    XCTAssertEqual(progress.frames, 18000)
+    progress.render(4000, sampleRate: 16000, drained: true)
+    XCTAssertEqual(progress.frames, 24000)
+  }
+  func testInterruptionDiscardsOnlyUnplayedFrames() {
+    var progress = BanteraPhoneAudio.PlaybackProgress()
+    progress.enqueue(24000)
+    progress.render(4800, sampleRate: 48000, drained: false)
+    progress.clear()
+    progress.enqueue(24000)
+    progress.render(16000, sampleRate: 16000, drained: true)
+    XCTAssertEqual(progress.frames, 26400)
+  }
+  func testFractionalAccountingAndConverterReset() throws {
+    var progress = BanteraPhoneAudio.PlaybackProgress()
+    progress.enqueue(24000)
+    for _ in 0..<440 { progress.render(100, sampleRate: 44100, drained: false) }
+    progress.render(100, sampleRate: 44100, drained: true)
+    XCTAssertEqual(progress.frames, 24000)
+    let converter = try BanteraPhoneAudio.PcmConverter(from: 24000, to: 48000)
+    _ = try converter.convert(pcm(24000, rate: 24000))
+    converter.reset()
+    let silence = try converter.convert(Data(count: 480))
+    XCTAssertEqual(silence, Data(count: 960))
+    XCTAssertTrue(try converter.convert(Data()).isEmpty)
+  }
+}
 
 class PracticeWidgetTests: XCTestCase {
   func testMidnightAndSignOutNeverShowOldCounts() {

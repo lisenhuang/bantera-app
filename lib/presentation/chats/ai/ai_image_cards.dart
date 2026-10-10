@@ -64,8 +64,12 @@ class AiImageCards extends StatelessWidget {
                             files: [
                               XFile(path(image.file!), mimeType: image.mime),
                             ],
-                            text:
-                                '${image.title}\n${image.author} · ${image.license}\n${image.sourceUrl}',
+                            text: [
+                              image.title,
+                              image.author,
+                              image.license,
+                              image.sourceUrl,
+                            ].where((v) => v.isNotEmpty).join('\n'),
                             sharePositionOrigin: box == null
                                 ? null
                                 : box.localToGlobal(Offset.zero) & box.size,
@@ -105,7 +109,12 @@ class AiImageCards extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${image.author} · ${image.license}',
+                          [
+                            image.author,
+                            image.license.isEmpty
+                                ? l.aiImagesRights
+                                : image.license,
+                          ].where((v) => v.isNotEmpty).join(' · '),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall,
@@ -113,7 +122,7 @@ class AiImageCards extends StatelessWidget {
                         TextButton.icon(
                           onPressed: () => _source(image.sourceUrl),
                           icon: const Icon(Icons.open_in_new, size: 18),
-                          label: const Text('Wikimedia Commons'),
+                          label: Text(image.sourceName),
                         ),
                       ],
                     ),
@@ -181,7 +190,12 @@ class AiImageCards extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
                     child: Text(
-                      '${image.author} · ${image.license}',
+                      [
+                        image.author,
+                        image.license.isEmpty
+                            ? l.aiImagesRights
+                            : image.license,
+                      ].where((v) => v.isNotEmpty).join(' · '),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall,
@@ -189,7 +203,7 @@ class AiImageCards extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () => _source(image.sourceUrl),
-                    child: const Text('Wikimedia Commons'),
+                    child: Text(image.sourceName),
                   ),
                 ],
               ),

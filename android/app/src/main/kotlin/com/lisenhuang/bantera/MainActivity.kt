@@ -53,13 +53,15 @@ private const val TARGET_RATE = 16000
 class MainActivity : FlutterActivity() {
     private val channelName = "bantera/video_processing"
     private var aiAudioBridge: BanteraAiAudioBridge? = null
+    private var waveformBridge: AudioWaveformBridge? = null
 
-    override fun onDestroy() { aiAudioBridge?.dispose(); super.onDestroy() }
+    override fun onDestroy() { waveformBridge?.dispose(); aiAudioBridge?.dispose(); super.onDestroy() }
 
     private var photoSaveBridge: PhotoSaveBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        waveformBridge = AudioWaveformBridge(flutterEngine.dartExecutor.binaryMessenger)
         aiAudioBridge = BanteraAiAudioBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         photoSaveBridge = PhotoSaveBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/app_updates")

@@ -133,11 +133,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => const AiChatScreen(),
-                                    ),
-                                  ),
+                                  onTap: () => openAiChat(context),
                                 ),
                               ),
                               _ChatThreadItem() => _ThreadCard(

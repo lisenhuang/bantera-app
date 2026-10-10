@@ -2003,5 +2003,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Demande des images pour t’entraîner à décrire ce que tu vois. Elles proviennent de Wikimedia Commons et sont enregistrées avec ta discussion sur cet appareil. Touche une image pour l’agrandir ou la partager, et sa source pour consulter les crédits et la licence. Les sujets sont envoyés à Wikimedia ; les titres et liens sources sont envoyés à l’IA.';
+      'Demande des images pour t’entraîner à décrire ce que tu vois. Cet appareil cherche des images sur le web et utilise Wikimedia Commons si nécessaire. Elles sont enregistrées ici avec ta discussion. Touche une image pour l’agrandir ou la partager, et sa source pour consulter les droits d’utilisation. Les sujets vont au moteur de recherche ; les titres et liens sources à l’IA. Les images ne sont pas envoyées à Bantera.';
+
+  @override
+  String get aiImagesRights => 'Consulter les droits auprès de la source';
 }

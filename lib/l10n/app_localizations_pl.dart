@@ -2014,5 +2014,8 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Poproś o obrazy, aby ćwiczyć opisywanie tego, co widzisz. Obrazy pochodzą z Wikimedia Commons i są zapisywane z czatem na tym urządzeniu. Dotknij obrazu, aby go powiększyć lub udostępnić, a źródła, aby sprawdzić autorstwo i licencję. Tematy obrazów trafiają do Wikimedia, a tytuły i linki do źródeł do AI.';
+      'Poproś o obrazy, aby ćwiczyć opisywanie tego, co widzisz. Urządzenie szuka obrazów w internecie i w razie potrzeby korzysta z Wikimedia Commons. Obrazy są zapisywane tutaj z czatem. Dotknij obrazu, aby go powiększyć lub udostępnić, a źródła, aby sprawdzić prawa do wykorzystania. Tematy trafiają do wyszukiwarki, tytuły i linki źródeł do AI. Obrazy nie są przesyłane do Bantera.';
+
+  @override
+  String get aiImagesRights => 'Sprawdź prawa do wykorzystania u źródła';
 }

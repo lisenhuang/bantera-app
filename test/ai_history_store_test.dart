@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
+import 'package:app/infrastructure/ai/ai_image_search.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -114,6 +115,39 @@ void main() {
       expect(reopened.context(), isEmpty);
     },
   );
+  test(
+    'image context keeps speech checkpoint separate from attachment labels',
+    () {
+      final message = AiMessage(
+        role: 'model',
+        text: "You're after skewers.",
+        images: [
+          const AiImageAttachment(
+            title: 'Skewers',
+            url: 'https://example.com/image.jpg',
+            sourceUrl: 'https://example.com',
+            author: '',
+            license: 'unknown',
+            mime: 'image/jpeg',
+          ),
+        ],
+      );
+      final context = AiHistoryStore.contextFor([message]).single;
+      expect(context['resumeText'], "You're after skewers.");
+      expect(context['text'], contains('[Shared image: Skewers'));
+      expect(
+        AiHistoryStore.contextFor([
+          AiMessage(role: 'user', text: 'Hi'),
+        ]).single.containsKey('resumeText'),
+        isFalse,
+      );
+      final long = AiHistoryStore.contextFor([
+        AiMessage(role: 'model', text: 'a' * 2500),
+      ]).single;
+      expect(long['resumeText']!.length, 2000);
+    },
+  );
+
   test(
     'new messages retain their original zone after travelling and reopening',
     () async {

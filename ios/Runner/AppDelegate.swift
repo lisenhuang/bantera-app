@@ -23,6 +23,7 @@ import UserNotifications
   var practiceWidgetBridge: BanteraPracticeWidgetBridge?
   var aiAudioBridge: BanteraAiAudioBridge?
   private var photoSaveBridge: BanteraPhotoSaveBridge?
+  private var waveformBridge: BanteraWaveformBridge?
 
   override func application(
     _ application: UIApplication,
@@ -88,10 +89,16 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    waveformBridge = BanteraWaveformBridge(messenger: callEngine.binaryMessenger)
     practiceWidgetBridge = BanteraPracticeWidgetBridge(messenger: callEngine.binaryMessenger)
     aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)
     aiCallActivityBridge = BanteraAiCallActivityBridge(messenger: callEngine.binaryMessenger)
     photoSaveBridge = BanteraPhotoSaveBridge(binaryMessenger: callEngine.binaryMessenger)
+    callKit.onAiAudioActivated = { [weak self] in
+      guard let audio = self?.aiAudioBridge else { throw NSError(domain: "BanteraAudio", code: 1) }
+      try audio.prepareCallKitAudio()
+    }
+    callKit.onAiAudioStopped = { [weak self] in self?.aiAudioBridge?.stopCallKitAudio() }
     callKit.attach(messenger: callEngine.binaryMessenger)
     videoProcessingBridge = BanteraVideoProcessingBridge(
       binaryMessenger: callEngine.binaryMessenger
@@ -2452,7 +2459,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
   }
   var diagnostics: String {
-    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) echoCancellation=\(echoCancellationEnabled) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(conversionError)"
+    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) sessionRate=\(AVAudioSession.sharedInstance().sampleRate) unitRate=\(phoneAudio?.sampleRate ?? 0) ioBuffer=\(AVAudioSession.sharedInstance().ioBufferDuration) echoCancellation=\(echoCancellationEnabled) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(phoneAudio?.conversionError ?? conversionError)"
   }
   private var playbackGeneration = 0
   private var drain: FlutterResult?
@@ -2497,8 +2504,11 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
         case "diagnostics": result(self.diagnostics)
         case "playedFrames": result(self.phoneAudio?.renderedFrames ?? self.playedFrames)
         case "start":
-          try self.start(callKitManaged: (call.arguments as? [String: Any])?["callKitManaged"] as? Bool == true)
-          self.startResult = result
+          let managed = (call.arguments as? [String: Any])?["callKitManaged"] as? Bool == true
+          if managed { try self.prepareCallKitAudio() }
+          else { try self.start() }
+          if self.captureBuffers > 0 { result(nil) }
+          else { self.startResult = result }
         case "startPlayback": try self.startPlayback(); result(nil)
         case "feed":
           if let bytes = call.arguments as? FlutterStandardTypedData { try self.feed(bytes.data) }
@@ -2540,8 +2550,17 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     try engine.start()
     player.play()
   }
+  // CallKit invokes this natively while activating the locked-screen call.
+  // Dart later attaches its input stream without restarting/deactivating audio.
+  func prepareCallKitAudio() throws {
+    if callKitManaged && phoneAudio?.running == true { return }
+    try start(callKitManaged: true)
+  }
+  func stopCallKitAudio() {
+    if callKitManaged { stop() }
+  }
   func start(callKitManaged: Bool = false) throws {
-    stop()
+    stop(deactivateSession: !callKitManaged)
     self.callKitManaged = callKitManaged
     captureBuffers = 0; capturedFrames = 0; playedFrames = 0; conversionError = ""
     let session = AVAudioSession.sharedInstance()
@@ -2552,8 +2571,18 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
       try session.setPrefersEchoCancelledInput(false)
     }
     try configureCallSession()
-    if !callKitManaged { try session.setActive(true) }
-    let phone = try BanteraPhoneAudio(onInput: { [weak self] data in
+    if !callKitManaged {
+      // Preferences are hints; always use the actual rate after activation.
+      // CallKit has already activated its session and owns that lifecycle.
+      try? session.setPreferredSampleRate(48000)
+      try? session.setPreferredIOBufferDuration(0.02)
+      try session.setActive(true)
+      let builtInOnly = session.currentRoute.outputs.allSatisfy {
+        $0.portType == .builtInReceiver || $0.portType == .builtInSpeaker
+      }
+      if builtInOnly { try session.overrideOutputAudioPort(.speaker) }
+    }
+    let phone = try BanteraPhoneAudio(sampleRate: session.sampleRate, onInput: { [weak self] data in
       guard let self, self.phoneAudio != nil else { return }
       self.captureBuffers += 1
       self.capturedFrames += data.count / 2
@@ -2566,18 +2595,12 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     })
     self.phoneAudio = phone
     try phone.start()
-    if !callKitManaged {
-      // Start hands-free only when no headset is selected. Use a transient
-      // override so switching it off restores the receiver/headset route.
-      let builtInOnly = session.currentRoute.outputs.allSatisfy {
-        $0.portType == .builtInReceiver || $0.portType == .builtInSpeaker
-      }
-      if builtInOnly { try session.overrideOutputAudioPort(.speaker) }
-    }
     routeObserver = NotificationCenter.default.addObserver(
       forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
     ) { [weak self] _ in
-      guard let self, self.phoneAudio != nil else { return }
+      guard let self, let phone = self.phoneAudio else { return }
+      do { try phone.updateSampleRate(AVAudioSession.sharedInstance().sampleRate) }
+      catch { self.conversionError = "route-format"; self.failAudio(); return }
       self.emitRoute()
     }
     emitRoute()
@@ -2655,7 +2678,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     engine?.stop()
     player?.stop(); engine = nil; player = nil
   }
-  func stop() {
+  func stop(deactivateSession: Bool = true) {
     let ownedSession = engine != nil || phoneAudio != nil
     phoneAudio?.stop(); phoneAudio = nil
     if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
@@ -2665,7 +2688,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     healthTimer?.invalidate(); healthTimer = nil
     tearDownEngine()
     queued.removeAll(); pending = 0; drain?(nil); drain = nil
-    if ownedSession && !callKitManaged {
+    if ownedSession && !callKitManaged && deactivateSession {
       try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
     callKitManaged = false
@@ -2683,19 +2706,89 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
 final class BanteraPhoneAudio {
   private var unit: AudioUnit?
   private(set) var running = false
+  private(set) var sampleRate: Double
+  private(set) var conversionError = ""
   private let lock = NSLock()
-  private let capacity = 24000 * 90
-  private var samples = [Int16](repeating: 0, count: 24000 * 90)
+  private var capacity: Int
+  private var samples: [Int16]
   private var readIndex = 0, writeIndex = 0, count = 0
-  private var renderedCount = 0
+  private var progress = PlaybackProgress()
   private var awaitingOutput = false
   private var playbackGeneration = 0
+  private var captureGeneration = 0
+  private let maximumFrames: UInt32 = 4096
   private let microphoneBuffer = UnsafeMutablePointer<Int16>.allocate(capacity: 4096)
-  private let inputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 24000, channels: 1, interleaved: false)!
-  private let captureFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000, channels: 1, interleaved: false)!
-  private var converter: AVAudioConverter!
+  private let captureQueue = DispatchQueue(label: "bantera.ai.capture", qos: .userInitiated)
+  private let captureQueueKey = DispatchSpecificKey<Bool>()
+  private var captureConverter: PcmConverter
+  private var playbackConverter: PcmConverter
   private let onInput: (Data) -> Void
   private let onDrained: () -> Void
+
+  // Keep the Flutter listening counter in the network's 24 kHz frame units.
+  // A route change resamples only queued audio, so completed frames stay intact.
+  struct PlaybackProgress {
+    private var completed = 0.0
+    private var queued = 0.0
+    var frames: Int { Int((completed + 0.0000001).rounded(.down)) }
+    mutating func enqueue(_ frames: Int) { queued += Double(frames) }
+    mutating func render(_ frames: Int, sampleRate: Double, drained: Bool) {
+      let consumed = drained ? queued : min(queued, Double(frames) * 24000 / sampleRate)
+      completed += consumed
+      queued -= consumed
+    }
+    mutating func clear() { queued = 0 }
+  }
+
+  // Stateful conversion preserves filter history and fractional frames across
+  // network chunks. Respect the converter's requested input size: returning an
+  // entire large packet can leave samples unconsumed or truncate that packet.
+  final class PcmConverter {
+    private let inputFormat: AVAudioFormat
+    private let outputFormat: AVAudioFormat
+    private let converter: AVAudioConverter
+    init(from sourceRate: Double, to targetRate: Double) throws {
+      guard sourceRate.isFinite, targetRate.isFinite, sourceRate > 0, targetRate > 0,
+        let input = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: sourceRate, channels: 1, interleaved: false),
+        let output = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: targetRate, channels: 1, interleaved: false),
+        let converter = AVAudioConverter(from: input, to: output) else { throw BanteraPhoneAudio.error(-1) }
+      inputFormat = input; outputFormat = output; self.converter = converter
+      converter.primeMethod = .none
+    }
+    func reset() { converter.reset() }
+    func convert(_ data: Data) throws -> Data {
+      guard data.count % 2 == 0,
+        let output = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: 4096) else { throw BanteraPhoneAudio.error(-1) }
+      let frames = data.count / 2
+      var position = 0
+      var converted = Data()
+      while true {
+        var error: NSError?
+        var allocationFailed = false
+        let status = converter.convert(to: output, error: &error) { requested, state in
+          guard position < frames else { state.pointee = .noDataNow; return nil }
+          let length = min(Int(requested), frames - position)
+          guard length > 0,
+            let input = AVAudioPCMBuffer(pcmFormat: self.inputFormat, frameCapacity: AVAudioFrameCount(length)),
+            let destination = input.int16ChannelData?[0] else {
+            allocationFailed = true; state.pointee = .noDataNow; return nil
+          }
+          input.frameLength = AVAudioFrameCount(length)
+          data.copyBytes(to: UnsafeMutableRawBufferPointer(start: destination, count: length * 2),
+            from: (position * 2)..<((position + length) * 2))
+          position += length
+          state.pointee = .haveData
+          return input
+        }
+        if let error { throw error }
+        guard !allocationFailed, status != .error else { throw BanteraPhoneAudio.error(-1) }
+        if output.frameLength > 0, let data = output.int16ChannelData?[0] {
+          converted.append(Data(bytes: data, count: Int(output.frameLength) * 2))
+        }
+        if status == .inputRanDry || status == .endOfStream { return converted }
+      }
+    }
+  }
 
   var echoCancellationEnabled: Bool {
     guard let unit else { return false }
@@ -2706,17 +2799,22 @@ final class BanteraPhoneAudio {
   }
   var renderedFrames: Int {
     lock.lock(); defer { lock.unlock() }
-    return renderedCount
+    return progress.frames
   }
   var hasQueuedAudio: Bool {
     lock.lock(); defer { lock.unlock() }
     return count > 0 || awaitingOutput
   }
 
-  init(onInput: @escaping (Data) -> Void, onDrained: @escaping () -> Void) throws {
+  init(sampleRate: Double, onInput: @escaping (Data) -> Void, onDrained: @escaping () -> Void) throws {
     self.onInput = onInput
     self.onDrained = onDrained
-    converter = AVAudioConverter(from: inputFormat, to: captureFormat)
+    self.sampleRate = sampleRate
+    captureConverter = try PcmConverter(from: sampleRate, to: 16000)
+    playbackConverter = try PcmConverter(from: 24000, to: sampleRate)
+    capacity = Int(sampleRate * 90)
+    samples = [Int16](repeating: 0, count: capacity)
+    captureQueue.setSpecific(key: captureQueueKey, value: true)
     var description = AudioComponentDescription(componentType: kAudioUnitType_Output,
       componentSubType: kAudioUnitSubType_VoiceProcessingIO, componentManufacturer: kAudioUnitManufacturer_Apple,
       componentFlags: 0, componentFlagsMask: 0)
@@ -2727,21 +2825,19 @@ final class BanteraPhoneAudio {
       var enabled: UInt32 = 1
       try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &enabled, 4))
       try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &enabled, 4))
-      var stream = AudioStreamBasicDescription(mSampleRate: 24000, mFormatID: kAudioFormatLinearPCM,
-        mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
-        mBytesPerPacket: 2, mFramesPerPacket: 1, mBytesPerFrame: 2, mChannelsPerFrame: 1, mBitsPerChannel: 16, mReserved: 0)
-      let size = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
-      try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &stream, size))
-      try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &stream, size))
-      var maximum: UInt32 = 4096
+      try configureFormat(unit)
+      var maximum = maximumFrames
       try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_MaximumFramesPerSlice, kAudioUnitScope_Global, 0, &maximum, 4))
+      // The capture callback supplies microphoneBuffer to AudioUnitRender.
+      var allocate: UInt32 = 0
+      try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, 1, &allocate, 4))
       var bypass: UInt32 = 0
       try Self.check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_BypassVoiceProcessing, kAudioUnitScope_Global, 0, &bypass, 4))
       var render = AURenderCallbackStruct(inputProc: Self.render, inputProcRefCon: Unmanaged.passUnretained(self).toOpaque())
       var capture = AURenderCallbackStruct(inputProc: Self.capture, inputProcRefCon: Unmanaged.passUnretained(self).toOpaque())
       try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0,
         &render, UInt32(MemoryLayout<AURenderCallbackStruct>.size)))
-      try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0,
+      try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 1,
         &capture, UInt32(MemoryLayout<AURenderCallbackStruct>.size)))
       try Self.check(AudioUnitInitialize(unit))
     } catch {
@@ -2750,6 +2846,14 @@ final class BanteraPhoneAudio {
     }
   }
 
+  private func configureFormat(_ unit: AudioUnit) throws {
+    var stream = AudioStreamBasicDescription(mSampleRate: sampleRate, mFormatID: kAudioFormatLinearPCM,
+      mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
+      mBytesPerPacket: 2, mFramesPerPacket: 1, mBytesPerFrame: 2, mChannelsPerFrame: 1, mBitsPerChannel: 16, mReserved: 0)
+    let size = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
+    try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &stream, size))
+    try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &stream, size))
+  }
   private static func error(_ code: OSStatus) -> NSError { NSError(domain: "BanteraPhoneAudio", code: Int(code)) }
   private static func check(_ status: OSStatus) throws { if status != noErr { throw error(status) } }
   func start() throws {
@@ -2761,23 +2865,75 @@ final class BanteraPhoneAudio {
     }
     running = true
   }
-  func stop() {
+  func updateSampleRate(_ rate: Double) throws {
+    guard rate.isFinite, rate > 0 else { throw Self.error(-1) }
+    guard abs(rate - sampleRate) > 0.5 else { return }
+    guard let unit else { throw Self.error(-1) }
+    // Stop callbacks before replacing their format, buffers, or converters.
+    try Self.check(AudioOutputUnitStop(unit))
     running = false
+    lock.lock(); captureGeneration += 1; lock.unlock()
+    try Self.check(AudioUnitUninitialize(unit))
+    drainCaptureQueue()
+    var remaining = [Int16]()
+    lock.lock()
+    remaining.reserveCapacity(count)
+    for offset in 0..<count { remaining.append(samples[(readIndex + offset) % capacity]) }
+    lock.unlock()
+    let oldData = remaining.withUnsafeBytes { Data($0) }
+    let resampled = try PcmConverter(from: sampleRate, to: rate).convert(oldData)
+    let nextCapture = try PcmConverter(from: rate, to: 16000)
+    let nextPlayback = try PcmConverter(from: 24000, to: rate)
+    captureQueue.sync { captureConverter = nextCapture }
+    playbackConverter = nextPlayback
+    lock.lock()
+    sampleRate = rate
+    capacity = max(Int(rate * 90), resampled.count / 2 + 1)
+    samples = [Int16](repeating: 0, count: capacity)
+    readIndex = 0; writeIndex = 0; count = 0
+    appendLocked(resampled)
+    playbackGeneration += 1
+    let version = playbackGeneration
+    let finishOutput = count == 0 && awaitingOutput
+    lock.unlock()
+    try configureFormat(unit)
+    try Self.check(AudioUnitInitialize(unit))
+    try start()
+    // Any final buffer submitted on the old route is absent from the queue.
+    // Its old drain callback is invalidated; finish it only once on this route.
+    if finishOutput { scheduleDrain(version) }
+  }
+  func stop() {
     if let unit {
       AudioOutputUnitStop(unit)
+      running = false
+      lock.lock(); captureGeneration += 1; lock.unlock()
       AudioUnitUninitialize(unit)
       AudioComponentInstanceDispose(unit)
       self.unit = nil
     }
+    drainCaptureQueue()
     clear()
+  }
+  private func drainCaptureQueue() {
+    // A queued conversion can own the last reference. Its release may run
+    // deinit here; synchronously waiting on this same queue would deadlock.
+    if DispatchQueue.getSpecific(key: captureQueueKey) != true { captureQueue.sync { } }
   }
   deinit { stop(); microphoneBuffer.deallocate() }
 
   func feed(_ data: Data) throws {
     guard !data.isEmpty, data.count % 2 == 0 else { throw Self.error(-1) }
+    let converted = try playbackConverter.convert(data)
     lock.lock(); defer { lock.unlock() }
+    guard converted.count / 2 <= capacity - count else { throw Self.error(-1) }
+    appendLocked(converted)
+    progress.enqueue(data.count / 2)
+    awaitingOutput = count > 0
+    playbackGeneration += 1
+  }
+  private func appendLocked(_ data: Data) {
     let incoming = data.count / 2
-    guard incoming <= capacity - count else { throw Self.error(-1) }
     data.withUnsafeBytes { bytes in
       for index in 0..<incoming {
         samples[writeIndex] = Int16(littleEndian: bytes.loadUnaligned(fromByteOffset: index * 2, as: Int16.self))
@@ -2785,13 +2941,31 @@ final class BanteraPhoneAudio {
       }
     }
     count += incoming
-    awaitingOutput = true
-    playbackGeneration += 1
   }
   func clear() {
-    lock.lock(); readIndex = 0; writeIndex = 0; count = 0; awaitingOutput = false; playbackGeneration += 1; lock.unlock()
+    playbackConverter.reset()
+    lock.lock()
+    readIndex = 0; writeIndex = 0; count = 0; awaitingOutput = false; playbackGeneration += 1
+    progress.clear()
+    lock.unlock()
   }
 
+  private func scheduleDrain(_ version: Int) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      // Rendering submits a buffer before the hardware finishes playing it.
+      let session = AVAudioSession.sharedInstance()
+      let delay = session.outputLatency + session.ioBufferDuration
+      DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+        guard let self, self.running else { return }
+        self.lock.lock()
+        let complete = self.count == 0 && self.playbackGeneration == version && self.awaitingOutput
+        if complete { self.awaitingOutput = false }
+        self.lock.unlock()
+        if complete { self.onDrained() }
+      }
+    }
+  }
   private static let render: AURenderCallback = { context, _, _, _, frames, buffers in
     let owner = Unmanaged<BanteraPhoneAudio>.fromOpaque(context).takeUnretainedValue()
     guard let buffers, let data = buffers.pointee.mBuffers.mData else { return noErr }
@@ -2804,56 +2978,83 @@ final class BanteraPhoneAudio {
     }
     if available < Int(frames) { output.advanced(by: available).update(repeating: 0, count: Int(frames) - available) }
     owner.count -= available
-    owner.renderedCount += available
     let version = owner.playbackGeneration
     let drained = available > 0 && owner.count == 0
+    if available > 0 { owner.progress.render(available, sampleRate: owner.sampleRate, drained: drained) }
     owner.lock.unlock()
     buffers.pointee.mBuffers.mDataByteSize = frames * 2
-    if drained {
-      DispatchQueue.main.async { [weak owner] in
-        // Render submits the final buffer before the hardware finishes playing it.
-        // Keep the end-of-call drain open through that last output interval.
-        let session = AVAudioSession.sharedInstance()
-        let delay = session.outputLatency + session.ioBufferDuration
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak owner] in
-          guard let owner, owner.running else { return }
-          owner.lock.lock()
-          let complete = owner.count == 0 && owner.playbackGeneration == version
-          if complete { owner.awaitingOutput = false }
-          owner.lock.unlock()
-          if complete { owner.onDrained() }
-        }
-      }
-    }
+    if drained { owner.scheduleDrain(version) }
     return noErr
   }
 
   private static let capture: AURenderCallback = { context, flags, time, _, frames, _ in
     let owner = Unmanaged<BanteraPhoneAudio>.fromOpaque(context).takeUnretainedValue()
-    guard frames <= 4096, let unit = owner.unit else { return noErr }
+    guard frames <= owner.maximumFrames, let unit = owner.unit else { return noErr }
     var buffer = AudioBufferList(mNumberBuffers: 1,
       mBuffers: AudioBuffer(mNumberChannels: 1, mDataByteSize: frames * 2, mData: owner.microphoneBuffer))
     let status = AudioUnitRender(unit, flags, time, 1, frames, &buffer)
     guard status == noErr else { return status }
     let bytes = Data(bytes: owner.microphoneBuffer, count: Int(frames) * 2)
-    DispatchQueue.main.async { [weak owner] in owner?.convertCapture(bytes) }
+    owner.lock.lock()
+    let generation = owner.captureGeneration
+    owner.lock.unlock()
+    owner.captureQueue.async { [weak owner] in
+      guard let owner else { return }
+      do {
+        let converted = try owner.captureConverter.convert(bytes)
+        DispatchQueue.main.async { [weak owner] in
+          guard let owner, owner.running, owner.captureGeneration == generation, !converted.isEmpty else { return }
+          owner.onInput(converted)
+        }
+      } catch {
+        DispatchQueue.main.async { [weak owner] in
+          guard let owner, owner.captureGeneration == generation else { return }
+          owner.conversionError = "capture-resample"
+        }
+      }
+    }
     return noErr
   }
+}
 
-  private func convertCapture(_ data: Data) {
-    guard running,
-      let input = AVAudioPCMBuffer(pcmFormat: inputFormat, frameCapacity: AVAudioFrameCount(data.count / 2)),
-      let output = AVAudioPCMBuffer(pcmFormat: captureFormat, frameCapacity: AVAudioFrameCount(data.count / 3 + 32)),
-      let destination = input.int16ChannelData?[0] else { return }
-    input.frameLength = AVAudioFrameCount(data.count / 2)
-    data.copyBytes(to: UnsafeMutableRawBufferPointer(start: destination, count: data.count))
-    var supplied = false
-    var error: NSError?
-    converter.convert(to: output, error: &error) { _, state in
-      if supplied { state.pointee = .noDataNow; return nil }
-      supplied = true; state.pointee = .haveData; return input
+
+/// Offline amplitude analysis only: never activates or changes the audio session.
+private final class BanteraWaveformBridge {
+  private let channel: FlutterMethodChannel
+  private let queue = DispatchQueue(label: "bantera.waveform", qos: .utility)
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "bantera/audio_waveform", binaryMessenger: messenger)
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "extract", let args = call.arguments as? [String: Any],
+            let path = args["path"] as? String else { result(FlutterMethodNotImplemented); return }
+      self?.queue.async {
+        let peaks = (try? Self.extract(path)) ?? []
+        DispatchQueue.main.async { result(peaks) }
+      }
     }
-    guard error == nil, output.frameLength > 0, let samples = output.int16ChannelData?[0] else { return }
-    onInput(Data(bytes: samples, count: Int(output.frameLength) * 2))
+  }
+  static func extract(_ path: String) throws -> [Double] {
+    let file = try AVAudioFile(forReading: URL(fileURLWithPath: path), commonFormat: .pcmFormatFloat32, interleaved: false)
+    let format = file.processingFormat
+    guard file.length > 0, format.sampleRate > 0, format.channelCount <= 8,
+          Double(file.length) / format.sampleRate <= 600,
+          let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 4096) else { return [] }
+    var peaks = [Double](repeating: 0, count: 64)
+    var position: Int64 = 0
+    let deadline = Date().addingTimeInterval(10)
+    while position < file.length {
+      guard Date() < deadline else { return [] }
+      try file.read(into: buffer)
+      guard buffer.frameLength > 0, let samples = buffer.floatChannelData else { break }
+      for frame in 0..<Int(buffer.frameLength) {
+        let bucket = min(63, Int((position + Int64(frame)) * 64 / file.length))
+        for c in 0..<Int(format.channelCount) {
+          let value = abs(Double(samples[c][frame]))
+          if value.isFinite { peaks[bucket] = max(peaks[bucket], min(1, value)) }
+        }
+      }
+      position += Int64(buffer.frameLength)
+    }
+    return peaks
   }
 }

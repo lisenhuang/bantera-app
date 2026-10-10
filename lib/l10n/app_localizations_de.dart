@@ -2001,5 +2001,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Bitte um Bilder, um zu üben, was du siehst, zu beschreiben. Bilder stammen von Wikimedia Commons und werden mit deinem Chat auf diesem Gerät gespeichert. Tippe auf ein Bild, um es zu vergrößern oder zu teilen, und auf die Quelle für Urheber- und Lizenzangaben. Bildthemen werden an Wikimedia und Bildtitel sowie Quellenlinks an die KI gesendet.';
+      'Bitte um Bilder, um das Beschreiben zu üben. Dieses Gerät sucht Bilder im Web und nutzt bei Bedarf Wikimedia Commons. Die Bilder werden hier im Chat gespeichert. Tippe auf ein Bild zum Vergrößern oder Teilen und auf die Quelle für Nutzungsrechte. Suchthemen gehen an den Suchanbieter, Titel und Quellenlinks an die KI. Bilder werden nicht zu Bantera hochgeladen.';
+
+  @override
+  String get aiImagesRights => 'Nutzungsrechte bei der Quelle prüfen';
 }

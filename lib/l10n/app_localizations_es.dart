@@ -2003,5 +2003,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Pide imágenes para practicar cómo describir lo que ves. Las imágenes provienen de Wikimedia Commons y se guardan con tu chat en este dispositivo. Toca una imagen para ampliarla o compartirla, y su fuente para ver los créditos y la licencia. Los temas se envían a Wikimedia; los títulos y enlaces de origen se envían a la IA.';
+      'Pide imágenes para practicar cómo describir lo que ves. Este dispositivo busca imágenes en la web y usa Wikimedia Commons como alternativa. Se guardan aquí con tu chat. Toca una imagen para ampliarla o compartirla y su fuente para consultar los derechos de uso. Los temas se envían al buscador; los títulos y enlaces de origen, a la IA. Las imágenes no se suben a Bantera.';
+
+  @override
+  String get aiImagesRights => 'Consulta los derechos de uso en la fuente';
 }

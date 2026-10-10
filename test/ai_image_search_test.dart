@@ -60,19 +60,16 @@ void main() {
     },
   );
   test(
-    'only trusted image hosts, raster types and safe local filenames survive history',
+    'only public HTTPS URLs, raster types and safe local filenames survive history',
     () {
       expect(AiImageAttachment.fromJson(picture.toJson()), isNotNull);
       for (final bad in [
         {...picture.toJson(), 'url': 'https://127.0.0.1/private.jpg'},
-        {
-          ...picture.toJson(),
-          'url': 'https://thumb.wikimedia.org.evil.com/a.jpg',
-        },
+        {...picture.toJson(), 'url': 'https://private.internal/a.jpg'},
         {...picture.toJson(), 'url': 'https://user@thumb.wikimedia.org/a.jpg'},
         {...picture.toJson(), 'mime': 'image/svg+xml'},
         {...picture.toJson(), 'file': '../history.json'},
-        {...picture.toJson(), 'sourceUrl': 'https://example.com/file'},
+        {...picture.toJson(), 'sourceUrl': 'https://localhost/file'},
       ]) {
         expect(AiImageAttachment.fromJson(bad), isNull);
       }
@@ -116,6 +113,72 @@ void main() {
       expect(AiImageSearch.parseResults({'error': 'unavailable'}), isEmpty);
     },
   );
+  test(
+    'web image results allow multiple publishers without inventing licences',
+    () {
+      final result = AiImageSearch.parseWebResults(
+        '''<a class="iusc" m='{ "t": "A mountain", "turl": "https://images.example.org/mountain.jpg", "purl": "https://www.example.org/travel/mountain" }'></a>
+      <a class="iusc" m='{ "t": "A forest", "murl": "https://cdn.other.org/forest.png", "purl": "https://other.org/forest" }'></a>
+      <a class="iusc" m='{ "t": "Private", "murl": "https://10.0.0.1/private", "purl": "https://other.org/private" }'></a>
+      <a class="iusc" m='not json'></a>''',
+      );
+      expect(result, hasLength(2));
+      expect(result.first.sourceName, 'example.org');
+      expect(result.first.license, isEmpty);
+      final restored = AiImageAttachment.fromJson(
+        result.first.saved('web.jpg').toJson(),
+      )!;
+      expect(restored.sourceName, 'example.org');
+      expect(restored.license, isEmpty);
+      expect(restored.file, 'web.jpg');
+      expect(result.last.sourceName, 'other.org');
+      expect(
+        result.last.withMime('image/png').saved('picture.png').mime,
+        'image/png',
+      );
+      expect(
+        AiImageSearch.parseWebResults('<form id="b_captcha"></form>'),
+        isEmpty,
+      );
+    },
+  );
+  test(
+    'image downloads exclude private DNS targets, mapped IPv4 and local IPv6',
+    () {
+      for (final address in [
+        '127.0.0.1',
+        '10.1.2.3',
+        '172.16.0.1',
+        '192.168.1.1',
+        '169.254.169.254',
+        '100.64.0.1',
+        '0.0.0.0',
+        '224.0.0.1',
+        '::1',
+        '::',
+        'fe80::1',
+        'fc00::1',
+        '::ffff:127.0.0.1',
+        '2001:db8::1',
+        '2002:a00:1::1',
+        '2001:0:1234::1',
+      ]) {
+        expect(
+          AiImageSearch.isPublicAddress(InternetAddress(address)),
+          false,
+          reason: address,
+        );
+      }
+      for (final address in ['1.1.1.1', '8.8.8.8', '2606:4700:4700::1111']) {
+        expect(
+          AiImageSearch.isPublicAddress(InternetAddress(address)),
+          true,
+          reason: address,
+        );
+      }
+    },
+  );
+
   test('invalid queries and non-images fail safely', () async {
     expect(await AiImageSearch().search(''), isEmpty);
     expect(await AiImageSearch().search('x' * 241), isEmpty);

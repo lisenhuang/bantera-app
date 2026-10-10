@@ -1864,5 +1864,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '이미지를 요청하고 보이는 것을 설명하는 연습을 해 보세요. 이미지는 Wikimedia Commons에서 가져오며 이 기기의 채팅에 저장됩니다. 이미지를 눌러 확대하거나 공유하고, 출처를 눌러 저작자와 라이선스를 확인하세요. 검색 주제는 Wikimedia에, 이미지 제목과 출처 링크는 AI에 전송됩니다.';
+      '사진을 요청하고 보이는 것을 설명하는 연습을 해 보세요. 이 기기에서 웹 전체의 이미지를 검색하고 필요하면 Wikimedia Commons를 사용하며, 이미지는 이 기기의 채팅에 저장됩니다. 이미지를 눌러 확대하거나 공유하고, 출처에서 이용 권한을 확인하세요. 검색 주제는 검색 서비스에, 제목과 출처 링크는 AI에 전송됩니다. 이미지는 Bantera에 업로드되지 않습니다.';
+
+  @override
+  String get aiImagesRights => '이용 권한은 출처에서 확인하세요';
 }

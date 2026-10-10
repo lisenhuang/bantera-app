@@ -97,7 +97,7 @@ void main() {
       expect(chat.starts, 0);
       accepted.complete(200);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(methods, ['answerReady']);
+      expect(methods, ['answerReady', 'audioStarted']);
       expect(callback.accepted, isTrue);
       expect(chat.starts, 1);
       expect(chat.calling, isTrue);
@@ -126,6 +126,65 @@ void main() {
       expect(methods.last, 'end');
     },
   );
+  test(
+    'activation before answer is retained without starting before acceptance',
+    () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final chat = _Call();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat.disposed ? _Call() : chat,
+        acceptCallback: (_) async => 200,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('audioActivated');
+      await event('audioRoute', speaker: true);
+      expect(chat.starts, 0);
+      await event('answer');
+      expect(chat.starts, 1);
+      expect(chat.speaker, isTrue);
+      expect(methods, ['answerReady', 'audioStarted']);
+      await event('audioActivated');
+      expect(chat.starts, 1);
+      await event('ended');
+      // An old activation must never start a subsequent callback.
+      callback.id = 'second';
+      callback.ringing = true;
+      await event('answer', id: 'second');
+      expect(chat.starts, 1);
+      await callback.close();
+    },
+  );
+  test(
+    'native audio failure ends the system call without opening a view',
+    () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: _Call.new,
+        acceptCallback: (_) async => 200,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('answer');
+      await event('audioFailed');
+      expect(callback.id, isNull);
+      expect(methods.last, 'end');
+    },
+  );
   test('ending from conversation also closes the system call', () async {
     final service = CallKitService.forTesting();
     final methods = <String>[];
@@ -148,6 +207,6 @@ void main() {
     await chat.endCall();
     await Future<void>.delayed(Duration.zero);
     expect(callback.id, isNull);
-    expect(methods, ['answerReady', 'end']);
+    expect(methods, ['answerReady', 'audioStarted', 'end']);
   });
 }

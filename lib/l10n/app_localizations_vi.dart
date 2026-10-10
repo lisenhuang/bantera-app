@@ -1940,5 +1940,8 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Yêu cầu hình ảnh để luyện mô tả những gì bạn thấy. Hình ảnh đến từ Wikimedia Commons và được lưu cùng cuộc trò chuyện trên thiết bị này. Nhấn vào ảnh để phóng to hoặc chia sẻ, nhấn vào nguồn để xem tác giả và giấy phép. Chủ đề tìm kiếm được gửi đến Wikimedia; tiêu đề và liên kết nguồn được gửi đến AI.';
+      'Yêu cầu hình ảnh để luyện mô tả những gì bạn thấy. Thiết bị này tìm hình ảnh trên web và dùng Wikimedia Commons khi cần. Hình ảnh được lưu tại đây cùng cuộc trò chuyện. Chạm vào ảnh để phóng to hoặc chia sẻ, và vào nguồn để xem quyền sử dụng. Chủ đề được gửi tới dịch vụ tìm kiếm; tiêu đề và liên kết nguồn được gửi tới AI. Hình ảnh không được tải lên Bantera.';
+
+  @override
+  String get aiImagesRights => 'Kiểm tra quyền sử dụng tại nguồn';
 }

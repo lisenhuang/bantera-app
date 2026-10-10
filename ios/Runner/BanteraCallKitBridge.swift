@@ -3,34 +3,38 @@ import CallKit
 import Flutter
 import PushKit
 import WebRTC
+import UIKit
+import os
 
 /// Owns system calls independently of a Flutter view, including locked-screen launches.
 final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDelegate {
   private let provider: CXProvider
+  private let aiProvider: CXProvider
   private let controller = CXCallController()
   private var registry: PKPushRegistry!
   private var channel: FlutterMethodChannel?
   private var ready = false
   private var events: [[String: Any]] = []
   private var calls: [UUID: [String: Any]] = [:]
+  private var callProviders: [UUID: CXProvider] = [:]
   private var timers: [UUID: Timer] = [:]
   private var answers: [UUID: CXAnswerCallAction] = [:]
   private var outgoing = Set<UUID>()
   private var token: String?
   private var audioActive = false
+  var onAiAudioActivated: (() throws -> Void)?
+  var onAiAudioStopped: (() -> Void)?
+  private var answerTasks: [UUID: UIBackgroundTaskIdentifier] = [:]
+  private let logger = Logger(subsystem: "bantera.lisenhuang.com", category: "AiCallback")
   private var routeObserver: NSObjectProtocol?
   private let defaults = UserDefaults.standard
 
   override init() {
-    let config = CXProviderConfiguration()
-    config.supportsVideo = true
-    config.includesCallsInRecents = true
-    config.maximumCallGroups = 1
-    config.maximumCallsPerCallGroup = 1
-    config.supportedHandleTypes = [.generic]
-    provider = CXProvider(configuration: config)
+    provider = CXProvider(configuration: Self.configuration(ai: false))
+    aiProvider = CXProvider(configuration: Self.configuration(ai: true))
     super.init()
     provider.setDelegate(self, queue: .main)
+    aiProvider.setDelegate(self, queue: .main)
     routeObserver = NotificationCenter.default.addObserver(
       forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
     ) { [weak self] _ in
@@ -40,6 +44,41 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     registry = PKPushRegistry(queue: .main)
     registry.delegate = self
     registry.desiredPushTypes = [.voIP]
+  }
+
+  static func configuration(ai: Bool) -> CXProviderConfiguration {
+    let config = CXProviderConfiguration()
+    config.supportsVideo = !ai
+    config.includesCallsInRecents = true
+    config.maximumCallGroups = 1
+    config.maximumCallsPerCallGroup = 1
+    config.supportedHandleTypes = [.generic]
+    return config
+  }
+
+  private static func isAi(_ data: [String: Any]) -> Bool {
+    (data["callerUserId"] as? String)?.lowercased() == "ba07e2a0-a100-4000-8000-000000000001"
+  }
+
+  private func provider(for data: [String: Any]) -> CXProvider {
+    Self.isAi(data) ? aiProvider : provider
+  }
+
+  private func provider(for id: UUID, data: [String: Any]) -> CXProvider {
+    callProviders[id] ?? provider(for: data)
+  }
+
+  static func callUpdate(for data: [String: Any]) -> CXCallUpdate {
+    let update = CXCallUpdate()
+    update.remoteHandle = CXHandle(type: .generic, value: data["callerUserId"] as? String ?? "Bantera")
+    update.localizedCallerName = data["callerName"] as? String ?? "Bantera"
+    // Never advertise a video upgrade for an AI audio callback.
+    update.hasVideo = !isAi(data) && data["mediaKind"] as? String == "video"
+    update.supportsHolding = false
+    update.supportsGrouping = false
+    update.supportsUngrouping = false
+    update.supportsDTMF = false
+    return update
   }
 
   func attach(messenger: FlutterBinaryMessenger) {
@@ -73,7 +112,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
         self.outgoing.insert(id)
         self.prepareAudio()
         let action = CXStartCallAction(call: id, handle: CXHandle(type: .generic, value: args["callerName"] as? String ?? "Bantera"))
-        action.isVideo = args["mediaKind"] as? String == "video"
+        action.isVideo = !Self.isAi(args) && args["mediaKind"] as? String == "video"
         self.controller.request(CXTransaction(action: action)) { error in
           DispatchQueue.main.async {
             if error != nil { self.finish(id, reason: .failed) }
@@ -91,10 +130,18 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
           DispatchQueue.main.async { result(error == nil) }
         }
       case "answerReady":
-        if let id { self.timers.removeValue(forKey: id)?.invalidate(); self.answers.removeValue(forKey: id)?.fulfill() }
+        if let id, let data = self.calls[id] {
+          self.timers.removeValue(forKey: id)?.invalidate()
+          self.answers.removeValue(forKey: id)?.fulfill()
+          // Activation can precede Dart readiness on a background wake-up.
+          if self.audioActive && Self.isAi(data) { self.emit("audioActivated", data) }
+        }
+        result(nil)
+      case "audioStarted":
+        if let id { self.endAnswerTask(id) }
         result(nil)
       case "connected":
-        if let id, self.outgoing.contains(id) { self.provider.reportOutgoingCall(with: id, connectedAt: Date()) }
+        if let id, self.outgoing.contains(id), let data = self.calls[id] { self.provider(for: id, data: data).reportOutgoingCall(with: id, connectedAt: Date()) }
         result(nil)
       case "end":
         if let id { self.finish(id, reason: .remoteEnded) }
@@ -145,17 +192,14 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     let id = parsedId ?? UUID()
     if calls[id] != nil && !fromPush { completion(nil); return }
     let duplicate = calls[id] != nil
-    let update = CXCallUpdate()
-    update.remoteHandle = CXHandle(type: .generic, value: data["callerUserId"] as? String ?? "Bantera")
-    update.localizedCallerName = data["callerName"] as? String ?? "Bantera"
-    update.hasVideo = data["mediaKind"] as? String == "video"
-    update.supportsHolding = false
-    update.supportsGrouping = false
-    update.supportsUngrouping = false
-    update.supportsDTMF = false
+    let update = Self.callUpdate(for: data)
     let expires = Double(data["expiresAt"] as? String ?? "") ?? Date().addingTimeInterval(45).timeIntervalSince1970
-    if !duplicate { calls[id] = data }
-    provider.reportNewIncomingCall(with: id, update: update) { [weak self] error in
+    if !duplicate {
+      calls[id] = data
+      // Configure before reporting/answering; CallKit alone activates the session.
+      prepareAudio()
+    }
+    provider(for: data).reportNewIncomingCall(with: id, update: update) { [weak self] error in
       DispatchQueue.main.async {
         guard let self else { completion(error); return }
         if duplicate { completion(error); return }
@@ -216,23 +260,35 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     if hasAiCall { try? session.overrideOutputAudioPort(.none) }
   }
 
+  private func endAnswerTask(_ id: UUID) {
+    if let task = answerTasks.removeValue(forKey: id), task != .invalid {
+      UIApplication.shared.endBackgroundTask(task)
+    }
+  }
+
   private func finish(_ id: UUID, reason: CXCallEndedReason) {
-    guard calls.removeValue(forKey: id) != nil else { return }
+    endAnswerTask(id)
+    guard let data = calls.removeValue(forKey: id) else { return }
+    if Self.isAi(data) { onAiAudioStopped?() }
     timers.removeValue(forKey: id)?.invalidate()
     answers.removeValue(forKey: id)?.fail()
     outgoing.remove(id)
-    provider.reportCall(with: id, endedAt: Date(), reason: reason)
+    let owner = callProviders.removeValue(forKey: id) ?? provider(for: data)
+    owner.reportCall(with: id, endedAt: Date(), reason: reason)
     if calls.isEmpty { RTCAudioSession.sharedInstance().useManualAudio = false }
   }
 
   func providerDidReset(_ provider: CXProvider) {
-    let pending = calls
-    for id in Array(calls.keys) { finish(id, reason: .failed) }
+    let pending = calls.filter { self.provider(for: $0.key, data: $0.value) === provider }
+    for id in Array(pending.keys) { finish(id, reason: .failed) }
     for data in pending.values { emit("ended", data) }
   }
 
   func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
     guard calls[action.callUUID] != nil else { action.fail(); return }
+    // CallKit chooses the provider for outgoing transactions. Retain the actual
+    // delegate so activation and completion use that provider as well.
+    callProviders[action.callUUID] = provider
     prepareAudio()
     provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: Date())
     action.fulfill()
@@ -241,6 +297,15 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
     guard let data = calls[action.callUUID] else { action.fail(); return }
     answers[action.callUUID] = action
+    if Self.isAi(data) {
+      endAnswerTask(action.callUUID)
+      answerTasks[action.callUUID] = UIApplication.shared.beginBackgroundTask(withName: "AI callback startup") { [weak self] in
+        guard let self else { return }
+        self.logger.error("Callback startup background time expired")
+        self.emit("audioFailed", data)
+        self.finish(action.callUUID, reason: .failed)
+      }
+    }
     prepareAudio()
     emit("answer", data)
     // Fulfilled only after the backend confirms acceptance; CallKit then activates audio.
@@ -268,9 +333,22 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+    guard calls.contains(where: { self.provider(for: $0.key, data: $0.value) === provider }) else { return }
     audioActive = true
     if hasAiCall {
       RTCAudioSession.sharedInstance().isAudioEnabled = false
+      do {
+        // Start native duplex I/O before returning to iOS. A Dart round trip
+        // here can otherwise leave a locked, background call without audio.
+        try onAiAudioActivated?()
+        logger.info("CallKit AI audio activated and native I/O started")
+      } catch {
+        logger.error("CallKit AI audio startup failed: code \((error as NSError).code)")
+        emitAiAudio("audioFailed")
+        let failed = calls.filter { Self.isAi($0.value) }
+        for id in failed.keys { finish(id, reason: .failed) }
+        return
+      }
       emitAiAudio("audioActivated")
       emitAiRoute()
     } else {
@@ -280,7 +358,10 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+    // An idle provider reset must not deactivate the other provider's call.
+    guard calls.isEmpty || calls.contains(where: { self.provider(for: $0.key, data: $0.value) === provider }) else { return }
     audioActive = false
+    onAiAudioStopped?()
     emitAiAudio("audioDeactivated")
     RTCAudioSession.sharedInstance().isAudioEnabled = false
     RTCAudioSession.sharedInstance().audioSessionDidDeactivate(audioSession)

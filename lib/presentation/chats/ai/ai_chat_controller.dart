@@ -171,7 +171,6 @@ class AiChatController extends ChangeNotifier {
   final BytesBuilder _input = BytesBuilder(copy: false),
       _output = BytesBuilder(copy: false);
   bool _speech = false;
-  DateTime? _lastClock;
   Future<void> _events = Future.value(), _translations = Future.value();
   // A one-shot event for new voice-message replies only. History and live-call
   // turns must never replay automatically when rebuilt or translated.
@@ -1001,7 +1000,7 @@ class AiChatController extends ChangeNotifier {
       return;
     }
     calling = true;
-    _keepScreenAwake(true);
+    if (!callKitManaged) _keepScreenAwake(true);
     AiCallbackNotifier.instance.aiActive = true;
     connected = false;
     farewell = false;
@@ -1017,44 +1016,15 @@ class AiChatController extends ChangeNotifier {
     try {
       await _startCallActivity(epoch);
       if (!available || epoch != _epoch) return;
-      if (!await Permission.microphone.request().isGranted) {
+      final microphonePermission = callKitManaged
+          ? await Permission.microphone.status
+          : await Permission.microphone.request();
+      if (!microphonePermission.isGranted) {
         throw StateError('Microphone denied');
       }
       if (!available || epoch != _epoch) return;
       _micEvents = microphone.receiveBroadcastStream().listen(
-        (event) {
-          if (event is Map) {
-            if (available &&
-                epoch == _epoch &&
-                event['type'] == 'route' &&
-                event['speaker'] is bool) {
-              updateSpeakerRoute(event['speaker'] as bool);
-            }
-            return;
-          }
-          if (!connected ||
-              farewell ||
-              muted ||
-              !available ||
-              epoch != _epoch) {
-            return;
-          }
-          final bytes = Uint8List.fromList((event as List).cast<int>());
-          // A lightweight speech gate trims leading silence from the local recording only.
-          // Gemini still receives every frame and performs its own VAD.
-          final samples = ByteData.sublistView(bytes);
-          var peak = 0;
-          for (var i = 0; i + 1 < bytes.length; i += 8) {
-            final level = samples.getInt16(i, Endian.little).abs();
-            if (level > peak) peak = level;
-          }
-          if (!_speech && peak > 900) {
-            _speech = true;
-            unawaited(_sendClock(epoch));
-          }
-          if (_speech && _input.length < 16000 * 2 * 60) _input.add(bytes);
-          _socket?.add(bytes);
-        },
+        (event) => _microphoneEvent(event, epoch),
         onError: (Object _) {
           failed = true;
           unawaited(endCall());
@@ -1163,16 +1133,44 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
-  Future<void> _sendClock(int epoch) async {
-    if (_lastClock != null &&
-        DateTime.now().difference(_lastClock!).inSeconds < 1) {
+  // Only captured PCM belongs in an active live turn. A background clock
+  // clientContent packet interrupts Gemini even with turnComplete:false.
+  // Initial/reconnect requests and each separate voice message still carry time;
+  // the server's get_current_time tool provides the current clock during calls.
+  void _microphoneEvent(dynamic event, int epoch) {
+    if (event is Map) {
+      if (available &&
+          epoch == _epoch &&
+          event['type'] == 'route' &&
+          event['speaker'] is bool) {
+        updateSpeakerRoute(event['speaker'] as bool);
+      }
       return;
     }
-    _lastClock = DateTime.now();
-    final clock = await AiApiClient.clock();
-    if (epoch == _epoch && connected && !farewell) {
-      _socket?.add(jsonEncode({'type': 'clock', 'clock': clock}));
+    if (!connected || farewell || muted || !available || epoch != _epoch) {
+      return;
     }
+    final bytes = Uint8List.fromList((event as List).cast<int>());
+    // A lightweight speech gate trims leading silence from the local recording only.
+    // Gemini still receives every frame and performs its own VAD.
+    final samples = ByteData.sublistView(bytes);
+    var peak = 0;
+    for (var i = 0; i + 1 < bytes.length; i += 8) {
+      final level = samples.getInt16(i, Endian.little).abs();
+      if (level > peak) peak = level;
+    }
+    if (!_speech && peak > 900) {
+      _speech = true;
+    }
+    if (_speech && _input.length < 16000 * 2 * 60) _input.add(bytes);
+    _socket?.add(bytes);
+  }
+
+  @visibleForTesting
+  void microphoneForTesting(dynamic event, WebSocket socket) {
+    assert(_testing);
+    _socket = socket;
+    _microphoneEvent(event, _epoch);
   }
 
   @visibleForTesting
@@ -1349,7 +1347,7 @@ class AiChatController extends ChangeNotifier {
       }
     }
     return {
-      'provider': 'Wikimedia Commons',
+      'provider': 'Device web image search',
       'untrusted': true,
       'delivered': delivered.isNotEmpty && active(),
       'unavailable': delivered.isEmpty || !active(),

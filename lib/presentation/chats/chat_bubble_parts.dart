@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'chat_audio_waveform.dart';
 
 /// Keep audio actions on one row and give the timeline all remaining width.
 class ChatAudioHeader extends StatelessWidget {
@@ -11,8 +12,12 @@ class ChatAudioHeader extends StatelessWidget {
     this.playTooltip,
     this.trailing,
     this.receiving = false,
+    this.audioKey,
+    this.loadAudioPath,
   });
 
+  final String? audioKey;
+  final Future<String> Function()? loadAudioPath;
   final bool playing;
   final bool receiving;
   final double progress;
@@ -49,14 +54,11 @@ class ChatAudioHeader extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: receiving ? null : progress.clamp(0.0, 1.0),
-                minHeight: 6,
-                backgroundColor: theme.colorScheme.outlineVariant,
-                color: theme.colorScheme.primary,
-              ),
+            child: ChatAudioWaveform(
+              progress: progress,
+              receiving: receiving,
+              audioKey: audioKey,
+              loadAudioPath: loadAudioPath,
             ),
           ),
         ),

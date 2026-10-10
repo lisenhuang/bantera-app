@@ -5,12 +5,16 @@ import 'ai_chat_screen.dart';
 import 'ai_avatar.dart';
 
 class AiCallbackHost extends StatelessWidget {
-  const AiCallbackHost({super.key});
+  const AiCallbackHost({super.key, this.callback});
+  final AiCallbackNotifier? callback;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: AiCallbackNotifier.instance,
+    listenable: callback ?? AiCallbackNotifier.instance,
     builder: (context, _) {
-      final callback = AiCallbackNotifier.instance;
+      final callback = this.callback ?? AiCallbackNotifier.instance;
+      // CallKit owns incoming audio-call presentation on iOS. Answering never
+      // creates a conversation route; the user can open Chats independently.
+      if (callback.usesSystemCallInterface) return const SizedBox.shrink();
       if (callback.id == null) return const SizedBox.shrink();
       if (callback.accepted) {
         return Positioned.fill(

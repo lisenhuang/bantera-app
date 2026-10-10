@@ -1938,5 +1938,8 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Gördüklerini anlatma pratiği yapmak için görsel iste. Görseller Wikimedia Commons’tan gelir ve bu cihazdaki sohbetinle birlikte kaydedilir. Büyütmek veya paylaşmak için görsele, yazar ve lisans bilgileri için kaynağa dokun. Görsel konuları Wikimedia’ya, başlıklar ve kaynak bağlantıları yapay zekâya gönderilir.';
+      'Gördüklerini anlatma pratiği yapmak için görsel iste. Bu cihaz web genelinde görsel arar ve gerekirse Wikimedia Commons kullanır. Görseller burada sohbetle birlikte kaydedilir. Büyütmek veya paylaşmak için görsele, kullanım hakları için kaynağa dokun. Konular arama hizmetine, başlıklar ve kaynak bağlantıları yapay zekâya gönderilir. Görseller Bantera’ya yüklenmez.';
+
+  @override
+  String get aiImagesRights => 'Kullanım haklarını kaynakta kontrol et';
 }

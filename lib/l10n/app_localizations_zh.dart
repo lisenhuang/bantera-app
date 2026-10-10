@@ -1860,7 +1860,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '你可以让 AI 发图片，练习描述看到的内容。图片来自维基共享资源，并随聊天记录保存在本设备上。点按图片可放大或分享，点按来源可查看作者及许可信息。图片搜索主题会发送到维基共享资源，图片标题和来源链接会发送给 AI。';
+      '你可以请 AI 找图片，练习描述看到的内容。图片由此设备搜索网络，必要时改用 Wikimedia Commons，并保存在此设备的聊天记录中。点击图片可放大或分享，点击来源可查看使用权利。搜索主题会发送给搜索服务，标题和来源链接会发送给 AI。图片不会上传至 Bantera。';
+
+  @override
+  String get aiImagesRights => '使用权限请查看来源';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3723,5 +3726,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiImagesHelp =>
-      '你可以請 AI 傳送圖片，練習描述看到的內容。圖片來自維基共享資源，並隨聊天記錄儲存在本裝置上。點按圖片可放大或分享，點按來源可查看作者及授權資訊。圖片搜尋主題會傳送至維基共享資源，圖片標題和來源連結會傳送給 AI。';
+      '你可以請 AI 找圖片，練習描述看到的內容。圖片由此裝置搜尋網路，必要時改用 Wikimedia Commons，並儲存在此裝置的聊天記錄中。點擊圖片可放大或分享，點擊來源可查看使用權利。搜尋主題會傳送給搜尋服務，標題和來源連結會傳送給 AI。圖片不會上傳至 Bantera。';
+
+  @override
+  String get aiImagesRights => '使用權利請查看來源';
 }

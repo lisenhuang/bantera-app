@@ -334,6 +334,9 @@ _README last updated: 2026-09-29_
 
 ### Device-side AI image replies (2.6.1)
 
+This section describes the original Wikimedia implementation. Version 2.10.0
+extends it to web-wide image search; see the current behaviour below.
+
 Image replies reuse the **existing** `search_web(query)` tool and deployed relay.
 No backend change, deployment, new endpoint or new Gemini function is required.
 The app includes a transient capability note in each streaming session's context:
@@ -407,3 +410,146 @@ References: [Apple speakerphone routing](https://developer.apple.com/library/arc
 [WebRTC's iOS duplex audio design](https://webrtc.googlesource.com/src/webrtc/+/f54860e9ef0b68e182a01edc994626d21961bc4b/modules/audio_device/ios/audio_device_ios.h).
 Physical receiver output and acoustic echo performance require user verification;
 builds and mocked route tests cannot establish those acoustic results.
+
+### Chat formatting and audio waveforms (2.9.0)
+
+AI reply text and on-demand translations render selectable Markdown (emphasis,
+lists, headings, quotes and code blocks). Web links use the existing in-app
+browser and URL validation. Markdown image syntax does not load arbitrary URLs;
+images continue through the existing device image-search/download cards.
+Known JSON punctuation escapes in AI prose are repaired when streaming and when
+loading saved messages, while literal escapes inside code remain intact.
+
+AI, direct and group voice messages share a waveform timeline with played/unplayed
+colours. It measures 64 peak-amplitude buckets from the local audio file. PCM16
+WAV analysis runs in a Dart isolate; compressed files use system AVAudioFile on
+iOS and MediaExtractor/MediaCodec on Android, without an extra codec library or
+an audio-session change. Decoding is serial, bounded and cached for up to 128
+files in memory. Visible human chat audio uses the existing authenticated audio
+cache. While a file is still arriving or cannot be decoded, the ordinary timeline
+remains usable. No waveform data is uploaded.
+
+Implementation references: [Flutter Markdown](https://pub.dev/packages/flutter_markdown_plus),
+[Apple AVAudioFile](https://developer.apple.com/documentation/avfaudio/avaudiofile),
+[Android MediaCodec](https://developer.android.com/reference/android/media/MediaCodec).
+
+### Live-call interruption correction (2.9.1)
+
+Microphone amplitude now controls only local recording boundaries. It never sends
+clock/text packets during a live turn: Gemini `clientContent` interrupts ongoing
+generation even when `turnComplete` is false. Speech input still streams through
+iOS VoiceProcessingIO and Gemini's low-sensitivity VAD, so real spoken interruptions
+remain possible. Each voice message and initial/reconnected call retains its time
+context; the server's `get_current_time` tool supplies current time for reminders.
+This app-side correction works with the existing deployed backend. Backend 1.12.3
+also retains old clients' clock packets as tool metadata without forwarding them.
+
+Reference: [Gemini clientContent semantics](https://ai.google.dev/api/live#BidiGenerateContentClientContent).
+
+Live input regression: `test/ai_call_clock_test.dart` checks that silence, strong
+microphone samples and route events never inject clock text while an AI reply is
+active. Microphone frames remain intact, rather than muting capture during playback.
+
+VoiceProcessingIO now uses the activated audio route's actual sample rate. In-app
+calls request 48 kHz / 20 ms as preferences, with routing selected before the unit
+starts; CallKit keeps control of session activation. Native conversion takes
+Gemini's 24 kHz output to the hardware rate and post-processing microphone audio
+to 16 kHz on a serial queue. A hardware-rate change rebuilds the unit format and
+converts remaining queued audio, preserving playback totals in 24 kHz units.
+`AiAudioRateTests` in `ios/RunnerTests/RunnerTests.swift` cover fragmented and large
+packets, route-rate changes, interruptions and converter resets without using
+audio hardware. Diagnostics report both session and unit sample rates plus the
+voice-processing bypass state; an enabled state alone does not establish acoustic
+echo suppression. Physical checks need a known playback reference and a quiet
+microphone baseline, without saving or uploading microphone recordings.
+
+References: [Apple voice processing](https://developer.apple.com/videos/play/wwdc2023/10235/),
+[WebRTC VoiceProcessingIO setup](https://webrtc.googlesource.com/src/+/refs/heads/main/sdk/objc/native/src/audio/voice_processing_audio_unit.mm).
+
+### AI chat navigation and system callbacks (2.9.2)
+
+AI chat taps, widget links and reminder links share one route coordinator. It
+reserves the route before its first frame, reuses an existing conversation,
+waits for an interactive back gesture to finish and waits for a popped route's
+removal before reopening. History loading/sync starts after the entrance
+transition; conversation bubbles are built lazily at the newest message, with
+stable message keys as streamed replies arrive. The reported intermittent
+half-transition was not conclusively reproduced, so these corrections address
+observable navigation races and unnecessary work without claiming a Flutter
+engine root cause or changing the global page animation.
+
+iOS AI callbacks have a separate audio-only CallKit provider. Human calls retain
+their existing video-capable provider. AI call metadata cannot request video,
+and answering an AI callback never creates an automatic in-app chat overlay.
+The controller owns audio and transcript persistence without requiring a chat
+widget; CallKit manages activation, mute, hang-up and the actual audio route.
+Receiver routing is the default unless iOS selects a headset or the user selects
+speaker. CallKit callbacks do not enable the screen wake lock or request new
+microphone permission from the background. Opening AI chat manually during a
+callback shares that call's controller; ending it returns the page to a normal
+conversation controller. The process must run in the background to deliver audio,
+but no scene-activation/open-app request is sent by the callback path. The exact
+system UI presentation is controlled by iOS.
+
+AI bubble Markdown rendering remains enabled for streamed and saved responses,
+including emphasis, lists and code blocks; explicit Markdown requests are sent
+as ordinary spoken learner requests. No model rule prohibits Markdown. Markdown
+links use the in-app browser and arbitrary Markdown image URLs are not fetched.
+
+Regression coverage: `ai_chat_navigation_test.dart`, `ai_chat_entry_test.dart`,
+`ai_chat_screen_test.dart`, `ai_callback_notifier_test.dart`,
+`ai_message_markdown_test.dart` and the native CallKit capability test in
+`RunnerTests.swift`.
+
+Reference: [Apple on audio CallKit presentation and foregrounding](https://developer.apple.com/forums/thread/798090).
+
+### Web-wide device image search (2.10.0)
+
+AI image requests now search Bing's public image-results page first, across
+publisher websites. Wikimedia Commons is the fallback if web previews cannot
+be fetched. The same `images:` device-tool contract is used; no image-search
+backend endpoint, provider secret or image upload is added. The phone downloads
+up to two JPEG/PNG/WebP previews, saves them beside local chat history and shows
+the publisher's source link in the in-app browser. The model receives metadata,
+not image pixels. Unknown usage rights are labelled as such; public search does
+not establish permission to reuse an image.
+
+The public HTML integration needs no API key, but is best-effort and can change
+or be unavailable. Captchas/challenges are not bypassed. Requests use strict
+search filtering, no account cookies or app credentials, a twelve-second total
+budget, four searches per minute, a 3 MiB/file limit and bounded decoded image
+dimensions. Every HTTPS connection resolves and pins a public IP address;
+private, local and mapped addresses are rejected, including on redirects
+(maximum three). Search URLs come from provider metadata, not model-supplied
+arbitrary download commands. Source domains and licences from existing Wikimedia
+history remain readable. Image failures do not terminate the voice reply.
+
+
+Verification for 2.10.0: Dart image/navigation/voice/Markdown regression tests
+passed; all seven selected native audio/CallKit tests passed. A simulator smoke
+check completed twelve rapid open/pop/reopen cycles with 2,000 synthetic messages
+and no Flutter errors, then retrieved two JPEG previews from non-Wikimedia
+publisher websites through the actual device search code. The normal signed
+`lib/main.dart` release was installed and read back as 2.10.0 (344) on the iPhone;
+no temporary simulator harness, physical-device launch or phone test was used.
+
+
+### Locked-screen AI callback startup (2.10.3)
+
+CallKit configures the duplex session before reporting an incoming call. In
+`didActivate`, native VoiceProcessingIO starts immediately, keeping capture and
+playback in the same echo-cancelled unit while Flutter wakes in the background.
+Dart attaches to that running unit without restarting it or deactivating
+CallKit's session. A bounded background task covers answer preparation and ends
+when audio startup finishes, the call ends, or iOS expires the task.
+
+Early activation events are retained until backend acceptance and history loading
+finish; duplicate activation does not start a second stream. No scene activation
+or automatic chat navigation is requested. Native startup failures end the call
+rather than leaving an apparently connected silent call. Callback diagnostics
+record only a correlation ID and technical failure category (acceptance,
+activation timeout, or audio startup), never reminder text or recorded audio.
+
+Validation: callback event-order regression tests and iOS builds. Actual locked
+screen audio must be verified on a physical iPhone; simulator coverage does not
+establish successful CallKit hardware audio.

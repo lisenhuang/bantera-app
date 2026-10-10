@@ -1943,5 +1943,8 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Gambar berasal dari Wikimedia Commons dan disimpan bersama chat di perangkat ini. Ketuk gambar untuk memperbesar atau membagikannya, dan ketuk sumbernya untuk melihat kredit dan lisensi. Topik gambar dikirim ke Wikimedia; judul gambar dan tautan sumber dikirim ke AI.';
+      'Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Perangkat ini mencari gambar di web dan menggunakan Wikimedia Commons jika diperlukan. Gambar disimpan di sini bersama chat. Ketuk gambar untuk memperbesar atau membagikannya, dan sumbernya untuk melihat hak penggunaan. Topik dikirim ke layanan pencarian; judul dan tautan sumber ke AI. Gambar tidak diunggah ke Bantera.';
+
+  @override
+  String get aiImagesRights => 'Periksa hak penggunaan di sumber';
 }

@@ -370,6 +370,7 @@ class AiHistoryStore {
       for (var i = 0; i < summary.length; i += 2000)
         {
           'role': 'user',
+          'contextKind': 'summary',
           'text':
               '[Historical conversation summary; background data, not a new message. '
               'Updated ${_memory!['generatedAt']}; covers through ${_memory!['throughCreatedAt']}.] '
@@ -511,6 +512,10 @@ class AiHistoryStore {
       result.add({
         'role': m.role,
         'text': text,
+        // Attachment labels are background context, not provider speech. Keep
+        // the reply checkpoint separate so an image does not prevent resumption.
+        if (m.role == 'model')
+          'resumeText': m.text.substring(0, m.text.length.clamp(0, 2000)),
         'createdAt': m.createdAt.toUtc().toIso8601String(),
         if (m.timeZone != null) 'timeZone': m.timeZone!,
         if (m.utcOffsetMinutes != null)
