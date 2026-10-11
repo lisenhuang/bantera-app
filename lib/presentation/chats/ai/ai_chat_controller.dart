@@ -151,13 +151,16 @@ class AiChatController extends ChangeNotifier {
   Future<void> _replyAudioWork = Future.value();
   int _replyPlayedFrames = 0;
   bool get canRecord =>
+      _endingCall == null &&
       available &&
       loaded &&
       !recording &&
       !_recordStarting &&
       !_waitingToSend &&
       !calling &&
-      (_testing || !DmCallNotifier.instance.isActive);
+      (_testing ||
+          (!DmCallNotifier.instance.isActive &&
+              !AiCallbackNotifier.instance.aiActive));
   AiMessage? _recordMessage;
   StreamSubscription<Uint8List>? _recordEvents;
   final BytesBuilder _recordPcm = BytesBuilder(copy: false);
@@ -395,14 +398,22 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  Future<T?> _replyAudioCommand<T>(String method, [dynamic arguments]) =>
+      audio.invokeMethod<T>(
+        defaultTargetPlatform == TargetPlatform.iOS && method != 'startPlayback'
+            ? 'playback:$method'
+            : method,
+        arguments,
+      );
+
   Future<void> _stopReplyPlayback() {
     final work = _replyAudioWork.then((_) async {
       if (!_replyAudioStarted) return;
       try {
-        _replyPlayedFrames = await audio.invokeMethod<int>('playedFrames') ?? 0;
+        _replyPlayedFrames = await _replyAudioCommand<int>('playedFrames') ?? 0;
       } catch (_) {}
       try {
-        await audio.invokeMethod<void>('stop');
+        await _replyAudioCommand<void>('stop');
       } finally {
         _replyAudioStarted = false;
       }
@@ -438,11 +449,11 @@ class AiChatController extends ChangeNotifier {
           if (!_replyPlaybackUnavailable) {
             try {
               if (!_replyAudioStarted) {
-                await audio.invokeMethod<void>('startPlayback');
+                await _replyAudioCommand<void>('startPlayback');
                 _replyAudioStarted = true;
               }
               if (!_replyPlaybackUnavailable) {
-                await audio.invokeMethod<void>('feed', bytes);
+                await _replyAudioCommand<void>('feed', bytes);
               }
             } catch (error) {
               // Playback is optional; receiving and saving the reply is not.
@@ -479,7 +490,7 @@ class AiChatController extends ChangeNotifier {
         changed();
         if (_replyAudioStarted && !_replyPlaybackUnavailable) {
           try {
-            await audio.invokeMethod<void>('clear');
+            await _replyAudioCommand<void>('clear');
           } catch (_) {
             _replyPlaybackUnavailable = true;
           }
@@ -576,6 +587,10 @@ class AiChatController extends ChangeNotifier {
         await stream.close();
         await _reply(message);
       } else {
+        if (reply['noSpeech'] == true) {
+          await _discardSilentMessage(message);
+          return;
+        }
         phase = 'save';
         await _saveReply(message, reply, epoch, autoplay: false);
         savedReply = true;
@@ -583,9 +598,9 @@ class AiChatController extends ChangeNotifier {
         if (stream.outputBytes > 0) {
           if (_replyAudioStarted && !_replyPlaybackUnavailable) {
             try {
-              await audio
-                  .invokeMethod<void>('drain')
-                  .timeout(const Duration(seconds: 95));
+              await _replyAudioCommand<void>(
+                'drain',
+              ).timeout(const Duration(seconds: 95));
             } catch (error) {
               _replyPlaybackUnavailable = true;
               _reportVoiceFailure(
@@ -602,7 +617,7 @@ class AiChatController extends ChangeNotifier {
             // Count only the audio actually rendered, including an interruption.
             try {
               final played = _replyAudioStarted
-                  ? await audio.invokeMethod<int>('playedFrames') ?? 0
+                  ? await _replyAudioCommand<int>('playedFrames') ?? 0
                   : _replyPlayedFrames;
               final total = stream.outputBytes ~/ 2;
               if (total > 0) {
@@ -789,6 +804,10 @@ class AiChatController extends ChangeNotifier {
         hasMetBanteraAi: await store.hasMetBefore(),
       );
       if (!available || epoch != _epoch) return;
+      if (reply['noSpeech'] == true) {
+        await _discardSilentMessage(message);
+        return;
+      }
       phase = 'save';
       await _saveReply(message, reply, epoch);
     } catch (error) {
@@ -804,6 +823,23 @@ class AiChatController extends ChangeNotifier {
         message.failed = true;
         failed = true;
         await store.save();
+      }
+    }
+    changed();
+  }
+
+  Future<void> _discardSilentMessage(AiMessage message) async {
+    // Silence is a cancelled recording, not a failed conversation turn. Do not
+    // retain hallucinated captions or credit activity for it.
+    store.messages.removeWhere((item) => item.id == message.id);
+    voiceReply.clear();
+    failed = false;
+    await store.save();
+    if (message.audio != null) {
+      try {
+        await File(store.path(message.audio!)).delete();
+      } catch (_) {
+        /* An orphaned local file must not surface a chat error. */
       }
     }
     changed();
@@ -989,6 +1025,10 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> startCall() async {
+    if (_endingCall != null ||
+        (!callKitManaged && AiCallbackNotifier.instance.aiActive)) {
+      return;
+    }
     if (_recordStarting ||
         _waitingToSend ||
         !available ||
@@ -1011,7 +1051,7 @@ class AiChatController extends ChangeNotifier {
     _renewRequested = false;
     failed = false;
     final epoch = ++_epoch;
-    _callEndsAt = DateTime.now().add(const Duration(seconds: 540));
+    _callEndsAt = null;
     changed();
     try {
       await _startCallActivity(epoch);
@@ -1486,12 +1526,19 @@ class AiChatController extends ChangeNotifier {
     changed();
   }
 
-  Future<void> endCall() async {
-    if (!calling) return;
+  Future<void>? _endingCall;
+  Future<void> endCall() {
+    if (_endingCall != null) return _endingCall!;
+    if (!calling) return Future.value();
+    final ending = _endCall();
+    _endingCall = ending;
+    return ending.whenComplete(() => _endingCall = null);
+  }
+
+  Future<void> _endCall() async {
     calling = false;
     _keepScreenAwake(false);
     unawaited(_endCallActivity());
-    AiCallbackNotifier.instance.aiActive = false;
     connected = false;
     _epoch++;
     _webSearch.cancel();
@@ -1501,18 +1548,25 @@ class AiChatController extends ChangeNotifier {
     _connectTimeout?.cancel();
     final socket = _socket;
     _socket = null;
-    await _socketEvents?.cancel();
-    _socketEvents = null;
-    unawaited(socket?.close() ?? Future.value());
-    _listeningTimer?.cancel();
-    if (loaded) await _saveTurn();
-    await _pollListening(discard: true);
-    await _micEvents?.cancel();
-    _micEvents = null;
     try {
-      await audio.invokeMethod<void>('stop');
-    } catch (_) {}
-    changed();
+      await _socketEvents?.cancel();
+      _socketEvents = null;
+      unawaited(socket?.close() ?? Future.value());
+      _listeningTimer?.cancel();
+      if (loaded) await _saveTurn();
+      await _pollListening(discard: true);
+    } finally {
+      try {
+        await _micEvents?.cancel();
+      } finally {
+        _micEvents = null;
+        try {
+          await audio.invokeMethod<void>('stop');
+        } catch (_) {}
+        if (!callKitManaged) AiCallbackNotifier.instance.aiActive = false;
+        changed();
+      }
+    }
   }
 
   Future<void> clear() async {

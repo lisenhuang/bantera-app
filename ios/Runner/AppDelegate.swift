@@ -94,6 +94,7 @@ import UserNotifications
     aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)
     aiCallActivityBridge = BanteraAiCallActivityBridge(messenger: callEngine.binaryMessenger)
     photoSaveBridge = BanteraPhotoSaveBridge(binaryMessenger: callEngine.binaryMessenger)
+    callKit.onAiAudioPreparing = { [weak self] in self?.aiAudioBridge?.reserveCallKitAudio() }
     callKit.onAiAudioActivated = { [weak self] in
       guard let audio = self?.aiAudioBridge else { throw NSError(domain: "BanteraAudio", code: 1) }
       try audio.prepareCallKitAudio()
@@ -2451,6 +2452,8 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
   private var usesSpeaker = true
   private var startResult: FlutterResult?
   private var captureBuffers = 0
+  private var readiness = BanteraAudioReadiness()
+  private var routeSignature = ""
   private var capturedFrames = 0
   private var playedFrames = 0
   private var conversionError = ""
@@ -2459,7 +2462,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
   }
   var diagnostics: String {
-    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) sessionRate=\(AVAudioSession.sharedInstance().sampleRate) unitRate=\(phoneAudio?.sampleRate ?? 0) ioBuffer=\(AVAudioSession.sharedInstance().ioBufferDuration) echoCancellation=\(echoCancellationEnabled) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(phoneAudio?.conversionError ?? conversionError)"
+    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) sessionRate=\(AVAudioSession.sharedInstance().sampleRate) unitRate=\(phoneAudio?.sampleRate ?? 0) ioBuffer=\(AVAudioSession.sharedInstance().ioBufferDuration) echoCancellation=\(echoCancellationEnabled) audioReady=\(readiness.ready) micMode=\(AVCaptureDevice.activeMicrophoneMode.rawValue) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(phoneAudio?.conversionError ?? conversionError)"
   }
   private var playbackGeneration = 0
   private var drain: FlutterResult?
@@ -2471,8 +2474,16 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     FlutterEventChannel(name: "bantera/ai_audio/input", binaryMessenger: messenger).setStreamHandler(self)
     FlutterMethodChannel(name: "bantera/ai_audio", binaryMessenger: messenger).setMethodCallHandler { [weak self] call, result in
       guard let self else { return }
+      // Voice-message playback may still finish while CallKit takes ownership.
+      // Its delayed cleanup must never feed, reconfigure or stop live-call I/O.
+      let playbackOnly = call.method.hasPrefix("playback:")
+      let method = playbackOnly ? String(call.method.dropFirst(9)) : call.method
+      if (playbackOnly || method == "startPlayback") && (self.callKitManaged || self.phoneAudio != nil) {
+        result(FlutterError(code: "audio_owned_by_call", message: "Call audio is active.", details: nil))
+        return
+      }
       do {
-        switch call.method {
+        switch method {
         case "identifyLanguages":
           guard let texts = call.arguments as? [String], texts.count <= 250,
                 texts.allSatisfy({ $0.count <= 4000 }) else { result([]); return }
@@ -2507,7 +2518,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
           let managed = (call.arguments as? [String: Any])?["callKitManaged"] as? Bool == true
           if managed { try self.prepareCallKitAudio() }
           else { try self.start() }
-          if self.captureBuffers > 0 { result(nil) }
+          if self.readiness.ready { result(nil) }
           else { self.startResult = result }
         case "startPlayback": try self.startPlayback(); result(nil)
         case "feed":
@@ -2535,8 +2546,15 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     }
   }
   func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? { sink = events; return nil }
-  func onCancel(withArguments arguments: Any?) -> FlutterError? { sink = nil; stop(); return nil }
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    sink = nil
+    // Flutter cancels the previous sink when a new listener attaches. CallKit
+    // owns native lifetime even while Dart is waking/replacing its listener.
+    if !callKitManaged { stop() }
+    return nil
+  }
   func startPlayback() throws {
+    guard !callKitManaged && phoneAudio == nil else { throw NSError(domain: "Audio", code: 6) }
     stop()
     playedFrames = 0
     let session = AVAudioSession.sharedInstance()
@@ -2552,6 +2570,11 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
   }
   // CallKit invokes this natively while activating the locked-screen call.
   // Dart later attaches its input stream without restarting/deactivating audio.
+  func reserveCallKitAudio() {
+    if callKitManaged { return }
+    stop(deactivateSession: false)
+    callKitManaged = true
+  }
   func prepareCallKitAudio() throws {
     if callKitManaged && phoneAudio?.running == true { return }
     try start(callKitManaged: true)
@@ -2567,10 +2590,18 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     // Use the SAME duplex VoiceProcessingIO path for in-app calls and CallKit.
     // Default-mode echo-cancelled input can hold newer iPhones on Speaker.
     // VoiceProcessingIO cancels echo using the audio rendered by this very unit.
-    if #available(iOS 18.2, *), session.prefersEchoCancelledInput {
-      try session.setPrefersEchoCancelledInput(false)
+    if callKitManaged {
+      // CallKit has already activated the prepared session. Reassigning its
+      // category/options here can cancel a Speaker selection in the system UI.
+      guard session.category == .playAndRecord, session.mode == .voiceChat else {
+        throw NSError(domain: "Audio", code: 5)
+      }
+    } else {
+      if #available(iOS 18.2, *), session.prefersEchoCancelledInput {
+        try session.setPrefersEchoCancelledInput(false)
+      }
+      try configureCallSession()
     }
-    try configureCallSession()
     if !callKitManaged {
       // Preferences are hints; always use the actual rate after activation.
       // CallKit has already activated its session and owns that lifecycle.
@@ -2582,33 +2613,58 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
       }
       if builtInOnly { try session.overrideOutputAudioPort(.speaker) }
     }
+    readiness.reset(now: ProcessInfo.processInfo.systemUptime)
+    routeSignature = currentRouteSignature
     let phone = try BanteraPhoneAudio(sampleRate: session.sampleRate, onInput: { [weak self] data in
       guard let self, self.phoneAudio != nil else { return }
       self.captureBuffers += 1
       self.capturedFrames += data.count / 2
       self.lastCapture = Date()
-      self.startResult?(nil); self.startResult = nil
-      self.sink?(FlutterStandardTypedData(bytes: data))
+      self.readiness.capture(frames: data.count / 2,
+        now: ProcessInfo.processInfo.systemUptime,
+        echoEnabled: self.echoCancellationEnabled,
+        rendered: self.phoneAudio?.hasRendered == true)
+      if self.readiness.ready {
+        self.startResult?(nil); self.startResult = nil
+        self.sink?(FlutterStandardTypedData(bytes: data))
+      } else {
+        // Keep the transport clock/VAD quiet while a real route settles.
+        self.sink?(FlutterStandardTypedData(bytes: Data(count: data.count)))
+      }
     }, onDrained: { [weak self] in
       guard let self, self.phoneAudio?.hasQueuedAudio == false else { return }
       self.drain?(nil); self.drain = nil
     })
     self.phoneAudio = phone
+    phone.setOutputRoute(speaker: speakerNeedsEchoCancellation, discontinuity: true)
     try phone.start()
     routeObserver = NotificationCenter.default.addObserver(
       forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
     ) { [weak self] _ in
       guard let self, let phone = self.phoneAudio else { return }
+      let signature = self.currentRouteSignature
+      let changed = signature != self.routeSignature
+      if changed {
+        self.routeSignature = signature
+        self.readiness.reset(now: ProcessInfo.processInfo.systemUptime)
+      }
       do { try phone.updateSampleRate(AVAudioSession.sharedInstance().sampleRate) }
       catch { self.conversionError = "route-format"; self.failAudio(); return }
+      phone.setOutputRoute(speaker: self.speakerNeedsEchoCancellation, discontinuity: changed)
       self.emitRoute()
     }
     emitRoute()
     lastCapture = Date()
     healthTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
       guard let self, let phone = self.phoneAudio else { return }
-      if !phone.echoCancellationEnabled || Date().timeIntervalSince(self.lastCapture) > 5 { self.failAudio() }
+      if !phone.echoCancellationEnabled || Date().timeIntervalSince(self.lastCapture) > 5 ||
+          self.readiness.timedOut(now: ProcessInfo.processInfo.systemUptime) { self.failAudio() }
     }
+  }
+  private var currentRouteSignature: String {
+    let session = AVAudioSession.sharedInstance()
+    return (session.currentRoute.inputs + session.currentRoute.outputs)
+      .map { "\($0.portType.rawValue):\($0.uid)" }.joined(separator: "|") + "@\(session.sampleRate)"
   }
   private func configureCallSession() throws {
     let session = AVAudioSession.sharedInstance()
@@ -2620,7 +2676,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
   }
   func setSpeaker(_ enabled: Bool) throws -> Bool {
     guard phoneAudio != nil else { throw NSError(domain: "Audio", code: 4) }
-    try configureCallSession()
+    if !callKitManaged { try configureCallSession() }
     try AVAudioSession.sharedInstance().overrideOutputAudioPort(enabled ? .speaker : .none)
     emitRoute()
     return usesSpeaker
@@ -2692,12 +2748,29 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
       try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
     callKitManaged = false
+    readiness.reset(now: ProcessInfo.processInfo.systemUptime)
   }
   deinit {
     healthTimer?.invalidate()
     if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
     if let interruptionObserver { NotificationCenter.default.removeObserver(interruptionObserver) }
   }
+}
+
+/// Enabled is not an acoustic convergence signal. Require actual, stable
+/// duplex callbacks before exposing the call as ready; monitor enabled state
+/// continuously and restart this gate only for a genuine route discontinuity.
+struct BanteraAudioReadiness {
+  private var since = 0.0
+  private var frames = 0
+  private(set) var ready = false
+  mutating func reset(now: Double) { since = now; frames = 0; ready = false }
+  mutating func capture(frames count: Int, now: Double, echoEnabled: Bool, rendered: Bool) {
+    guard echoEnabled else { reset(now: now); return }
+    frames += count
+    ready = frames >= 6400 && now - since >= 0.35 && rendered
+  }
+  func timedOut(now: Double) -> Bool { !ready && now - since > 5 }
 }
 
 // All live-call PCM uses VoiceProcessingIO directly, with microphone capture and
@@ -2709,6 +2782,20 @@ final class BanteraPhoneAudio {
   private(set) var sampleRate: Double
   private(set) var conversionError = ""
   private let lock = NSLock()
+  private let echoGuard = BanteraEchoGuard()
+  private var speakerOutput = false
+  private var renderCallbacks = 0
+  var hasRendered: Bool {
+    lock.lock(); defer { lock.unlock() }
+    return renderCallbacks > 0
+  }
+  func setOutputRoute(speaker: Bool, discontinuity: Bool) {
+    lock.lock()
+    speakerOutput = speaker
+    if discontinuity { renderCallbacks = 0 }
+    lock.unlock()
+    if discontinuity { echoGuard.reset() }
+  }
   private var capacity: Int
   private var samples: [Int16]
   private var readIndex = 0, writeIndex = 0, count = 0
@@ -2978,10 +3065,13 @@ final class BanteraPhoneAudio {
     }
     if available < Int(frames) { output.advanced(by: available).update(repeating: 0, count: Int(frames) - available) }
     owner.count -= available
+    owner.renderCallbacks += 1
+    let rate = owner.sampleRate
     let version = owner.playbackGeneration
     let drained = available > 0 && owner.count == 0
     if available > 0 { owner.progress.render(available, sampleRate: owner.sampleRate, drained: drained) }
     owner.lock.unlock()
+    owner.echoGuard.appendRender(UnsafeBufferPointer(start: output, count: Int(frames)), sampleRate: rate)
     buffers.pointee.mBuffers.mDataByteSize = frames * 2
     if drained { owner.scheduleDrain(version) }
     return noErr
@@ -3002,9 +3092,11 @@ final class BanteraPhoneAudio {
       guard let owner else { return }
       do {
         let converted = try owner.captureConverter.convert(bytes)
+        owner.lock.lock(); let speaker = owner.speakerOutput; owner.lock.unlock()
+        let filtered = owner.echoGuard.processCapture(converted, speaker: speaker)
         DispatchQueue.main.async { [weak owner] in
           guard let owner, owner.running, owner.captureGeneration == generation, !converted.isEmpty else { return }
-          owner.onInput(converted)
+          owner.onInput(filtered)
         }
       } catch {
         DispatchQueue.main.async { [weak owner] in

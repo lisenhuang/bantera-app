@@ -197,6 +197,9 @@ class _AiChatScreenState extends State<AiChatScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) unawaited(_chat.syncReminders());
+    // A borrowed CallKit controller outlives the scene. iOS may detach the
+    // Flutter view while its native call continues on the locked screen.
+    if (widget.controller != null && _chat.callKitManaged) return;
     // iOS background audio keeps user-started calls and sent voice replies
     // playing while locked. Never cancel an already committed voice stream. Stopping either player here can deactivate the
     // shared audio session. The call's deadline and interruption handling remain active.
@@ -265,7 +268,12 @@ class _AiChatScreenState extends State<AiChatScreen>
   }
 
   Future<void> _play(AiMessage m) async {
-    if (_chat.calling || _chat.recording || m.audio == null) return;
+    if (_chat.calling ||
+        AiCallbackNotifier.instance.aiActive ||
+        _chat.recording ||
+        m.audio == null) {
+      return;
+    }
     try {
       if (_playing == m.id) {
         if (_player.state == PlayerState.playing) {
@@ -282,9 +290,19 @@ class _AiChatScreenState extends State<AiChatScreen>
           iOS: AudioContextIOS(category: AVAudioSessionCategory.playback),
         ),
       );
-      if (!mounted || _chat.calling || _chat.recording) return;
+      if (!mounted ||
+          _chat.calling ||
+          AiCallbackNotifier.instance.aiActive ||
+          _chat.recording) {
+        return;
+      }
       await _player.stop();
-      if (!mounted || _chat.calling || _chat.recording) return;
+      if (!mounted ||
+          _chat.calling ||
+          AiCallbackNotifier.instance.aiActive ||
+          _chat.recording) {
+        return;
+      }
       setState(() {
         _playing = m.id;
         _position = Duration.zero;

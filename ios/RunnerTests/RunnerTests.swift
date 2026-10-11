@@ -8,6 +8,18 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  @MainActor
+  func testCallKitReservationSurvivesListenerReplacementAndRejectsPlayback() throws {
+    let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
+    let audio = try XCTUnwrap(app.aiAudioBridge)
+    audio.reserveCallKitAudio()
+    defer { audio.stopCallKitAudio() }
+    XCTAssertThrowsError(try audio.startPlayback())
+    _ = audio.onListen(withArguments: nil) { _ in }
+    _ = audio.onCancel(withArguments: nil)
+    XCTAssertThrowsError(try audio.startPlayback())
+  }
+
   func testAiCallKitIsAudioOnlyAndHumanCallsRetainVideo() {
     XCTAssertFalse(BanteraCallKitBridge.configuration(ai: true).supportsVideo)
     XCTAssertTrue(BanteraCallKitBridge.configuration(ai: false).supportsVideo)
@@ -191,5 +203,132 @@ class PracticeWidgetTests: XCTestCase {
         try image.pngData()!.write(to: directory.appendingPathComponent("\(attachment.name!).png"))
       }
     }
+  }
+}
+
+// Pure signal tests: no audio session, microphone, speaker or device access.
+final class BanteraEchoGuardTests: XCTestCase {
+  private func source(_ frame: Int) -> Int16 {
+    let t = Double(frame) / 48000
+    let envelope = 0.65 + 0.3 * sin(t * 17)
+    return Int16(envelope * (5000 * sin(t * 2 * .pi * 187) + 3300 * sin(t * 2 * .pi * 613) + 1700 * sin(t * 2 * .pi * 1091)))
+  }
+  private func run(speaker: Bool = true, delay: Int = 3840, echo: Double = 0.3,
+                   voice: Double = 0, chunks: Int = 60) -> (suppressed: Int, original: Int) {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 0)
+    var suppressed = 0, original = 0
+    for chunk in 0..<chunks {
+      let render = (0..<960).map { source(chunk * 960 + $0) }
+      render.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+      let microphone: [Int16] = (0..<320).map { offset in
+        let frame = chunk * 960 + offset * 3 - delay
+        let rendered = frame < 0 ? 0 : (0..<3).reduce(0.0) { $0 + Double(source(frame + $1)) } / 3
+        let time = Double(chunk * 320 + offset) / 16000
+        let user = voice * (sin(time * 2 * .pi * 283) + 0.5 * sin(time * 2 * .pi * 853))
+        return Int16(rendered * echo + user)
+      }
+      let input = microphone.withUnsafeBytes { Data($0) }
+      let output = guarder.processCapture(input, speaker: speaker)
+      if input.contains(where: { $0 != 0 }) && !output.contains(where: { $0 != 0 }) { suppressed += 1 }
+      if output == input { original += 1 }
+    }
+    return (suppressed, original)
+  }
+  func testDelayedScaledOwnOutputIsSuppressed() {
+    for delay in [960, 3840, 9600, 14400] {
+      XCTAssertGreaterThan(run(delay: delay).suppressed, 35, "delay=\(delay)")
+    }
+  }
+  func testIndependentSpeechIncludingQuietSpeechPasses() {
+    for amplitude in [35.0, 200.0, 2000.0] {
+      XCTAssertEqual(run(echo: 0, voice: amplitude).original, 60)
+    }
+  }
+  func testDoubleTalkIsPreserved() {
+    for amplitude in [80.0, 300.0, 2000.0] {
+      XCTAssertEqual(run(voice: amplitude).original, 60)
+    }
+  }
+  func testReceiverAndHeadphonesNeverUseGuard() {
+    XCTAssertEqual(run(speaker: false).original, 60)
+  }
+  func testResetDiscardsOldRouteReferenceAndSilencePasses() {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 0)
+    let render = (0..<24000).map(source)
+    render.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+    guarder.reset()
+    let input = render.suffix(1280).withUnsafeBytes { Data($0) }
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    let silence = Data(count: 640)
+    XCTAssertEqual(guarder.processCapture(silence, speaker: true), silence)
+  }
+  func testNewUserSyllableIsNotErasedByPreviousEchoWindow() {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 0)
+    for chunk in 0..<30 {
+      let rendered = (0..<960).map { source(chunk * 960 + $0) }
+      rendered.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+      let microphone: [Int16] = (0..<320).map { offset in
+        let frame = chunk * 960 + offset * 3 - 3840
+        let echo = frame < 0 ? 0 : (0..<3).reduce(0.0) { $0 + Double(source(frame + $1)) } / 10
+        let user = chunk == 29 ? 120 * sin(Double(offset) * 2 * .pi * 283 / 16000) : 0
+        return Int16(echo + user)
+      }
+      let input = microphone.withUnsafeBytes { Data($0) }
+      let output = guarder.processCapture(input, speaker: true)
+      if chunk == 29 { XCTAssertEqual(output, input) }
+    }
+  }
+
+  func testStartupProtectionIsBoundedAndDoesNotRestartForReplies() {
+    let guarder = BanteraEchoGuard()
+    let microphone = (0..<320).map { Int16(500 * sin(Double($0) * 2 * .pi * 283 / 16000)) }
+    let input = microphone.withUnsafeBytes { Data($0) }
+    func render(_ chunk: Int, silent: Bool = false) {
+      let samples = (0..<960).map { silent ? Int16(0) : source(chunk * 960 + $0) }
+      samples.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+    }
+    // Silent route warmup does not consume the first audible-output protection.
+    for chunk in 0..<20 { render(chunk, silent: true) }
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    render(20)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
+    // Rendered silence advances the bounded interval too: it cannot stick muted.
+    for chunk in 21..<31 { render(chunk, silent: true) }
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    render(31)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    guarder.reset()
+    render(32)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
+    XCTAssertEqual(guarder.processCapture(input, speaker: false), input)
+  }
+}
+
+final class BanteraAudioReadinessTests: XCTestCase {
+  func testFirstBufferOrElapsedTimeAloneCannotStartCall() {
+    var gate = BanteraAudioReadiness()
+    gate.reset(now: 10)
+    gate.capture(frames: 320, now: 10.02, echoEnabled: true, rendered: true)
+    XCTAssertFalse(gate.ready)
+    gate.capture(frames: 320, now: 11, echoEnabled: true, rendered: true)
+    XCTAssertFalse(gate.ready)
+    gate.capture(frames: 5760, now: 11.1, echoEnabled: true, rendered: false)
+    XCTAssertFalse(gate.ready)
+    gate.capture(frames: 320, now: 11.12, echoEnabled: true, rendered: true)
+    XCTAssertTrue(gate.ready)
+  }
+  func testRouteOrDisabledProcessingRequiresNewStableCapture() {
+    var gate = BanteraAudioReadiness()
+    gate.reset(now: 10)
+    gate.capture(frames: 6400, now: 10.4, echoEnabled: true, rendered: true)
+    XCTAssertTrue(gate.ready)
+    gate.capture(frames: 320, now: 10.5, echoEnabled: false, rendered: true)
+    XCTAssertFalse(gate.ready)
+    gate.capture(frames: 6400, now: 10.9, echoEnabled: true, rendered: true)
+    XCTAssertTrue(gate.ready)
+    gate.reset(now: 11)
+    XCTAssertFalse(gate.ready)
+    XCTAssertFalse(gate.timedOut(now: 12))
+    XCTAssertTrue(gate.timedOut(now: 17))
   }
 }

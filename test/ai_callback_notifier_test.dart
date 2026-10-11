@@ -10,6 +10,7 @@ class _Call extends AiChatController {
   _Call() : super.forTesting(AiHistoryStore('test'), callKitManaged: true);
   int starts = 0, ends = 0;
   bool disposed = false;
+  Completer<void>? endGate;
   @override
   Future<void> initialize() async {
     loaded = true;
@@ -29,6 +30,7 @@ class _Call extends AiChatController {
     ends++;
     calling = false;
     changed();
+    await endGate?.future;
   }
 
   @override
@@ -183,6 +185,50 @@ void main() {
       await event('audioFailed');
       expect(callback.id, isNull);
       expect(methods.last, 'end');
+    },
+  );
+  test(
+    'callback ownership lasts through audio teardown and system end',
+    () async {
+      final service = CallKitService.forTesting();
+      final endSystem = Completer<void>();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        if (call.method == 'end') await endSystem.future;
+        return true;
+      });
+      final chat = _Call();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat,
+        acceptCallback: (_) async => 200,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('answer');
+      await event('audioActivated');
+      chat.endGate = Completer<void>();
+      final closing = callback.close();
+      final duplicate = callback.close();
+      await Future<void>.delayed(Duration.zero);
+      expect(identical(closing, duplicate), isTrue);
+      expect(callback.id, 'callback');
+      expect(callback.aiActive, isTrue);
+      expect(chat.ends, 1);
+      expect(methods.where((method) => method == 'end'), isEmpty);
+      chat.endGate!.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(methods.last, 'end');
+      expect(callback.id, 'callback');
+      expect(callback.aiActive, isTrue);
+      endSystem.complete();
+      await closing;
+      expect(callback.id, isNull);
+      expect(callback.aiActive, isFalse);
+      expect(chat.disposed, isTrue);
+      expect(methods.where((method) => method == 'end'), hasLength(1));
     },
   );
   test('ending from conversation also closes the system call', () async {

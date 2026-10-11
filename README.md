@@ -553,3 +553,38 @@ activation timeout, or audio startup), never reminder text or recorded audio.
 Validation: callback event-order regression tests and iOS builds. Actual locked
 screen audio must be verified on a physical iPhone; simulator coverage does not
 establish successful CallKit hardware audio.
+
+
+### Voice startup and silent recordings (2.10.4)
+
+Before opening a Live call, native iOS waits for 400 ms of actual microphone
+capture, an output callback and enabled VoiceProcessingIO on a stable route.
+This establishes audio readiness, not acoustic convergence (Apple exposes no
+public convergence flag). Processing stays monitored during the call. A genuine
+route change restarts readiness; routine category notifications do not.
+
+A small native residual-echo guard compares post-VPIO microphone PCM with actual
+speaker output. It suppresses only strongly matching residual echo, preserving
+independent speech and double-talk. The first audible speaker output after a new
+route has a bounded 200 ms microphone guard while AEC adapts. This can suppress
+an overlapping first syllable in that brief interval; later replies do not rearm
+it. No model, binary SDK or new app dependency is bundled. Read-only diagnostics
+include the actual route, processing state, readiness and system microphone mode.
+
+CallKit reserves audio before answering and owns its lifetime. Replacing a
+Flutter input listener, finishing an older voice reply or detaching a chat scene
+cannot stop that call. Receiver is selected once before presentation; later
+startup steps preserve the person's system Speaker choice. Each newly answered
+scheduled callback opens a fresh Gemini session, with saved context/reminder
+supplied once. A network reconnect within the same callback can resume it.
+
+Voice requests opt into `acceptNoSpeech`. Backend acoustic screening returns
+`no_speech` (or HTTP `{noSpeech:true}`) for empty/no-speech recordings before
+contacting Gemini. The app discards that recording and pending bubble without
+showing an error or awarding word activity. This is a speech detector, not a
+perfect classifier of background conversations or music. Older backend/client
+combinations retain their existing contract.
+
+Validation covers synthetic echo/double-talk, native readiness, callback event
+ordering/lifetime, and persisted silent-recording cleanup. Simulator tests do not
+prove locked-screen hardware audio or room acoustics on an iPhone.

@@ -153,6 +153,7 @@ class AiApiClient {
       }),
     );
     field('requestId', requestId);
+    field('acceptNoSpeech', 'true');
     request.add(
       utf8.encode(
         '--$boundary\r\nContent-Disposition: form-data; name="audio"; filename="message.wav"\r\nContent-Type: audio/wav\r\n\r\n',
@@ -242,6 +243,7 @@ class AiApiClient {
         'type': 'start',
         'requestId': requestId,
         'streamTranscripts': true,
+        'acceptNoSpeech': true,
         'history': AiSearchCapabilities.withContext(history),
         'deviceData': deviceData,
         'metadata': {...meta, 'conversationId': conversationId?.call()},

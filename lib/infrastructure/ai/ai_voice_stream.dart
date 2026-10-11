@@ -163,6 +163,16 @@ class AiVoiceStream {
           throw const AiVoiceFailure('invalid_frame');
         }
         unawaited(_tools((json['calls'] as List).cast<Map>()));
+      case 'no_speech':
+        if (!committed || _output.isNotEmpty || _reply.isCompleted) {
+          throw const AiVoiceFailure('invalid_frame');
+        }
+        _reply.complete({'noSpeech': true});
+        unawaited(
+          _socket
+              ?.close(WebSocketStatus.normalClosure)
+              .catchError((Object _) {}),
+        );
       case 'complete':
         if (!committed || _output.isEmpty || _reply.isCompleted) {
           throw const AiVoiceFailure('invalid_frame');

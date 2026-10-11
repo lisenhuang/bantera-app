@@ -6,6 +6,28 @@ import 'package:flutter/services.dart';
 import 'package:app/infrastructure/ai/ai_voice_stream.dart';
 
 void main() {
+  test('no speech is a successful terminal result without playback', () async {
+    final socket = _FailingSocket();
+    final stream = AiVoiceStream(
+      connect: () async => socket,
+      onAudio: (_) async => fail('Silent recording cannot produce reply audio'),
+      onReset: () async {},
+      onTranscript: (_, _) => fail('Silent recording cannot produce a caption'),
+    );
+    try {
+      socket.events.add(jsonEncode({'type': 'ready'}));
+      final reply = stream.send({});
+      await socket.committed.future;
+      socket.events.add(jsonEncode({'type': 'no_speech'}));
+      expect(await reply, {'noSpeech': true});
+      expect(stream.outputBytes, 0);
+      expect(socket.closeStatus, WebSocketStatus.normalClosure);
+    } finally {
+      await stream.close();
+      await socket.events.close();
+    }
+  });
+
   for (final complete in [true, false]) {
     test(
       'queued completion=$complete is respected before transport failure',

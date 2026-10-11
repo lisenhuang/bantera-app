@@ -67,6 +67,7 @@ class AiCallbackNotifier extends ChangeNotifier {
   static const identity = 'ba07e2a0-a100-4000-8000-000000000001';
   bool aiActive = false;
   Future<void> _events = Future.value();
+  Future<void>? _closing;
   AiChatController? controller;
   bool _started = false;
   bool _audioActive = false;
@@ -321,7 +322,11 @@ class AiCallbackNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> close() async {
+  Future<void> close() => _closing ??= Future<void>.microtask(
+    _close,
+  ).whenComplete(() => _closing = null);
+
+  Future<void> _close() async {
     final current = id;
     if (current == null) return;
     _handled.add(current);
@@ -335,24 +340,34 @@ class AiCallbackNotifier extends ChangeNotifier {
     _activationTimeout?.cancel();
     _started = false;
     _audioActive = false;
-    aiActive = false;
-    id = null;
     ringing = false;
     accepted = false;
     accepting = false;
     notifyListeners();
-    await chat?.endCall();
-    chat?.dispose();
-    await _callKit.update('end', current);
-    if (cancel) {
-      final client = HttpClient();
+    try {
       try {
-        final r = await _request(client, 'DELETE', current);
-        await r.drain<void>();
-      } catch (_) {
+        await chat?.endCall();
       } finally {
-        client.close(force: true);
+        chat?.dispose();
+        await _callKit.update('end', current);
       }
+      if (cancel) {
+        final client = HttpClient();
+        try {
+          final r = await _request(client, 'DELETE', current);
+          await r.drain<void>();
+        } catch (_) {
+        } finally {
+          client.close(force: true);
+        }
+      }
+    } finally {
+      // The previous controller can still cancel the shared microphone and stop
+      // native audio while saving its final turn. Do not admit another callback
+      // until that teardown and the system end action have both finished.
+      aiActive = false;
+      id = null;
+      notifyListeners();
     }
   }
 }

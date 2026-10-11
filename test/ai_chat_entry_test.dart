@@ -28,6 +28,20 @@ class _OpeningController extends AiChatController {
   }
 }
 
+class _SystemCallController extends AiChatController {
+  _SystemCallController()
+    : super.forTesting(AiHistoryStore('test'), callKitManaged: true) {
+    loaded = true;
+    calling = true;
+  }
+  int ends = 0;
+  @override
+  Future<void> endCall() async {
+    ends++;
+    calling = false;
+  }
+}
+
 void main() {
   setUp(() {
     final messenger =
@@ -102,6 +116,35 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('detaching the chat scene preserves a system-owned callback', (
+    tester,
+  ) async {
+    final chat = _SystemCallController();
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: AiChatScreen(controller: chat),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (final state in [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+      AppLifecycleState.detached,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+      await tester.pump();
+    }
+    expect(chat.calling, isTrue);
+    expect(chat.ends, 0);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(chat.ends, 0);
+    chat.dispose();
+  });
 
   testWidgets(
     'large conversation opens at newest message and lazily renders Markdown',

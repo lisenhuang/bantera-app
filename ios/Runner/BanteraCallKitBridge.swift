@@ -22,6 +22,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   private var outgoing = Set<UUID>()
   private var token: String?
   private var audioActive = false
+  var onAiAudioPreparing: (() -> Void)?
   var onAiAudioActivated: (() throws -> Void)?
   var onAiAudioStopped: (() -> Void)?
   private var answerTasks: [UUID: UIBackgroundTaskIdentifier] = [:]
@@ -196,8 +197,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     let expires = Double(data["expiresAt"] as? String ?? "") ?? Date().addingTimeInterval(45).timeIntervalSince1970
     if !duplicate {
       calls[id] = data
-      // Configure before reporting/answering; CallKit alone activates the session.
-      prepareAudio()
+      // Choose the receiver once, before the system exposes its route picker.
+      // Later startup callbacks must preserve the route the person selected.
+      prepareAudio(resetToReceiver: true)
     }
     provider(for: data).reportNewIncomingCall(with: id, update: update) { [weak self] error in
       DispatchQueue.main.async {
@@ -245,10 +247,13 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
   }
 
-  private func prepareAudio() {
+  private func prepareAudio(resetToReceiver: Bool = false) {
+    // Once CallKit activates the session, it owns category and route changes.
+    // Reapplying a category or output override can undo the system Speaker button.
+    guard !audioActive else { return }
     let rtc = RTCAudioSession.sharedInstance()
-    rtc.useManualAudio = true
-    rtc.isAudioEnabled = audioActive && !hasAiCall
+    if !rtc.useManualAudio { rtc.useManualAudio = true }
+    if rtc.isAudioEnabled { rtc.isAudioEnabled = false }
     let session = AVAudioSession.sharedInstance()
     // CallKit callbacks use the telephone voice processor in both directions.
     // The newer default-mode hardware AEC path held this iPhone on Speaker even
@@ -256,8 +261,15 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     if hasAiCall, #available(iOS 18.2, *), session.prefersEchoCancelledInput {
       try? session.setPrefersEchoCancelledInput(false)
     }
-    try? session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothHFP])
-    if hasAiCall { try? session.overrideOutputAudioPort(.none) }
+    let options: AVAudioSession.CategoryOptions = [.allowBluetoothHFP]
+    do {
+      if session.category != .playAndRecord || session.mode != .voiceChat || session.categoryOptions != options {
+        try session.setCategory(.playAndRecord, mode: .voiceChat, options: options)
+      }
+      if hasAiCall && resetToReceiver { try session.overrideOutputAudioPort(.none) }
+    } catch {
+      logger.error("CallKit audio preparation failed: code \((error as NSError).code)")
+    }
   }
 
   private func endAnswerTask(_ id: UUID) {
@@ -298,6 +310,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     guard let data = calls[action.callUUID] else { action.fail(); return }
     answers[action.callUUID] = action
     if Self.isAi(data) {
+      // Reserve the native audio owner before asynchronous Dart acceptance.
+      // A voice reply still arriving must not switch the session to playback.
+      onAiAudioPreparing?()
       endAnswerTask(action.callUUID)
       answerTasks[action.callUUID] = UIApplication.shared.beginBackgroundTask(withName: "AI callback startup") { [weak self] in
         guard let self else { return }
@@ -340,7 +355,8 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       do {
         // Start native duplex I/O before returning to iOS. A Dart round trip
         // here can otherwise leave a locked, background call without audio.
-        try onAiAudioActivated?()
+        guard let onAiAudioActivated else { throw NSError(domain: "BanteraAudio", code: 1) }
+        try onAiAudioActivated()
         logger.info("CallKit AI audio activated and native I/O started")
       } catch {
         logger.error("CallKit AI audio startup failed: code \((error as NSError).code)")
