@@ -308,7 +308,8 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
 
   func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
     guard let data = calls[action.callUUID] else { action.fail(); return }
-    answers[action.callUUID] = action
+    callProviders[action.callUUID] = provider
+    if !Self.isAi(data) { answers[action.callUUID] = action }
     if Self.isAi(data) {
       // Reserve the native audio owner before asynchronous Dart acceptance.
       // A voice reply still arriving must not switch the session to playback.
@@ -322,8 +323,17 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       }
     }
     prepareAudio()
+    if Self.isAi(data) {
+      // Complete the system answer while still in its native callback. Waiting
+      // for HTTP acceptance and Flutter history loading can delay didActivate
+      // on a locked-screen wake. Dart still gates the AI connection on server
+      // acceptance, and ends this call if acceptance fails.
+      timers.removeValue(forKey: action.callUUID)?.invalidate()
+      action.fulfill()
+      logger.info("CallKit AI answer fulfilled before Flutter startup")
+    }
     emit("answer", data)
-    // Fulfilled only after the backend confirms acceptance; CallKit then activates audio.
+    // Human WebRTC calls retain their existing answerReady handshake.
   }
 
   func provider(_ provider: CXProvider, perform action: CXEndCallAction) {

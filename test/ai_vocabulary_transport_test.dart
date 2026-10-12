@@ -40,6 +40,8 @@ void main() {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         final toolResult = Completer<Map>();
         WebSocket? peer;
+        final nativeAudioReady = Completer<void>();
+        var nativeAudioStarted = false;
         final call = {
           'type': 'toolCall',
           'calls': [
@@ -92,10 +94,16 @@ void main() {
           const MethodChannel('bantera/ai_audio/input'),
           (_) async => null,
         );
-        messenger.setMockMethodCallHandler(
-          AiChatController.audio,
-          (call) async => call.method == 'storagePath' ? dir.path : null,
-        );
+        messenger.setMockMethodCallHandler(AiChatController.audio, (
+          call,
+        ) async {
+          if (call.method == 'storagePath') return dir.path;
+          if (live && call.method == 'start') {
+            nativeAudioStarted = true;
+            await nativeAudioReady.future;
+          }
+          return null;
+        });
         final repository = AiVocabulary(
           'test',
           storagePath: () async => dir.path,
@@ -122,7 +130,13 @@ void main() {
         try {
           await chat.initialize();
           if (live) {
-            await chat.startCall();
+            final starting = chat.startCall();
+            await until(() => nativeAudioStarted);
+            // iOS completes start only after voice processing and duplex I/O
+            // are ready. Gemini must not connect or greet before that point.
+            expect(peer, isNull);
+            nativeAudioReady.complete();
+            await starting;
           } else {
             await chat.record();
             recorder.speak();

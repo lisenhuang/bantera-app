@@ -623,3 +623,22 @@ Review dates use simple 1/3/7/14/30-day intervals; these are practice suggestion
 not a claim of mastery. AI can offer a review during a natural pause, at most once
 per 24 hours when due words exist. It waits for consent and does not schedule
 notifications automatically. The notebook UI supports all 17 app locales.
+
+### Live-call connection and countdown (2.11.1)
+
+The in-app call stays on **Connecting** after the server's `ready` event. The
+nine-minute countdown begins with the first non-empty streamed AI audio, not
+socket setup or a transcript. Microphone frames can still interrupt the opening
+after the transport is ready. Reconnecting preserves the original running clock;
+it never grants another nine minutes. Backend 1.14.1 aligns its farewell deadline
+with the first streamed audio for a new call.
+
+Quota/expiry/response-timeout controls are handled internally. Failed recovery
+uses the existing localised generic error, never a provider message or API-key
+detail. Backend technical progress diagnostics contain no conversation content.
+
+### Prompt native CallKit answer completion (2.11.2)
+
+AI callbacks complete `CXAnswerCallAction` immediately after native audio preparation, before waiting for backend acceptance or Flutter history loading. The answering provider is retained as the call owner. This removes an asynchronous startup dependency before iOS can deliver `didActivate`. The notifier still waits for both backend acceptance and audio activation before opening Gemini; rejection closes the native call. Human WebRTC calls retain their existing answer-ready handshake. No key-routing or backend changes are needed.
+
+Validation: eight callback/CallKit event-order tests passed, including early activation during acceptance and rejection after early activation. Device builds compile the Swift change. Locked-screen audio still requires a real callback check on the phone; build/installation success alone does not verify it.

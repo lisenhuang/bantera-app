@@ -100,4 +100,34 @@ void main() {
     expect(chat.connected, isTrue);
     expect(chat.calling, isTrue);
   });
+
+  test(
+    'connecting lasts until real audio and renewals preserve countdown',
+    () async {
+      chat.connected = false;
+      await chat.receiveCallEventForTesting(jsonEncode({'type': 'ready'}));
+      expect(chat.connected, isFalse);
+      expect(chat.remaining, 540);
+      await chat.receiveCallEventForTesting(
+        jsonEncode({'type': 'transcript', 'role': 'model', 'text': 'Hello'}),
+      );
+      await chat.receiveCallEventForTesting(Uint8List(0));
+      expect(chat.connected, isFalse);
+      expect(chat.remaining, 540);
+      // Readiness permits an interruption without starting the visible timer.
+      chat.microphoneForTesting(Uint8List(640), socket);
+      expect(socket.messages, hasLength(1));
+      await chat.receiveCallEventForTesting(Uint8List(24000));
+      expect(chat.connected, isTrue);
+      await Future<void>.delayed(const Duration(milliseconds: 1300));
+      expect(chat.remaining, lessThan(540));
+      final before = chat.remaining;
+      chat.connected = false;
+      await chat.receiveCallEventForTesting(jsonEncode({'type': 'ready'}));
+      expect(chat.connected, isFalse);
+      await chat.receiveCallEventForTesting(Uint8List(24000));
+      expect(chat.connected, isTrue);
+      expect(chat.remaining, lessThanOrEqualTo(before));
+    },
+  );
 }

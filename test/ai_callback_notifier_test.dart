@@ -165,6 +165,35 @@ void main() {
     },
   );
   test(
+    'early system activation is closed when backend acceptance fails',
+    () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final chat = _Call();
+      final accepted = Completer<int>();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat,
+        acceptCallback: (_) => accepted.future,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('answer');
+      await event('audioActivated');
+      expect(chat.starts, 0);
+      accepted.complete(409);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(callback.id, isNull);
+      expect(chat.starts, 0);
+      expect(methods, ['end']);
+    },
+  );
+  test(
     'native audio failure ends the system call without opening a view',
     () async {
       final service = CallKitService.forTesting();

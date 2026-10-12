@@ -63,6 +63,7 @@ class AiChatController extends ChangeNotifier {
   static const callActivity = MethodChannel('bantera/ai_call_activity');
   DateTime? _callEndsAt;
   bool _renewRequested = false;
+  bool _callTransportReady = false;
   int _renewals = 0;
   bool _speakerChanging = false;
   static const microphone = EventChannel('bantera/ai_audio/input');
@@ -1055,6 +1056,7 @@ class AiChatController extends ChangeNotifier {
     if (!callKitManaged) _keepScreenAwake(true);
     AiCallbackNotifier.instance.aiActive = true;
     connected = false;
+    _callTransportReady = false;
     farewell = false;
     if (!callKitManaged) muted = false;
     speaker = !callKitManaged;
@@ -1165,6 +1167,7 @@ class AiChatController extends ChangeNotifier {
       return;
     }
     connected = false;
+    _callTransportReady = false;
     unawaited(_updateCallActivity());
     changed();
     try {
@@ -1199,7 +1202,11 @@ class AiChatController extends ChangeNotifier {
       }
       return;
     }
-    if (!connected || farewell || muted || !available || epoch != _epoch) {
+    if ((!connected && !_callTransportReady) ||
+        farewell ||
+        muted ||
+        !available ||
+        epoch != _epoch) {
       return;
     }
     final bytes = Uint8List.fromList((event as List).cast<int>());
@@ -1236,8 +1243,31 @@ class AiChatController extends ChangeNotifier {
     language: UserProfileNotifier.instance.learningLanguage ?? '',
   );
 
+  void _firstCallAudio() {
+    if (!calling) return;
+    _connectTimeout?.cancel();
+    final wasConnected = connected;
+    connected = true;
+    if (!_elapsed.isRunning) {
+      _callEndsAt = DateTime.now().add(const Duration(seconds: 540));
+      _elapsed
+        ..reset()
+        ..start();
+      _countdown = Timer.periodic(const Duration(milliseconds: 250), (_) {
+        remaining = ((540000 - _elapsed.elapsedMilliseconds) / 1000)
+            .ceil()
+            .clamp(0, 540);
+        if (remaining <= 0) unawaited(endCall());
+        changed();
+      });
+    }
+    if (!wasConnected) unawaited(_updateCallActivity());
+  }
+
   Future<void> _event(dynamic event, int epoch) async {
     if (event is List<int>) {
+      if (event.length <= 2) return;
+      _firstCallAudio();
       if (_output.length + event.length > 24000 * 2 * 90) {
         throw StateError('Audio too long');
       }
@@ -1254,22 +1284,9 @@ class AiChatController extends ChangeNotifier {
     final data = jsonDecode(event as String) as Map<String, dynamic>;
     switch (data['type']) {
       case 'ready':
-        _connectTimeout?.cancel();
-        connected = true;
-        if (!_elapsed.isRunning) {
-          _callEndsAt = DateTime.now().add(const Duration(seconds: 540));
-          _elapsed
-            ..reset()
-            ..start();
-          _countdown = Timer.periodic(const Duration(milliseconds: 250), (_) {
-            remaining = ((540000 - _elapsed.elapsedMilliseconds) / 1000)
-                .ceil()
-                .clamp(0, 540);
-            if (remaining <= 0) unawaited(endCall());
-            changed();
-          });
-        }
-        unawaited(_updateCallActivity());
+        // The transport is ready, but the greeting is not yet audible. Keep
+        // Connecting and the original startup deadline until real audio arrives.
+        _callTransportReady = true;
       case 'reconnect':
         if (const {
           'session_expired',
@@ -1559,6 +1576,7 @@ class AiChatController extends ChangeNotifier {
     _keepScreenAwake(false);
     unawaited(_endCallActivity());
     connected = false;
+    _callTransportReady = false;
     _epoch++;
     _webSearch.cancel();
     _imageSearch.cancel();
