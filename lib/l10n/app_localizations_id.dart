@@ -1947,4 +1947,72 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Periksa hak penggunaan di sumber';
+
+  @override
+  String get vocabTitle => 'Kosakata';
+
+  @override
+  String get vocabAdd => 'Tambah kata';
+
+  @override
+  String get vocabEdit => 'Edit kata';
+
+  @override
+  String get vocabRemove => 'Hapus kata ini?';
+
+  @override
+  String get vocabWord => 'Kata atau frasa';
+
+  @override
+  String get vocabMeaning => 'Arti singkat';
+
+  @override
+  String get vocabExample => 'Contoh (opsional)';
+
+  @override
+  String get vocabRequired => 'Isi kolom ini.';
+
+  @override
+  String get vocabSaved => 'kata tersimpan';
+
+  @override
+  String get vocabDue => 'Perlu diulang';
+
+  @override
+  String get vocabAll => 'Semua kata';
+
+  @override
+  String get vocabNewest => 'Terbaru';
+
+  @override
+  String get vocabOldest => 'Terlama';
+
+  @override
+  String get vocabLearned => 'Ditambahkan';
+
+  @override
+  String get vocabReviewed => 'Diulang';
+
+  @override
+  String get vocabMarkReviewed => 'Tandai sudah diulang';
+
+  @override
+  String get vocabSearch => 'Cari kata atau arti';
+
+  @override
+  String get vocabEmpty => 'Mulai kumpulkan kata baru di sini';
+
+  @override
+  String get vocabNoMatches => 'Tidak ada kata yang cocok';
+
+  @override
+  String get vocabDuplicate => 'Kata ini sudah tersimpan.';
+
+  @override
+  String get vocabHelp =>
+      'Minta Bantera AI menyimpan kata, menjelaskan kata terbaru, atau mengulang kosakata. Anda juga dapat menambah dan mengedit kata di sini.';
+
+  @override
+  String get vocabPrivacy =>
+      'Hanya disimpan di perangkat ini. Kosakata yang diminta dibagikan ke AI untuk membalas. Menghapus riwayat chat tidak menghapus kosakata.';
 }

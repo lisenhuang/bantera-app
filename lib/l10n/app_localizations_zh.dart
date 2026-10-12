@@ -1864,6 +1864,72 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiImagesRights => '使用权限请查看来源';
+
+  @override
+  String get vocabTitle => '词汇本';
+
+  @override
+  String get vocabAdd => '添加词汇';
+
+  @override
+  String get vocabEdit => '编辑词汇';
+
+  @override
+  String get vocabRemove => '移除此词汇？';
+
+  @override
+  String get vocabWord => '单词或短语';
+
+  @override
+  String get vocabMeaning => '简短释义';
+
+  @override
+  String get vocabExample => '例句（选填）';
+
+  @override
+  String get vocabRequired => '请填写此项。';
+
+  @override
+  String get vocabSaved => '个已保存词汇';
+
+  @override
+  String get vocabDue => '待复习';
+
+  @override
+  String get vocabAll => '全部词汇';
+
+  @override
+  String get vocabNewest => '最新优先';
+
+  @override
+  String get vocabOldest => '最早优先';
+
+  @override
+  String get vocabLearned => '添加于';
+
+  @override
+  String get vocabReviewed => '已复习';
+
+  @override
+  String get vocabMarkReviewed => '标记为已复习';
+
+  @override
+  String get vocabSearch => '搜索词汇或释义';
+
+  @override
+  String get vocabEmpty => '从这里积累新词汇';
+
+  @override
+  String get vocabNoMatches => '没有匹配的词汇';
+
+  @override
+  String get vocabDuplicate => '此词汇已保存。';
+
+  @override
+  String get vocabHelp => '请 Bantera AI 保存词汇、解释最近学到的词，或帮你复习。你也可以在这里添加和编辑词汇。';
+
+  @override
+  String get vocabPrivacy => '仅保存在此设备上。按请求查询的词汇会发送给 AI 以帮助回复。清除聊天记录不会删除词汇。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3730,4 +3796,70 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiImagesRights => '使用權利請查看來源';
+
+  @override
+  String get vocabTitle => '詞彙本';
+
+  @override
+  String get vocabAdd => '新增詞彙';
+
+  @override
+  String get vocabEdit => '編輯詞彙';
+
+  @override
+  String get vocabRemove => '移除此詞彙？';
+
+  @override
+  String get vocabWord => '單字或片語';
+
+  @override
+  String get vocabMeaning => '簡短釋義';
+
+  @override
+  String get vocabExample => '例句（選填）';
+
+  @override
+  String get vocabRequired => '請填寫此欄。';
+
+  @override
+  String get vocabSaved => '個已儲存詞彙';
+
+  @override
+  String get vocabDue => '待複習';
+
+  @override
+  String get vocabAll => '全部詞彙';
+
+  @override
+  String get vocabNewest => '最新優先';
+
+  @override
+  String get vocabOldest => '最早優先';
+
+  @override
+  String get vocabLearned => '新增於';
+
+  @override
+  String get vocabReviewed => '已複習';
+
+  @override
+  String get vocabMarkReviewed => '標記為已複習';
+
+  @override
+  String get vocabSearch => '搜尋詞彙或釋義';
+
+  @override
+  String get vocabEmpty => '從這裡累積新詞彙';
+
+  @override
+  String get vocabNoMatches => '沒有符合的詞彙';
+
+  @override
+  String get vocabDuplicate => '此詞彙已儲存。';
+
+  @override
+  String get vocabHelp => '請 Bantera AI 儲存詞彙、解釋最近學到的詞，或幫你複習。你也可以在這裡新增及編輯詞彙。';
+
+  @override
+  String get vocabPrivacy => '僅儲存在此裝置上。按要求查詢的詞彙會傳送給 AI 以協助回覆。清除聊天記錄不會刪除詞彙。';
 }

@@ -1927,4 +1927,72 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'ตรวจสอบสิทธิ์การใช้งานจากแหล่งที่มา';
+
+  @override
+  String get vocabTitle => 'คำศัพท์';
+
+  @override
+  String get vocabAdd => 'เพิ่มคำศัพท์';
+
+  @override
+  String get vocabEdit => 'แก้ไขคำศัพท์';
+
+  @override
+  String get vocabRemove => 'ลบคำศัพท์นี้ไหม?';
+
+  @override
+  String get vocabWord => 'คำหรือวลี';
+
+  @override
+  String get vocabMeaning => 'ความหมายสั้น ๆ';
+
+  @override
+  String get vocabExample => 'ตัวอย่าง (ไม่บังคับ)';
+
+  @override
+  String get vocabRequired => 'กรุณากรอกช่องนี้';
+
+  @override
+  String get vocabSaved => 'คำที่บันทึกไว้';
+
+  @override
+  String get vocabDue => 'ถึงเวลาทบทวน';
+
+  @override
+  String get vocabAll => 'ทุกคำ';
+
+  @override
+  String get vocabNewest => 'ใหม่สุดก่อน';
+
+  @override
+  String get vocabOldest => 'เก่าสุดก่อน';
+
+  @override
+  String get vocabLearned => 'เพิ่มเมื่อ';
+
+  @override
+  String get vocabReviewed => 'ทบทวนแล้ว';
+
+  @override
+  String get vocabMarkReviewed => 'ทำเครื่องหมายว่าทบทวนแล้ว';
+
+  @override
+  String get vocabSearch => 'ค้นหาคำหรือความหมาย';
+
+  @override
+  String get vocabEmpty => 'เริ่มสะสมคำศัพท์ใหม่ที่นี่';
+
+  @override
+  String get vocabNoMatches => 'ไม่พบคำที่ตรงกัน';
+
+  @override
+  String get vocabDuplicate => 'บันทึกคำนี้ไว้แล้ว';
+
+  @override
+  String get vocabHelp =>
+      'ขอให้ Bantera AI บันทึกคำ อธิบายคำล่าสุด หรือช่วยทบทวนคำศัพท์ คุณยังเพิ่มและแก้ไขคำได้ที่นี่';
+
+  @override
+  String get vocabPrivacy =>
+      'บันทึกเฉพาะบนอุปกรณ์นี้ คำศัพท์ที่ร้องขอจะส่งให้ AI เพื่อช่วยตอบ การล้างประวัติแชทจะไม่ลบคำศัพท์';
 }

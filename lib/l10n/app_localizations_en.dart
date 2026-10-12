@@ -2006,4 +2006,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Check source for usage rights';
+
+  @override
+  String get vocabTitle => 'Vocabulary';
+
+  @override
+  String get vocabAdd => 'Add a word';
+
+  @override
+  String get vocabEdit => 'Edit word';
+
+  @override
+  String get vocabRemove => 'Remove this word?';
+
+  @override
+  String get vocabWord => 'Word or phrase';
+
+  @override
+  String get vocabMeaning => 'Short meaning';
+
+  @override
+  String get vocabExample => 'Example (optional)';
+
+  @override
+  String get vocabRequired => 'Please fill in this field.';
+
+  @override
+  String get vocabSaved => 'words saved';
+
+  @override
+  String get vocabDue => 'Due for review';
+
+  @override
+  String get vocabAll => 'All words';
+
+  @override
+  String get vocabNewest => 'Newest first';
+
+  @override
+  String get vocabOldest => 'Oldest first';
+
+  @override
+  String get vocabLearned => 'Added';
+
+  @override
+  String get vocabReviewed => 'Reviewed';
+
+  @override
+  String get vocabMarkReviewed => 'Mark as reviewed';
+
+  @override
+  String get vocabSearch => 'Search words or meanings';
+
+  @override
+  String get vocabEmpty => 'Your next word starts here';
+
+  @override
+  String get vocabNoMatches => 'No matching words';
+
+  @override
+  String get vocabDuplicate => 'This word is already saved.';
+
+  @override
+  String get vocabHelp =>
+      'Ask Bantera AI to save a word, explain your latest word or revise your vocabulary. You can also add and edit words here.';
+
+  @override
+  String get vocabPrivacy =>
+      'Saved only on this device. Requested vocabulary is shared with AI to help it reply. Clearing chat history keeps your vocabulary.';
 }

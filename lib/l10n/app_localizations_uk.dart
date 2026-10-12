@@ -2009,4 +2009,72 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Права використання дивіться у джерелі';
+
+  @override
+  String get vocabTitle => 'Словник';
+
+  @override
+  String get vocabAdd => 'Додати слово';
+
+  @override
+  String get vocabEdit => 'Змінити слово';
+
+  @override
+  String get vocabRemove => 'Видалити це слово?';
+
+  @override
+  String get vocabWord => 'Слово або фраза';
+
+  @override
+  String get vocabMeaning => 'Коротке значення';
+
+  @override
+  String get vocabExample => 'Приклад (необов’язково)';
+
+  @override
+  String get vocabRequired => 'Заповніть це поле.';
+
+  @override
+  String get vocabSaved => 'збережених слів';
+
+  @override
+  String get vocabDue => 'Час повторити';
+
+  @override
+  String get vocabAll => 'Усі слова';
+
+  @override
+  String get vocabNewest => 'Спочатку нові';
+
+  @override
+  String get vocabOldest => 'Спочатку старі';
+
+  @override
+  String get vocabLearned => 'Додано';
+
+  @override
+  String get vocabReviewed => 'Повторено';
+
+  @override
+  String get vocabMarkReviewed => 'Позначити як повторене';
+
+  @override
+  String get vocabSearch => 'Пошук слів або значень';
+
+  @override
+  String get vocabEmpty => 'Почніть збирати нові слова';
+
+  @override
+  String get vocabNoMatches => 'Відповідних слів немає';
+
+  @override
+  String get vocabDuplicate => 'Це слово вже збережено.';
+
+  @override
+  String get vocabHelp =>
+      'Попросіть Bantera AI зберегти слово, пояснити останнє або повторити словник. Тут також можна додавати й редагувати слова.';
+
+  @override
+  String get vocabPrivacy =>
+      'Зберігається лише на цьому пристрої. Запитані слова передаються ШІ для відповіді. Очищення чату не видаляє словник.';
 }

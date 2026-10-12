@@ -2005,4 +2005,72 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Consulte os direitos de utilização na fonte';
+
+  @override
+  String get vocabTitle => 'Vocabulário';
+
+  @override
+  String get vocabAdd => 'Adicionar palavra';
+
+  @override
+  String get vocabEdit => 'Editar palavra';
+
+  @override
+  String get vocabRemove => 'Remover esta palavra?';
+
+  @override
+  String get vocabWord => 'Palavra ou expressão';
+
+  @override
+  String get vocabMeaning => 'Significado breve';
+
+  @override
+  String get vocabExample => 'Exemplo (opcional)';
+
+  @override
+  String get vocabRequired => 'Preencha este campo.';
+
+  @override
+  String get vocabSaved => 'palavras salvas';
+
+  @override
+  String get vocabDue => 'Para revisar';
+
+  @override
+  String get vocabAll => 'Todas as palavras';
+
+  @override
+  String get vocabNewest => 'Mais recentes';
+
+  @override
+  String get vocabOldest => 'Mais antigas';
+
+  @override
+  String get vocabLearned => 'Adicionada';
+
+  @override
+  String get vocabReviewed => 'Revisada';
+
+  @override
+  String get vocabMarkReviewed => 'Marcar como revisada';
+
+  @override
+  String get vocabSearch => 'Buscar palavras ou significados';
+
+  @override
+  String get vocabEmpty => 'Sua próxima palavra começa aqui';
+
+  @override
+  String get vocabNoMatches => 'Nenhuma palavra encontrada';
+
+  @override
+  String get vocabDuplicate => 'Esta palavra já está salva.';
+
+  @override
+  String get vocabHelp =>
+      'Peça ao Bantera AI para salvar uma palavra, explicar a mais recente ou revisar seu vocabulário. Você também pode adicionar e editar palavras aqui.';
+
+  @override
+  String get vocabPrivacy =>
+      'Salvo apenas neste dispositivo. O vocabulário solicitado é compartilhado com a IA para responder. Limpar o chat mantém seu vocabulário.';
 }

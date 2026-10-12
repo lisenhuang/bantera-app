@@ -46,6 +46,7 @@ class AiApiClient {
   }) async => {
     'hasMetBanteraAi': hasMetBanteraAi,
     'deviceWebSearch': true,
+    'deviceVocabulary': true,
     'learningLevel': SettingsNotifier.instance.audioLevel?.name,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
@@ -149,6 +150,7 @@ class AiApiClient {
       jsonEncode({
         ...meta,
         'deviceWebSearch': false,
+        'deviceVocabulary': false,
         'conversationId': conversationId?.call(),
       }),
     );

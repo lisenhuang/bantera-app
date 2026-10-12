@@ -214,7 +214,7 @@ final class BanteraEchoGuardTests: XCTestCase {
     return Int16(envelope * (5000 * sin(t * 2 * .pi * 187) + 3300 * sin(t * 2 * .pi * 613) + 1700 * sin(t * 2 * .pi * 1091)))
   }
   private func run(speaker: Bool = true, delay: Int = 3840, echo: Double = 0.3,
-                   voice: Double = 0, chunks: Int = 60) -> (suppressed: Int, original: Int) {
+                   voice: Double = 0, chunks: Int = 60, highFrequency: Double? = nil) -> (suppressed: Int, original: Int) {
     let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 0)
     var suppressed = 0, original = 0
     for chunk in 0..<chunks {
@@ -224,7 +224,8 @@ final class BanteraEchoGuardTests: XCTestCase {
         let frame = chunk * 960 + offset * 3 - delay
         let rendered = frame < 0 ? 0 : (0..<3).reduce(0.0) { $0 + Double(source(frame + $1)) } / 3
         let time = Double(chunk * 320 + offset) / 16000
-        let user = voice * (sin(time * 2 * .pi * 283) + 0.5 * sin(time * 2 * .pi * 853))
+        let user = highFrequency.map { voice * sin(time * 2 * .pi * $0) } ??
+          voice * (sin(time * 2 * .pi * 283) + 0.5 * sin(time * 2 * .pi * 853))
         return Int16(rendered * echo + user)
       }
       let input = microphone.withUnsafeBytes { Data($0) }
@@ -292,8 +293,11 @@ final class BanteraEchoGuardTests: XCTestCase {
     XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
     render(20)
     XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
-    // Rendered silence advances the bounded interval too: it cannot stick muted.
-    for chunk in 21..<31 { render(chunk, silent: true) }
+    // Rendering ahead cannot consume protection before capture catches up.
+    for chunk in 21..<51 { render(chunk, silent: true) }
+    for _ in 1..<25 {
+      XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
+    }
     XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
     render(31)
     XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
@@ -302,6 +306,95 @@ final class BanteraEchoGuardTests: XCTestCase {
     XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
     XCTAssertEqual(guarder.processCapture(input, speaker: false), input)
   }
+
+  func testStartupProtectsOnlyBoundedCaptureSamplesEvenForLargeChunks() {
+    let guarder = BanteraEchoGuard()
+    let render = [Int16](repeating: 1000, count: 48000)
+    render.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+    let input = [Int16](repeating: 500, count: 16000).withUnsafeBytes { Data($0) }
+    let output = guarder.processCapture(input, speaker: true)
+    XCTAssertEqual(output.prefix(16000), Data(count: 16000))
+    XCTAssertEqual(output.suffix(16000), input.suffix(16000))
+    XCTAssertTrue(guarder.diagnostics.contains("startupGuardFrames=8000"))
+  }
+
+  // Deterministic, amplitude-modulated broadband audio with syllable gaps. Unlike
+  // the periodic-tone fixtures above, each window contains fresh random energy.
+  private func broadbandSignal() -> [Int16] {
+    var seed: UInt64 = 42
+    var filtered = 0.0
+    return (0..<(16000 * 3)).map { index in
+      seed = seed &* 6364136223846793005 &+ 1
+      let random = Double(Int32(bitPattern: UInt32(truncatingIfNeeded: seed >> 32))) / Double(Int32.max)
+      filtered = 0.55 * filtered + 0.45 * random
+      let syllable = index % 4800
+      let envelope = syllable < 4000 ? 0.45 + 0.5 * sin(Double(syllable) * .pi / 4000) : 0.1
+      return Int16(filtered * envelope * 17000)
+    }
+  }
+
+  private func runFiltered(voice: Double = 0, newSyllable: Bool = false, frequency: Double? = nil, captureFrames: Int = 320) -> (suppressed: Int, original: Int, last: Bool) {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 0)
+    let signal = broadbandSignal()
+    var suppressed = 0, original = 0, last = false
+    func sample(_ index: Int) -> Double { index >= 0 && index < signal.count ? Double(signal[index]) : 0 }
+    for chunk in 0..<100 {
+      let rendered = (0..<(captureFrames * 3)).map { signal[chunk * captureFrames + $0 / 3] }
+      rendered.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+      let microphone = (0..<captureFrames).map { offset -> Int16 in
+        let frame = chunk * captureFrames + offset - 1280
+        // A changed direct spectrum plus two early reflections. Scalar gain or
+        // one relaxed correlation threshold cannot identify this as exact echo.
+        let echo = 0.28 * sample(frame) + 0.12 * sample(frame - 16) - 0.08 * sample(frame - 28)
+        let t = Double(chunk * captureFrames + offset) / 16000
+        let talking = !newSyllable || chunk == 99
+        let human: Double
+        if !talking { human = 0 }
+        else if let frequency {
+          human = frequency == 0 ? voice * sample(frame + 10000) / 3000 : voice * sin(t * 2 * .pi * frequency)
+        } else { human = voice * (sin(t * 2 * .pi * 283) + 0.5 * sin(t * 2 * .pi * 853)) }
+        return Int16(echo + human)
+      }
+      let input = microphone.withUnsafeBytes { Data($0) }
+      let output = guarder.processCapture(input, speaker: true)
+      if input.contains(where: { $0 != 0 }) && !output.contains(where: { $0 != 0 }) { suppressed += 1 }
+      if output == input { original += 1 }
+      if chunk == 99 { last = output == input }
+    }
+    return (suppressed, original, last)
+  }
+
+  func testFrequencyColouredBroadbandEchoIsSuppressed() {
+    for frames in [160, 320] {
+      XCTAssertGreaterThan(runFiltered(captureFrames: frames).suppressed, 75, "frames=\(frames)")
+    }
+  }
+  func testFilteredEchoDoesNotSuppressQuietDoubleTalk() {
+    for frames in [160, 320] {
+      for amplitude in [35.0, 80.0, 300.0, 2000.0] {
+        XCTAssertEqual(runFiltered(voice: amplitude, captureFrames: frames).original, 100,
+          "voice=\(amplitude) frames=\(frames)")
+      }
+    }
+  }
+  func testFilteredEchoCannotFitAwayFirstNewUserSyllable() {
+    for frames in [160, 320] {
+      XCTAssertTrue(runFiltered(voice: 120, newSyllable: true, captureFrames: frames).last)
+    }
+  }
+
+  func testFullBandIndependentSpeechCannotBeHiddenByAnalysisDownsampling() {
+    for frequency in [3900.0, 4000.0, 4100.0, 6000.0] {
+      XCTAssertEqual(run(voice: 120, highFrequency: frequency).original, 60, "scalar frequency=\(frequency)")
+      for frames in [160, 320] {
+        XCTAssertTrue(runFiltered(voice: 120, newSyllable: true, frequency: frequency, captureFrames: frames).last,
+          "filtered frequency=\(frequency) frames=\(frames)")
+      }
+    }
+    XCTAssertTrue(runFiltered(voice: 35, newSyllable: true, frequency: 0).last,
+      "quiet independent broadband speech")
+  }
+
 }
 
 final class BanteraAudioReadinessTests: XCTestCase {

@@ -560,7 +560,7 @@ screen audio must be verified on a physical iPhone; simulator coverage does not
 establish successful CallKit hardware audio.
 
 
-### Voice startup and silent recordings (2.10.4)
+### Voice startup and silent recordings (2.10.6)
 
 Before opening a Live call, native iOS waits for 400 ms of actual microphone
 capture, an output callback and enabled VoiceProcessingIO on a stable route.
@@ -569,12 +569,23 @@ public convergence flag). Processing stays monitored during the call. A genuine
 route change restarts readiness; routine category notifications do not.
 
 A small native residual-echo guard compares post-VPIO microphone PCM with actual
-speaker output. It suppresses only strongly matching residual echo, preserving
-independent speech and double-talk. The first audible speaker output after a new
-route has a bounded 200 ms microphone guard while AEC adapts. This can suppress
-an overlapping first syllable in that brief interval; later replies do not rearm
-it. No model, binary SDK or new app dependency is bundled. Read-only diagnostics
-include the actual route, processing state, readiness and system microphone mode.
+speaker output. Besides a scaled waveform match, it can verify a short filtered
+copy caused by speaker/microphone frequency response. The filter is fitted to
+older samples and verified against the new microphone chunk at full 16 kHz;
+unexplained speech must pass, including higher-frequency user syllables.
+
+The first audible speaker output after a new route has a bounded **500 ms of
+captured audio** startup guard while AEC adapts. Render callbacks running ahead
+cannot consume that protection early. It can suppress an overlapping first
+syllable during this brief interval; later replies do not rearm it. A route
+change invalidates queued microphone buffers before resetting the converter
+and echo history, so old speaker audio cannot bypass the guard as receiver input.
+
+No model, binary SDK or new app dependency is bundled. Read-only diagnostics
+include the actual route, processing state, readiness, system microphone mode,
+and counters for startup-protected and matched-echo frames. They contain no
+recorded speech. Synthetic tests establish bounded protection and preservation
+of tested user speech, not reliable cancellation in every physical room.
 
 CallKit reserves audio before answering and owns its lifetime. Replacing a
 Flutter input listener, finishing an older voice reply or detaching a chat scene
@@ -593,3 +604,22 @@ combinations retain their existing contract.
 Validation covers synthetic echo/double-talk, native readiness, callback event
 ordering/lifetime, and persisted silent-recording cleanup. Simulator tests do not
 prove locked-screen hardware audio or room acoustics on an iPhone.
+
+### Vocabulary notebook (2.11.0)
+
+Open **Bantera AI → ⋯ → Vocabulary** to search, add, edit, remove or review words.
+Each entry has a word/phrase, short meaning, optional example, learning language,
+original save timestamp/timezone, edit time and review history counters. The
+newest entry and full count are available to AI via `manage_vocabulary` in both
+voice-message streaming and live calls. The model must use this device tool and
+wait for success before claiming a change. Edit/delete require an exact saved ID;
+repeated adds of the same word/language preserve the original entry/date.
+
+Records are account-isolated atomic JSON files beside, not inside, chat history,
+under the native backup-excluded AI storage root. Clearing chat history keeps the
+notebook. There is no vocabulary database/server sync; requested tool results
+pass through the existing Live relay to the model. Uninstalling loses the notebook.
+Review dates use simple 1/3/7/14/30-day intervals; these are practice suggestions,
+not a claim of mastery. AI can offer a review during a natural pause, at most once
+per 24 hours when due words exist. It waits for consent and does not schedule
+notifications automatically. The notebook UI supports all 17 app locales.

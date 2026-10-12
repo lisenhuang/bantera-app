@@ -1,3 +1,4 @@
+import 'ai_vocabulary_screen.dart';
 import 'ai_image_cards.dart';
 import 'ai_message_markdown.dart';
 import 'ai_search_sources.dart';
@@ -430,7 +431,14 @@ class _AiChatScreenState extends State<AiChatScreen>
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_horiz),
             onSelected: (value) {
-              if (value == 'reminders') {
+              if (value == 'vocabulary') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AiVocabularyScreen(),
+                  ),
+                );
+              } else if (value == 'reminders') {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(
@@ -447,7 +455,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                     scrollable: true,
                     content: SingleChildScrollView(
                       child: Text(
-                        '${l.aiUsageBody}\n\n${l.aiWebSearchHelp}\n\n${l.aiImagesHelp}',
+                        '${l.aiUsageBody}\n\n${l.aiWebSearchHelp}\n\n${l.aiImagesHelp}\n\n${l.vocabHelp}',
                       ),
                     ),
                     actions: [
@@ -475,6 +483,16 @@ class _AiChatScreenState extends State<AiChatScreen>
               }
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'vocabulary',
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_stories_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.vocabTitle),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'reminders',
                 child: Row(

@@ -1857,4 +1857,72 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiImagesRights => '利用条件は出典で確認してください';
+
+  @override
+  String get vocabTitle => '単語帳';
+
+  @override
+  String get vocabAdd => '単語を追加';
+
+  @override
+  String get vocabEdit => '単語を編集';
+
+  @override
+  String get vocabRemove => 'この単語を削除しますか？';
+
+  @override
+  String get vocabWord => '単語やフレーズ';
+
+  @override
+  String get vocabMeaning => '短い意味';
+
+  @override
+  String get vocabExample => '例文（任意）';
+
+  @override
+  String get vocabRequired => 'この項目を入力してください。';
+
+  @override
+  String get vocabSaved => '件の保存済み単語';
+
+  @override
+  String get vocabDue => '復習する単語';
+
+  @override
+  String get vocabAll => 'すべての単語';
+
+  @override
+  String get vocabNewest => '新しい順';
+
+  @override
+  String get vocabOldest => '古い順';
+
+  @override
+  String get vocabLearned => '追加日';
+
+  @override
+  String get vocabReviewed => '復習済み';
+
+  @override
+  String get vocabMarkReviewed => '復習済みにする';
+
+  @override
+  String get vocabSearch => '単語や意味を検索';
+
+  @override
+  String get vocabEmpty => 'ここから新しい単語を覚えましょう';
+
+  @override
+  String get vocabNoMatches => '該当する単語はありません';
+
+  @override
+  String get vocabDuplicate => 'この単語は保存済みです。';
+
+  @override
+  String get vocabHelp =>
+      'Bantera AI に単語の保存、最近の単語の説明、復習を頼めます。ここでも単語を追加・編集できます。';
+
+  @override
+  String get vocabPrivacy =>
+      'この端末のみに保存されます。リクエストされた単語は返答のため AI と共有されます。履歴を消しても単語帳は残ります。';
 }

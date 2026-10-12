@@ -3553,6 +3553,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check source for usage rights'**
   String get aiImagesRights;
+
+  /// No description provided for @vocabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocabulary'**
+  String get vocabTitle;
+
+  /// No description provided for @vocabAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a word'**
+  String get vocabAdd;
+
+  /// No description provided for @vocabEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit word'**
+  String get vocabEdit;
+
+  /// No description provided for @vocabRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this word?'**
+  String get vocabRemove;
+
+  /// No description provided for @vocabWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Word or phrase'**
+  String get vocabWord;
+
+  /// No description provided for @vocabMeaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Short meaning'**
+  String get vocabMeaning;
+
+  /// No description provided for @vocabExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Example (optional)'**
+  String get vocabExample;
+
+  /// No description provided for @vocabRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in this field.'**
+  String get vocabRequired;
+
+  /// No description provided for @vocabSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'words saved'**
+  String get vocabSaved;
+
+  /// No description provided for @vocabDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due for review'**
+  String get vocabDue;
+
+  /// No description provided for @vocabAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All words'**
+  String get vocabAll;
+
+  /// No description provided for @vocabNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get vocabNewest;
+
+  /// No description provided for @vocabOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get vocabOldest;
+
+  /// No description provided for @vocabLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get vocabLearned;
+
+  /// No description provided for @vocabReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get vocabReviewed;
+
+  /// No description provided for @vocabMarkReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as reviewed'**
+  String get vocabMarkReviewed;
+
+  /// No description provided for @vocabSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search words or meanings'**
+  String get vocabSearch;
+
+  /// No description provided for @vocabEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next word starts here'**
+  String get vocabEmpty;
+
+  /// No description provided for @vocabNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching words'**
+  String get vocabNoMatches;
+
+  /// No description provided for @vocabDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'This word is already saved.'**
+  String get vocabDuplicate;
+
+  /// No description provided for @vocabHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Bantera AI to save a word, explain your latest word or revise your vocabulary. You can also add and edit words here.'**
+  String get vocabHelp;
+
+  /// No description provided for @vocabPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved only on this device. Requested vocabulary is shared with AI to help it reply. Clearing chat history keeps your vocabulary.'**
+  String get vocabPrivacy;
 }
 
 class _AppLocalizationsDelegate

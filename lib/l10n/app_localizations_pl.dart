@@ -2018,4 +2018,72 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Sprawdź prawa do wykorzystania u źródła';
+
+  @override
+  String get vocabTitle => 'Słownictwo';
+
+  @override
+  String get vocabAdd => 'Dodaj słowo';
+
+  @override
+  String get vocabEdit => 'Edytuj słowo';
+
+  @override
+  String get vocabRemove => 'Usunąć to słowo?';
+
+  @override
+  String get vocabWord => 'Słowo lub wyrażenie';
+
+  @override
+  String get vocabMeaning => 'Krótkie znaczenie';
+
+  @override
+  String get vocabExample => 'Przykład (opcjonalnie)';
+
+  @override
+  String get vocabRequired => 'Wypełnij to pole.';
+
+  @override
+  String get vocabSaved => 'zapisanych słów';
+
+  @override
+  String get vocabDue => 'Do powtórki';
+
+  @override
+  String get vocabAll => 'Wszystkie słowa';
+
+  @override
+  String get vocabNewest => 'Najnowsze';
+
+  @override
+  String get vocabOldest => 'Najstarsze';
+
+  @override
+  String get vocabLearned => 'Dodano';
+
+  @override
+  String get vocabReviewed => 'Powtórzono';
+
+  @override
+  String get vocabMarkReviewed => 'Oznacz jako powtórzone';
+
+  @override
+  String get vocabSearch => 'Szukaj słów lub znaczeń';
+
+  @override
+  String get vocabEmpty => 'Tutaj zaczyna się Twoje kolejne słowo';
+
+  @override
+  String get vocabNoMatches => 'Brak pasujących słów';
+
+  @override
+  String get vocabDuplicate => 'To słowo jest już zapisane.';
+
+  @override
+  String get vocabHelp =>
+      'Poproś Bantera AI o zapisanie słowa, wyjaśnienie ostatniego lub powtórkę słownictwa. Tutaj też możesz dodawać i edytować słowa.';
+
+  @override
+  String get vocabPrivacy =>
+      'Zapis tylko na tym urządzeniu. Wskazane słowa są udostępniane AI w celu odpowiedzi. Usunięcie historii czatu zachowuje słownictwo.';
 }

@@ -1944,4 +1944,72 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Kiểm tra quyền sử dụng tại nguồn';
+
+  @override
+  String get vocabTitle => 'Từ vựng';
+
+  @override
+  String get vocabAdd => 'Thêm từ';
+
+  @override
+  String get vocabEdit => 'Sửa từ';
+
+  @override
+  String get vocabRemove => 'Xóa từ này?';
+
+  @override
+  String get vocabWord => 'Từ hoặc cụm từ';
+
+  @override
+  String get vocabMeaning => 'Nghĩa ngắn gọn';
+
+  @override
+  String get vocabExample => 'Ví dụ (tùy chọn)';
+
+  @override
+  String get vocabRequired => 'Vui lòng điền mục này.';
+
+  @override
+  String get vocabSaved => 'từ đã lưu';
+
+  @override
+  String get vocabDue => 'Đến lúc ôn tập';
+
+  @override
+  String get vocabAll => 'Tất cả từ';
+
+  @override
+  String get vocabNewest => 'Mới nhất trước';
+
+  @override
+  String get vocabOldest => 'Cũ nhất trước';
+
+  @override
+  String get vocabLearned => 'Đã thêm';
+
+  @override
+  String get vocabReviewed => 'Đã ôn tập';
+
+  @override
+  String get vocabMarkReviewed => 'Đánh dấu đã ôn tập';
+
+  @override
+  String get vocabSearch => 'Tìm từ hoặc nghĩa';
+
+  @override
+  String get vocabEmpty => 'Bắt đầu lưu từ mới tại đây';
+
+  @override
+  String get vocabNoMatches => 'Không có từ phù hợp';
+
+  @override
+  String get vocabDuplicate => 'Từ này đã được lưu.';
+
+  @override
+  String get vocabHelp =>
+      'Nhờ Bantera AI lưu từ, giải thích từ mới nhất hoặc ôn tập từ vựng. Bạn cũng có thể thêm và sửa từ tại đây.';
+
+  @override
+  String get vocabPrivacy =>
+      'Chỉ lưu trên thiết bị này. Từ vựng được yêu cầu sẽ chia sẻ với AI để trả lời. Xóa lịch sử trò chuyện vẫn giữ từ vựng.';
 }

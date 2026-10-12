@@ -1942,4 +1942,72 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Kullanım haklarını kaynakta kontrol et';
+
+  @override
+  String get vocabTitle => 'Kelime defteri';
+
+  @override
+  String get vocabAdd => 'Kelime ekle';
+
+  @override
+  String get vocabEdit => 'Kelimeyi düzenle';
+
+  @override
+  String get vocabRemove => 'Bu kelime kaldırılsın mı?';
+
+  @override
+  String get vocabWord => 'Kelime veya ifade';
+
+  @override
+  String get vocabMeaning => 'Kısa anlam';
+
+  @override
+  String get vocabExample => 'Örnek (isteğe bağlı)';
+
+  @override
+  String get vocabRequired => 'Bu alanı doldurun.';
+
+  @override
+  String get vocabSaved => 'kayıtlı kelime';
+
+  @override
+  String get vocabDue => 'Tekrar zamanı';
+
+  @override
+  String get vocabAll => 'Tüm kelimeler';
+
+  @override
+  String get vocabNewest => 'Önce en yeni';
+
+  @override
+  String get vocabOldest => 'Önce en eski';
+
+  @override
+  String get vocabLearned => 'Eklendi';
+
+  @override
+  String get vocabReviewed => 'Tekrarlandı';
+
+  @override
+  String get vocabMarkReviewed => 'Tekrarlandı olarak işaretle';
+
+  @override
+  String get vocabSearch => 'Kelime veya anlam ara';
+
+  @override
+  String get vocabEmpty => 'Yeni kelimeleriniz burada başlar';
+
+  @override
+  String get vocabNoMatches => 'Eşleşen kelime yok';
+
+  @override
+  String get vocabDuplicate => 'Bu kelime zaten kayıtlı.';
+
+  @override
+  String get vocabHelp =>
+      'Bantera AI’dan kelime kaydetmesini, son kelimenizi açıklamasını veya kelimeleri tekrar etmenizi isteyin. Buradan da kelime ekleyip düzenleyebilirsiniz.';
+
+  @override
+  String get vocabPrivacy =>
+      'Yalnızca bu cihazda saklanır. İstenen kelimeler yanıt vermesi için AI ile paylaşılır. Sohbet geçmişini temizlemek kelimeleri silmez.';
 }

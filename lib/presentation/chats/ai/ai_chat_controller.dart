@@ -1,3 +1,4 @@
+import '../../../infrastructure/ai/ai_vocabulary.dart';
 import '../../../infrastructure/ai/ai_search_capabilities.dart';
 import '../../../infrastructure/ai/ai_image_search.dart';
 import '../../../infrastructure/ai/ai_web_search.dart';
@@ -44,6 +45,7 @@ class AiChatController extends ChangeNotifier {
     AiApiClient? api,
     AiImageSearch? imageSearch,
     AiWebSearch? webSearch,
+    AiVocabulary? vocabulary,
     Future<Map<String, dynamic>> Function()? voiceMetadata,
   }) : owner = 'test',
        _testing = true {
@@ -51,6 +53,7 @@ class AiChatController extends ChangeNotifier {
     if (api != null) _api = api;
     if (imageSearch != null) _imageSearch = imageSearch;
     if (webSearch != null) _webSearch = webSearch;
+    _vocabulary = vocabulary;
     _voiceMetadata = voiceMetadata;
   }
   final bool callKitManaged;
@@ -65,6 +68,8 @@ class AiChatController extends ChangeNotifier {
   static const microphone = EventChannel('bantera/ai_audio/input');
   final String owner;
   final AiHistoryStore store;
+  AiVocabulary? _vocabulary;
+  AiVocabulary get vocabulary => _vocabulary ??= AiVocabulary(owner);
   AiWebSearch _webSearch = AiWebSearch();
   AiImageSearch _imageSearch = AiImageSearch();
   AiApiClient _api = AiApiClient();
@@ -436,6 +441,11 @@ class AiChatController extends ChangeNotifier {
       onToolCall: (call) async {
         if (!available || epoch != _epoch || !busy) {
           return {'unavailable': true};
+        }
+        if (call['name'] == AiVocabulary.toolName) {
+          return vocabulary.execute(
+            Map<String, dynamic>.from(call['args'] as Map),
+          );
         }
         return _search(
           call,
@@ -1405,7 +1415,14 @@ class AiChatController extends ChangeNotifier {
     for (final call in calls) {
       Map<String, dynamic> result;
       try {
-        result = call['name'] == 'search_web'
+        if (!available || epoch != _epoch || !identical(_socket, destination)) {
+          return;
+        }
+        result = call['name'] == AiVocabulary.toolName
+            ? await vocabulary.execute(
+                Map<String, dynamic>.from(call['args'] as Map),
+              )
+            : call['name'] == 'search_web'
             ? await _search(
                 Map<String, dynamic>.from(call),
                 _liveBubble(),

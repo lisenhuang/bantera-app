@@ -2462,7 +2462,7 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
   }
   var diagnostics: String {
-    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) sessionRate=\(AVAudioSession.sharedInstance().sampleRate) unitRate=\(phoneAudio?.sampleRate ?? 0) ioBuffer=\(AVAudioSession.sharedInstance().ioBufferDuration) echoCancellation=\(echoCancellationEnabled) audioReady=\(readiness.ready) micMode=\(AVCaptureDevice.activeMicrophoneMode.rawValue) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(phoneAudio?.conversionError ?? conversionError)"
+    "mode=\(AVAudioSession.sharedInstance().mode.rawValue) category=\(AVAudioSession.sharedInstance().category.rawValue) options=\(AVAudioSession.sharedInstance().categoryOptions.rawValue) outputs=\(AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")) sessionRate=\(AVAudioSession.sharedInstance().sampleRate) unitRate=\(phoneAudio?.sampleRate ?? 0) ioBuffer=\(AVAudioSession.sharedInstance().ioBufferDuration) echoCancellation=\(echoCancellationEnabled) audioReady=\(readiness.ready) \(phoneAudio?.echoDiagnostics ?? "") micMode=\(AVCaptureDevice.activeMicrophoneMode.rawValue) voiceProcessing=\(phoneAudio != nil) speaker=\(speakerNeedsEchoCancellation) running=\(phoneAudio?.running ?? (engine?.isRunning == true)) captureBuffers=\(captureBuffers) capturedFrames=\(capturedFrames) playedFrames=\(phoneAudio?.renderedFrames ?? playedFrames) conversion=\(phoneAudio?.conversionError ?? conversionError)"
   }
   private var playbackGeneration = 0
   private var drain: FlutterResult?
@@ -2783,6 +2783,7 @@ final class BanteraPhoneAudio {
   private(set) var conversionError = ""
   private let lock = NSLock()
   private let echoGuard = BanteraEchoGuard()
+  var echoDiagnostics: String { echoGuard.diagnostics }
   private var speakerOutput = false
   private var renderCallbacks = 0
   var hasRendered: Bool {
@@ -2792,9 +2793,18 @@ final class BanteraPhoneAudio {
   func setOutputRoute(speaker: Bool, discontinuity: Bool) {
     lock.lock()
     speakerOutput = speaker
-    if discontinuity { renderCallbacks = 0 }
+    if discontinuity {
+      renderCallbacks = 0
+      captureGeneration += 1
+      // Serialize the reset with captured PCM. Otherwise a queued buffer from
+      // the old speaker route can seed the new guard or bypass it as receiver
+      // input. Enqueue under the same lock used by the capture callback.
+      captureQueue.async { [weak self] in
+        self?.captureConverter.reset()
+        self?.echoGuard.reset()
+      }
+    }
     lock.unlock()
-    if discontinuity { echoGuard.reset() }
   }
   private var capacity: Int
   private var samples: [Int16]
@@ -3080,19 +3090,26 @@ final class BanteraPhoneAudio {
   private static let capture: AURenderCallback = { context, flags, time, _, frames, _ in
     let owner = Unmanaged<BanteraPhoneAudio>.fromOpaque(context).takeUnretainedValue()
     guard frames <= owner.maximumFrames, let unit = owner.unit else { return noErr }
+    owner.lock.lock()
+    let generation = owner.captureGeneration
+    let speaker = owner.speakerOutput
+    owner.lock.unlock()
+    // AudioUnitRender may invoke output rendering. Never hold our lock across it.
     var buffer = AudioBufferList(mNumberBuffers: 1,
       mBuffers: AudioBuffer(mNumberChannels: 1, mDataByteSize: frames * 2, mData: owner.microphoneBuffer))
     let status = AudioUnitRender(unit, flags, time, 1, frames, &buffer)
     guard status == noErr else { return status }
     let bytes = Data(bytes: owner.microphoneBuffer, count: Int(frames) * 2)
     owner.lock.lock()
-    let generation = owner.captureGeneration
-    owner.lock.unlock()
+    guard owner.captureGeneration == generation else { owner.lock.unlock(); return noErr }
     owner.captureQueue.async { [weak owner] in
       guard let owner else { return }
+      owner.lock.lock()
+      let current = owner.captureGeneration == generation
+      owner.lock.unlock()
+      guard current else { return }
       do {
         let converted = try owner.captureConverter.convert(bytes)
-        owner.lock.lock(); let speaker = owner.speakerOutput; owner.lock.unlock()
         let filtered = owner.echoGuard.processCapture(converted, speaker: speaker)
         DispatchQueue.main.async { [weak owner] in
           guard let owner, owner.running, owner.captureGeneration == generation, !converted.isEmpty else { return }
@@ -3105,6 +3122,7 @@ final class BanteraPhoneAudio {
         }
       }
     }
+    owner.lock.unlock()
     return noErr
   }
 }

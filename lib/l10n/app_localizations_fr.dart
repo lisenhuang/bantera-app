@@ -2007,4 +2007,72 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Consulter les droits auprès de la source';
+
+  @override
+  String get vocabTitle => 'Vocabulaire';
+
+  @override
+  String get vocabAdd => 'Ajouter un mot';
+
+  @override
+  String get vocabEdit => 'Modifier le mot';
+
+  @override
+  String get vocabRemove => 'Supprimer ce mot ?';
+
+  @override
+  String get vocabWord => 'Mot ou expression';
+
+  @override
+  String get vocabMeaning => 'Définition courte';
+
+  @override
+  String get vocabExample => 'Exemple (facultatif)';
+
+  @override
+  String get vocabRequired => 'Veuillez remplir ce champ.';
+
+  @override
+  String get vocabSaved => 'mots enregistrés';
+
+  @override
+  String get vocabDue => 'À réviser';
+
+  @override
+  String get vocabAll => 'Tous les mots';
+
+  @override
+  String get vocabNewest => 'Plus récents';
+
+  @override
+  String get vocabOldest => 'Plus anciens';
+
+  @override
+  String get vocabLearned => 'Ajouté le';
+
+  @override
+  String get vocabReviewed => 'Révisé';
+
+  @override
+  String get vocabMarkReviewed => 'Marquer comme révisé';
+
+  @override
+  String get vocabSearch => 'Rechercher un mot ou une définition';
+
+  @override
+  String get vocabEmpty => 'Votre prochain mot commence ici';
+
+  @override
+  String get vocabNoMatches => 'Aucun mot correspondant';
+
+  @override
+  String get vocabDuplicate => 'Ce mot est déjà enregistré.';
+
+  @override
+  String get vocabHelp =>
+      'Demandez à Bantera AI de retenir un mot, d’expliquer le dernier ou de réviser votre vocabulaire. Vous pouvez aussi ajouter et modifier des mots ici.';
+
+  @override
+  String get vocabPrivacy =>
+      'Enregistré uniquement sur cet appareil. Le vocabulaire demandé est partagé avec l’IA pour répondre. Effacer le chat conserve votre vocabulaire.';
 }

@@ -1,0 +1,153 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:app/infrastructure/ai/ai_api_client.dart';
+import 'package:app/infrastructure/ai/ai_history_store.dart';
+import 'package:app/infrastructure/ai/ai_vocabulary.dart';
+import 'package:app/presentation/chats/ai/ai_chat_controller.dart';
+import 'ai_voice_overlap_test.dart' show Recorder, until;
+
+class _Api extends AiApiClient {
+  _Api(this.port);
+  final int port;
+  @override
+  Future<WebSocket> voice(
+    String owner,
+    List<Map<String, String>> history,
+    String requestId, {
+    required bool hasMetBanteraAi,
+  }) => WebSocket.connect('ws://127.0.0.1:$port');
+  @override
+  Future<WebSocket> call(
+    String owner,
+    List<Map<String, String>> history, {
+    required bool hasMetBanteraAi,
+    bool resuming = false,
+    int remainingSeconds = 540,
+    String? callbackId,
+  }) => WebSocket.connect('ws://127.0.0.1:$port');
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  for (final live in [false, true]) {
+    test(
+      'vocabulary tool reaches device storage through ${live ? 'live call' : 'voice message'} controller',
+      () async {
+        final dir = Directory.systemTemp.createTempSync('vocab-wire');
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final toolResult = Completer<Map>();
+        WebSocket? peer;
+        final call = {
+          'type': 'toolCall',
+          'calls': [
+            {
+              'id': 'v1',
+              'name': 'manage_vocabulary',
+              'args': {
+                'action': 'add',
+                'word': 'skewer',
+                'meaning': 'A stick for grilling food.',
+              },
+            },
+          ],
+        };
+        server.listen((request) async {
+          final socket = await WebSocketTransformer.upgrade(request);
+          peer = socket;
+          socket.listen((event) {
+            if (event is! String) return;
+            final frame = jsonDecode(event) as Map;
+            if (frame['type'] == 'commit') socket.add(jsonEncode(call));
+            if (frame['type'] == 'toolResponse') {
+              toolResult.complete(frame);
+              if (!live) {
+                socket.add(Uint8List(4800));
+                socket.add(
+                  jsonEncode({
+                    'type': 'complete',
+                    'inputText': 'Save skewer',
+                    'outputText': 'Saved skewer.',
+                  }),
+                );
+              }
+            }
+          });
+          socket.add(jsonEncode({'type': 'ready'}));
+          if (live) socket.add(jsonEncode(call));
+        });
+        final messenger =
+            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(
+          const MethodChannel('com.llfbandit.record/messages'),
+          (_) async => null,
+        );
+        messenger.setMockMethodCallHandler(
+          const MethodChannel('flutter.baseflow.com/permissions/methods'),
+          (call) async => call.method == 'requestPermissions' ? {7: 1} : 1,
+        );
+        messenger.setMockMethodCallHandler(
+          const MethodChannel('bantera/ai_audio/input'),
+          (_) async => null,
+        );
+        messenger.setMockMethodCallHandler(
+          AiChatController.audio,
+          (call) async => call.method == 'storagePath' ? dir.path : null,
+        );
+        final repository = AiVocabulary(
+          'test',
+          storagePath: () async => dir.path,
+          isActive: () => true,
+          language: () => 'en-NZ',
+          timeZone: () async => 'Pacific/Auckland',
+        );
+        messenger.setMockMethodCallHandler(
+          const MethodChannel('FlutterWebRTC.Method'),
+          (_) async => {'textureId': 1},
+        );
+        messenger.setMockMethodCallHandler(
+          const MethodChannel('FlutterWebRTC/Texture1'),
+          (_) async => null,
+        );
+        final recorder = Recorder();
+        final chat = AiChatController.forTesting(
+          AiHistoryStore('test'),
+          recorder: recorder,
+          api: _Api(server.port),
+          vocabulary: repository,
+          voiceMetadata: () async => {},
+        );
+        try {
+          await chat.initialize();
+          if (live) {
+            await chat.startCall();
+          } else {
+            await chat.record();
+            recorder.speak();
+            await chat.sendRecording();
+          }
+          final response = await toolResult.future.timeout(
+            const Duration(seconds: 5),
+          );
+          expect(response['responses'][0]['response']['result']['ok'], true);
+          expect((await repository.words()).single.word, 'skewer');
+          expect(chat.failed, false);
+        } finally {
+          if (live) await chat.endCall();
+          chat.dispose();
+          await peer?.close();
+          await server.close(force: true);
+          await until(() => !chat.calling);
+          await dir.delete(recursive: true);
+          messenger.setMockMethodCallHandler(AiChatController.audio, null);
+          messenger.setMockMethodCallHandler(
+            const MethodChannel('bantera/ai_audio/input'),
+            null,
+          );
+        }
+      },
+    );
+  }
+}

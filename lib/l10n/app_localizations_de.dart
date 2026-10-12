@@ -2005,4 +2005,72 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Nutzungsrechte bei der Quelle prüfen';
+
+  @override
+  String get vocabTitle => 'Wortschatz';
+
+  @override
+  String get vocabAdd => 'Wort hinzufügen';
+
+  @override
+  String get vocabEdit => 'Wort bearbeiten';
+
+  @override
+  String get vocabRemove => 'Dieses Wort entfernen?';
+
+  @override
+  String get vocabWord => 'Wort oder Ausdruck';
+
+  @override
+  String get vocabMeaning => 'Kurze Bedeutung';
+
+  @override
+  String get vocabExample => 'Beispiel (optional)';
+
+  @override
+  String get vocabRequired => 'Bitte dieses Feld ausfüllen.';
+
+  @override
+  String get vocabSaved => 'gespeicherte Wörter';
+
+  @override
+  String get vocabDue => 'Zum Wiederholen';
+
+  @override
+  String get vocabAll => 'Alle Wörter';
+
+  @override
+  String get vocabNewest => 'Neueste zuerst';
+
+  @override
+  String get vocabOldest => 'Älteste zuerst';
+
+  @override
+  String get vocabLearned => 'Hinzugefügt';
+
+  @override
+  String get vocabReviewed => 'Wiederholt';
+
+  @override
+  String get vocabMarkReviewed => 'Als wiederholt markieren';
+
+  @override
+  String get vocabSearch => 'Wörter oder Bedeutungen suchen';
+
+  @override
+  String get vocabEmpty => 'Hier beginnt dein nächstes Wort';
+
+  @override
+  String get vocabNoMatches => 'Keine passenden Wörter';
+
+  @override
+  String get vocabDuplicate => 'Dieses Wort ist bereits gespeichert.';
+
+  @override
+  String get vocabHelp =>
+      'Bitte Bantera AI, ein Wort zu speichern, dein neuestes Wort zu erklären oder mit dir zu wiederholen. Hier kannst du Wörter auch hinzufügen und bearbeiten.';
+
+  @override
+  String get vocabPrivacy =>
+      'Nur auf diesem Gerät gespeichert. Angefragte Wörter werden für Antworten mit der KI geteilt. Beim Löschen des Chats bleibt dein Wortschatz erhalten.';
 }

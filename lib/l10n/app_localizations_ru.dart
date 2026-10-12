@@ -2011,4 +2011,72 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiImagesRights => 'Права использования смотрите в источнике';
+
+  @override
+  String get vocabTitle => 'Словарь';
+
+  @override
+  String get vocabAdd => 'Добавить слово';
+
+  @override
+  String get vocabEdit => 'Изменить слово';
+
+  @override
+  String get vocabRemove => 'Удалить это слово?';
+
+  @override
+  String get vocabWord => 'Слово или фраза';
+
+  @override
+  String get vocabMeaning => 'Краткое значение';
+
+  @override
+  String get vocabExample => 'Пример (необязательно)';
+
+  @override
+  String get vocabRequired => 'Заполните это поле.';
+
+  @override
+  String get vocabSaved => 'сохранённых слов';
+
+  @override
+  String get vocabDue => 'Пора повторить';
+
+  @override
+  String get vocabAll => 'Все слова';
+
+  @override
+  String get vocabNewest => 'Сначала новые';
+
+  @override
+  String get vocabOldest => 'Сначала старые';
+
+  @override
+  String get vocabLearned => 'Добавлено';
+
+  @override
+  String get vocabReviewed => 'Повторено';
+
+  @override
+  String get vocabMarkReviewed => 'Отметить как повторённое';
+
+  @override
+  String get vocabSearch => 'Поиск слов или значений';
+
+  @override
+  String get vocabEmpty => 'Начните собирать новые слова';
+
+  @override
+  String get vocabNoMatches => 'Подходящих слов нет';
+
+  @override
+  String get vocabDuplicate => 'Это слово уже сохранено.';
+
+  @override
+  String get vocabHelp =>
+      'Попросите Bantera AI сохранить слово, объяснить последнее или повторить словарь. Здесь также можно добавлять и изменять слова.';
+
+  @override
+  String get vocabPrivacy =>
+      'Хранится только на этом устройстве. Запрошенные слова передаются ИИ для ответа. Очистка чата не удаляет словарь.';
 }

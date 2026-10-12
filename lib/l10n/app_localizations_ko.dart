@@ -1868,4 +1868,72 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiImagesRights => '이용 권한은 출처에서 확인하세요';
+
+  @override
+  String get vocabTitle => '단어장';
+
+  @override
+  String get vocabAdd => '단어 추가';
+
+  @override
+  String get vocabEdit => '단어 수정';
+
+  @override
+  String get vocabRemove => '이 단어를 삭제할까요?';
+
+  @override
+  String get vocabWord => '단어 또는 구문';
+
+  @override
+  String get vocabMeaning => '간단한 뜻';
+
+  @override
+  String get vocabExample => '예문 (선택)';
+
+  @override
+  String get vocabRequired => '이 항목을 입력해 주세요.';
+
+  @override
+  String get vocabSaved => '개의 저장된 단어';
+
+  @override
+  String get vocabDue => '복습할 단어';
+
+  @override
+  String get vocabAll => '모든 단어';
+
+  @override
+  String get vocabNewest => '최신순';
+
+  @override
+  String get vocabOldest => '오래된순';
+
+  @override
+  String get vocabLearned => '추가일';
+
+  @override
+  String get vocabReviewed => '복습 완료';
+
+  @override
+  String get vocabMarkReviewed => '복습 완료로 표시';
+
+  @override
+  String get vocabSearch => '단어 또는 뜻 검색';
+
+  @override
+  String get vocabEmpty => '여기서 새 단어를 모아 보세요';
+
+  @override
+  String get vocabNoMatches => '일치하는 단어가 없어요';
+
+  @override
+  String get vocabDuplicate => '이미 저장된 단어예요.';
+
+  @override
+  String get vocabHelp =>
+      'Bantera AI에게 단어 저장, 최근 단어 설명, 복습을 요청하세요. 여기서도 단어를 추가하고 수정할 수 있어요.';
+
+  @override
+  String get vocabPrivacy =>
+      '이 기기에만 저장돼요. 요청한 단어는 답변을 위해 AI와 공유돼요. 채팅 기록을 지워도 단어장은 유지돼요.';
 }
