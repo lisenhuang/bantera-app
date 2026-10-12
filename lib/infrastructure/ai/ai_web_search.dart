@@ -57,6 +57,10 @@ class AiWebSource {
 /// Runs on the phone, with no Bantera auth headers, search API secret or server
 /// search proxy. Public HTML is best-effort: challenges are never bypassed.
 class AiWebSearch {
+  AiWebSearch({HttpClient Function()? clientFactory})
+    : _clientFactory = clientFactory ?? HttpClient.new;
+  final HttpClient Function() _clientFactory;
+  int _generation = 0;
   final _active = <HttpClient>{};
   final _recent = <DateTime>[];
   final _cache = <String, ({DateTime at, Map<String, dynamic> result})>{};
@@ -77,43 +81,60 @@ class AiWebSearch {
       return {'unavailable': true, 'reason': 'rate_limited'};
     }
     _recent.add(now);
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 5);
-    _active.add(client);
-    try {
-      final sources = await _fetch(
-        client,
-        query,
-      ).timeout(const Duration(seconds: 8));
-      final result = <String, dynamic>{
-        'provider': 'DuckDuckGo',
-        'query': query,
-        'retrievedAt': now.toUtc().toIso8601String(),
-        'results': sources.map((s) => s.toJson()).toList(),
-        'untrusted': true,
-        'excerptsOnly': true,
-        if (sources.isEmpty) 'unavailable': true,
-      };
-      if (sources.isNotEmpty) {
+    final generation = _generation;
+    // Both providers are contacted directly by the phone. Bound the combined
+    // attempts below the voice-message relay's 12-second tool deadline.
+    for (final provider in ['DuckDuckGo', 'Bing']) {
+      if (generation != _generation) break;
+      final client = _clientFactory()
+        ..connectionTimeout = const Duration(seconds: 4);
+      _active.add(client);
+      try {
+        final uri = provider == 'DuckDuckGo'
+            ? Uri.https('html.duckduckgo.com', '/html/', {'q': query})
+            : Uri.https('www.bing.com', '/search', {
+                'q': query,
+                'adlt': 'strict',
+              });
+        final markup = await _fetch(
+          client,
+          uri,
+        ).timeout(const Duration(seconds: 5));
+        if (generation != _generation) break;
+        final sources = provider == 'DuckDuckGo'
+            ? parseResults(markup)
+            : parseBingResults(markup);
+        if (sources.isEmpty) continue;
+        final result = <String, dynamic>{
+          'provider': provider,
+          'query': query,
+          'retrievedAt': DateTime.now().toUtc().toIso8601String(),
+          'results': sources.map((s) => s.toJson()).toList(),
+          'untrusted': true,
+          'excerptsOnly': true,
+        };
         if (_cache.length >= 8) _cache.remove(_cache.keys.first);
         _cache[query] = (at: now, result: result);
+        return result;
+      } catch (_) {
+        // A provider challenge, timeout or changed page is not a call failure.
+        // Try the independent provider; never execute or bypass challenges.
+      } finally {
+        _active.remove(client);
+        client.close(force: true);
       }
-      return result;
-    } catch (_) {
-      return {
-        'unavailable': true,
-        'reason': 'provider_unavailable',
-        'query': query,
-      };
-    } finally {
-      _active.remove(client);
-      client.close(force: true);
     }
+    return {
+      'unavailable': true,
+      'reason': generation == _generation
+          ? 'provider_unavailable'
+          : 'cancelled',
+      'query': query,
+    };
   }
 
-  Future<List<AiWebSource>> _fetch(HttpClient client, String query) async {
-    final request = await client.getUrl(
-      Uri.https('html.duckduckgo.com', '/html/', {'q': query}),
-    );
+  Future<String> _fetch(HttpClient client, Uri uri) async {
+    final request = await client.getUrl(uri);
     request.followRedirects = false;
     request.headers.set(
       HttpHeaders.userAgentHeader,
@@ -132,7 +153,45 @@ class AiWebSearch {
       }
       bytes.addAll(chunk);
     }
-    return parseResults(utf8.decode(bytes, allowMalformed: true));
+    return utf8.decode(bytes, allowMalformed: true);
+  }
+
+  static List<AiWebSource> parseBingResults(String markup) {
+    final doc = html.parse(markup);
+    if (doc.querySelector('#b_captcha, #challenge-form, #anomaly-modal') !=
+        null) {
+      return [];
+    }
+    final result = <AiWebSource>[];
+    final seen = <String>{};
+    for (final row in doc.querySelectorAll('li.b_algo')) {
+      final link = row.querySelector('h2 a');
+      var href = link?.attributes['href'];
+      if (href == null) continue;
+      try {
+        final redirect = Uri.tryParse(href);
+        if (redirect?.host == 'www.bing.com' && redirect?.path == '/ck/a') {
+          final encoded = redirect!.queryParameters['u'];
+          if (encoded == null || !encoded.startsWith('a1')) continue;
+          href = utf8.decode(
+            base64Url.decode(base64Url.normalize(encoded.substring(2))),
+          );
+        }
+        final source = AiWebSource.fromJson({
+          'title': link!.text,
+          'url': href,
+          'excerpt': row.querySelector('.b_caption p, p')?.text ?? '',
+        });
+        if (source == null || source.title.isEmpty || !seen.add(source.url)) {
+          continue;
+        }
+        result.add(source);
+        if (result.length == 5) break;
+      } catch (_) {
+        // Invalid redirect encoding is not a usable source.
+      }
+    }
+    return result;
   }
 
   static List<AiWebSource> parseResults(String markup) {
@@ -168,6 +227,7 @@ class AiWebSearch {
   }
 
   void cancel() {
+    _generation++;
     for (final client in _active.toList()) {
       client.close(force: true);
     }

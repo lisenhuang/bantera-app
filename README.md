@@ -130,15 +130,17 @@ lib/
 ### Bantera AI: web search on the device
 
 Bantera AI can call `search_web(query)` during real-time audio calls and streamed
-voice-message replies. **No DuckDuckGo API key is required.** The app makes a
-direct HTTPS GET request to `https://html.duckduckgo.com/html/?q=<encoded-query>`
-and parses the returned search-results HTML with Dart's `html` package. This is
-HTML page parsing, not a dedicated DuckDuckGo search API or Gemini's built-in
-Google Search grounding.
+voice-message replies. **No search API key is required.** The app makes a direct
+HTTPS GET request to `https://html.duckduckgo.com/html/?q=<encoded-query>`.
+If that fails or returns no usable results, the phone tries
+`https://www.bing.com/search?q=<encoded-query>&adlt=strict`. Both providers run
+on the device, with returned HTML parsed using Dart's `html` package. This is
+HTML page parsing, not a dedicated search API or Gemini's built-in Google Search
+grounding.
 
 1. Gemini requests the custom `search_web` function through the existing backend
    WebSocket relay.
-2. The app searches DuckDuckGo directly and extracts up to five titles, HTTPS
+2. The app searches directly using DuckDuckGo, then Bing if needed, and extracts up to five titles, HTTPS
    links and short excerpts. It does not automatically fetch the linked pages.
 3. The app sends these results back through the relay so Gemini can answer.
    The chat bubble displays tappable source links alongside the response.
@@ -146,8 +148,8 @@ Google Search grounding.
 
 The backend registers and relays the tool; it does not execute the search.
 No search API secret, Bantera authentication headers or cookies are sent to
-DuckDuckGo. Existing Gemini credentials are still required on the backend for
-the AI conversation. DuckDuckGo receives the query and the device's network
+either search provider. Existing Gemini credentials are still required on the backend for
+the AI conversation. Each contacted provider receives the query and the device's network
 connection; the query and returned excerpts also pass through Bantera's backend
 to Gemini. Source cards are saved in the device's chat history.
 
@@ -156,7 +158,10 @@ but this integration depends on its HTML layout and has no search API service
 guarantee. Markup changes, rate limits, bot challenges or network failures can
 make search unavailable. The app returns an unavailable result instead of
 bypassing challenges. It limits uncached requests to four per minute, caches
-successful results in memory for five minutes, and uses an eight-second timeout.
+successful results in memory for five minutes, and gives each provider five seconds
+(ten seconds total). Ending the call cancels the active search and prevents a
+fallback from starting. Bing also depends on its public HTML layout and can be
+unavailable; no challenges are bypassed.
 Search excerpts are treated as untrusted content, not instructions or full articles.
 
 Implementation: [`AiWebSearch`](lib/infrastructure/ai/ai_web_search.dart).
@@ -341,7 +346,7 @@ Image replies reuse the **existing** `search_web(query)` tool and deployed relay
 No backend change, deployment, new endpoint or new Gemini function is required.
 The app includes a transient capability note in each streaming session's context:
 Gemini requests `search_web` with `images: <public topic>` for pictures, while
-ordinary queries keep using DuckDuckGo. This note is not a chat message, is not
+ordinary queries use DuckDuckGo with an on-device Bing fallback. This note is not a chat message, is not
 saved in local history, does not count as learner speech, and never completes a
 user turn by itself. The multipart fallback has no device tools and gets no note.
 

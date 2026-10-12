@@ -11,11 +11,14 @@ not contact the search engine or fetch result pages.
    WebSocket. Older clients default to false. Upload-only HTTP replies disable
    the capability because they have no device tool response channel.
 2. Gemini requests `search_web` with a short `query`. The phone contacts
-   `https://html.duckduckgo.com/html/` directly, without Bantera credentials,
+   `https://html.duckduckgo.com/html/` directly, then tries
+   `https://www.bing.com/search` if the first provider fails or has no usable
+   results. Both requests run on the phone, without Bantera credentials,
    cookies, a shared search API key or a server search proxy.
 3. The app parses up to five result titles, HTTPS links and short excerpts. It
    returns these to Gemini through the authenticated existing socket. This is
-   online processing: DuckDuckGo receives the query and Gemini receives excerpts.
+   online processing: contacted search providers receive the query and Gemini
+   receives excerpts.
 4. The bubble shows searching/unavailable status and tappable source cards.
    Tapping a source opens the system browser view inside Bantera, with browser
    controls to return to the chat (Safari view on iOS, Custom Tabs on Android
@@ -25,7 +28,8 @@ not contact the search engine or fetch result pages.
 
 DuckDuckGo documents its HTML search interface, but this is **not a guaranteed
 search API**. Page changes, provider challenges and network failures return an
-unavailable result. The app never solves or bypasses challenges. It does not
+unavailable result if both providers fail. Bing also relies on public HTML
+markup rather than a guaranteed search API. The app never solves or bypasses challenges. It does not
 claim snippets are full articles or verified facts. Gemini is instructed to
 ignore instructions inside results and retain the learner's language/accent/level.
 
@@ -33,7 +37,8 @@ ignore instructions inside results and retain the learner's language/accent/leve
 
 - Query: 240 characters; four uncached searches per minute; eight cache entries,
   each valid for five minutes, in memory only.
-- Network: eight-second total timeout; 768 KB maximum HTML body; no redirects.
+- Network: five seconds per provider (ten seconds combined); 768 KB maximum
+  HTML body per provider; no redirects. Cancellation prevents a fallback request.
 - Results: five sources, 160-character titles, 500-character excerpts; only HTTPS
   links without user info, IP literals or local/internal hostnames. Result pages
   open only when the user taps, and are never automatically fetched.

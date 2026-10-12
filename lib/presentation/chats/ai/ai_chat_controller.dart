@@ -43,12 +43,14 @@ class AiChatController extends ChangeNotifier {
     AudioRecorder? recorder,
     AiApiClient? api,
     AiImageSearch? imageSearch,
+    AiWebSearch? webSearch,
     Future<Map<String, dynamic>> Function()? voiceMetadata,
   }) : owner = 'test',
        _testing = true {
     if (recorder != null) _recorder = recorder;
     if (api != null) _api = api;
     if (imageSearch != null) _imageSearch = imageSearch;
+    if (webSearch != null) _webSearch = webSearch;
     _voiceMetadata = voiceMetadata;
   }
   final bool callKitManaged;
@@ -63,7 +65,7 @@ class AiChatController extends ChangeNotifier {
   static const microphone = EventChannel('bantera/ai_audio/input');
   final String owner;
   final AiHistoryStore store;
-  final _webSearch = AiWebSearch();
+  AiWebSearch _webSearch = AiWebSearch();
   AiImageSearch _imageSearch = AiImageSearch();
   AiApiClient _api = AiApiClient();
   AudioRecorder _recorder = AudioRecorder();
