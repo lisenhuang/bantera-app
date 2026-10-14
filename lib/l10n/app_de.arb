@@ -601,5 +601,10 @@
   "vocabNoMatches": "Keine passenden Wörter",
   "vocabDuplicate": "Dieses Wort ist bereits gespeichert.",
   "vocabHelp": "Bitte Bantera AI, ein Wort zu speichern, dein neuestes Wort zu erklären oder mit dir zu wiederholen. Hier kannst du Wörter auch hinzufügen und bearbeiten.",
-  "vocabPrivacy": "Nur auf diesem Gerät gespeichert. Angefragte Wörter werden für Antworten mit der KI geteilt. Beim Löschen des Chats bleibt dein Wortschatz erhalten."
+  "vocabPrivacy": "Nur auf diesem Gerät gespeichert. Angefragte Wörter werden für Antworten mit der KI geteilt. Beim Löschen des Chats bleibt dein Wortschatz erhalten.",
+  "aiKeysTitle": "KI-Schlüsseleinstellung",
+  "aiKeysDescription": "Gilt für Gemini-Lektionen und Sprachchats. Änderungen gelten für neue Anfragen. Der Administrator verwaltet Zugriff und Schlüssel.",
+  "aiKeysRegular": "Nur reguläre Schlüssel",
+  "aiKeysFallback": "Bezahlten Schlüssel als Ersatz nutzen",
+  "aiKeysPaidOnly": "Nur bezahlter Schlüssel"
 }

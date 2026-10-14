@@ -1995,4 +1995,20 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'บันทึกเฉพาะบนอุปกรณ์นี้ คำศัพท์ที่ร้องขอจะส่งให้ AI เพื่อช่วยตอบ การล้างประวัติแชทจะไม่ลบคำศัพท์';
+
+  @override
+  String get aiKeysTitle => 'การตั้งค่าคีย์ AI';
+
+  @override
+  String get aiKeysDescription =>
+      'ใช้กับฟีเจอร์ Gemini รวมถึงบทเรียนและแชตเสียง การเปลี่ยนแปลงมีผลกับคำขอใหม่ ส่วนการโทรปัจจุบันจะดำเนินต่อ ผู้ดูแลจัดการสิทธิ์และคีย์';
+
+  @override
+  String get aiKeysRegular => 'ใช้คีย์ปกติเท่านั้น';
+
+  @override
+  String get aiKeysFallback => 'ใช้คีย์แบบชำระเงินเป็นสำรอง';
+
+  @override
+  String get aiKeysPaidOnly => 'ใช้คีย์แบบชำระเงินเท่านั้น';
 }

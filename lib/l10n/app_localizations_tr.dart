@@ -2010,4 +2010,20 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Yalnızca bu cihazda saklanır. İstenen kelimeler yanıt vermesi için AI ile paylaşılır. Sohbet geçmişini temizlemek kelimeleri silmez.';
+
+  @override
+  String get aiKeysTitle => 'AI anahtar tercihi';
+
+  @override
+  String get aiKeysDescription =>
+      'Gemini dersleri ve sesli sohbetleri için geçerlidir. Değişiklikler yeni isteklere uygulanır. Erişimi ve anahtarı yönetici yönetir.';
+
+  @override
+  String get aiKeysRegular => 'Yalnızca normal anahtarlar';
+
+  @override
+  String get aiKeysFallback => 'Ücretli anahtarı yedek olarak kullan';
+
+  @override
+  String get aiKeysPaidOnly => 'Yalnızca ücretli anahtar';
 }

@@ -2012,4 +2012,20 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Chỉ lưu trên thiết bị này. Từ vựng được yêu cầu sẽ chia sẻ với AI để trả lời. Xóa lịch sử trò chuyện vẫn giữ từ vựng.';
+
+  @override
+  String get aiKeysTitle => 'Tùy chọn khóa AI';
+
+  @override
+  String get aiKeysDescription =>
+      'Áp dụng cho bài học và trò chuyện thoại Gemini. Thay đổi áp dụng cho yêu cầu mới. Quản trị viên quản lý quyền truy cập và khóa.';
+
+  @override
+  String get aiKeysRegular => 'Chỉ dùng khóa thông thường';
+
+  @override
+  String get aiKeysFallback => 'Dùng khóa trả phí dự phòng';
+
+  @override
+  String get aiKeysPaidOnly => 'Chỉ dùng khóa trả phí';
 }

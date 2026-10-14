@@ -1,4 +1,5 @@
 import '../../../infrastructure/ai/ai_vocabulary.dart';
+import '../../../infrastructure/ai/ai_emoji_tool.dart';
 import '../../../infrastructure/ai/ai_search_capabilities.dart';
 import '../../../infrastructure/ai/ai_image_search.dart';
 import '../../../infrastructure/ai/ai_web_search.dart';
@@ -443,6 +444,9 @@ class AiChatController extends ChangeNotifier {
         if (!available || epoch != _epoch || !busy) {
           return {'unavailable': true};
         }
+        if (call['name'] == AiEmojiTool.name) {
+          return _emojis(call['args'], voiceReply.ensure(message.language));
+        }
         if (call['name'] == AiVocabulary.toolName) {
           return vocabulary.execute(
             Map<String, dynamic>.from(call['args'] as Map),
@@ -674,6 +678,7 @@ class AiChatController extends ChangeNotifier {
             partialReply != null &&
             (partialReply.text.isNotEmpty ||
                 partialReply.images.isNotEmpty ||
+                partialReply.emojis.isNotEmpty ||
                 (stream?.outputBytes ?? 0) > 0);
         failed = !savedReply && !hasPartialReply;
         if (message != null && store.messages.contains(message)) {
@@ -1426,6 +1431,13 @@ class AiChatController extends ChangeNotifier {
     };
   }
 
+  Future<Map<String, dynamic>> _emojis(dynamic args, AiMessage message) async {
+    final result = AiEmojiTool.deliver(args, message);
+    changed();
+    if (store.messages.contains(message)) await store.save();
+    return result;
+  }
+
   Future<void> _tools(List<Map> calls, int epoch) async {
     final destination = _socket;
     final responses = <Map<String, dynamic>>[];
@@ -1435,7 +1447,9 @@ class AiChatController extends ChangeNotifier {
         if (!available || epoch != _epoch || !identical(_socket, destination)) {
           return;
         }
-        result = call['name'] == AiVocabulary.toolName
+        result = call['name'] == AiEmojiTool.name
+            ? await _emojis(call['args'], _liveBubble())
+            : call['name'] == AiVocabulary.toolName
             ? await vocabulary.execute(
                 Map<String, dynamic>.from(call['args'] as Map),
               )
@@ -1503,7 +1517,8 @@ class AiChatController extends ChangeNotifier {
     if (text.isNotEmpty ||
         pcm.isNotEmpty ||
         _liveModelMessage?.webSearchQuery != null ||
-        _liveModelMessage?.imageSearchStatus != null) {
+        _liveModelMessage?.imageSearchStatus != null ||
+        (_liveModelMessage?.emojis.isNotEmpty ?? false)) {
       final message = _liveBubble();
       message.text = text;
       message.durationMs = pcm.length * 1000 ~/ 48000;
@@ -1640,6 +1655,7 @@ class AiChatController extends ChangeNotifier {
       if (partial != null &&
           (partial.text.isNotEmpty ||
               partial.images.isNotEmpty ||
+              partial.emojis.isNotEmpty ||
               bytes != null)) {
         if (!store.messages.contains(partial)) store.messages.add(partial);
       }

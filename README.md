@@ -642,3 +642,22 @@ detail. Backend technical progress diagnostics contain no conversation content.
 AI callbacks complete `CXAnswerCallAction` immediately after native audio preparation, before waiting for backend acceptance or Flutter history loading. The answering provider is retained as the call owner. This removes an asynchronous startup dependency before iOS can deliver `didActivate`. The notifier still waits for both backend acceptance and audio activation before opening Gemini; rejection closes the native call. Human WebRTC calls retain their existing answer-ready handshake. No key-routing or backend changes are needed.
 
 Validation: eight callback/CallKit event-order tests passed, including early activation during acceptance and rejection after early activation. Device builds compile the Swift change. Locked-screen audio still requires a real callback check on the phone; build/installation success alone does not verify it.
+
+### AI emoji delivery (2.12.0)
+
+Voice messages and live calls advertise `deviceEmojis` and expose `send_emojis`.
+When the learner asks for emojis, Gemini sends actual Unicode characters (including
+country flags, skin tones and joined sequences) to the device; the app displays
+them in the current reply bubble and saves them with local history. These display
+attachments are kept separate from spoken transcripts and listening-word counts.
+Retries do not duplicate emojis. Requests are bounded to 12 emojis per bubble and
+reject text names, URLs and control characters. There are no image downloads, new
+packages, search calls or separate model calls.
+
+Requires backend 1.16.0. Older apps do not advertise the capability and keep their
+existing voice behaviour. New clients connected to an older backend continue
+working but cannot use the emoji tool until the backend is updated.
+
+## Authorised AI key preference
+
+Settings shows “AI key preference” only when the backend grants the signed-in account access to the configured paid Gemini key. Users can select regular keys only, paid fallback, or paid only. The preference is saved on the server and applies to new Gemini requests across lessons and voice chats; it does not restart an existing call. The key itself never reaches the app. Missing permission, older servers and failed permission checks hide the control. Switching accounts discards the previous account’s settings state.

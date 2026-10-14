@@ -47,6 +47,7 @@ class AiApiClient {
     'hasMetBanteraAi': hasMetBanteraAi,
     'deviceWebSearch': true,
     'deviceVocabulary': true,
+    'deviceEmojis': true,
     'learningLevel': SettingsNotifier.instance.audioLevel?.name,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
@@ -151,6 +152,7 @@ class AiApiClient {
         ...meta,
         'deviceWebSearch': false,
         'deviceVocabulary': false,
+        'deviceEmojis': false,
         'conversationId': conversationId?.call(),
       }),
     );

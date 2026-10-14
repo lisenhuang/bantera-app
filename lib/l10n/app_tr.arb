@@ -601,5 +601,10 @@
   "vocabNoMatches": "Eşleşen kelime yok",
   "vocabDuplicate": "Bu kelime zaten kayıtlı.",
   "vocabHelp": "Bantera AI’dan kelime kaydetmesini, son kelimenizi açıklamasını veya kelimeleri tekrar etmenizi isteyin. Buradan da kelime ekleyip düzenleyebilirsiniz.",
-  "vocabPrivacy": "Yalnızca bu cihazda saklanır. İstenen kelimeler yanıt vermesi için AI ile paylaşılır. Sohbet geçmişini temizlemek kelimeleri silmez."
+  "vocabPrivacy": "Yalnızca bu cihazda saklanır. İstenen kelimeler yanıt vermesi için AI ile paylaşılır. Sohbet geçmişini temizlemek kelimeleri silmez.",
+  "aiKeysTitle": "AI anahtar tercihi",
+  "aiKeysDescription": "Gemini dersleri ve sesli sohbetleri için geçerlidir. Değişiklikler yeni isteklere uygulanır. Erişimi ve anahtarı yönetici yönetir.",
+  "aiKeysRegular": "Yalnızca normal anahtarlar",
+  "aiKeysFallback": "Ücretli anahtarı yedek olarak kullan",
+  "aiKeysPaidOnly": "Yalnızca ücretli anahtar"
 }

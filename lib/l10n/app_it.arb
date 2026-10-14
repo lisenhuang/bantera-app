@@ -601,5 +601,10 @@
   "vocabNoMatches": "Nessuna parola corrispondente",
   "vocabDuplicate": "Questa parola è già salvata.",
   "vocabHelp": "Chiedi a Bantera AI di salvare una parola, spiegare l’ultima o ripassare il vocabolario. Puoi anche aggiungere e modificare parole qui.",
-  "vocabPrivacy": "Salvato solo su questo dispositivo. Le parole richieste vengono condivise con l’AI per rispondere. Cancellare la chat conserva il vocabolario."
+  "vocabPrivacy": "Salvato solo su questo dispositivo. Le parole richieste vengono condivise con l’AI per rispondere. Cancellare la chat conserva il vocabolario.",
+  "aiKeysTitle": "Preferenza chiave IA",
+  "aiKeysDescription": "Per lezioni e chat vocali Gemini. Le modifiche si applicano alle nuove richieste. L’amministratore gestisce accesso e chiave.",
+  "aiKeysRegular": "Solo chiavi normali",
+  "aiKeysFallback": "Chiave a pagamento come riserva",
+  "aiKeysPaidOnly": "Solo chiave a pagamento"
 }

@@ -32,136 +32,152 @@ class _Api extends AiApiClient {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final live in [false, true]) {
-    test(
-      'vocabulary tool reaches device storage through ${live ? 'live call' : 'voice message'} controller',
-      () async {
-        final dir = Directory.systemTemp.createTempSync('vocab-wire');
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-        final toolResult = Completer<Map>();
-        WebSocket? peer;
-        final nativeAudioReady = Completer<void>();
-        var nativeAudioStarted = false;
-        final call = {
-          'type': 'toolCall',
-          'calls': [
-            {
-              'id': 'v1',
-              'name': 'manage_vocabulary',
-              'args': {
-                'action': 'add',
-                'word': 'skewer',
-                'meaning': 'A stick for grilling food.',
+  for (final emojis in [false, true]) {
+    for (final live in [false, true]) {
+      test(
+        '${emojis ? 'emoji delivery' : 'vocabulary'} tool reaches device through ${live ? 'live call' : 'voice message'} controller',
+        () async {
+          final dir = Directory.systemTemp.createTempSync('vocab-wire');
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final toolResult = Completer<Map>();
+          WebSocket? peer;
+          final nativeAudioReady = Completer<void>();
+          var nativeAudioStarted = false;
+          final call = {
+            'type': 'toolCall',
+            'calls': [
+              {
+                'id': 'v1',
+                'name': emojis ? 'send_emojis' : 'manage_vocabulary',
+                'args': emojis
+                    ? {
+                        'emojis': ['🇮🇪', '🇮🇳'],
+                      }
+                    : {
+                        'action': 'add',
+                        'word': 'skewer',
+                        'meaning': 'A stick for grilling food.',
+                      },
               },
-            },
-          ],
-        };
-        server.listen((request) async {
-          final socket = await WebSocketTransformer.upgrade(request);
-          peer = socket;
-          socket.listen((event) {
-            if (event is! String) return;
-            final frame = jsonDecode(event) as Map;
-            if (frame['type'] == 'commit') socket.add(jsonEncode(call));
-            if (frame['type'] == 'toolResponse') {
-              toolResult.complete(frame);
-              if (!live) {
-                socket.add(Uint8List(4800));
-                socket.add(
-                  jsonEncode({
-                    'type': 'complete',
-                    'inputText': 'Save skewer',
-                    'outputText': 'Saved skewer.',
-                  }),
-                );
+            ],
+          };
+          server.listen((request) async {
+            final socket = await WebSocketTransformer.upgrade(request);
+            peer = socket;
+            socket.listen((event) {
+              if (event is! String) return;
+              final frame = jsonDecode(event) as Map;
+              if (frame['type'] == 'commit') socket.add(jsonEncode(call));
+              if (frame['type'] == 'toolResponse') {
+                toolResult.complete(frame);
+                if (!live) {
+                  socket.add(Uint8List(4800));
+                  socket.add(
+                    jsonEncode({
+                      'type': 'complete',
+                      'inputText': 'Save skewer',
+                      'outputText': 'Saved skewer.',
+                    }),
+                  );
+                }
               }
-            }
+            });
+            socket.add(jsonEncode({'type': 'ready'}));
+            if (live) socket.add(jsonEncode(call));
           });
-          socket.add(jsonEncode({'type': 'ready'}));
-          if (live) socket.add(jsonEncode(call));
-        });
-        final messenger =
-            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('com.llfbandit.record/messages'),
-          (_) async => null,
-        );
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('flutter.baseflow.com/permissions/methods'),
-          (call) async => call.method == 'requestPermissions' ? {7: 1} : 1,
-        );
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('bantera/ai_audio/input'),
-          (_) async => null,
-        );
-        messenger.setMockMethodCallHandler(AiChatController.audio, (
-          call,
-        ) async {
-          if (call.method == 'storagePath') return dir.path;
-          if (live && call.method == 'start') {
-            nativeAudioStarted = true;
-            await nativeAudioReady.future;
-          }
-          return null;
-        });
-        final repository = AiVocabulary(
-          'test',
-          storagePath: () async => dir.path,
-          isActive: () => true,
-          language: () => 'en-NZ',
-          timeZone: () async => 'Pacific/Auckland',
-        );
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('FlutterWebRTC.Method'),
-          (_) async => {'textureId': 1},
-        );
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('FlutterWebRTC/Texture1'),
-          (_) async => null,
-        );
-        final recorder = Recorder();
-        final chat = AiChatController.forTesting(
-          AiHistoryStore('test'),
-          recorder: recorder,
-          api: _Api(server.port),
-          vocabulary: repository,
-          voiceMetadata: () async => {},
-        );
-        try {
-          await chat.initialize();
-          if (live) {
-            final starting = chat.startCall();
-            await until(() => nativeAudioStarted);
-            // iOS completes start only after voice processing and duplex I/O
-            // are ready. Gemini must not connect or greet before that point.
-            expect(peer, isNull);
-            nativeAudioReady.complete();
-            await starting;
-          } else {
-            await chat.record();
-            recorder.speak();
-            await chat.sendRecording();
-          }
-          final response = await toolResult.future.timeout(
-            const Duration(seconds: 5),
+          final messenger =
+              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+          messenger.setMockMethodCallHandler(
+            const MethodChannel('com.llfbandit.record/messages'),
+            (_) async => null,
           );
-          expect(response['responses'][0]['response']['result']['ok'], true);
-          expect((await repository.words()).single.word, 'skewer');
-          expect(chat.failed, false);
-        } finally {
-          if (live) await chat.endCall();
-          chat.dispose();
-          await peer?.close();
-          await server.close(force: true);
-          await until(() => !chat.calling);
-          await dir.delete(recursive: true);
-          messenger.setMockMethodCallHandler(AiChatController.audio, null);
+          messenger.setMockMethodCallHandler(
+            const MethodChannel('flutter.baseflow.com/permissions/methods'),
+            (call) async => call.method == 'requestPermissions' ? {7: 1} : 1,
+          );
           messenger.setMockMethodCallHandler(
             const MethodChannel('bantera/ai_audio/input'),
-            null,
+            (_) async => null,
           );
-        }
-      },
-    );
+          messenger.setMockMethodCallHandler(AiChatController.audio, (
+            call,
+          ) async {
+            if (call.method == 'storagePath') return dir.path;
+            if (live && call.method == 'start') {
+              nativeAudioStarted = true;
+              await nativeAudioReady.future;
+            }
+            return null;
+          });
+          final repository = AiVocabulary(
+            'test',
+            storagePath: () async => dir.path,
+            isActive: () => true,
+            language: () => 'en-NZ',
+            timeZone: () async => 'Pacific/Auckland',
+          );
+          messenger.setMockMethodCallHandler(
+            const MethodChannel('FlutterWebRTC.Method'),
+            (_) async => {'textureId': 1},
+          );
+          messenger.setMockMethodCallHandler(
+            const MethodChannel('FlutterWebRTC/Texture1'),
+            (_) async => null,
+          );
+          final recorder = Recorder();
+          final chat = AiChatController.forTesting(
+            AiHistoryStore('test'),
+            recorder: recorder,
+            api: _Api(server.port),
+            vocabulary: repository,
+            voiceMetadata: () async => {},
+          );
+          try {
+            await chat.initialize();
+            if (live) {
+              final starting = chat.startCall();
+              await until(() => nativeAudioStarted);
+              // iOS completes start only after voice processing and duplex I/O
+              // are ready. Gemini must not connect or greet before that point.
+              expect(peer, isNull);
+              nativeAudioReady.complete();
+              await starting;
+            } else {
+              await chat.record();
+              recorder.speak();
+              await chat.sendRecording();
+            }
+            final response = await toolResult.future.timeout(
+              const Duration(seconds: 5),
+            );
+            final result = response['responses'][0]['response']['result'];
+            if (emojis) {
+              expect(result['delivered'], true);
+              if (live) await chat.endCall();
+              expect(chat.store.messages.last.emojis, ['🇮🇪', '🇮🇳']);
+              final reloaded = AiHistoryStore('test');
+              await reloaded.load();
+              expect(reloaded.messages.last.emojis, ['🇮🇪', '🇮🇳']);
+            } else {
+              expect(result['ok'], true);
+              expect((await repository.words()).single.word, 'skewer');
+            }
+            expect(chat.failed, false);
+          } finally {
+            if (live) await chat.endCall();
+            chat.dispose();
+            await peer?.close();
+            await server.close(force: true);
+            await until(() => !chat.calling);
+            await dir.delete(recursive: true);
+            messenger.setMockMethodCallHandler(AiChatController.audio, null);
+            messenger.setMockMethodCallHandler(
+              const MethodChannel('bantera/ai_audio/input'),
+              null,
+            );
+          }
+        },
+      );
+    }
   }
 }

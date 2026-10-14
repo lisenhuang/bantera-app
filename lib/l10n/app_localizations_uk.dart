@@ -2077,4 +2077,20 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Зберігається лише на цьому пристрої. Запитані слова передаються ШІ для відповіді. Очищення чату не видаляє словник.';
+
+  @override
+  String get aiKeysTitle => 'Налаштування ключа ШІ';
+
+  @override
+  String get aiKeysDescription =>
+      'Для уроків і голосових чатів Gemini. Зміни діють для нових запитів. Адміністратор керує доступом і ключем.';
+
+  @override
+  String get aiKeysRegular => 'Лише звичайні ключі';
+
+  @override
+  String get aiKeysFallback => 'Платний ключ як резервний';
+
+  @override
+  String get aiKeysPaidOnly => 'Лише платний ключ';
 }

@@ -2086,4 +2086,20 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Zapis tylko na tym urządzeniu. Wskazane słowa są udostępniane AI w celu odpowiedzi. Usunięcie historii czatu zachowuje słownictwo.';
+
+  @override
+  String get aiKeysTitle => 'Ustawienia klucza AI';
+
+  @override
+  String get aiKeysDescription =>
+      'Dotyczy lekcji i rozmów głosowych Gemini. Zmiany dotyczą nowych żądań. Administrator zarządza dostępem i kluczem.';
+
+  @override
+  String get aiKeysRegular => 'Tylko zwykłe klucze';
+
+  @override
+  String get aiKeysFallback => 'Płatny klucz jako zapasowy';
+
+  @override
+  String get aiKeysPaidOnly => 'Tylko płatny klucz';
 }

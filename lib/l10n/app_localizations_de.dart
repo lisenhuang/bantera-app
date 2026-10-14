@@ -2073,4 +2073,20 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Nur auf diesem Gerät gespeichert. Angefragte Wörter werden für Antworten mit der KI geteilt. Beim Löschen des Chats bleibt dein Wortschatz erhalten.';
+
+  @override
+  String get aiKeysTitle => 'KI-Schlüsseleinstellung';
+
+  @override
+  String get aiKeysDescription =>
+      'Gilt für Gemini-Lektionen und Sprachchats. Änderungen gelten für neue Anfragen. Der Administrator verwaltet Zugriff und Schlüssel.';
+
+  @override
+  String get aiKeysRegular => 'Nur reguläre Schlüssel';
+
+  @override
+  String get aiKeysFallback => 'Bezahlten Schlüssel als Ersatz nutzen';
+
+  @override
+  String get aiKeysPaidOnly => 'Nur bezahlter Schlüssel';
 }

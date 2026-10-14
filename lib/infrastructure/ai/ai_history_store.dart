@@ -27,11 +27,13 @@ class AiMessage {
     List<AiWebSource>? sources,
     this.imageSearchStatus,
     List<AiImageAttachment>? images,
+    List<String>? emojis,
   }) : _rawText = text,
        _needsTimeZone = createdAt == null && timeZone == null,
        utcOffsetMinutes =
            utcOffsetMinutes ??
            (createdAt == null ? DateTime.now().timeZoneOffset.inMinutes : null),
+       emojis = emojis ?? [],
        images = images ?? [],
        sources = sources ?? [],
        id = id ?? const Uuid().v4(),
@@ -53,6 +55,7 @@ class AiMessage {
   final List<AiWebSource> sources;
   String? imageSearchStatus;
   final List<AiImageAttachment> images;
+  final List<String> emojis;
   Map<String, dynamic> toJson() => {
     'id': id,
     'role': role,
@@ -74,6 +77,7 @@ class AiMessage {
         ? 'unavailable'
         : imageSearchStatus,
     'images': images.map((i) => i.toJson()).toList(),
+    'emojis': emojis,
     'sources': sources.map((s) => s.toJson()).toList(),
   };
   factory AiMessage.fromJson(Map<String, dynamic> j) => AiMessage(
@@ -94,6 +98,7 @@ class AiMessage {
     webSearchQuery: j['webSearchQuery'] as String?,
     webSearchStatus: j['webSearchStatus'] as String?,
     imageSearchStatus: j['imageSearchStatus'] as String?,
+    emojis: (j['emojis'] as List? ?? []).whereType<String>().take(12).toList(),
     images: (j['images'] as List? ?? [])
         .map(AiImageAttachment.fromJson)
         .whereType<AiImageAttachment>()
@@ -138,7 +143,10 @@ class AiHistoryStore {
     (m) =>
         m.role == 'model' &&
         !m.failed &&
-        (m.text.trim().isNotEmpty || m.audio != null || m.images.isNotEmpty),
+        (m.text.trim().isNotEmpty ||
+            m.audio != null ||
+            m.images.isNotEmpty ||
+            m.emojis.isNotEmpty),
   );
   bool privacyNoticeDismissed = false;
 
@@ -355,7 +363,9 @@ class AiHistoryStore {
           (m) =>
               m.id != excluding &&
               !m.failed &&
-              (m.text.trim().isNotEmpty || m.images.isNotEmpty),
+              (m.text.trim().isNotEmpty ||
+                  m.images.isNotEmpty ||
+                  m.emojis.isNotEmpty),
         )
         .toList();
     final summary = _memory?['summary'] as String?;
@@ -385,13 +395,18 @@ class AiHistoryStore {
   List<Map<String, String>> _memoryFragments(List<AiMessage> rows) {
     final valid = rows
         .where(
-          (m) => !m.failed && (m.text.trim().isNotEmpty || m.images.isNotEmpty),
+          (m) =>
+              !m.failed &&
+              (m.text.trim().isNotEmpty ||
+                  m.images.isNotEmpty ||
+                  m.emojis.isNotEmpty),
         )
         .toList();
     final result = <Map<String, String>>[];
     for (final m in valid.take((valid.length - 20).clamp(0, valid.length))) {
       final content = [
         m.text,
+        if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final image in m.images)
           '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
       ].join('\n');
@@ -490,7 +505,11 @@ class AiHistoryStore {
   static List<Map<String, String>> contextFor(List<AiMessage> messages) {
     final valid = messages
         .where(
-          (m) => !m.failed && (m.text.trim().isNotEmpty || m.images.isNotEmpty),
+          (m) =>
+              !m.failed &&
+              (m.text.trim().isNotEmpty ||
+                  m.images.isNotEmpty ||
+                  m.emojis.isNotEmpty),
         )
         .toList();
     final chosen = valid.length <= 80
@@ -503,6 +522,7 @@ class AiHistoryStore {
     for (final m in chosen.reversed) {
       final content = [
         m.text,
+        if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final image in m.images)
           '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
       ].join('\n');

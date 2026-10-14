@@ -601,5 +601,10 @@
   "vocabNoMatches": "Nenhuma palavra encontrada",
   "vocabDuplicate": "Esta palavra já está salva.",
   "vocabHelp": "Peça ao Bantera AI para salvar uma palavra, explicar a mais recente ou revisar seu vocabulário. Você também pode adicionar e editar palavras aqui.",
-  "vocabPrivacy": "Salvo apenas neste dispositivo. O vocabulário solicitado é compartilhado com a IA para responder. Limpar o chat mantém seu vocabulário."
+  "vocabPrivacy": "Salvo apenas neste dispositivo. O vocabulário solicitado é compartilhado com a IA para responder. Limpar o chat mantém seu vocabulário.",
+  "aiKeysTitle": "Preferência de chave de IA",
+  "aiKeysDescription": "Aplica-se a aulas e conversas por voz Gemini. As alterações valem para novos pedidos. O administrador gere o acesso e a chave.",
+  "aiKeysRegular": "Apenas chaves normais",
+  "aiKeysFallback": "Chave paga como alternativa",
+  "aiKeysPaidOnly": "Apenas chave paga"
 }

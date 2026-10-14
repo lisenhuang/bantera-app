@@ -185,9 +185,12 @@ void main() {
       expect(controller.messages.length, 2);
       expect(store.messages.length, 1);
       controller.voiceReply.addTranscript('A streamed reply', 'en-NZ');
+      controller.voiceReply.message!.emojis.addAll(['🇮🇪', '🇮🇳']);
       controller.changed();
       await tester.pump();
       expect(find.text('A streamed reply'), findsOneWidget);
+      expect(find.text('🇮🇪 🇮🇳'), findsOneWidget);
+      expect(tester.takeException(), isNull);
       final recordButton = tester.widget<IconButton>(
         find.byKey(const Key('voice-tap-record-send')),
       );

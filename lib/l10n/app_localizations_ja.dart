@@ -1925,4 +1925,20 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'この端末のみに保存されます。リクエストされた単語は返答のため AI と共有されます。履歴を消しても単語帳は残ります。';
+
+  @override
+  String get aiKeysTitle => 'AI キー設定';
+
+  @override
+  String get aiKeysDescription =>
+      'Gemini のレッスンと音声チャットに適用されます。変更は新しいリクエストから有効です。アクセス権とキーは管理者が管理します。';
+
+  @override
+  String get aiKeysRegular => '通常のキーのみ';
+
+  @override
+  String get aiKeysFallback => '有料キーを予備として使用';
+
+  @override
+  String get aiKeysPaidOnly => '有料キーのみ';
 }

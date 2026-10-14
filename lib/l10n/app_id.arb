@@ -601,5 +601,10 @@
   "vocabNoMatches": "Tidak ada kata yang cocok",
   "vocabDuplicate": "Kata ini sudah tersimpan.",
   "vocabHelp": "Minta Bantera AI menyimpan kata, menjelaskan kata terbaru, atau mengulang kosakata. Anda juga dapat menambah dan mengedit kata di sini.",
-  "vocabPrivacy": "Hanya disimpan di perangkat ini. Kosakata yang diminta dibagikan ke AI untuk membalas. Menghapus riwayat chat tidak menghapus kosakata."
+  "vocabPrivacy": "Hanya disimpan di perangkat ini. Kosakata yang diminta dibagikan ke AI untuk membalas. Menghapus riwayat chat tidak menghapus kosakata.",
+  "aiKeysTitle": "Preferensi kunci AI",
+  "aiKeysDescription": "Berlaku untuk pelajaran dan obrolan suara Gemini. Perubahan berlaku untuk permintaan baru. Administrator mengelola akses dan kunci.",
+  "aiKeysRegular": "Hanya kunci reguler",
+  "aiKeysFallback": "Kunci berbayar sebagai cadangan",
+  "aiKeysPaidOnly": "Hanya kunci berbayar"
 }

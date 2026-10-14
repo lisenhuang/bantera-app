@@ -2015,4 +2015,20 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Hanya disimpan di perangkat ini. Kosakata yang diminta dibagikan ke AI untuk membalas. Menghapus riwayat chat tidak menghapus kosakata.';
+
+  @override
+  String get aiKeysTitle => 'Preferensi kunci AI';
+
+  @override
+  String get aiKeysDescription =>
+      'Berlaku untuk pelajaran dan obrolan suara Gemini. Perubahan berlaku untuk permintaan baru. Administrator mengelola akses dan kunci.';
+
+  @override
+  String get aiKeysRegular => 'Hanya kunci reguler';
+
+  @override
+  String get aiKeysFallback => 'Kunci berbayar sebagai cadangan';
+
+  @override
+  String get aiKeysPaidOnly => 'Hanya kunci berbayar';
 }

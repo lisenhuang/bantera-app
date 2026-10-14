@@ -636,5 +636,10 @@
   "vocabNoMatches": "該当する単語はありません",
   "vocabDuplicate": "この単語は保存済みです。",
   "vocabHelp": "Bantera AI に単語の保存、最近の単語の説明、復習を頼めます。ここでも単語を追加・編集できます。",
-  "vocabPrivacy": "この端末のみに保存されます。リクエストされた単語は返答のため AI と共有されます。履歴を消しても単語帳は残ります。"
+  "vocabPrivacy": "この端末のみに保存されます。リクエストされた単語は返答のため AI と共有されます。履歴を消しても単語帳は残ります。",
+  "aiKeysTitle": "AI キー設定",
+  "aiKeysDescription": "Gemini のレッスンと音声チャットに適用されます。変更は新しいリクエストから有効です。アクセス権とキーは管理者が管理します。",
+  "aiKeysRegular": "通常のキーのみ",
+  "aiKeysFallback": "有料キーを予備として使用",
+  "aiKeysPaidOnly": "有料キーのみ"
 }

@@ -1930,6 +1930,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get vocabPrivacy => '仅保存在此设备上。按请求查询的词汇会发送给 AI 以帮助回复。清除聊天记录不会删除词汇。';
+
+  @override
+  String get aiKeysTitle => 'AI 密钥偏好';
+
+  @override
+  String get aiKeysDescription => '适用于 Gemini 课程和语音聊天。更改对新请求生效。管理员管理权限和密钥。';
+
+  @override
+  String get aiKeysRegular => '仅使用常规密钥';
+
+  @override
+  String get aiKeysFallback => '使用付费密钥作为备用';
+
+  @override
+  String get aiKeysPaidOnly => '仅使用付费密钥';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3862,4 +3877,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get vocabPrivacy => '僅儲存在此裝置上。按要求查詢的詞彙會傳送給 AI 以協助回覆。清除聊天記錄不會刪除詞彙。';
+
+  @override
+  String get aiKeysTitle => 'AI 金鑰偏好';
+
+  @override
+  String get aiKeysDescription => '適用於 Gemini 課程和語音聊天。變更對新請求生效。管理員管理權限和金鑰。';
+
+  @override
+  String get aiKeysRegular => '僅使用一般金鑰';
+
+  @override
+  String get aiKeysFallback => '使用付費金鑰作為備用';
+
+  @override
+  String get aiKeysPaidOnly => '僅使用付費金鑰';
 }

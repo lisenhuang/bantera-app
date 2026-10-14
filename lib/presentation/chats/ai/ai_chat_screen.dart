@@ -856,6 +856,14 @@ class _AiChatScreenState extends State<AiChatScreen>
                       )
                     : AiMessageMarkdown(text: m.text),
               ),
+            if (m.emojis.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: SelectableText(
+                  m.emojis.join(' '),
+                  style: theme.textTheme.headlineSmall,
+                ),
+              ),
             if (_chat.visibleTranslations.contains(m.id) &&
                 m.translation.isNotEmpty) ...[
               const Divider(height: 20),

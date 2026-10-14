@@ -601,5 +601,10 @@
   "vocabNoMatches": "沒有符合的詞彙",
   "vocabDuplicate": "此詞彙已儲存。",
   "vocabHelp": "請 Bantera AI 儲存詞彙、解釋最近學到的詞，或幫你複習。你也可以在這裡新增及編輯詞彙。",
-  "vocabPrivacy": "僅儲存在此裝置上。按要求查詢的詞彙會傳送給 AI 以協助回覆。清除聊天記錄不會刪除詞彙。"
+  "vocabPrivacy": "僅儲存在此裝置上。按要求查詢的詞彙會傳送給 AI 以協助回覆。清除聊天記錄不會刪除詞彙。",
+  "aiKeysTitle": "AI 金鑰偏好",
+  "aiKeysDescription": "適用於 Gemini 課程和語音聊天。變更對新請求生效。管理員管理權限和金鑰。",
+  "aiKeysRegular": "僅使用一般金鑰",
+  "aiKeysFallback": "使用付費金鑰作為備用",
+  "aiKeysPaidOnly": "僅使用付費金鑰"
 }

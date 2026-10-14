@@ -862,5 +862,10 @@
   "vocabNoMatches": "No matching words",
   "vocabDuplicate": "This word is already saved.",
   "vocabHelp": "Ask Bantera AI to save a word, explain your latest word or revise your vocabulary. You can also add and edit words here.",
-  "vocabPrivacy": "Saved only on this device. Requested vocabulary is shared with AI to help it reply. Clearing chat history keeps your vocabulary."
+  "vocabPrivacy": "Saved only on this device. Requested vocabulary is shared with AI to help it reply. Clearing chat history keeps your vocabulary.",
+  "aiKeysTitle": "AI key preference",
+  "aiKeysDescription": "Applies to Gemini lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.",
+  "aiKeysRegular": "Regular keys only",
+  "aiKeysFallback": "Use paid key as fallback",
+  "aiKeysPaidOnly": "Paid key only"
 }

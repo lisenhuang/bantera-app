@@ -636,5 +636,10 @@
   "vocabNoMatches": "没有匹配的词汇",
   "vocabDuplicate": "此词汇已保存。",
   "vocabHelp": "请 Bantera AI 保存词汇、解释最近学到的词，或帮你复习。你也可以在这里添加和编辑词汇。",
-  "vocabPrivacy": "仅保存在此设备上。按请求查询的词汇会发送给 AI 以帮助回复。清除聊天记录不会删除词汇。"
+  "vocabPrivacy": "仅保存在此设备上。按请求查询的词汇会发送给 AI 以帮助回复。清除聊天记录不会删除词汇。",
+  "aiKeysTitle": "AI 密钥偏好",
+  "aiKeysDescription": "适用于 Gemini 课程和语音聊天。更改对新请求生效。管理员管理权限和密钥。",
+  "aiKeysRegular": "仅使用常规密钥",
+  "aiKeysFallback": "使用付费密钥作为备用",
+  "aiKeysPaidOnly": "仅使用付费密钥"
 }

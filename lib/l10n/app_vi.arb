@@ -601,5 +601,10 @@
   "vocabNoMatches": "Không có từ phù hợp",
   "vocabDuplicate": "Từ này đã được lưu.",
   "vocabHelp": "Nhờ Bantera AI lưu từ, giải thích từ mới nhất hoặc ôn tập từ vựng. Bạn cũng có thể thêm và sửa từ tại đây.",
-  "vocabPrivacy": "Chỉ lưu trên thiết bị này. Từ vựng được yêu cầu sẽ chia sẻ với AI để trả lời. Xóa lịch sử trò chuyện vẫn giữ từ vựng."
+  "vocabPrivacy": "Chỉ lưu trên thiết bị này. Từ vựng được yêu cầu sẽ chia sẻ với AI để trả lời. Xóa lịch sử trò chuyện vẫn giữ từ vựng.",
+  "aiKeysTitle": "Tùy chọn khóa AI",
+  "aiKeysDescription": "Áp dụng cho bài học và trò chuyện thoại Gemini. Thay đổi áp dụng cho yêu cầu mới. Quản trị viên quản lý quyền truy cập và khóa.",
+  "aiKeysRegular": "Chỉ dùng khóa thông thường",
+  "aiKeysFallback": "Dùng khóa trả phí dự phòng",
+  "aiKeysPaidOnly": "Chỉ dùng khóa trả phí"
 }

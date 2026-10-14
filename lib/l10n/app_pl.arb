@@ -601,5 +601,10 @@
   "vocabNoMatches": "Brak pasujących słów",
   "vocabDuplicate": "To słowo jest już zapisane.",
   "vocabHelp": "Poproś Bantera AI o zapisanie słowa, wyjaśnienie ostatniego lub powtórkę słownictwa. Tutaj też możesz dodawać i edytować słowa.",
-  "vocabPrivacy": "Zapis tylko na tym urządzeniu. Wskazane słowa są udostępniane AI w celu odpowiedzi. Usunięcie historii czatu zachowuje słownictwo."
+  "vocabPrivacy": "Zapis tylko na tym urządzeniu. Wskazane słowa są udostępniane AI w celu odpowiedzi. Usunięcie historii czatu zachowuje słownictwo.",
+  "aiKeysTitle": "Ustawienia klucza AI",
+  "aiKeysDescription": "Dotyczy lekcji i rozmów głosowych Gemini. Zmiany dotyczą nowych żądań. Administrator zarządza dostępem i kluczem.",
+  "aiKeysRegular": "Tylko zwykłe klucze",
+  "aiKeysFallback": "Płatny klucz jako zapasowy",
+  "aiKeysPaidOnly": "Tylko płatny klucz"
 }

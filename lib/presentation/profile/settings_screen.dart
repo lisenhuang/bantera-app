@@ -17,6 +17,7 @@ import '../dev/dev_screen.dart';
 import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
 import 'permissions_screen.dart';
+import 'paid_key_settings.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -291,6 +292,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (auth.session case final session?)
+                PaidKeySettings(
+                  key: ValueKey(session.cacheKey),
+                  owner: session.cacheKey,
+                ),
               _buildSectionHeader(context, l10n.sectionAppearance),
               ListenableBuilder(
                 listenable: SettingsNotifier.instance,

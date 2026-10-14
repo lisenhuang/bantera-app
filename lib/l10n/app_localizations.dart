@@ -3685,6 +3685,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved only on this device. Requested vocabulary is shared with AI to help it reply. Clearing chat history keeps your vocabulary.'**
   String get vocabPrivacy;
+
+  /// No description provided for @aiKeysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI key preference'**
+  String get aiKeysTitle;
+
+  /// No description provided for @aiKeysDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to Gemini lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.'**
+  String get aiKeysDescription;
+
+  /// No description provided for @aiKeysRegular.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular keys only'**
+  String get aiKeysRegular;
+
+  /// No description provided for @aiKeysFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Use paid key as fallback'**
+  String get aiKeysFallback;
+
+  /// No description provided for @aiKeysPaidOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid key only'**
+  String get aiKeysPaidOnly;
 }
 
 class _AppLocalizationsDelegate

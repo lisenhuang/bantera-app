@@ -2073,4 +2073,20 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       'Salvo apenas neste dispositivo. O vocabulário solicitado é compartilhado com a IA para responder. Limpar o chat mantém seu vocabulário.';
+
+  @override
+  String get aiKeysTitle => 'Preferência de chave de IA';
+
+  @override
+  String get aiKeysDescription =>
+      'Aplica-se a aulas e conversas por voz Gemini. As alterações valem para novos pedidos. O administrador gere o acesso e a chave.';
+
+  @override
+  String get aiKeysRegular => 'Apenas chaves normais';
+
+  @override
+  String get aiKeysFallback => 'Chave paga como alternativa';
+
+  @override
+  String get aiKeysPaidOnly => 'Apenas chave paga';
 }

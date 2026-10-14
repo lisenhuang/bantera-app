@@ -1936,4 +1936,20 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get vocabPrivacy =>
       '이 기기에만 저장돼요. 요청한 단어는 답변을 위해 AI와 공유돼요. 채팅 기록을 지워도 단어장은 유지돼요.';
+
+  @override
+  String get aiKeysTitle => 'AI 키 설정';
+
+  @override
+  String get aiKeysDescription =>
+      'Gemini 수업과 음성 채팅에 적용됩니다. 변경 사항은 새 요청부터 적용됩니다. 권한과 키는 관리자가 관리합니다.';
+
+  @override
+  String get aiKeysRegular => '일반 키만 사용';
+
+  @override
+  String get aiKeysFallback => '유료 키를 예비로 사용';
+
+  @override
+  String get aiKeysPaidOnly => '유료 키만 사용';
 }
