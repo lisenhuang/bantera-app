@@ -2782,7 +2782,7 @@ final class BanteraPhoneAudio {
   private(set) var sampleRate: Double
   private(set) var conversionError = ""
   private let lock = NSLock()
-  private let echoGuard = BanteraEchoGuard()
+  private let echoGuard = BanteraEchoGuard(startupProtectionMilliseconds: 2500)
   var echoDiagnostics: String { echoGuard.diagnostics }
   private var speakerOutput = false
   private var renderCallbacks = 0
@@ -2937,6 +2937,7 @@ final class BanteraPhoneAudio {
       try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 1,
         &capture, UInt32(MemoryLayout<AURenderCallbackStruct>.size)))
       try Self.check(AudioUnitInitialize(unit))
+      try Self.disableAutomaticGainControl(unit)
     } catch {
       AudioComponentInstanceDispose(unit); self.unit = nil
       throw error
@@ -2950,6 +2951,16 @@ final class BanteraPhoneAudio {
     let size = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
     try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &stream, size))
     try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &stream, size))
+  }
+  private static func disableAutomaticGainControl(_ unit: AudioUnit) throws {
+    // Keep AEC and noise suppression, without amplifying settling speaker echo.
+    var value: UInt32 = 0
+    try check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC,
+      kAudioUnitScope_Global, 1, &value, 4))
+    var size: UInt32 = 4
+    try check(AudioUnitGetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC,
+      kAudioUnitScope_Global, 1, &value, &size))
+    guard value == 0 else { throw error(-2) }
   }
   private static func error(_ code: OSStatus) -> NSError { NSError(domain: "BanteraPhoneAudio", code: Int(code)) }
   private static func check(_ status: OSStatus) throws { if status != noErr { throw error(status) } }
@@ -2995,6 +3006,7 @@ final class BanteraPhoneAudio {
     lock.unlock()
     try configureFormat(unit)
     try Self.check(AudioUnitInitialize(unit))
+    try Self.disableAutomaticGainControl(unit)
     try start()
     // Any final buffer submitted on the old route is absent from the queue.
     // Its old drain callback is invalidated; finish it only once on this route.

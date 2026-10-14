@@ -34,6 +34,74 @@ class RunnerTests: XCTestCase {
       "callerUserId": "human", "mediaKind": "video"
     ]).hasVideo)
   }
+  // Opt-in acoustic check: reports energy only, never stores microphone PCM.
+  // Copy a synthetic mono 24 kHz Int16 fixture to Documents/bantera-echo-speech.pcm.
+  @MainActor
+  func testSpeakerSpeechLeakage() async throws {
+    guard ProcessInfo.processInfo.environment["BANTERA_TEST_AUDIO_HARDWARE"] == "1" else {
+      throw XCTSkip("Explicit physical-device acoustic test only.")
+    }
+    let fixture = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("bantera-echo-speech.pcm")
+    let speech = try Data(contentsOf: fixture)
+    let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
+    let audio = try XCTUnwrap(app.aiAudioBridge)
+    var energy = 0.0, samples = 0, peak = 0, loudFrames = 0
+    var bins: [Int: Double] = [:]
+    var phaseStart = ProcessInfo.processInfo.systemUptime
+    var errors: [String] = []
+    _ = audio.onListen(withArguments: nil) { event in
+      if let error = event as? FlutterError { errors.append(error.code) }
+      guard let bytes = event as? FlutterStandardTypedData else { return }
+      var framePeak = 0
+      var frameEnergy = 0.0
+      bytes.data.withUnsafeBytes { raw in
+        for offset in stride(from: 0, to: raw.count, by: 2) {
+          let value = Int(raw.loadUnaligned(fromByteOffset: offset, as: Int16.self))
+          energy += Double(value * value); frameEnergy += Double(value * value); samples += 1
+          framePeak = max(framePeak, abs(value))
+        }
+      }
+      let bin = Int((ProcessInfo.processInfo.systemUptime - phaseStart) * 4)
+      bins[bin] = max(bins[bin] ?? 0, sqrt(frameEnergy / Double(max(1, bytes.data.count / 2))))
+      peak = max(peak, framePeak)
+      if framePeak > 900 { loudFrames += 1 }
+    }
+    defer { _ = audio.onCancel(withArguments: nil) }
+    try await Task.sleep(nanoseconds: 1_000_000_000)
+    try audio.start()
+    for phase in ["quiet", "firstReply", "secondReply", "routeSwitch", "midReplySwitch", "pausedReply", "laterReply"] {
+      if phase == "pausedReply" { try await Task.sleep(nanoseconds: 10_000_000_000) }
+      if phase == "laterReply" { try await Task.sleep(nanoseconds: 60_000_000_000) }
+      if phase == "routeSwitch" {
+        XCTAssertFalse(try audio.setSpeaker(false))
+        try await Task.sleep(nanoseconds: 500_000_000)
+        XCTAssertEqual(AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType, .builtInReceiver)
+        XCTAssertTrue(try audio.setSpeaker(true))
+        XCTAssertEqual(AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType, .builtInSpeaker)
+      }
+      energy = 0; samples = 0; peak = 0; loudFrames = 0; bins = [:]; phaseStart = ProcessInfo.processInfo.systemUptime
+      if phase != "quiet" { try audio.feed(speech) }
+      if phase == "midReplySwitch" {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        XCTAssertFalse(try audio.setSpeaker(false))
+        try await Task.sleep(nanoseconds: 250_000_000)
+        XCTAssertTrue(try audio.setSpeaker(true))
+      }
+      let seconds = phase == "quiet" ? 1.0 : Double(speech.count) / 48000 + 0.6
+      try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+      print("ACOUSTIC \(phase) rms=\(sqrt(energy / Double(max(1, samples)))) peak=\(peak) loudFrames=\(loudFrames) \(audio.diagnostics)")
+      print("ACOUSTIC BINS \(phase) \(bins.sorted { $0.key < $1.key })")
+      XCTAssertGreaterThan(samples, 10000)
+      XCTAssertEqual(AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType, .builtInSpeaker,
+        "Route must remain on speaker throughout \(phase): \(audio.diagnostics)")
+      XCTAssertTrue(errors.isEmpty, errors.joined(separator: ","))
+      if ProcessInfo.processInfo.environment["BANTERA_ASSERT_QUIET_ROOM"] == "1" {
+        XCTAssertLessThanOrEqual(loudFrames, 5, "Speaker leakage in \(phase): \(audio.diagnostics)")
+      }
+    }
+  }
+
   @MainActor
   func testAiAudioCapturesAndPlaysAfterSpeakerSwitch() async throws {
     guard ProcessInfo.processInfo.environment["BANTERA_TEST_AUDIO_HARDWARE"] == "1" else {
@@ -305,6 +373,36 @@ final class BanteraEchoGuardTests: XCTestCase {
     render(32)
     XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
     XCTAssertEqual(guarder.processCapture(input, speaker: false), input)
+  }
+
+  func testStartupGuardHasAHardBoundAndLeavesLaterSpeechIntact() {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 2500)
+    let rendered = [Int16](repeating: 2000, count: 48000)
+    rendered.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 48000) }
+    let input = (0..<43200).map { Int16(1000 * sin(Double($0) * 0.17)) }.withUnsafeBytes { Data($0) }
+    let output = guarder.processCapture(input, speaker: true)
+    XCTAssertEqual(output.prefix(80000), Data(count: 80000))
+    XCTAssertEqual(output.suffix(6400), input.suffix(6400))
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+  }
+
+  func testIdleRearmsOnlyOnSpeakerAudioAndKeepsIdleMicrophoneOpen() {
+    let guarder = BanteraEchoGuard(startupProtectionMilliseconds: 2500)
+    func render(_ value: Int16, seconds: Int) {
+      let samples = [Int16](repeating: value, count: 4000 * seconds)
+      samples.withUnsafeBufferPointer { guarder.appendRender($0, sampleRate: 4000) }
+    }
+    let input = (0..<40000).map { Int16(500 * sin(Double($0) * 0.17)) }.withUnsafeBytes { Data($0) }
+    render(1000, seconds: 1)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
+    render(0, seconds: 1)
+    render(1000, seconds: 1)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    render(0, seconds: 2)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
+    render(1000, seconds: 1)
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), Data(count: input.count))
+    XCTAssertEqual(guarder.processCapture(input, speaker: true), input)
   }
 
   func testStartupProtectsOnlyBoundedCaptureSamplesEvenForLargeChunks() {

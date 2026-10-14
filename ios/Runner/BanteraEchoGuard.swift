@@ -1,7 +1,7 @@
 import Foundation
 
-/// A conservative residual-echo guard after Apple's VoiceProcessingIO. It is
-/// not a replacement for AEC. After at most 500 ms of startup protection, only
+/// A conservative residual-echo guard after Apple's native echo cancellation. It is
+/// not a replacement for AEC. After bounded startup protection (at most 2500 ms), only
 /// a strongly verified, delayed/filtered copy of actual speaker output is silenced;
 /// independent speech and double-talk pass through.
 final class BanteraEchoGuard {
@@ -23,6 +23,8 @@ final class BanteraEchoGuard {
   private var fullRenderSamples = 0
   private let startupProtectionSamples: Int
   private var startupProtectionRemaining = -1
+  private var quietRenderSamples = 0
+  private let idleRearmSamples = 8000 // 2 seconds at the 4 kHz reference rate.
   private var generation = 0
   private var startupSuppressedFrames = 0
   private var matchedEchoFrames = 0
@@ -38,10 +40,11 @@ final class BanteraEchoGuard {
 
   init(startupProtectionMilliseconds: Int = 500) {
     // This short guard is a startup tradeoff, not a claim that AEC has converged.
-    // Never extend it into a whole-reply mute or restart it for every response.
+    // Never extend it into a whole-reply mute or restart it for continuous playback.
+    // After idle the physical iPhone test found a new settling transient.
     // The capture clock includes the acoustic/processing return path; rendering
     // ahead must not expire protection before the matching microphone arrives.
-    startupProtectionSamples = min(500, max(0, startupProtectionMilliseconds)) * 16
+    startupProtectionSamples = min(2500, max(0, startupProtectionMilliseconds)) * 16
   }
 
   /// Safe in the render callback: preallocated storage, bounded work, no
@@ -72,8 +75,13 @@ final class BanteraEchoGuard {
         render[renderIndex] = value
         renderIndex = (renderIndex + 1) % render.count
         renderCount = min(renderCount + 1, render.count)
-        if startupProtectionRemaining < 0 && abs(value) > 32 {
-          startupProtectionRemaining = startupProtectionSamples
+        if abs(value) > 32 {
+          if startupProtectionRemaining < 0 || quietRenderSamples >= idleRearmSamples {
+            startupProtectionRemaining = startupProtectionSamples
+          }
+          quietRenderSamples = 0
+        } else {
+          quietRenderSamples = min(idleRearmSamples, quietRenderSamples + 1)
         }
         renderPhase -= sampleRate
         renderSum = 0
@@ -91,13 +99,14 @@ final class BanteraEchoGuard {
     fullRenderIndex = 0; fullRenderCount = 0; fullRenderTotal = 0
     fullRenderPhase = 0; fullRenderSum = 0; fullRenderSamples = 0
     startupProtectionRemaining = -1
+    quietRenderSamples = 0
     generation += 1
     startupSuppressedFrames = 0; matchedEchoFrames = 0
     lock.unlock()
   }
 
   /// Call only on a serial, non-realtime capture queue. Input is processed mono
-  /// 16 kHz signed little-endian PCM from VoiceProcessingIO.
+  /// 16 kHz signed little-endian PCM after hardware AEC or VoiceProcessingIO.
   func processCapture(_ pcm16k: Data, speaker: Bool) -> Data {
     guard !pcm16k.isEmpty, pcm16k.count % 2 == 0 else { return pcm16k }
     var reference = [Double](), fullReference = [Double]()
