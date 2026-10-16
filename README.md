@@ -1,5 +1,9 @@
 # 🎙️ Bantera: iOS & Android Language Learning App
 
+[![CI](https://github.com/lisenhuang/bantera-app/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lisenhuang/bantera-app/actions/workflows/ci.yml)
+[![Contributing](https://img.shields.io/badge/Contributing-guide-blue)](CONTRIBUTING.md)
+[![Security policy](https://img.shields.io/badge/Security-reporting-blue)](SECURITY.md)
+
 > **Practice speaking a new language by repeating cues from real videos.**
 > Record yourself, compare your pronunciation side-by-side, and improve with every session.
 
@@ -9,6 +13,20 @@
 ![Dart](https://img.shields.io/badge/Dart-%5E3.11-0175C2?logo=dart)
 ![iOS](https://img.shields.io/badge/iOS-18%2B-black?logo=apple)
 ![Localization](https://img.shields.io/badge/Localization-EN%20%7C%20JA%20%7C%20KO%20%7C%20ZH-brightgreen)
+
+## Engineering quality
+
+Maintained by [@lisenhuang](https://github.com/lisenhuang), with reproducible local checks, regression tests, and documented review expectations.
+
+CI pins Flutter 3.41.9, restores `pubspec.lock`, fails on analyzer errors or warnings, runs all Flutter unit/widget tests with LCOV coverage, compiles an Android debug APK, and runs the native Kotlin tests. Analyzer informational lints remain visible but do not fail the build. Coverage is available as an artifact, not a claimed coverage target. iOS compilation and native audio behavior are separate checks; CI does not exercise a physical phone.
+
+| Repository | Latest `main` CI |
+| --- | --- |
+| [app](https://github.com/lisenhuang/bantera-app) | [![CI](https://github.com/lisenhuang/bantera-app/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lisenhuang/bantera-app/actions/workflows/ci.yml) |
+| [backend](https://github.com/lisenhuang/bantera-backend) | [![CI](https://github.com/lisenhuang/bantera-backend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lisenhuang/bantera-backend/actions/workflows/ci.yml) |
+| [website](https://github.com/lisenhuang/bantera-website) | [![CI](https://github.com/lisenhuang/bantera-website/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lisenhuang/bantera-website/actions/workflows/ci.yml) |
+
+The badges show real workflow results, including failures. Test reports are retained for 14 days. [Contribution guidance](CONTRIBUTING.md), [maintainer ownership](.github/CODEOWNERS), [dependency update configuration](.github/dependabot.yml), and [private security reporting](SECURITY.md) describe how changes are maintained. CI does not deploy production releases.
 
 ---
 

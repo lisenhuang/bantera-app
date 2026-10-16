@@ -46,3 +46,6 @@ app.*.map.json
 
 # Local planning / design notes (not checked in)
 *.plan.md
+
+# CI reports
+/test-results/
