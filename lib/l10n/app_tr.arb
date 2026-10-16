@@ -89,6 +89,7 @@
   "navProfile": "Profil",
   "chatsTitle": "Sohbetler",
   "chatNoChatsYet": "Henüz sohbet yok.",
+  "chatHideSameNativeSpeakers": "Ana dili benimle aynı olanları gizle",
   "chatOnlineSection": "Çevrimiçi",
   "chatDirectMessagesSection": "DM",
   "chatAudioDuration": "Ses {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Görseller aranıyor…",
   "aiImagesUnavailable": "Görseller kullanılamıyor. Daha sonra tekrar dene.",
   "aiImageShare": "Görseli kaydet veya paylaş",
-  "aiImagesHelp": "Gördüklerini anlatma pratiği yapmak için görsel iste. Bu cihaz web genelinde görsel arar ve gerekirse Wikimedia Commons kullanır. Görseller burada sohbetle birlikte kaydedilir. Büyütmek veya paylaşmak için görsele, kullanım hakları için kaynağa dokun. Konular arama hizmetine, başlıklar ve kaynak bağlantıları yapay zekâya gönderilir. Görseller Bantera’ya yüklenmez.",
+  "aiImagesHelp": "Görsel aramaları bu cihazda yapılır. Kamera, Fotoğraflar veya Dosyalardan sesli mesaja en fazla 4 görsel ekleyebilirsiniz. Görseller ve ses, işlenmek üzere Bantera üzerinden yapay zekâya gönderilir; Bantera bu görselleri sunucularında saklamaz. Kopyalar bu cihazın sohbet geçmişinde kalır. Büyütmek için görsele dokunun. Web görselleri kullanım hakları için kaynak bağlantıları içerir.",
   "aiImagesRights": "Kullanım haklarını kaynakta kontrol et",
   "vocabTitle": "Kelime defteri",
   "vocabAdd": "Kelime ekle",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Gemini dersleri ve sesli sohbetleri için geçerlidir. Değişiklikler yeni isteklere uygulanır. Erişimi ve anahtarı yönetici yönetir.",
   "aiKeysRegular": "Yalnızca normal anahtarlar",
   "aiKeysFallback": "Ücretli anahtarı yedek olarak kullan",
-  "aiKeysPaidOnly": "Yalnızca ücretli anahtar"
+  "aiKeysPaidOnly": "Yalnızca ücretli anahtar",
+  "aiAttachImages": "Görsel ekle",
+  "aiAttachmentHint": "En fazla 4 görsel ekleyin, ardından sesli mesaj kaydedin.",
+  "aiAttachmentLocked": "Kayıt sırasında görseller kilitlidir. Değiştirmek için kaydı iptal edin.",
+  "aiAttachmentError": "Bu görsel eklenemedi. Daha küçük bir fotoğraf veya başka bir görsel deneyin.",
+  "aiCamera": "Kamera",
+  "aiPhotos": "Fotoğraflar",
+  "aiFiles": "Dosyalar",
+  "aiRemoveImage": "Görseli kaldır"
 }

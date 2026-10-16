@@ -8,6 +8,7 @@ import '../core/api_config_notifier.dart';
 import '../domain/models/chat_models.dart';
 import 'auth_api_client.dart';
 import 'network_reachability.dart';
+import 'chat_audio_integrity.dart';
 
 class ChatApiClient {
   ChatApiClient._() : _baseUrlOverride = null;
@@ -99,6 +100,65 @@ class ChatApiClient {
     }
   }
 
+  Future<ChatMessagePage> fetchDirectMessagePage({
+    required String accessToken,
+    required String threadId,
+    String? cursor,
+    int offset = 0,
+  }) async {
+    final uri = _resolve(
+      '/api/v3/chat/threads/$threadId/messages',
+    ).replace(queryParameters: {'limit': '100', 'cursor': ?cursor});
+    final request = await _httpClient.getUrl(uri);
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+    final response = await request.close();
+    if (response.statusCode == 404) {
+      await response.drain<void>();
+      return ChatMessagePage(
+        await fetchMessages(
+          accessToken: accessToken,
+          threadId: threadId,
+          offset: offset,
+        ),
+        null,
+        cursorBased: false,
+      );
+    }
+    final json = await _parseJsonResponse(response);
+    if (response.statusCode != 200) {
+      _throwApiException(json, response.statusCode);
+    }
+    if (json['messages'] is! List) {
+      throw const AuthApiException(
+        code: 'invalid_response',
+        message: 'Could not load messages.',
+      );
+    }
+    return ChatMessagePage(
+      (json['messages'] as List)
+          .whereType<Map>()
+          .map(
+            (m) => ChatMessageItem.fromJson(
+              m.map((k, v) => MapEntry(k.toString(), v)),
+            ),
+          )
+          .toList(),
+      json['nextCursor'] as String?,
+    );
+  }
+
+  Future<void> acknowledgeVerifiedMessage({
+    required String accessToken,
+    required String messageId,
+    required String sha256,
+    required int byteCount,
+  }) => _sendRequestAllowingNoContent(
+    method: 'POST',
+    path: '/api/v3/chat/messages/$messageId/received',
+    accessToken: accessToken,
+    payload: {'sha256': sha256, 'byteCount': byteCount},
+  );
+
   Future<ChatIceServersConfig> fetchIceServers({
     required String accessToken,
   }) async {
@@ -189,7 +249,18 @@ class ChatApiClient {
       final response = await request.close();
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final bytes = await consolidateHttpClientResponseBytes(response);
+        final digest = response.headers.value('x-bantera-audio-sha256');
+        final size = response.contentLength >= 0
+            ? response.contentLength
+            : null;
+        ChatAudioIntegrity.verifyBytes(
+          bytes,
+          expectedBytes: size,
+          expectedSha256: digest,
+        );
         return DownloadedChatAudio(
+          sha256: digest,
+          byteCount: size,
           bytes: bytes,
           contentType: response.headers.contentType?.mimeType ?? 'audio/mp4',
         );

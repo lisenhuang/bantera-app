@@ -89,6 +89,7 @@
   "navProfile": "Profil",
   "chatsTitle": "Chat",
   "chatNoChatsYet": "Belum ada chat.",
+  "chatHideSameNativeSpeakers": "Sembunyikan orang dengan bahasa ibu yang sama",
   "chatOnlineSection": "Online",
   "chatDirectMessagesSection": "DM",
   "chatAudioDuration": "Audio {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Mencari gambar…",
   "aiImagesUnavailable": "Gambar tidak tersedia. Coba lagi nanti.",
   "aiImageShare": "Simpan atau bagikan gambar",
-  "aiImagesHelp": "Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Perangkat ini mencari gambar di web dan menggunakan Wikimedia Commons jika diperlukan. Gambar disimpan di sini bersama chat. Ketuk gambar untuk memperbesar atau membagikannya, dan sumbernya untuk melihat hak penggunaan. Topik dikirim ke layanan pencarian; judul dan tautan sumber ke AI. Gambar tidak diunggah ke Bantera.",
+  "aiImagesHelp": "Pencarian gambar berjalan di perangkat ini. Anda juga dapat melampirkan hingga 4 gambar dari Kamera, Foto, atau File ke pesan suara. Gambar dan suara dikirim melalui Bantera ke AI untuk diproses; Bantera tidak menyimpan gambar ini di servernya. Salinan tetap ada dalam riwayat chat perangkat ini. Ketuk gambar untuk memperbesar. Gambar web menyertakan tautan sumber untuk hak penggunaan.",
   "aiImagesRights": "Periksa hak penggunaan di sumber",
   "vocabTitle": "Kosakata",
   "vocabAdd": "Tambah kata",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Berlaku untuk pelajaran dan obrolan suara Gemini. Perubahan berlaku untuk permintaan baru. Administrator mengelola akses dan kunci.",
   "aiKeysRegular": "Hanya kunci reguler",
   "aiKeysFallback": "Kunci berbayar sebagai cadangan",
-  "aiKeysPaidOnly": "Hanya kunci berbayar"
+  "aiKeysPaidOnly": "Hanya kunci berbayar",
+  "aiAttachImages": "Lampirkan gambar",
+  "aiAttachmentHint": "Tambahkan hingga 4 gambar, lalu rekam pesan suara.",
+  "aiAttachmentLocked": "Gambar dikunci saat merekam. Batalkan untuk mengubahnya.",
+  "aiAttachmentError": "Gambar tidak dapat ditambahkan. Coba foto yang lebih kecil atau gambar lain.",
+  "aiCamera": "Kamera",
+  "aiPhotos": "Foto",
+  "aiFiles": "File",
+  "aiRemoveImage": "Hapus gambar"
 }

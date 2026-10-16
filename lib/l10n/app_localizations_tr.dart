@@ -294,6 +294,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chatNoChatsYet => 'Henüz sohbet yok.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Ana dili benimle aynı olanları gizle';
+
+  @override
   String get chatOnlineSection => 'Çevrimiçi';
 
   @override
@@ -1945,7 +1949,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Gördüklerini anlatma pratiği yapmak için görsel iste. Bu cihaz web genelinde görsel arar ve gerekirse Wikimedia Commons kullanır. Görseller burada sohbetle birlikte kaydedilir. Büyütmek veya paylaşmak için görsele, kullanım hakları için kaynağa dokun. Konular arama hizmetine, başlıklar ve kaynak bağlantıları yapay zekâya gönderilir. Görseller Bantera’ya yüklenmez.';
+      'Görsel aramaları bu cihazda yapılır. Kamera, Fotoğraflar veya Dosyalardan sesli mesaja en fazla 4 görsel ekleyebilirsiniz. Görseller ve ses, işlenmek üzere Bantera üzerinden yapay zekâya gönderilir; Bantera bu görselleri sunucularında saklamaz. Kopyalar bu cihazın sohbet geçmişinde kalır. Büyütmek için görsele dokunun. Web görselleri kullanım hakları için kaynak bağlantıları içerir.';
 
   @override
   String get aiImagesRights => 'Kullanım haklarını kaynakta kontrol et';
@@ -2033,4 +2037,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Yalnızca ücretli anahtar';
+
+  @override
+  String get aiAttachImages => 'Görsel ekle';
+
+  @override
+  String get aiAttachmentHint =>
+      'En fazla 4 görsel ekleyin, ardından sesli mesaj kaydedin.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Kayıt sırasında görseller kilitlidir. Değiştirmek için kaydı iptal edin.';
+
+  @override
+  String get aiAttachmentError =>
+      'Bu görsel eklenemedi. Daha küçük bir fotoğraf veya başka bir görsel deneyin.';
+
+  @override
+  String get aiCamera => 'Kamera';
+
+  @override
+  String get aiPhotos => 'Fotoğraflar';
+
+  @override
+  String get aiFiles => 'Dosyalar';
+
+  @override
+  String get aiRemoveImage => 'Görseli kaldır';
 }

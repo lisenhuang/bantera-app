@@ -53,8 +53,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos for your profile or to share with Bantera AI.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Bantera requires camera access for live video calls.</string>
+	<string>Bantera uses your camera for video calls and photos you choose to share with Bantera AI.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Bantera requires microphone access to record practice audio, chat messages, and live calls.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

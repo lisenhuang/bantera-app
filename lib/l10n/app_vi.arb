@@ -89,6 +89,7 @@
   "navProfile": "Hồ sơ",
   "chatsTitle": "Trò chuyện",
   "chatNoChatsYet": "Chưa có cuộc trò chuyện nào.",
+  "chatHideSameNativeSpeakers": "Ẩn người có cùng tiếng mẹ đẻ với tôi",
   "chatOnlineSection": "Trực tuyến",
   "chatDirectMessagesSection": "Tin nhắn riêng",
   "chatAudioDuration": "Âm thanh {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Đang tìm hình ảnh…",
   "aiImagesUnavailable": "Không có hình ảnh. Hãy thử lại sau.",
   "aiImageShare": "Lưu hoặc chia sẻ hình ảnh",
-  "aiImagesHelp": "Yêu cầu hình ảnh để luyện mô tả những gì bạn thấy. Thiết bị này tìm hình ảnh trên web và dùng Wikimedia Commons khi cần. Hình ảnh được lưu tại đây cùng cuộc trò chuyện. Chạm vào ảnh để phóng to hoặc chia sẻ, và vào nguồn để xem quyền sử dụng. Chủ đề được gửi tới dịch vụ tìm kiếm; tiêu đề và liên kết nguồn được gửi tới AI. Hình ảnh không được tải lên Bantera.",
+  "aiImagesHelp": "Việc tìm ảnh được thực hiện trên thiết bị này. Bạn có thể đính kèm tối đa 4 ảnh từ Máy ảnh, Ảnh hoặc Tệp vào tin nhắn thoại. Ảnh và giọng nói được gửi qua Bantera tới AI để xử lý; Bantera không lưu các ảnh này trên máy chủ. Bản sao vẫn ở trong lịch sử trò chuyện trên thiết bị này. Chạm vào ảnh để phóng to. Ảnh trên web có liên kết nguồn để xem quyền sử dụng.",
   "aiImagesRights": "Kiểm tra quyền sử dụng tại nguồn",
   "vocabTitle": "Từ vựng",
   "vocabAdd": "Thêm từ",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Áp dụng cho bài học và trò chuyện thoại Gemini. Thay đổi áp dụng cho yêu cầu mới. Quản trị viên quản lý quyền truy cập và khóa.",
   "aiKeysRegular": "Chỉ dùng khóa thông thường",
   "aiKeysFallback": "Dùng khóa trả phí dự phòng",
-  "aiKeysPaidOnly": "Chỉ dùng khóa trả phí"
+  "aiKeysPaidOnly": "Chỉ dùng khóa trả phí",
+  "aiAttachImages": "Đính kèm ảnh",
+  "aiAttachmentHint": "Thêm tối đa 4 ảnh, sau đó ghi tin nhắn thoại.",
+  "aiAttachmentLocked": "Ảnh bị khóa khi đang ghi âm. Hủy ghi âm để thay đổi ảnh.",
+  "aiAttachmentError": "Không thể thêm ảnh này. Hãy thử ảnh nhỏ hơn hoặc ảnh khác.",
+  "aiCamera": "Máy ảnh",
+  "aiPhotos": "Ảnh",
+  "aiFiles": "Tệp",
+  "aiRemoveImage": "Xóa ảnh"
 }

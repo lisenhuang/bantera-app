@@ -96,6 +96,7 @@
   "navProfile": "Profile",
   "chatsTitle": "Chats",
   "chatNoChatsYet": "No chats yet.",
+  "chatHideSameNativeSpeakers": "Hide people with my native language",
   "chatOnlineSection": "Online",
   "chatDirectMessagesSection": "DM",
   "chatAudioDuration": "Audio {duration}",
@@ -841,7 +842,7 @@
   "aiImagesSearching": "Finding pictures…",
   "aiImagesUnavailable": "Pictures unavailable. Try again later.",
   "aiImageShare": "Save or share image",
-  "aiImagesHelp": "Ask for pictures to practise describing what you see. Images are searched across the web on this device, with Wikimedia Commons as a fallback, and saved with your chat here. Tap an image to enlarge or share it, and its source for usage rights. Topics go to the search provider; titles and source links go to AI. Images are not uploaded to Bantera.",
+  "aiImagesHelp": "Image searches run on this device. You can also attach up to 4 images to a voice message from Camera, Photos or Files. Attached images and voice are sent through Bantera to the AI for processing; Bantera does not store these images on its servers. Copies stay in this device’s chat history. Tap an image to enlarge it. Web images include source links for usage rights.",
   "aiImagesRights": "Check source for usage rights",
   "vocabTitle": "Vocabulary",
   "vocabAdd": "Add a word",
@@ -869,5 +870,13 @@
   "aiKeysDescription": "Applies to Gemini lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.",
   "aiKeysRegular": "Regular keys only",
   "aiKeysFallback": "Use paid key as fallback",
-  "aiKeysPaidOnly": "Paid key only"
+  "aiKeysPaidOnly": "Paid key only",
+  "aiAttachImages": "Attach images",
+  "aiAttachmentHint": "Add up to 4 images, then record a voice message.",
+  "aiAttachmentLocked": "Images are locked while recording. Cancel to change them.",
+  "aiAttachmentError": "Could not add this image. Try a smaller photo or another image.",
+  "aiCamera": "Camera",
+  "aiPhotos": "Photos",
+  "aiFiles": "Files",
+  "aiRemoveImage": "Remove image"
 }

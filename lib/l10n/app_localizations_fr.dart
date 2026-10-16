@@ -293,6 +293,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chatNoChatsYet => 'Aucune discussion pour l’instant.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Masquer les personnes ayant ma langue maternelle';
+
+  @override
   String get chatOnlineSection => 'En ligne';
 
   @override
@@ -2010,7 +2014,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Demande des images pour t’entraîner à décrire ce que tu vois. Cet appareil cherche des images sur le web et utilise Wikimedia Commons si nécessaire. Elles sont enregistrées ici avec ta discussion. Touche une image pour l’agrandir ou la partager, et sa source pour consulter les droits d’utilisation. Les sujets vont au moteur de recherche ; les titres et liens sources à l’IA. Les images ne sont pas envoyées à Bantera.';
+      'Les recherches d’images s’effectuent sur cet appareil. Vous pouvez joindre jusqu’à 4 images depuis l’appareil photo, Photos ou Fichiers à un message vocal. Les pièces jointes et la voix sont transmises à l’IA via Bantera pour traitement ; Bantera ne stocke pas ces images sur ses serveurs. Les copies restent dans l’historique de cet appareil. Touchez une image pour l’agrandir. Les images web incluent des liens vers leurs sources pour consulter les droits d’utilisation.';
 
   @override
   String get aiImagesRights => 'Consulter les droits auprès de la source';
@@ -2098,4 +2102,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Clé payante uniquement';
+
+  @override
+  String get aiAttachImages => 'Joindre des images';
+
+  @override
+  String get aiAttachmentHint =>
+      'Ajoutez jusqu’à 4 images, puis enregistrez un message vocal.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Les images sont verrouillées pendant l’enregistrement. Annulez pour les modifier.';
+
+  @override
+  String get aiAttachmentError =>
+      'Impossible d’ajouter cette image. Essayez une photo plus petite ou une autre image.';
+
+  @override
+  String get aiCamera => 'Appareil photo';
+
+  @override
+  String get aiPhotos => 'Photos';
+
+  @override
+  String get aiFiles => 'Fichiers';
+
+  @override
+  String get aiRemoveImage => 'Retirer l’image';
 }

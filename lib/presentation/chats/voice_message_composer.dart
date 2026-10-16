@@ -14,8 +14,12 @@ class VoiceMessageComposer extends StatefulWidget {
     required this.onSend,
     required this.onCancel,
     this.busyLabel,
+    this.embedded = false,
   });
   final bool enabled, recording;
+
+  /// The parent supplies the shared composer background and padding.
+  final bool embedded;
   final int remainingSeconds;
   final String? busyLabel;
   final Future<void> Function() onStart, onSend, onCancel;
@@ -139,11 +143,15 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
     }
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.outlineVariant)),
-      ),
+      padding: widget.embedded
+          ? EdgeInsets.zero
+          : const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: widget.embedded
+          ? null
+          : BoxDecoration(
+              color: colors.surface,
+              border: Border(top: BorderSide(color: colors.outlineVariant)),
+            ),
       child: Row(
         children: [
           Expanded(

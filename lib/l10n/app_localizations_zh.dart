@@ -280,6 +280,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatNoChatsYet => '还没有聊天。';
 
   @override
+  String get chatHideSameNativeSpeakers => '隐藏与我母语相同的人';
+
+  @override
   String get chatOnlineSection => '在线';
 
   @override
@@ -1866,7 +1869,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '你可以请 AI 找图片，练习描述看到的内容。图片由此设备搜索网络，必要时改用 Wikimedia Commons，并保存在此设备的聊天记录中。点击图片可放大或分享，点击来源可查看使用权利。搜索主题会发送给搜索服务，标题和来源链接会发送给 AI。图片不会上传至 Bantera。';
+      '图片搜索在本机进行。你也可以从相机、照片或文件为语音消息添加最多4张图片。附件图片和语音会经由Bantera发送给AI处理；Bantera不会在服务器上存储这些图片。副本保留在本机聊天记录中。点击图片可放大。网络图片附有来源链接，供查看使用权限。';
 
   @override
   String get aiImagesRights => '使用权限请查看来源';
@@ -1951,6 +1954,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => '仅使用付费密钥';
+
+  @override
+  String get aiAttachImages => '添加图片';
+
+  @override
+  String get aiAttachmentHint => '最多添加4张图片，然后录制语音消息。';
+
+  @override
+  String get aiAttachmentLocked => '录音时图片已锁定。取消录音后可修改。';
+
+  @override
+  String get aiAttachmentError => '无法添加此图片。请尝试较小的照片或其他图片。';
+
+  @override
+  String get aiCamera => '相机';
+
+  @override
+  String get aiPhotos => '照片';
+
+  @override
+  String get aiFiles => '文件';
+
+  @override
+  String get aiRemoveImage => '移除图片';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2227,6 +2254,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get chatNoChatsYet => '暫時沒有聊天。';
+
+  @override
+  String get chatHideSameNativeSpeakers => '隱藏與我母語相同的人';
 
   @override
   String get chatOnlineSection => '在線';
@@ -3819,7 +3849,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiImagesHelp =>
-      '你可以請 AI 找圖片，練習描述看到的內容。圖片由此裝置搜尋網路，必要時改用 Wikimedia Commons，並儲存在此裝置的聊天記錄中。點擊圖片可放大或分享，點擊來源可查看使用權利。搜尋主題會傳送給搜尋服務，標題和來源連結會傳送給 AI。圖片不會上傳至 Bantera。';
+      '圖片搜尋在本機進行。你也可以從相機、相片或檔案為語音訊息加入最多4張圖片。附件圖片及語音會經由Bantera傳送給AI處理；Bantera不會在伺服器上儲存這些圖片。副本保留在本機聊天記錄中。點擊圖片可放大。網絡圖片附有來源連結，供查看使用權限。';
 
   @override
   String get aiImagesRights => '使用權利請查看來源';
@@ -3904,4 +3934,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiKeysPaidOnly => '僅使用付費金鑰';
+
+  @override
+  String get aiAttachImages => '加入圖片';
+
+  @override
+  String get aiAttachmentHint => '最多加入4張圖片，然後錄製語音訊息。';
+
+  @override
+  String get aiAttachmentLocked => '錄音時圖片已鎖定。取消錄音後可修改。';
+
+  @override
+  String get aiAttachmentError => '無法加入此圖片。請嘗試較小的相片或其他圖片。';
+
+  @override
+  String get aiCamera => '相機';
+
+  @override
+  String get aiPhotos => '相片';
+
+  @override
+  String get aiFiles => '檔案';
+
+  @override
+  String get aiRemoveImage => '移除圖片';
 }

@@ -292,6 +292,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chatNoChatsYet => 'Chưa có cuộc trò chuyện nào.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Ẩn người có cùng tiếng mẹ đẻ với tôi';
+
+  @override
   String get chatOnlineSection => 'Trực tuyến';
 
   @override
@@ -1946,7 +1950,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Yêu cầu hình ảnh để luyện mô tả những gì bạn thấy. Thiết bị này tìm hình ảnh trên web và dùng Wikimedia Commons khi cần. Hình ảnh được lưu tại đây cùng cuộc trò chuyện. Chạm vào ảnh để phóng to hoặc chia sẻ, và vào nguồn để xem quyền sử dụng. Chủ đề được gửi tới dịch vụ tìm kiếm; tiêu đề và liên kết nguồn được gửi tới AI. Hình ảnh không được tải lên Bantera.';
+      'Việc tìm ảnh được thực hiện trên thiết bị này. Bạn có thể đính kèm tối đa 4 ảnh từ Máy ảnh, Ảnh hoặc Tệp vào tin nhắn thoại. Ảnh và giọng nói được gửi qua Bantera tới AI để xử lý; Bantera không lưu các ảnh này trên máy chủ. Bản sao vẫn ở trong lịch sử trò chuyện trên thiết bị này. Chạm vào ảnh để phóng to. Ảnh trên web có liên kết nguồn để xem quyền sử dụng.';
 
   @override
   String get aiImagesRights => 'Kiểm tra quyền sử dụng tại nguồn';
@@ -2034,4 +2038,31 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Chỉ dùng khóa trả phí';
+
+  @override
+  String get aiAttachImages => 'Đính kèm ảnh';
+
+  @override
+  String get aiAttachmentHint =>
+      'Thêm tối đa 4 ảnh, sau đó ghi tin nhắn thoại.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Ảnh bị khóa khi đang ghi âm. Hủy ghi âm để thay đổi ảnh.';
+
+  @override
+  String get aiAttachmentError =>
+      'Không thể thêm ảnh này. Hãy thử ảnh nhỏ hơn hoặc ảnh khác.';
+
+  @override
+  String get aiCamera => 'Máy ảnh';
+
+  @override
+  String get aiPhotos => 'Ảnh';
+
+  @override
+  String get aiFiles => 'Tệp';
+
+  @override
+  String get aiRemoveImage => 'Xóa ảnh';
 }

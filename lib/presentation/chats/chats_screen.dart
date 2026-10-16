@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/chat_session_notifier.dart';
+import '../../core/auth_session_notifier.dart';
+import '../../core/settings_notifier.dart';
+import '../../core/user_profile_notifier.dart';
+import 'chat_discovery.dart';
 import '../../domain/models/chat_models.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -21,6 +25,15 @@ class ChatsScreen extends StatefulWidget {
 
 class _ChatsScreenState extends State<ChatsScreen> {
   final ChatSessionNotifier _chat = ChatSessionNotifier.instance;
+  late final Listenable _changes = Listenable.merge([
+    _chat,
+    SettingsNotifier.instance,
+    UserProfileNotifier.instance,
+    AuthSessionNotifier.instance,
+  ]);
+  String? get _owner => AuthSessionNotifier.instance.session?.cacheKey;
+  bool get _hideSameNative =>
+      SettingsNotifier.instance.hideSameNativeSpeakers(_owner);
 
   @override
   void initState() {
@@ -34,141 +47,152 @@ class _ChatsScreenState extends State<ChatsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.chatsTitle),
-        actions: [
-          PopupMenuButton<_ChatsMenuAction>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: _handleMenuAction,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: _ChatsMenuAction.blockedUsers,
-                child: ChatMenuItemRow(
-                  icon: Icons.person_off_outlined,
-                  label: l10n.chatBlockedUsersMenu,
+    return ListenableBuilder(
+      listenable: _changes,
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.chatsTitle),
+          actions: [
+            PopupMenuButton<_ChatsMenuAction>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: _handleMenuAction,
+              itemBuilder: (context) => [
+                CheckedPopupMenuItem(
+                  value: _ChatsMenuAction.hideSameNative,
+                  checked: _hideSameNative,
+                  enabled: _owner != null,
+                  child: Text(l10n.chatHideSameNativeSpeakers),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => _chat.refreshBootstrap(),
-        child: ListenableBuilder(
-          listenable: _chat,
-          builder: (context, _) {
-            return StreamBuilder<List<ChatThreadSummary>>(
-              stream: _chat.watchGroups(),
-              builder: (context, groupsSnapshot) {
-                return StreamBuilder<List<ChatUserSummary>>(
-                  stream: _chat.watchOnlineUsers(),
-                  builder: (context, usersSnapshot) {
-                    return StreamBuilder<List<ChatThreadSummary>>(
-                      stream: _chat.watchDirectMessages(),
-                      builder: (context, dmsSnapshot) {
-                        final items = _buildHomeItems(
-                          l10n,
-                          groupsSnapshot.data ?? const <ChatThreadSummary>[],
-                          usersSnapshot.data ?? const <ChatUserSummary>[],
-                          dmsSnapshot.data ?? const <ChatThreadSummary>[],
-                        );
-                        if (items.isEmpty && _chat.isLoading) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                PopupMenuItem(
+                  value: _ChatsMenuAction.blockedUsers,
+                  child: ChatMenuItemRow(
+                    icon: Icons.person_off_outlined,
+                    label: l10n.chatBlockedUsersMenu,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: RefreshIndicator(
+          onRefresh: () => _chat.refreshBootstrap(),
+          child: ListenableBuilder(
+            listenable: _chat,
+            builder: (context, _) {
+              return StreamBuilder<List<ChatThreadSummary>>(
+                stream: _chat.watchGroups(),
+                builder: (context, groupsSnapshot) {
+                  return StreamBuilder<List<ChatUserSummary>>(
+                    stream: _chat.watchOnlineUsers(),
+                    builder: (context, usersSnapshot) {
+                      return StreamBuilder<List<ChatThreadSummary>>(
+                        stream: _chat.watchDirectMessages(),
+                        builder: (context, dmsSnapshot) {
+                          final items = _buildHomeItems(
+                            l10n,
+                            groupsSnapshot.data ?? const <ChatThreadSummary>[],
+                            usersSnapshot.data ?? const <ChatUserSummary>[],
+                            dmsSnapshot.data ?? const <ChatThreadSummary>[],
                           );
-                        }
+                          if (items.isEmpty && _chat.isLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                        if (items.isEmpty) {
-                          return ListView(
+                          if (items.isEmpty) {
+                            return ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: [
+                                const SizedBox(height: 160),
+                                Center(child: Text(l10n.chatNoChatsYet)),
+                              ],
+                            );
+                          }
+
+                          return ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              const SizedBox(height: 160),
-                              Center(child: Text(l10n.chatNoChatsYet)),
-                            ],
-                          );
-                        }
-
-                        return ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            return switch (item) {
-                              _ChatSectionHeaderItem() => Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 16,
-                                  bottom: 8,
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return switch (item) {
+                                _ChatSectionHeaderItem() => Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 16,
+                                    bottom: 8,
+                                  ),
+                                  child: Text(
+                                    item.title,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                  ),
                                 ),
-                                child: Text(
-                                  item.title,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                _ChatAiItem() => Card(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
+                                    leading: const AiAvatar(online: true),
+                                    title: Text(
+                                      'Bantera AI',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
+                                    ),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text(
+                                        l10n.aiChatSubtitle,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
+                                    ),
+                                    onTap: () => openAiChat(context),
+                                  ),
                                 ),
-                              ),
-                              _ChatAiItem() => Card(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  leading: const AiAvatar(online: true),
-                                  title: Text(
-                                    'Bantera AI',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium,
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Text(
-                                      l10n.aiChatSubtitle,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                                _ChatThreadItem() => _ThreadCard(
+                                  thread: item.thread,
+                                  isOnline: item.isOnline,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          ChatConversationScreen.thread(
+                                            thread: item.thread,
+                                          ),
                                     ),
                                   ),
-                                  onTap: () => openAiChat(context),
                                 ),
-                              ),
-                              _ChatThreadItem() => _ThreadCard(
-                                thread: item.thread,
-                                isOnline: item.isOnline,
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        ChatConversationScreen.thread(
-                                          thread: item.thread,
-                                        ),
+                                _ChatUserItem() => _UserCard(
+                                  user: item.user,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          ChatConversationScreen.directUser(
+                                            partner: item.user,
+                                          ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              _ChatUserItem() => _UserCard(
-                                user: item.user,
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        ChatConversationScreen.directUser(
-                                          partner: item.user,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            };
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
+                              };
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -176,6 +200,15 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   void _handleMenuAction(_ChatsMenuAction action) {
     switch (action) {
+      case _ChatsMenuAction.hideSameNative:
+        final owner = _owner;
+        if (owner != null) {
+          SettingsNotifier.instance.setHideSameNativeSpeakers(
+            owner,
+            !_hideSameNative,
+          );
+        }
+        break;
       case _ChatsMenuAction.blockedUsers:
         Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const BlockedUsersScreen()),
@@ -196,9 +229,14 @@ class _ChatsScreenState extends State<ChatsScreen> {
         .whereType<String>()
         .where((id) => id.isNotEmpty)
         .toSet();
-    final visibleOnlineUsers = onlineUsers
-        .where((user) => !dmUserIds.contains(user.id))
-        .toList();
+    final profile = UserProfileNotifier.instance;
+    final visibleOnlineUsers = discoverableOnlineUsers(
+      users: onlineUsers,
+      existingDmUserIds: dmUserIds,
+      learningLanguage: profile.learningLanguage,
+      nativeLanguage: profile.nativeLanguage,
+      hideSameNativeSpeakers: _hideSameNative,
+    );
     final onlineDms = dms.where((thread) => _isDmOnline(thread, onlineUserIds));
     final offlineDms = dms.where(
       (thread) => !_isDmOnline(thread, onlineUserIds),
@@ -226,7 +264,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
   }
 }
 
-enum _ChatsMenuAction { blockedUsers }
+enum _ChatsMenuAction { blockedUsers, hideSameNative }
 
 sealed class _ChatHomeItem {
   const _ChatHomeItem();

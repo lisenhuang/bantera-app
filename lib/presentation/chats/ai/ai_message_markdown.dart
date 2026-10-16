@@ -6,9 +6,14 @@ import '../../../infrastructure/ai/ai_web_search.dart';
 
 /// Non-scrolling Markdown that grows with streamed text inside a chat bubble.
 class AiMessageMarkdown extends StatelessWidget {
-  const AiMessageMarkdown({super.key, required this.text});
+  const AiMessageMarkdown({
+    super.key,
+    required this.text,
+    this.selectable = true,
+  });
 
   final String text;
+  final bool selectable;
 
   Future<void> _openLink(String? href) async {
     final uri = AiWebSource.safeUrl(href ?? '');
@@ -31,7 +36,7 @@ class AiMessageMarkdown extends StatelessWidget {
     final body = theme.textTheme.bodyLarge!.copyWith(color: colors.onSurface);
     return MarkdownBody(
       data: text,
-      selectable: true,
+      selectable: selectable,
       fitContent: false,
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: body,

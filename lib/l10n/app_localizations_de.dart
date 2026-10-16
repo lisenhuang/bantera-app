@@ -293,6 +293,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatNoChatsYet => 'Noch keine Chats.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Personen mit meiner Muttersprache ausblenden';
+
+  @override
   String get chatOnlineSection => 'Online';
 
   @override
@@ -2007,7 +2011,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Bitte um Bilder, um das Beschreiben zu üben. Dieses Gerät sucht Bilder im Web und nutzt bei Bedarf Wikimedia Commons. Die Bilder werden hier im Chat gespeichert. Tippe auf ein Bild zum Vergrößern oder Teilen und auf die Quelle für Nutzungsrechte. Suchthemen gehen an den Suchanbieter, Titel und Quellenlinks an die KI. Bilder werden nicht zu Bantera hochgeladen.';
+      'Die Bildsuche läuft auf diesem Gerät. Du kannst auch bis zu 4 Bilder aus Kamera, Fotos oder Dateien an eine Sprachnachricht anhängen. Anhänge und Sprache werden über Bantera zur Verarbeitung an die KI gesendet; Bantera speichert diese Bilder nicht auf seinen Servern. Kopien bleiben im Chatverlauf auf diesem Gerät. Tippe auf ein Bild zum Vergrößern. Webbilder enthalten Quellenlinks für Nutzungsrechte.';
 
   @override
   String get aiImagesRights => 'Nutzungsrechte bei der Quelle prüfen';
@@ -2095,4 +2099,31 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Nur bezahlter Schlüssel';
+
+  @override
+  String get aiAttachImages => 'Bilder anhängen';
+
+  @override
+  String get aiAttachmentHint =>
+      'Füge bis zu 4 Bilder hinzu und nimm dann eine Sprachnachricht auf.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Bilder sind während der Aufnahme gesperrt. Zum Ändern abbrechen.';
+
+  @override
+  String get aiAttachmentError =>
+      'Dieses Bild konnte nicht hinzugefügt werden. Versuche ein kleineres Foto oder ein anderes Bild.';
+
+  @override
+  String get aiCamera => 'Kamera';
+
+  @override
+  String get aiPhotos => 'Fotos';
+
+  @override
+  String get aiFiles => 'Dateien';
+
+  @override
+  String get aiRemoveImage => 'Bild entfernen';
 }

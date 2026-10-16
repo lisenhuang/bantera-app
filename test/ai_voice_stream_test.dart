@@ -6,6 +6,24 @@ import 'package:flutter/services.dart';
 import 'package:app/infrastructure/ai/ai_voice_stream.dart';
 
 void main() {
+  test(
+    'image turns cannot silently degrade on an old voice-only server',
+    () async {
+      final socket = _FailingSocket();
+      final stream = AiVoiceStream(
+        connect: () async => socket,
+        requiresImages: true,
+        onAudio: (_) async => fail('Must not answer without images'),
+        onReset: () async {},
+      );
+      socket.events.add(jsonEncode({'type': 'ready'}));
+      await expectLater(stream.send({}), throwsA(isA<AiVoiceFailure>()));
+      expect(stream.committed, false);
+      await stream.close();
+      await socket.events.close();
+    },
+  );
+
   test('no speech is a successful terminal result without playback', () async {
     final socket = _FailingSocket();
     final stream = AiVoiceStream(

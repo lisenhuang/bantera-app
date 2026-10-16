@@ -1,3 +1,4 @@
+import 'ai_image_composer.dart';
 import 'ai_vocabulary_screen.dart';
 import 'ai_image_cards.dart';
 import 'ai_message_markdown.dart';
@@ -6,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../l10n/app_localizations.dart';
 import 'ai_chat_controller.dart';
@@ -229,6 +231,85 @@ class _AiChatScreenState extends State<AiChatScreen>
     _player.dispose();
     _scroll.dispose();
     super.dispose();
+  }
+
+  Future<void> _messageActions(AiMessage message) async {
+    final l = AppLocalizations.of(context)!;
+    final remove = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (message.text.isNotEmpty || message.emojis.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.copy_outlined),
+                title: Text(MaterialLocalizations.of(context).copyButtonLabel),
+                onTap: () {
+                  Clipboard.setData(
+                    ClipboardData(
+                      text: [
+                        message.text,
+                        if (message.emojis.isNotEmpty) message.emojis.join(' '),
+                      ].where((text) => text.isNotEmpty).join('\n'),
+                    ),
+                  );
+                  Navigator.pop(context, false);
+                },
+              ),
+            ListTile(
+              leading: Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(l.chatDeleteMessage),
+              enabled: _chat.canDeleteMessage(message),
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (remove == true && mounted) await _deleteMessage(message);
+  }
+
+  Future<void> _deleteMessage(AiMessage message) async {
+    if (!_chat.canDeleteMessage(message)) return;
+    final l = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.chatDeleteMessageTitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l.deleteLabel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      if (_playing == message.id) {
+        await _player.stop();
+        _playing = null;
+      }
+      await _chat.deleteMessage(message);
+      _durations.remove(message.id);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.chatDeleteMessageFailed)));
+      }
+    }
   }
 
   Future<void> _clear() async {
@@ -740,20 +821,23 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
   }
 
-  Widget _composer(BuildContext context, AppLocalizations l) =>
-      VoiceMessageComposer(
-        enabled: _chat.recording || _chat.canRecord,
-        recording: _chat.recording,
-        remainingSeconds: _chat.recordingRemaining,
-        busyLabel: _chat.busy && !_chat.recording
-            ? (_chat.sendingVoice ? l.chatSendingAudio : l.aiReplying)
-            : null,
-        onStart: _startRecording,
-        onSend: () async {
-          unawaited(_chat.sendRecording());
-        },
-        onCancel: _chat.cancelRecording,
-      );
+  Widget _composer(BuildContext context, AppLocalizations l) => AiImageComposer(
+    chat: _chat,
+    child: VoiceMessageComposer(
+      embedded: true,
+      enabled: _chat.recording || (_chat.canRecord && !_chat.preparingImages),
+      recording: _chat.recording,
+      remainingSeconds: _chat.recordingRemaining,
+      busyLabel: _chat.busy && !_chat.recording
+          ? (_chat.sendingVoice ? l.chatSendingAudio : l.aiReplying)
+          : null,
+      onStart: _startRecording,
+      onSend: () async {
+        unawaited(_chat.sendRecording());
+      },
+      onCancel: _chat.cancelRecording,
+    ),
+  );
 
   String _durationLabel(Duration duration) =>
       '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -807,108 +891,114 @@ class _AiChatScreenState extends State<AiChatScreen>
     return Align(
       key: ValueKey(m.id),
       alignment: user ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 340),
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: user
-              ? colors.primary.withValues(alpha: .12)
-              : colors.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: colors.outlineVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (m.audio != null || receiving || (m.durationMs ?? 0) > 0)
-              ChatAudioHeader(
-                audioKey: m.audio == null ? null : _chat.store.path(m.audio!),
-                loadAudioPath: m.audio == null
-                    ? null
-                    : () async => _chat.store.path(m.audio!),
-                receiving: receiving,
-                playing: selected && _player.state == PlayerState.playing,
-                progress: progress,
-                duration: duration == null ? null : _durationLabel(duration),
-                playTooltip: l.aiPlayAudio,
-                onPlay: _chat.calling || _chat.busy || _chat.recording
-                    ? null
-                    : () => _play(m),
-                trailing: translationAction,
-              )
-            else if (translationAction != null)
-              Align(alignment: Alignment.centerRight, child: translationAction),
-            if (receiving)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(l.aiReplying, style: theme.textTheme.labelMedium),
-              ),
-            if (m.text.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: user
-                    ? SelectableText(
-                        m.text,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: colors.onSurface,
-                        ),
-                      )
-                    : AiMessageMarkdown(text: m.text),
-              ),
-            if (m.emojis.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: SelectableText(
-                  m.emojis.join(' '),
-                  style: theme.textTheme.headlineSmall,
-                ),
-              ),
-            if (_chat.visibleTranslations.contains(m.id) &&
-                m.translation.isNotEmpty) ...[
-              const Divider(height: 20),
-              if (user)
-                SelectableText(
-                  m.translation,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colors.onSurface,
-                  ),
+      child: GestureDetector(
+        onLongPress: () => _messageActions(m),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 340),
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: user
+                ? colors.primary.withValues(alpha: .12)
+                : colors.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: colors.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (m.audio != null || receiving || (m.durationMs ?? 0) > 0)
+                ChatAudioHeader(
+                  audioKey: m.audio == null ? null : _chat.store.path(m.audio!),
+                  loadAudioPath: m.audio == null
+                      ? null
+                      : () async => _chat.store.path(m.audio!),
+                  receiving: receiving,
+                  playing: selected && _player.state == PlayerState.playing,
+                  progress: progress,
+                  duration: duration == null ? null : _durationLabel(duration),
+                  playTooltip: l.aiPlayAudio,
+                  onPlay: _chat.calling || _chat.busy || _chat.recording
+                      ? null
+                      : () => _play(m),
+                  trailing: translationAction,
                 )
-              else
-                AiMessageMarkdown(text: m.translation),
-            ],
-            if (_chat.translating.contains(m.id))
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  l.chatTranslating,
-                  style: Theme.of(context).textTheme.labelSmall,
+              else if (translationAction != null)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: translationAction,
                 ),
-              ),
-            if (m.failed && !user)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  l.aiReplyInterrupted,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.error,
+              if (receiving)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(l.aiReplying, style: theme.textTheme.labelMedium),
+                ),
+              if (m.text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: user
+                      ? Text(
+                          m.text,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colors.onSurface,
+                          ),
+                        )
+                      : AiMessageMarkdown(text: m.text, selectable: false),
+                ),
+              if (m.emojis.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    m.emojis.join(' '),
+                    style: theme.textTheme.headlineSmall,
                   ),
                 ),
-              ),
-            if (m.failed && user && m.audio != null)
-              TextButton.icon(
-                onPressed: _chat.busy || _chat.calling
-                    ? null
-                    : () => _chat.retry(m),
-                icon: const Icon(Icons.refresh),
-                label: Text(l.onboardingRetry),
-              ),
-            if (m.webSearchStatus != null || m.sources.isNotEmpty)
-              AiSearchSources(message: m),
-            if (m.imageSearchStatus != null || m.images.isNotEmpty)
-              AiImageCards(message: m, path: _chat.store.path),
-            ChatMessageTimestamp(sentAt: m.createdAt),
-          ],
+              if (_chat.visibleTranslations.contains(m.id) &&
+                  m.translation.isNotEmpty) ...[
+                const Divider(height: 20),
+                if (user)
+                  Text(
+                    m.translation,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colors.onSurface,
+                    ),
+                  )
+                else
+                  AiMessageMarkdown(text: m.translation, selectable: false),
+              ],
+              if (_chat.translating.contains(m.id))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    l.chatTranslating,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
+              if (m.failed && !user)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    l.aiReplyInterrupted,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.error,
+                    ),
+                  ),
+                ),
+              if (m.failed && user && m.audio != null)
+                TextButton.icon(
+                  onPressed: _chat.busy || _chat.calling
+                      ? null
+                      : () => _chat.retry(m),
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l.onboardingRetry),
+                ),
+              if (m.webSearchStatus != null || m.sources.isNotEmpty)
+                AiSearchSources(message: m),
+              if (m.imageSearchStatus != null || m.images.isNotEmpty)
+                AiImageCards(message: m, path: _chat.store.path),
+              ChatMessageTimestamp(sentAt: m.createdAt),
+            ],
+          ),
         ),
       ),
     );

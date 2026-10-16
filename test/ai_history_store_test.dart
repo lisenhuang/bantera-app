@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
@@ -20,6 +21,64 @@ void main() {
   tearDown(() async {
     await root.delete(recursive: true);
   });
+  test(
+    'deletion survives reload, removes attachments and invalidates pending memory',
+    () async {
+      final store = AiHistoryStore('deletion');
+      await store.load();
+      final audio = await store.saveAudio(Uint8List.fromList([1, 2, 3]));
+      final image = await store.saveImage(
+        Uint8List.fromList([4, 5]),
+        'image/jpeg',
+        () => true,
+      );
+      final removed = AiMessage(
+        role: 'user',
+        text: 'Remove this secret',
+        audio: audio,
+        images: [
+          AiImageAttachment(
+            title: 'Photo',
+            url: '',
+            sourceUrl: '',
+            author: '',
+            license: '',
+            mime: 'image/jpeg',
+            userAttached: true,
+            file: image,
+          ),
+        ],
+      );
+      store.messages.add(removed);
+      store.messages.addAll(
+        List.generate(22, (i) => AiMessage(role: 'model', text: 'Keep $i')),
+      );
+      await store.save();
+      final originalId = store.conversationId;
+      final pending = Completer<Map<String, dynamic>>();
+      final summarizing = store.refreshMemory(
+        (_, _) => pending.future,
+        active: () => true,
+      );
+      await store.deleteMessage(removed);
+      pending.complete({'summary': 'Remove this secret'});
+      await summarizing;
+      expect(store.memory, isNull);
+      expect(store.conversationId, isNot(originalId));
+      expect(await File(store.path(audio)).exists(), isFalse);
+      expect(await File(store.path(image!)).exists(), isFalse);
+      final restored = AiHistoryStore('deletion');
+      await restored.load();
+      expect(restored.messages.length, 22);
+      expect(restored.messages.first.text, 'Keep 0');
+      expect(jsonEncode(restored.context()), isNot(contains('secret')));
+      expect(restored.memory, isNull);
+      expect(restored.conversationId, store.conversationId);
+      await restored.deleteMessage(removed); // Repeated deletion is harmless.
+      expect(restored.messages.length, 22);
+    },
+  );
+
   test(
     'history and audio stay isolated per account and clear removes both',
     () async {

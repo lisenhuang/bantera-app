@@ -293,6 +293,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get chatNoChatsYet => 'Belum ada chat.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Sembunyikan orang dengan bahasa ibu yang sama';
+
+  @override
   String get chatOnlineSection => 'Online';
 
   @override
@@ -1949,7 +1953,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Minta gambar untuk berlatih menjelaskan apa yang kamu lihat. Perangkat ini mencari gambar di web dan menggunakan Wikimedia Commons jika diperlukan. Gambar disimpan di sini bersama chat. Ketuk gambar untuk memperbesar atau membagikannya, dan sumbernya untuk melihat hak penggunaan. Topik dikirim ke layanan pencarian; judul dan tautan sumber ke AI. Gambar tidak diunggah ke Bantera.';
+      'Pencarian gambar berjalan di perangkat ini. Anda juga dapat melampirkan hingga 4 gambar dari Kamera, Foto, atau File ke pesan suara. Gambar dan suara dikirim melalui Bantera ke AI untuk diproses; Bantera tidak menyimpan gambar ini di servernya. Salinan tetap ada dalam riwayat chat perangkat ini. Ketuk gambar untuk memperbesar. Gambar web menyertakan tautan sumber untuk hak penggunaan.';
 
   @override
   String get aiImagesRights => 'Periksa hak penggunaan di sumber';
@@ -2037,4 +2041,31 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Hanya kunci berbayar';
+
+  @override
+  String get aiAttachImages => 'Lampirkan gambar';
+
+  @override
+  String get aiAttachmentHint =>
+      'Tambahkan hingga 4 gambar, lalu rekam pesan suara.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Gambar dikunci saat merekam. Batalkan untuk mengubahnya.';
+
+  @override
+  String get aiAttachmentError =>
+      'Gambar tidak dapat ditambahkan. Coba foto yang lebih kecil atau gambar lain.';
+
+  @override
+  String get aiCamera => 'Kamera';
+
+  @override
+  String get aiPhotos => 'Foto';
+
+  @override
+  String get aiFiles => 'File';
+
+  @override
+  String get aiRemoveImage => 'Hapus gambar';
 }

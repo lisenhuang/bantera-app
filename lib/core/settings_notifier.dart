@@ -23,6 +23,19 @@ class SettingsNotifier extends ChangeNotifier {
   String? _lastTranscriptionLocale;
   AppLocalePreference _appLocalePreference = AppLocalePreference.system;
   bool _isInitialized = false;
+  final Map<String, bool> _hideSameNativeSpeakers = {};
+
+  bool hideSameNativeSpeakers(String? owner) =>
+      owner != null && (_hideSameNativeSpeakers[owner] ?? false);
+
+  Future<void> setHideSameNativeSpeakers(String owner, bool value) async {
+    if (owner.isEmpty) return;
+    await initialize();
+    _hideSameNativeSpeakers[owner] = value;
+    notifyListeners();
+    await _persist();
+  }
+
   AudioLevel? _audioLevel;
   AudioLevel? get audioLevel => _audioLevel;
   Future<void> _pendingWrite = Future.value();
@@ -54,6 +67,15 @@ class SettingsNotifier extends ChangeNotifier {
         if (raw.isNotEmpty) {
           final decoded = jsonDecode(raw);
           if (decoded is Map<String, dynamic>) {
+            final discovery = decoded['hideSameNativeSpeakers'];
+            if (discovery is Map) {
+              for (final entry in discovery.entries) {
+                if (entry.key is String && entry.value is bool) {
+                  _hideSameNativeSpeakers[entry.key as String] =
+                      entry.value as bool;
+                }
+              }
+            }
             _audioLevel = AudioLevel.fromStorage(
               decoded['audioLevel'] as String?,
             );
@@ -186,6 +208,7 @@ class SettingsNotifier extends ChangeNotifier {
       await file.writeAsString(
         jsonEncode(<String, dynamic>{
           'audioLevel': _audioLevel?.name,
+          'hideSameNativeSpeakers': _hideSameNativeSpeakers,
           'themeMode': _themeMode.name,
           'notificationsEnabled': _notificationsEnabled,
           'lastTranscriptionLocale': _lastTranscriptionLocale,

@@ -16,10 +16,12 @@ class AiImageAttachment {
     required this.license,
     required this.mime,
     this.licenseUrl = '',
+    this.userAttached = false,
     this.file,
   });
   final String title, url, sourceUrl, author, license, licenseUrl, mime;
   final String? file;
+  final bool userAttached;
   AiImageAttachment saved(String name) => AiImageAttachment(
     title: title,
     url: url,
@@ -29,9 +31,11 @@ class AiImageAttachment {
     licenseUrl: licenseUrl,
     mime: mime,
     file: name,
+    userAttached: userAttached,
   );
   Map<String, dynamic> toJson({bool local = true}) => {
     'title': title,
+    if (local && userAttached) 'userAttached': true,
     'url': url,
     'sourceUrl': sourceUrl,
     'author': author,
@@ -44,11 +48,14 @@ class AiImageAttachment {
     if (value is! Map) return null;
     String field(String key) =>
         value[key] is String ? value[key] as String : '';
+    final userAttached = value['userAttached'] == true;
     final url = imageUrl(field('url'));
     final source = AiWebSource.safeUrl(field('sourceUrl'));
     final file = value['file'];
-    if (url == null ||
-        source == null ||
+    if ((!userAttached && (url == null || source == null)) ||
+        (userAttached &&
+            (file == null ||
+                !['image/jpeg', 'image/png'].contains(field('mime')))) ||
         !['image/jpeg', 'image/png', 'image/webp'].contains(field('mime')) ||
         field('title').isEmpty ||
         (file != null &&
@@ -58,8 +65,9 @@ class AiImageAttachment {
     }
     return AiImageAttachment(
       title: AiWebSource.short(field('title'), 180),
-      url: url.toString(),
-      sourceUrl: source.toString(),
+      url: userAttached ? '' : url.toString(),
+      sourceUrl: userAttached ? '' : source.toString(),
+      userAttached: userAttached,
       author: AiWebSource.short(field('author'), 300),
       license: AiWebSource.short(field('license'), 100),
       licenseUrl: AiWebSource.safeUrl(field('licenseUrl'))?.toString() ?? '',
@@ -81,6 +89,7 @@ class AiImageAttachment {
     licenseUrl: licenseUrl,
     mime: type,
     file: file,
+    userAttached: userAttached,
   );
 
   static Uri? imageUrl(String value) => AiWebSource.safeUrl(value);

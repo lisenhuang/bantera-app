@@ -119,6 +119,8 @@ class ChatMessageItem {
     required this.localTranslationStatus,
     required this.localTranslationLanguageCode,
     required this.isServerVisible,
+    this.audioSha256,
+    this.audioByteCount,
   });
 
   factory ChatMessageItem.fromJson(Map<String, dynamic> json) {
@@ -140,6 +142,8 @@ class ChatMessageItem {
       expiresAt: DateTime.tryParse(json['expiresAt']?.toString() ?? ''),
       isMine: json['isMine'] == true,
       audioUrl: json['audioUrl']?.toString() ?? '',
+      audioSha256: json['audioSha256']?.toString(),
+      audioByteCount: (json['audioByteCount'] as num?)?.toInt(),
       localAudioPath: null,
       localTranscriptText: null,
       localTranscriptStatus: null,
@@ -164,6 +168,8 @@ class ChatMessageItem {
   final DateTime? expiresAt;
   final bool isMine;
   final String audioUrl;
+  final String? audioSha256;
+  final int? audioByteCount;
   final String? localAudioPath;
   final String? localTranscriptText;
   final String? localTranscriptStatus;
@@ -200,6 +206,8 @@ class ChatMessageItem {
       expiresAt: expiresAt,
       isMine: isMine,
       audioUrl: audioUrl,
+      audioSha256: audioSha256,
+      audioByteCount: audioByteCount,
       localAudioPath: localAudioPath ?? this.localAudioPath,
       localTranscriptText: localTranscriptText ?? this.localTranscriptText,
       localTranscriptStatus:
@@ -356,8 +364,27 @@ class ChatBootstrap {
 }
 
 class DownloadedChatAudio {
-  const DownloadedChatAudio({required this.bytes, required this.contentType});
+  const DownloadedChatAudio({
+    required this.bytes,
+    required this.contentType,
+    this.sha256,
+    this.byteCount,
+  });
+
+  final String? sha256;
+  final int? byteCount;
 
   final List<int> bytes;
   final String contentType;
+}
+
+class ChatMessagePage {
+  const ChatMessagePage(
+    this.messages,
+    this.nextCursor, {
+    this.cursorBased = true,
+  });
+  final List<ChatMessageItem> messages;
+  final String? nextCursor;
+  final bool cursorBased;
 }

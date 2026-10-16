@@ -292,6 +292,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chatNoChatsYet => 'Чатов пока нет.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Скрыть людей с таким же родным языком';
+
+  @override
   String get chatOnlineSection => 'В сети';
 
   @override
@@ -2013,7 +2017,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Попросите изображения, чтобы практиковаться в описании увиденного. Устройство ищет изображения в интернете и при необходимости использует Wikimedia Commons. Изображения сохраняются здесь вместе с чатом. Нажмите на изображение, чтобы увеличить его или поделиться, а на источник, чтобы узнать права использования. Темы отправляются поисковому сервису, названия и ссылки — ИИ. Изображения не загружаются на Bantera.';
+      'Поиск изображений выполняется на этом устройстве. К голосовому сообщению можно прикрепить до 4 изображений из Камеры, Фото или Файлов. Изображения и голос передаются через Bantera в AI для обработки; Bantera не хранит эти изображения на своих серверах. Копии остаются в истории чата на устройстве. Нажмите на изображение для увеличения. Для изображений из интернета указаны ссылки на источники с правами использования.';
 
   @override
   String get aiImagesRights => 'Права использования смотрите в источнике';
@@ -2101,4 +2105,31 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Только платный ключ';
+
+  @override
+  String get aiAttachImages => 'Прикрепить изображения';
+
+  @override
+  String get aiAttachmentHint =>
+      'Добавьте до 4 изображений, затем запишите голосовое сообщение.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Во время записи изображения заблокированы. Отмените запись, чтобы изменить их.';
+
+  @override
+  String get aiAttachmentError =>
+      'Не удалось добавить изображение. Попробуйте фото поменьше или другое изображение.';
+
+  @override
+  String get aiCamera => 'Камера';
+
+  @override
+  String get aiPhotos => 'Фото';
+
+  @override
+  String get aiFiles => 'Файлы';
+
+  @override
+  String get aiRemoveImage => 'Удалить изображение';
 }

@@ -96,6 +96,7 @@
   "navProfile": "我的",
   "chatsTitle": "聊天",
   "chatNoChatsYet": "还没有聊天。",
+  "chatHideSameNativeSpeakers": "隐藏与我母语相同的人",
   "chatOnlineSection": "在线",
   "chatDirectMessagesSection": "私信",
   "chatAudioDuration": "音频 {duration}",
@@ -615,7 +616,7 @@
   "aiImagesSearching": "正在查找图片…",
   "aiImagesUnavailable": "暂时无法获取图片，请稍后重试。",
   "aiImageShare": "保存或分享图片",
-  "aiImagesHelp": "你可以请 AI 找图片，练习描述看到的内容。图片由此设备搜索网络，必要时改用 Wikimedia Commons，并保存在此设备的聊天记录中。点击图片可放大或分享，点击来源可查看使用权利。搜索主题会发送给搜索服务，标题和来源链接会发送给 AI。图片不会上传至 Bantera。",
+  "aiImagesHelp": "图片搜索在本机进行。你也可以从相机、照片或文件为语音消息添加最多4张图片。附件图片和语音会经由Bantera发送给AI处理；Bantera不会在服务器上存储这些图片。副本保留在本机聊天记录中。点击图片可放大。网络图片附有来源链接，供查看使用权限。",
   "aiImagesRights": "使用权限请查看来源",
   "vocabTitle": "词汇本",
   "vocabAdd": "添加词汇",
@@ -643,5 +644,13 @@
   "aiKeysDescription": "适用于 Gemini 课程和语音聊天。更改对新请求生效。管理员管理权限和密钥。",
   "aiKeysRegular": "仅使用常规密钥",
   "aiKeysFallback": "使用付费密钥作为备用",
-  "aiKeysPaidOnly": "仅使用付费密钥"
+  "aiKeysPaidOnly": "仅使用付费密钥",
+  "aiAttachImages": "添加图片",
+  "aiAttachmentHint": "最多添加4张图片，然后录制语音消息。",
+  "aiAttachmentLocked": "录音时图片已锁定。取消录音后可修改。",
+  "aiAttachmentError": "无法添加此图片。请尝试较小的照片或其他图片。",
+  "aiCamera": "相机",
+  "aiPhotos": "照片",
+  "aiFiles": "文件",
+  "aiRemoveImage": "移除图片"
 }

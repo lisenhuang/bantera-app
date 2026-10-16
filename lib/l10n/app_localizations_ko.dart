@@ -282,6 +282,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatNoChatsYet => '아직 채팅이 없습니다.';
 
   @override
+  String get chatHideSameNativeSpeakers => '모국어가 같은 사람 숨기기';
+
+  @override
   String get chatOnlineSection => '온라인';
 
   @override
@@ -1870,7 +1873,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '사진을 요청하고 보이는 것을 설명하는 연습을 해 보세요. 이 기기에서 웹 전체의 이미지를 검색하고 필요하면 Wikimedia Commons를 사용하며, 이미지는 이 기기의 채팅에 저장됩니다. 이미지를 눌러 확대하거나 공유하고, 출처에서 이용 권한을 확인하세요. 검색 주제는 검색 서비스에, 제목과 출처 링크는 AI에 전송됩니다. 이미지는 Bantera에 업로드되지 않습니다.';
+      '이미지 검색은 이 기기에서 실행됩니다. 카메라, 사진 또는 파일에서 최대 4장의 이미지를 음성 메시지에 첨부할 수 있습니다. 첨부 이미지와 음성은 Bantera를 통해 AI로 전송되어 처리되며, Bantera 서버에는 이 이미지가 저장되지 않습니다. 사본은 이 기기의 채팅 기록에 남습니다. 이미지를 탭하면 확대됩니다. 웹 이미지에는 이용 권한을 확인할 수 있는 출처 링크가 포함됩니다.';
 
   @override
   String get aiImagesRights => '이용 권한은 출처에서 확인하세요';
@@ -1958,4 +1961,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => '유료 키만 사용';
+
+  @override
+  String get aiAttachImages => '이미지 첨부';
+
+  @override
+  String get aiAttachmentHint => '이미지를 최대 4장 추가한 후 음성 메시지를 녹음하세요.';
+
+  @override
+  String get aiAttachmentLocked => '녹음 중에는 이미지를 변경할 수 없습니다. 변경하려면 녹음을 취소하세요.';
+
+  @override
+  String get aiAttachmentError => '이미지를 추가하지 못했습니다. 더 작은 사진이나 다른 이미지를 사용해 보세요.';
+
+  @override
+  String get aiCamera => '카메라';
+
+  @override
+  String get aiPhotos => '사진';
+
+  @override
+  String get aiFiles => '파일';
+
+  @override
+  String get aiRemoveImage => '이미지 삭제';
 }

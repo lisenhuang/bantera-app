@@ -89,6 +89,7 @@
   "navProfile": "Profilo",
   "chatsTitle": "Chat",
   "chatNoChatsYet": "Ancora nessuna chat.",
+  "chatHideSameNativeSpeakers": "Nascondi persone con la mia lingua madre",
   "chatOnlineSection": "Online",
   "chatDirectMessagesSection": "Messaggi",
   "chatAudioDuration": "Audio {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Ricerca di immagini…",
   "aiImagesUnavailable": "Immagini non disponibili. Riprova più tardi.",
   "aiImageShare": "Salva o condividi immagine",
-  "aiImagesHelp": "Chiedi immagini per esercitarti a descrivere ciò che vedi. Questo dispositivo cerca immagini sul web e usa Wikimedia Commons se necessario. Le immagini vengono salvate qui con la chat. Tocca un’immagine per ingrandirla o condividerla e la fonte per i diritti d’uso. I temi vanno al motore di ricerca; titoli e link delle fonti all’IA. Le immagini non vengono caricate su Bantera.",
+  "aiImagesHelp": "Le ricerche di immagini avvengono su questo dispositivo. Puoi allegare fino a 4 immagini da Fotocamera, Foto o File a un messaggio vocale. Immagini e voce vengono inviate all’IA tramite Bantera per l’elaborazione; Bantera non salva queste immagini sui propri server. Le copie restano nella cronologia di questo dispositivo. Tocca un’immagine per ingrandirla. Le immagini web includono link alle fonti per i diritti d’uso.",
   "aiImagesRights": "Verifica i diritti d’uso alla fonte",
   "vocabTitle": "Vocabolario",
   "vocabAdd": "Aggiungi parola",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Per lezioni e chat vocali Gemini. Le modifiche si applicano alle nuove richieste. L’amministratore gestisce accesso e chiave.",
   "aiKeysRegular": "Solo chiavi normali",
   "aiKeysFallback": "Chiave a pagamento come riserva",
-  "aiKeysPaidOnly": "Solo chiave a pagamento"
+  "aiKeysPaidOnly": "Solo chiave a pagamento",
+  "aiAttachImages": "Allega immagini",
+  "aiAttachmentHint": "Aggiungi fino a 4 immagini, poi registra un messaggio vocale.",
+  "aiAttachmentLocked": "Le immagini sono bloccate durante la registrazione. Annulla per modificarle.",
+  "aiAttachmentError": "Impossibile aggiungere questa immagine. Prova una foto più piccola o un’altra immagine.",
+  "aiCamera": "Fotocamera",
+  "aiPhotos": "Foto",
+  "aiFiles": "File",
+  "aiRemoveImage": "Rimuovi immagine"
 }

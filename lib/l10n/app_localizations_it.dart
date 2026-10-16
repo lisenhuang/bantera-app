@@ -293,6 +293,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get chatNoChatsYet => 'Ancora nessuna chat.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Nascondi persone con la mia lingua madre';
+
+  @override
   String get chatOnlineSection => 'Online';
 
   @override
@@ -2012,7 +2016,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Chiedi immagini per esercitarti a descrivere ciò che vedi. Questo dispositivo cerca immagini sul web e usa Wikimedia Commons se necessario. Le immagini vengono salvate qui con la chat. Tocca un’immagine per ingrandirla o condividerla e la fonte per i diritti d’uso. I temi vanno al motore di ricerca; titoli e link delle fonti all’IA. Le immagini non vengono caricate su Bantera.';
+      'Le ricerche di immagini avvengono su questo dispositivo. Puoi allegare fino a 4 immagini da Fotocamera, Foto o File a un messaggio vocale. Immagini e voce vengono inviate all’IA tramite Bantera per l’elaborazione; Bantera non salva queste immagini sui propri server. Le copie restano nella cronologia di questo dispositivo. Tocca un’immagine per ingrandirla. Le immagini web includono link alle fonti per i diritti d’uso.';
 
   @override
   String get aiImagesRights => 'Verifica i diritti d’uso alla fonte';
@@ -2100,4 +2104,31 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Solo chiave a pagamento';
+
+  @override
+  String get aiAttachImages => 'Allega immagini';
+
+  @override
+  String get aiAttachmentHint =>
+      'Aggiungi fino a 4 immagini, poi registra un messaggio vocale.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Le immagini sono bloccate durante la registrazione. Annulla per modificarle.';
+
+  @override
+  String get aiAttachmentError =>
+      'Impossibile aggiungere questa immagine. Prova una foto più piccola o un’altra immagine.';
+
+  @override
+  String get aiCamera => 'Fotocamera';
+
+  @override
+  String get aiPhotos => 'Foto';
+
+  @override
+  String get aiFiles => 'File';
+
+  @override
+  String get aiRemoveImage => 'Rimuovi immagine';
 }

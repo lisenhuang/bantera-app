@@ -1,3 +1,4 @@
+import '../../infrastructure/practice_audio_route.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
@@ -961,6 +962,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _playAllInBetweenCueGap = false;
       });
       unawaited(_savePracticeProgress());
+      await PracticeAudioRoute.prepare();
       await audioPlayer.resume();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -1004,6 +1006,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _playAllInBetweenCueGap = false;
       });
       unawaited(_savePracticeProgress());
+      await PracticeAudioRoute.prepare();
       await controller.play();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -1044,6 +1047,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       setState(() {
         _playAllInBetweenCueGap = false;
       });
+      await PracticeAudioRoute.prepare();
       await audioPlayer.resume();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -1084,6 +1088,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       setState(() {
         _playAllInBetweenCueGap = false;
       });
+      await PracticeAudioRoute.prepare();
       await controller.play();
     } finally {
       if (mounted && _playAllInBetweenCueGap) {
@@ -1119,6 +1124,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         mediaPositionMs: current?.inMilliseconds,
       );
       await _seekActivityAudio(audioPlayer, Duration(milliseconds: seekMs));
+      await PracticeAudioRoute.prepare();
       await audioPlayer.resume();
       setState(() => _isPlaying = true);
 
@@ -1294,6 +1300,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       }
     };
     controller.addListener(_videoListener!);
+    await PracticeAudioRoute.prepare();
     await controller.play();
     setState(() => _isPlaying = true);
   }
@@ -2527,6 +2534,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _logWordTap('seek via audio player: targetMs=$ms');
         await _seekActivityAudio(audioPlayer, target);
         if (!_isPlaying) {
+          await PracticeAudioRoute.prepare();
           await audioPlayer.resume();
           unawaited(WakelockPlus.enable());
           if (mounted) {
@@ -2542,6 +2550,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _logWordTap('seek via video controller: targetMs=$ms');
         await _seekActivityVideo(controller, target);
         if (!_isPlaying) {
+          await PracticeAudioRoute.prepare();
           await controller.play();
           unawaited(WakelockPlus.enable());
           if (mounted) {
@@ -3728,6 +3737,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           mediaPositionMs: rawMs,
         );
         await _seekActivityAudio(audioPlayer, Duration(milliseconds: seekMs));
+        await PracticeAudioRoute.prepare();
         await audioPlayer.resume();
         unawaited(WakelockPlus.enable());
         if (mounted) setState(() => _isPlaying = true);
@@ -3771,6 +3781,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       mediaPositionMs: rawMs,
     );
     await _seekActivityVideo(controller, Duration(milliseconds: seekMs));
+    await PracticeAudioRoute.prepare();
     await controller.play();
     unawaited(WakelockPlus.enable());
     if (mounted) {

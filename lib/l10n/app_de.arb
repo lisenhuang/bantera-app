@@ -89,6 +89,7 @@
   "navProfile": "Profil",
   "chatsTitle": "Chats",
   "chatNoChatsYet": "Noch keine Chats.",
+  "chatHideSameNativeSpeakers": "Personen mit meiner Muttersprache ausblenden",
   "chatOnlineSection": "Online",
   "chatDirectMessagesSection": "DMs",
   "chatAudioDuration": "Audio {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Bilder werden gesucht…",
   "aiImagesUnavailable": "Bilder nicht verfügbar. Versuche es später erneut.",
   "aiImageShare": "Bild speichern oder teilen",
-  "aiImagesHelp": "Bitte um Bilder, um das Beschreiben zu üben. Dieses Gerät sucht Bilder im Web und nutzt bei Bedarf Wikimedia Commons. Die Bilder werden hier im Chat gespeichert. Tippe auf ein Bild zum Vergrößern oder Teilen und auf die Quelle für Nutzungsrechte. Suchthemen gehen an den Suchanbieter, Titel und Quellenlinks an die KI. Bilder werden nicht zu Bantera hochgeladen.",
+  "aiImagesHelp": "Die Bildsuche läuft auf diesem Gerät. Du kannst auch bis zu 4 Bilder aus Kamera, Fotos oder Dateien an eine Sprachnachricht anhängen. Anhänge und Sprache werden über Bantera zur Verarbeitung an die KI gesendet; Bantera speichert diese Bilder nicht auf seinen Servern. Kopien bleiben im Chatverlauf auf diesem Gerät. Tippe auf ein Bild zum Vergrößern. Webbilder enthalten Quellenlinks für Nutzungsrechte.",
   "aiImagesRights": "Nutzungsrechte bei der Quelle prüfen",
   "vocabTitle": "Wortschatz",
   "vocabAdd": "Wort hinzufügen",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Gilt für Gemini-Lektionen und Sprachchats. Änderungen gelten für neue Anfragen. Der Administrator verwaltet Zugriff und Schlüssel.",
   "aiKeysRegular": "Nur reguläre Schlüssel",
   "aiKeysFallback": "Bezahlten Schlüssel als Ersatz nutzen",
-  "aiKeysPaidOnly": "Nur bezahlter Schlüssel"
+  "aiKeysPaidOnly": "Nur bezahlter Schlüssel",
+  "aiAttachImages": "Bilder anhängen",
+  "aiAttachmentHint": "Füge bis zu 4 Bilder hinzu und nimm dann eine Sprachnachricht auf.",
+  "aiAttachmentLocked": "Bilder sind während der Aufnahme gesperrt. Zum Ändern abbrechen.",
+  "aiAttachmentError": "Dieses Bild konnte nicht hinzugefügt werden. Versuche ein kleineres Foto oder ein anderes Bild.",
+  "aiCamera": "Kamera",
+  "aiPhotos": "Fotos",
+  "aiFiles": "Dateien",
+  "aiRemoveImage": "Bild entfernen"
 }

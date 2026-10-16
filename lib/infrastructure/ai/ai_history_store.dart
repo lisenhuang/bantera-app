@@ -321,6 +321,45 @@ class AiHistoryStore {
     });
   }
 
+  Future<void> deleteMessage(AiMessage message) async {
+    if (!messages.any((m) => m.id == message.id)) return;
+    messages.removeWhere((m) => m.id == message.id);
+    // A summary or resumed session may still contain the removed message.
+    // Rebuild future context from the remaining local history instead.
+    _memoryEpoch++;
+    _memory = null;
+    _memoryRetryAt = null;
+    conversationId = const Uuid().v4();
+    final identity = conversationId;
+    final invalidated = _enqueue(() async {
+      final memoryFile = File(path('memory.json'));
+      if (await memoryFile.exists()) await memoryFile.delete();
+      await File(path('conversation-id')).writeAsString(identity, flush: true);
+    });
+    final persisted = save();
+    await Future.wait([invalidated, persisted]);
+    // Delete attachments only after the history removal has reached disk.
+    await _enqueue(() async {
+      final retained = {
+        for (final m in messages) ...[
+          if (m.audio != null) m.audio!,
+          for (final image in m.images)
+            if (image.file != null) image.file!,
+        ],
+      };
+      final attachments = {
+        if (message.audio != null) message.audio!,
+        for (final image in message.images)
+          if (image.file != null) image.file!,
+      };
+      for (final name in attachments.difference(retained)) {
+        final file = File(path(name));
+        if (await file.exists()) await file.delete();
+        _audioDurations.remove(name);
+      }
+    });
+  }
+
   Future<void> clear() {
     _memoryEpoch++;
     conversationId = const Uuid().v4();
@@ -408,7 +447,9 @@ class AiHistoryStore {
         m.text,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final image in m.images)
-          '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
+          image.userAttached
+              ? '[User attached an image to this historical message; image pixels are not included in this history.]'
+              : '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
       ].join('\n');
       for (var offset = 0; offset < content.length;) {
         var end = (offset + 4000).clamp(0, content.length);
@@ -524,7 +565,9 @@ class AiHistoryStore {
         m.text,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final image in m.images)
-          '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
+          image.userAttached
+              ? '[User attached an image to this historical message; image pixels are not included in this history.]'
+              : '[Shared image: ${image.title}; source: ${image.sourceUrl}]',
       ].join('\n');
       final text = content.substring(0, content.length.clamp(0, 2000));
       if (text.length > budget) break;

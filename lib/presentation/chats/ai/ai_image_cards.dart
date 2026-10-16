@@ -43,7 +43,7 @@ class AiImageCards extends StatelessWidget {
     ),
   );
 
-  void _open(BuildContext context, AiImageAttachment image) {
+  void openPreview(BuildContext context, AiImageAttachment image) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -108,22 +108,24 @@ class AiImageCards extends StatelessWidget {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          [
-                            image.author,
-                            image.license.isEmpty
-                                ? l.aiImagesRights
-                                : image.license,
-                          ].where((v) => v.isNotEmpty).join(' · '),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        TextButton.icon(
-                          onPressed: () => _source(image.sourceUrl),
-                          icon: const Icon(Icons.open_in_new, size: 18),
-                          label: Text(image.sourceName),
-                        ),
+                        if (!image.userAttached)
+                          Text(
+                            [
+                              image.author,
+                              image.license.isEmpty
+                                  ? l.aiImagesRights
+                                  : image.license,
+                            ].where((v) => v.isNotEmpty).join(' · '),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        if (!image.userAttached)
+                          TextButton.icon(
+                            onPressed: () => _source(image.sourceUrl),
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: Text(image.sourceName),
+                          ),
                       ],
                     ),
                   ),
@@ -175,7 +177,7 @@ class AiImageCards extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: () => _open(context, image),
+                    onTap: () => openPreview(context, image),
                     child: _picture(context, image),
                   ),
                   Padding(
@@ -187,24 +189,26 @@ class AiImageCards extends StatelessWidget {
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-                    child: Text(
-                      [
-                        image.author,
-                        image.license.isEmpty
-                            ? l.aiImagesRights
-                            : image.license,
-                      ].where((v) => v.isNotEmpty).join(' · '),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
+                  if (!image.userAttached)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                      child: Text(
+                        [
+                          image.author,
+                          image.license.isEmpty
+                              ? l.aiImagesRights
+                              : image.license,
+                        ].where((v) => v.isNotEmpty).join(' · '),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => _source(image.sourceUrl),
-                    child: Text(image.sourceName),
-                  ),
+                  if (!image.userAttached)
+                    TextButton(
+                      onPressed: () => _source(image.sourceUrl),
+                      child: Text(image.sourceName),
+                    ),
                 ],
               ),
             ),

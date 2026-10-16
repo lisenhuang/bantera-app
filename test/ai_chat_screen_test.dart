@@ -12,6 +12,11 @@ import 'package:app/core/theme.dart';
 class _TranslationController extends AiChatController {
   _TranslationController(super.store) : super.forTesting();
   final translationRequests = <bool>[];
+  Future<void>? deletion;
+  @override
+  Future<void> deleteMessage(AiMessage message) =>
+      deletion = super.deleteMessage(message);
+
   int sentRecordings = 0,
       cancelledRecordings = 0,
       cancelRequests = 0,
@@ -216,9 +221,9 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final transcript = tester.widget<SelectableText>(
+        final transcript = tester.widget<Text>(
           find.byWidgetPredicate(
-            (w) => w is SelectableText && w.data == 'I live in Auckland.',
+            (w) => w is Text && w.data == 'I live in Auckland.',
           ),
         );
         expect(transcript.style!.color, theme.colorScheme.onSurface);
@@ -422,6 +427,47 @@ void main() {
       await tester.pumpAndSettle();
       expect(store.messages, isEmpty);
       expect(tester.takeException(), isNull);
+      // Long-pressing either side exposes deletion, while cancellation keeps it.
+      for (final role in ['user', 'model']) {
+        final message = AiMessage(role: role, text: 'Delete $role bubble');
+        store.messages.add(message);
+        controller.changed();
+        await tester.pumpAndSettle();
+        controller.busy = true;
+        expect(controller.canDeleteMessage(message), isFalse);
+        controller.busy = false;
+        expect(
+          controller.canDeleteMessage(message),
+          isTrue,
+          reason:
+              'loaded=${controller.loaded} available=${controller.available} calling=${controller.calling} recording=${controller.recording}',
+        );
+        await tester.longPress(find.text('Delete $role bubble'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete message'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+        await tester.pumpAndSettle();
+        expect(store.messages, contains(message));
+        await tester.longPress(find.text('Delete $role bubble'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete message'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+        await tester.pump();
+        var deletionDone = false;
+        controller.deletion!.then((_) => deletionDone = true);
+        for (var attempt = 0; attempt < 100 && !deletionDone; attempt++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(deletionDone, isTrue);
+        await tester.pumpAndSettle();
+        expect(find.text('Delete $role bubble'), findsNothing);
+        expect(store.messages, isEmpty);
+      }
       await tester.pumpWidget(const SizedBox.shrink());
       final longHistory = AiHistoryStore('scroll-test');
       for (var i = 0; i < 100; i++) {

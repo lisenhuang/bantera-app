@@ -21,6 +21,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   private var answers: [UUID: CXAnswerCallAction] = [:]
   private var outgoing = Set<UUID>()
   private var token: String?
+  var hasCalls: Bool { !calls.isEmpty }
   private var audioActive = false
   var onAiAudioPreparing: (() -> Void)?
   var onAiAudioActivated: (() throws -> Void)?

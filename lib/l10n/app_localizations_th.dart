@@ -292,6 +292,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get chatNoChatsYet => 'ยังไม่มีแชท';
 
   @override
+  String get chatHideSameNativeSpeakers => 'ซ่อนผู้ที่มีภาษาแม่เดียวกับฉัน';
+
+  @override
   String get chatOnlineSection => 'ออนไลน์';
 
   @override
@@ -1929,7 +1932,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'ขอรูปภาพเพื่อฝึกบรรยายสิ่งที่เห็น อุปกรณ์นี้ค้นหารูปภาพบนเว็บและใช้ Wikimedia Commons เมื่อจำเป็น รูปภาพจะบันทึกไว้ที่นี่พร้อมแชท แตะรูปเพื่อขยายหรือแชร์ และแตะแหล่งที่มาเพื่อตรวจสอบสิทธิ์การใช้งาน หัวข้อจะส่งไปยังบริการค้นหา ส่วนชื่อภาพและลิงก์แหล่งที่มาจะส่งให้ AI รูปภาพจะไม่อัปโหลดไปยัง Bantera';
+      'การค้นหารูปภาพทำบนอุปกรณ์นี้ คุณสามารถแนบรูปภาพได้สูงสุด 4 รูปจากกล้อง รูปภาพ หรือไฟล์ไปกับข้อความเสียง รูปภาพและเสียงจะส่งผ่าน Bantera ไปให้ AI ประมวลผล โดย Bantera ไม่เก็บรูปภาพเหล่านี้ไว้บนเซิร์ฟเวอร์ สำเนาจะอยู่ในประวัติแชตบนอุปกรณ์นี้ แตะรูปเพื่อขยาย รูปจากเว็บมีลิงก์แหล่งที่มาให้ตรวจสอบสิทธิ์การใช้งาน';
 
   @override
   String get aiImagesRights => 'ตรวจสอบสิทธิ์การใช้งานจากแหล่งที่มา';
@@ -2017,4 +2020,31 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'ใช้คีย์แบบชำระเงินเท่านั้น';
+
+  @override
+  String get aiAttachImages => 'แนบรูปภาพ';
+
+  @override
+  String get aiAttachmentHint =>
+      'เพิ่มรูปภาพได้สูงสุด 4 รูป แล้วบันทึกข้อความเสียง';
+
+  @override
+  String get aiAttachmentLocked =>
+      'รูปภาพถูกล็อกระหว่างบันทึกเสียง ยกเลิกการบันทึกเพื่อเปลี่ยนรูป';
+
+  @override
+  String get aiAttachmentError =>
+      'เพิ่มรูปภาพนี้ไม่ได้ ลองใช้รูปที่เล็กลงหรือรูปอื่น';
+
+  @override
+  String get aiCamera => 'กล้อง';
+
+  @override
+  String get aiPhotos => 'รูปภาพ';
+
+  @override
+  String get aiFiles => 'ไฟล์';
+
+  @override
+  String get aiRemoveImage => 'ลบรูปภาพ';
 }

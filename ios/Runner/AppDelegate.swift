@@ -89,6 +89,11 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    FlutterMethodChannel(name: "bantera/media_audio", binaryMessenger: callEngine.binaryMessenger).setMethodCallHandler { [weak self] call, result in
+      guard call.method == "preparePlayback" else { result(FlutterMethodNotImplemented); return }
+      do { try self?.prepareMediaPlayback(); result(nil) }
+      catch { result(FlutterError(code: "playback_route", message: "Could not start playback.", details: nil)) }
+    }
     waveformBridge = BanteraWaveformBridge(messenger: callEngine.binaryMessenger)
     practiceWidgetBridge = BanteraPracticeWidgetBridge(messenger: callEngine.binaryMessenger)
     aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)
@@ -118,6 +123,17 @@ import UserNotifications
       initialNotification: pendingNotificationTap
     )
     pendingNotificationTap = nil
+  }
+
+  func prepareMediaPlayback() throws {
+    guard !callKit.hasCalls, aiAudioBridge?.ownsCallAudio != true else {
+      throw NSError(domain: "BanteraAudio", code: 2)
+    }
+    let session = AVAudioSession.sharedInstance()
+    // Calls leave voiceChat/playAndRecord configured. Restore both at every
+    // cue start, without forcing audio away from connected headphones.
+    try session.setCategory(.playback, mode: .default, options: [])
+    try session.setActive(true)
   }
 
   private static func notificationPayload(from userInfo: [AnyHashable: Any]) -> [String: String] {
@@ -2439,6 +2455,7 @@ private extension AVAssetExportSession {
 
 // Full-duplex PCM for Bantera AI. All player state is confined to the main queue.
 final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
+  var ownsCallAudio: Bool { callKitManaged || phoneAudio != nil }
   private var callKitManaged = false
   private var phoneAudio: BanteraPhoneAudio?
   private var routeObserver: NSObjectProtocol?

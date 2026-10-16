@@ -293,6 +293,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatNoChatsYet => 'No chats yet.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Hide people with my native language';
+
+  @override
   String get chatOnlineSection => 'Online';
 
   @override
@@ -2008,7 +2012,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Ask for pictures to practise describing what you see. Images are searched across the web on this device, with Wikimedia Commons as a fallback, and saved with your chat here. Tap an image to enlarge or share it, and its source for usage rights. Topics go to the search provider; titles and source links go to AI. Images are not uploaded to Bantera.';
+      'Image searches run on this device. You can also attach up to 4 images to a voice message from Camera, Photos or Files. Attached images and voice are sent through Bantera to the AI for processing; Bantera does not store these images on its servers. Copies stay in this device’s chat history. Tap an image to enlarge it. Web images include source links for usage rights.';
 
   @override
   String get aiImagesRights => 'Check source for usage rights';
@@ -2096,4 +2100,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Paid key only';
+
+  @override
+  String get aiAttachImages => 'Attach images';
+
+  @override
+  String get aiAttachmentHint =>
+      'Add up to 4 images, then record a voice message.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'Images are locked while recording. Cancel to change them.';
+
+  @override
+  String get aiAttachmentError =>
+      'Could not add this image. Try a smaller photo or another image.';
+
+  @override
+  String get aiCamera => 'Camera';
+
+  @override
+  String get aiPhotos => 'Photos';
+
+  @override
+  String get aiFiles => 'Files';
+
+  @override
+  String get aiRemoveImage => 'Remove image';
 }

@@ -661,6 +661,12 @@ abstract class AppLocalizations {
   /// **'No chats yet.'**
   String get chatNoChatsYet;
 
+  /// No description provided for @chatHideSameNativeSpeakers.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide people with my native language'**
+  String get chatHideSameNativeSpeakers;
+
   /// No description provided for @chatOnlineSection.
   ///
   /// In en, this message translates to:
@@ -3557,7 +3563,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiImagesHelp.
   ///
   /// In en, this message translates to:
-  /// **'Ask for pictures to practise describing what you see. Images are searched across the web on this device, with Wikimedia Commons as a fallback, and saved with your chat here. Tap an image to enlarge or share it, and its source for usage rights. Topics go to the search provider; titles and source links go to AI. Images are not uploaded to Bantera.'**
+  /// **'Image searches run on this device. You can also attach up to 4 images to a voice message from Camera, Photos or Files. Attached images and voice are sent through Bantera to the AI for processing; Bantera does not store these images on its servers. Copies stay in this device’s chat history. Tap an image to enlarge it. Web images include source links for usage rights.'**
   String get aiImagesHelp;
 
   /// No description provided for @aiImagesRights.
@@ -3727,6 +3733,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paid key only'**
   String get aiKeysPaidOnly;
+
+  /// No description provided for @aiAttachImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach images'**
+  String get aiAttachImages;
+
+  /// No description provided for @aiAttachmentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add up to 4 images, then record a voice message.'**
+  String get aiAttachmentHint;
+
+  /// No description provided for @aiAttachmentLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Images are locked while recording. Cancel to change them.'**
+  String get aiAttachmentLocked;
+
+  /// No description provided for @aiAttachmentError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add this image. Try a smaller photo or another image.'**
+  String get aiAttachmentError;
+
+  /// No description provided for @aiCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get aiCamera;
+
+  /// No description provided for @aiPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get aiPhotos;
+
+  /// No description provided for @aiFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get aiFiles;
+
+  /// No description provided for @aiRemoveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get aiRemoveImage;
 }
 
 class _AppLocalizationsDelegate

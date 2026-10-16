@@ -89,6 +89,7 @@
   "navProfile": "Perfil",
   "chatsTitle": "Conversas",
   "chatNoChatsYet": "Nenhuma conversa ainda.",
+  "chatHideSameNativeSpeakers": "Ocultar pessoas com a minha língua materna",
   "chatOnlineSection": "Online",
   "chatDirectMessagesSection": "DM",
   "chatAudioDuration": "Áudio {duration}",
@@ -580,7 +581,7 @@
   "aiImagesSearching": "Buscando imagens…",
   "aiImagesUnavailable": "Imagens indisponíveis. Tente novamente mais tarde.",
   "aiImageShare": "Salvar ou compartilhar imagem",
-  "aiImagesHelp": "Peça imagens para praticar a descrição do que vê. Este dispositivo pesquisa imagens na web e usa o Wikimedia Commons como alternativa. As imagens ficam guardadas aqui com a conversa. Toque numa imagem para ampliar ou partilhar e na fonte para consultar os direitos de utilização. Os temas vão para o motor de pesquisa; os títulos e links das fontes para a IA. As imagens não são enviadas para o Bantera.",
+  "aiImagesHelp": "As pesquisas de imagens são feitas neste dispositivo. Pode anexar até 4 imagens da Câmara, Fotos ou Ficheiros a uma mensagem de voz. As imagens e a voz são enviadas através do Bantera para a IA processar; o Bantera não guarda estas imagens nos seus servidores. As cópias ficam no histórico deste dispositivo. Toque numa imagem para ampliar. As imagens da web incluem ligações às fontes para consultar os direitos de utilização.",
   "aiImagesRights": "Consulte os direitos de utilização na fonte",
   "vocabTitle": "Vocabulário",
   "vocabAdd": "Adicionar palavra",
@@ -608,5 +609,13 @@
   "aiKeysDescription": "Aplica-se a aulas e conversas por voz Gemini. As alterações valem para novos pedidos. O administrador gere o acesso e a chave.",
   "aiKeysRegular": "Apenas chaves normais",
   "aiKeysFallback": "Chave paga como alternativa",
-  "aiKeysPaidOnly": "Apenas chave paga"
+  "aiKeysPaidOnly": "Apenas chave paga",
+  "aiAttachImages": "Anexar imagens",
+  "aiAttachmentHint": "Adicione até 4 imagens e grave uma mensagem de voz.",
+  "aiAttachmentLocked": "As imagens ficam bloqueadas durante a gravação. Cancele para alterá-las.",
+  "aiAttachmentError": "Não foi possível adicionar esta imagem. Tente uma foto menor ou outra imagem.",
+  "aiCamera": "Câmara",
+  "aiPhotos": "Fotos",
+  "aiFiles": "Ficheiros",
+  "aiRemoveImage": "Remover imagem"
 }

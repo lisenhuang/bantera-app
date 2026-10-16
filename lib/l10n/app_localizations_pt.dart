@@ -293,6 +293,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get chatNoChatsYet => 'Nenhuma conversa ainda.';
 
   @override
+  String get chatHideSameNativeSpeakers =>
+      'Ocultar pessoas com a minha língua materna';
+
+  @override
   String get chatOnlineSection => 'Online';
 
   @override
@@ -2007,7 +2011,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      'Peça imagens para praticar a descrição do que vê. Este dispositivo pesquisa imagens na web e usa o Wikimedia Commons como alternativa. As imagens ficam guardadas aqui com a conversa. Toque numa imagem para ampliar ou partilhar e na fonte para consultar os direitos de utilização. Os temas vão para o motor de pesquisa; os títulos e links das fontes para a IA. As imagens não são enviadas para o Bantera.';
+      'As pesquisas de imagens são feitas neste dispositivo. Pode anexar até 4 imagens da Câmara, Fotos ou Ficheiros a uma mensagem de voz. As imagens e a voz são enviadas através do Bantera para a IA processar; o Bantera não guarda estas imagens nos seus servidores. As cópias ficam no histórico deste dispositivo. Toque numa imagem para ampliar. As imagens da web incluem ligações às fontes para consultar os direitos de utilização.';
 
   @override
   String get aiImagesRights => 'Consulte os direitos de utilização na fonte';
@@ -2095,4 +2099,31 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => 'Apenas chave paga';
+
+  @override
+  String get aiAttachImages => 'Anexar imagens';
+
+  @override
+  String get aiAttachmentHint =>
+      'Adicione até 4 imagens e grave uma mensagem de voz.';
+
+  @override
+  String get aiAttachmentLocked =>
+      'As imagens ficam bloqueadas durante a gravação. Cancele para alterá-las.';
+
+  @override
+  String get aiAttachmentError =>
+      'Não foi possível adicionar esta imagem. Tente uma foto menor ou outra imagem.';
+
+  @override
+  String get aiCamera => 'Câmara';
+
+  @override
+  String get aiPhotos => 'Fotos';
+
+  @override
+  String get aiFiles => 'Ficheiros';
+
+  @override
+  String get aiRemoveImage => 'Remover imagem';
 }

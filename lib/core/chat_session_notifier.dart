@@ -8,6 +8,7 @@ import '../domain/models/chat_models.dart';
 import '../domain/models/models.dart';
 import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
+import '../infrastructure/chat_audio_integrity.dart';
 import '../infrastructure/callkit_service.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../infrastructure/push_notifications_service.dart';
@@ -334,15 +335,19 @@ class ChatSessionNotifier extends ChangeNotifier {
         _pendingDmSync.remove(threadId);
         try {
           var offset = 0;
+          String? cursor;
+          final cursors = <String>{};
           while (AuthSessionNotifier.instance.session?.cacheKey == owner &&
               cacheEpoch == _cacheEpoch) {
-            final messages = await _withRetry(
-              (token) => _apiClient.fetchMessages(
+            final page = await _withRetry(
+              (token) => _apiClient.fetchDirectMessagePage(
                 accessToken: token,
                 threadId: threadId,
                 offset: offset,
+                cursor: cursor,
               ),
             );
+            final messages = page.messages;
             if (AuthSessionNotifier.instance.session?.cacheKey != owner ||
                 cacheEpoch != _cacheEpoch) {
               break;
@@ -369,8 +374,13 @@ class ChatSessionNotifier extends ChangeNotifier {
                 );
               }
             }
-            if (messages.length < 100) break;
-            offset += messages.length;
+            if (page.cursorBased) {
+              cursor = page.nextCursor;
+              if (cursor == null || !cursors.add(cursor)) break;
+            } else {
+              if (messages.length < 100) break;
+              offset += messages.length;
+            }
           }
         } catch (error) {
           debugPrint('[ChatCache] Sync deferred: ${error.runtimeType}');
@@ -413,21 +423,52 @@ class ChatSessionNotifier extends ChangeNotifier {
     final existingPath = await _localRepository.resolveAudioPath(
       current?.localAudioPath ?? message.localAudioPath,
     );
+    var expectedSha = message.audioSha256;
+    var expectedBytes = message.audioByteCount;
+    final recipient = !message.isMine && message.isDirectMessage;
     File? file;
     if (existingPath != null && await File(existingPath).exists()) {
       file = File(existingPath);
     }
-    if (file == null) {
+    if (file != null && recipient && expectedSha != null) {
+      try {
+        await ChatAudioIntegrity.verifyFile(
+          file,
+          expectedBytes: expectedBytes,
+          expectedSha256: expectedSha,
+        );
+      } catch (_) {
+        file = null;
+      }
+    }
+    // Older cached messages need the server's original integrity metadata once.
+    if (file == null ||
+        (recipient && expectedSha == null && message.isServerVisible)) {
       if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
         throw const SessionExpiredException();
       }
-      final downloaded = await _withRetry(
-        (token) => _apiClient.downloadMessageAudio(
-          accessToken: token,
-          messageId: message.messageId,
-          image: message.isImage,
-        ),
-      );
+      DownloadedChatAudio downloaded;
+      try {
+        downloaded = await _withRetry(
+          (token) => _apiClient.downloadMessageAudio(
+            accessToken: token,
+            messageId: message.messageId,
+            image: message.isImage,
+          ),
+        );
+      } catch (_) {
+        // A lost receipt response may leave a saved message marked visible after
+        // the server already deleted it. Keep offline playback available while
+        // metadata refresh is unavailable, without acknowledging unverified data.
+        if (file == null ||
+            expectedSha != null ||
+            AuthSessionNotifier.instance.session?.cacheKey != owner ||
+            _deletedMessageIds.contains(message.messageId)) {
+          rethrow;
+        }
+        await ChatAudioIntegrity.verifyFile(file);
+        return file;
+      }
       if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
         throw const SessionExpiredException();
       }
@@ -437,6 +478,13 @@ class ChatSessionNotifier extends ChangeNotifier {
           message: 'This message was deleted.',
         );
       }
+      expectedSha ??= downloaded.sha256;
+      expectedBytes ??= downloaded.byteCount;
+      ChatAudioIntegrity.verifyBytes(
+        downloaded.bytes,
+        expectedBytes: expectedBytes,
+        expectedSha256: expectedSha,
+      );
       final storedReference = await _localRepository.storeAudioBytes(
         messageId: message.messageId,
         bytes: downloaded.bytes,
@@ -464,22 +512,53 @@ class ChatSessionNotifier extends ChangeNotifier {
       );
       file = File((await _localRepository.resolveAudioPath(storedReference))!);
     }
-    // Acknowledge only after durable storage. Retry a failed receipt even when
-    // the file was already cached on an earlier pass.
-    if (!message.isMine &&
-        message.isDirectMessage &&
-        message.expiresAt == null &&
+    // Read the durable file back and confirm its local database reference before
+    // permitting deletion of the only server copy.
+    if (recipient &&
+        message.isServerVisible &&
         AuthSessionNotifier.instance.session?.cacheKey == owner) {
-      try {
-        await _withRetry<void>(
-          (token) => _apiClient.acknowledgeMessageReceived(
-            accessToken: token,
-            messageId: message.messageId,
-          ),
-        );
-      } catch (error) {
-        debugPrint('[ChatCache] Receipt deferred: ${error.runtimeType}');
-      }
+      await ChatAudioIntegrity.confirmSaved(
+        file: file,
+        expectedBytes: expectedBytes,
+        expectedSha256: expectedSha,
+        isCommitted: () async {
+          final saved = await _localRepository.getMessage(
+            message.messageId,
+            ownerCacheKey: owner,
+          );
+          return await _localRepository.resolveAudioPath(
+                saved?.localAudioPath,
+              ) ==
+              file!.path;
+        },
+        acknowledge: () async {
+          if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
+            throw const SessionExpiredException();
+          }
+          try {
+            if (expectedSha != null && expectedBytes != null) {
+              await _withRetry<void>(
+                (token) => _apiClient.acknowledgeVerifiedMessage(
+                  accessToken: token,
+                  messageId: message.messageId,
+                  sha256: expectedSha!,
+                  byteCount: expectedBytes!,
+                ),
+              );
+              await _localRepository.markMessageExpired(message.messageId);
+            } else if (message.expiresAt == null) {
+              await _withRetry<void>(
+                (token) => _apiClient.acknowledgeMessageReceived(
+                  accessToken: token,
+                  messageId: message.messageId,
+                ),
+              );
+            }
+          } catch (error) {
+            debugPrint('[ChatCache] Receipt deferred: ${error.runtimeType}');
+          }
+        },
+      );
     }
     if (AuthSessionNotifier.instance.session?.cacheKey != owner) {
       throw const SessionExpiredException();

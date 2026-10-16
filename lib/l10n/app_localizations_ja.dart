@@ -280,6 +280,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatNoChatsYet => 'まだチャットがありません。';
 
   @override
+  String get chatHideSameNativeSpeakers => '母語が同じ人を非表示';
+
+  @override
   String get chatOnlineSection => 'オンライン';
 
   @override
@@ -1859,7 +1862,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiImagesHelp =>
-      '画像をリクエストして、見えるものを説明する練習ができます。この端末でウェブ上の画像を検索し、必要に応じて Wikimedia Commons を使います。画像は端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典から利用条件を確認できます。検索テーマは検索サービスに、タイトルと出典リンクは AI に送信されます。画像は Bantera にアップロードされません。';
+      '画像検索はこの端末で行われます。カメラ、写真、ファイルから最大4枚の画像を音声メッセージに添付できます。添付画像と音声はBanteraを経由してAIに送信され、処理されます。Banteraのサーバーにこれらの画像は保存されません。コピーはこの端末のチャット履歴に残ります。画像をタップすると拡大できます。ウェブ画像には利用権限を確認できる出典リンクが付きます。';
 
   @override
   String get aiImagesRights => '利用条件は出典で確認してください';
@@ -1947,4 +1950,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiKeysPaidOnly => '有料キーのみ';
+
+  @override
+  String get aiAttachImages => '画像を添付';
+
+  @override
+  String get aiAttachmentHint => '画像を4枚まで追加してから、音声メッセージを録音してください。';
+
+  @override
+  String get aiAttachmentLocked => '録音中は画像を変更できません。変更するには録音をキャンセルしてください。';
+
+  @override
+  String get aiAttachmentError => '画像を追加できませんでした。小さい写真か別の画像をお試しください。';
+
+  @override
+  String get aiCamera => 'カメラ';
+
+  @override
+  String get aiPhotos => '写真';
+
+  @override
+  String get aiFiles => 'ファイル';
+
+  @override
+  String get aiRemoveImage => '画像を削除';
 }

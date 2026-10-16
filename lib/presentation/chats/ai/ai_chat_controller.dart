@@ -1,3 +1,4 @@
+import '../../../infrastructure/ai/ai_image_input.dart';
 import '../../../infrastructure/ai/ai_vocabulary.dart';
 import '../../../infrastructure/ai/ai_emoji_tool.dart';
 import '../../../infrastructure/ai/ai_search_capabilities.dart';
@@ -159,7 +160,9 @@ class AiChatController extends ChangeNotifier {
   bool _recordStarting = false, _waitingToSend = false;
   Future<void> _replyAudioWork = Future.value();
   int _replyPlayedFrames = 0;
+  bool _deletingMessage = false;
   bool get canRecord =>
+      !_deletingMessage &&
       _endingCall == null &&
       available &&
       loaded &&
@@ -323,6 +326,7 @@ class AiChatController extends ChangeNotifier {
 
   void _accountChanged() {
     if (!available) {
+      _clearDraftImages();
       _epoch++;
       _webSearch.cancel();
       _imageSearch.cancel();
@@ -343,8 +347,76 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  final List<AiImageAttachment> _draftImages = [];
+  List<AiImageAttachment> get draftImages => List.unmodifiable(_draftImages);
+  bool preparingImages = false;
+  bool get canEditImages => canRecord && !preparingImages;
+
+  Future<void> attachImages(List<String> paths) async {
+    if (!canEditImages) return;
+    preparingImages = true;
+    final epoch = _epoch;
+    changed();
+    try {
+      for (final path in paths.take(
+        AiImageInput.maxCount - _draftImages.length,
+      )) {
+        final prepared = await AiImageInput.prepare(path);
+        final file = await store.saveImage(
+          prepared.bytes,
+          prepared.mime,
+          () => available && epoch == _epoch && !_disposed,
+        );
+        if (file == null) return;
+        _draftImages.add(
+          AiImageAttachment(
+            title: 'Image',
+            url: '',
+            sourceUrl: '',
+            author: '',
+            license: '',
+            mime: prepared.mime,
+            file: file,
+            userAttached: true,
+          ),
+        );
+      }
+    } finally {
+      preparingImages = false;
+      changed();
+    }
+  }
+
+  void removeDraftImage(AiImageAttachment image) {
+    if (!canEditImages) return;
+    _draftImages.remove(image);
+    if (image.file != null) {
+      unawaited(
+        File(
+          store.path(image.file!),
+        ).delete().then<void>((_) {}).catchError((Object _) {}),
+      );
+    }
+    changed();
+  }
+
+  Future<List<Map<String, String>>> _imagePayload(AiMessage message) async {
+    return Future.wait(
+      message.images
+          .where((i) => i.userAttached)
+          .map(
+            (image) async => {
+              'mimeType': image.mime,
+              'data': base64Encode(
+                await File(store.path(image.file!)).readAsBytes(),
+              ),
+            },
+          ),
+    );
+  }
+
   Future<void> record() async {
-    if (!canRecord) return;
+    if (!canRecord || preparingImages) return;
     _recordStarting = true;
     final epoch = _epoch;
     try {
@@ -361,6 +433,7 @@ class AiChatController extends ChangeNotifier {
         role: 'user',
         language: UserProfileNotifier.instance.learningLanguage ?? '',
       );
+      message.images.addAll(_draftImages);
       _recordMessage = message;
       _recordPcm.clear();
       // While the previous answer downloads, buffer the next recording locally.
@@ -434,11 +507,13 @@ class AiChatController extends ChangeNotifier {
   AiVoiceStream _openVoiceStream(AiMessage message, int epoch) {
     late final AiVoiceStream stream;
     stream = AiVoiceStream(
+      requiresImages: message.images.isNotEmpty,
       connect: () async => _api.voice(
         owner,
         store.context(excluding: message.id),
         message.id,
         hasMetBanteraAi: await store.hasMetBefore(),
+        images: await _imagePayload(message),
       ),
       onToolCall: (call) async {
         if (!available || epoch != _epoch || !busy) {
@@ -575,6 +650,7 @@ class AiChatController extends ChangeNotifier {
       if (!available || epoch != _epoch) return;
       store.messages.add(message);
       await store.save();
+      _draftImages.removeWhere((image) => message.images.contains(image));
       changed();
       phase = 'reply';
       Map<String, dynamic>? reply;
@@ -779,7 +855,8 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> retry(AiMessage message) async {
-    if (busy ||
+    if (_deletingMessage ||
+        busy ||
         recording ||
         _recordStarting ||
         _waitingToSend ||
@@ -813,21 +890,49 @@ class AiChatController extends ChangeNotifier {
     final epoch = _epoch;
     final elapsed = Stopwatch()..start();
     var phase = 'reply';
+    var saved = false;
+    AiVoiceStream? imageStream;
     try {
-      final reply = await _api.reply(
-        owner: owner,
-        history: store.context(excluding: message.id),
-        audioPath: store.path(message.audio!),
-        requestId: message.id,
-        hasMetBanteraAi: await store.hasMetBefore(),
-      );
+      Map<String, dynamic> reply;
+      if (message.images.isNotEmpty) {
+        final wave = await File(store.path(message.audio!)).readAsBytes();
+        if (wave.length < 44 ||
+            String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
+          throw const FormatException('Invalid recording');
+        }
+        imageStream = _openVoiceStream(message, epoch);
+        _receivingStream = imageStream;
+        imageStream.add(Uint8List.sublistView(wave, 44));
+        reply = await imageStream.send(
+          await (_voiceMetadata?.call() ??
+              AiApiClient.metadata(
+                hasMetBanteraAi: await store.hasMetBefore(),
+              )),
+        );
+      } else {
+        reply = await _api.reply(
+          owner: owner,
+          history: store.context(excluding: message.id),
+          audioPath: store.path(message.audio!),
+          requestId: message.id,
+          hasMetBanteraAi: await store.hasMetBefore(),
+        );
+      }
       if (!available || epoch != _epoch) return;
       if (reply['noSpeech'] == true) {
         await _discardSilentMessage(message);
         return;
       }
       phase = 'save';
-      await _saveReply(message, reply, epoch);
+      await _saveReply(message, reply, epoch, autoplay: imageStream == null);
+      saved = true;
+      if (imageStream != null &&
+          _replyAudioStarted &&
+          !_replyPlaybackUnavailable) {
+        await _replyAudioCommand<void>(
+          'drain',
+        ).timeout(const Duration(seconds: 95));
+      }
     } catch (error) {
       _reportVoiceFailure(
         message,
@@ -838,10 +943,25 @@ class AiChatController extends ChangeNotifier {
         error: error,
       );
       if (available && epoch == _epoch) {
-        message.failed = true;
-        failed = true;
-        await store.save();
+        await imageStream?.close();
+        final partial = saved ? null : voiceReply.interrupted(null);
+        final audio = imageStream?.partialAudio;
+        final hasPartial =
+            partial != null && (partial.text.isNotEmpty || audio != null);
+        message.failed = !saved && !hasPartial;
+        failed = message.failed;
+        if (hasPartial && !store.messages.contains(partial)) {
+          store.messages.add(partial);
+        }
+        await store.save(
+          audioMessage: hasPartial ? partial : null,
+          audioBytes: hasPartial ? audio : null,
+        );
       }
+    } finally {
+      await imageStream?.close();
+      if (identical(_receivingStream, imageStream)) _receivingStream = null;
+      if (imageStream != null) await _stopReplyPlayback();
     }
     changed();
   }
@@ -850,6 +970,9 @@ class AiChatController extends ChangeNotifier {
     // Silence is a cancelled recording, not a failed conversation turn. Do not
     // retain hallucinated captions or credit activity for it.
     store.messages.removeWhere((item) => item.id == message.id);
+    if (_draftImages.isEmpty && !recording && !_recordStarting) {
+      _draftImages.addAll(message.images);
+    }
     voiceReply.clear();
     failed = false;
     await store.save();
@@ -1043,6 +1166,7 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> startCall() async {
+    if (_deletingMessage) return;
     if (_endingCall != null ||
         (!callKitManaged && AiCallbackNotifier.instance.aiActive)) {
       return;
@@ -1621,6 +1745,33 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  bool canDeleteMessage(AiMessage message) =>
+      loaded &&
+      available &&
+      !_deletingMessage &&
+      !busy &&
+      !calling &&
+      !recording &&
+      !_recordStarting &&
+      !_waitingToSend &&
+      store.messages.contains(message);
+
+  Future<void> deleteMessage(AiMessage message) async {
+    if (!canDeleteMessage(message)) throw StateError('Message is in use');
+    _deletingMessage = true;
+    if (_playbackRequest?.id == message.id) _playbackRequest = null;
+    changed();
+    try {
+      await store.deleteMessage(message);
+      visibleTranslations.remove(message.id);
+      translating.remove(message.id);
+      translationFailed.remove(message.id);
+    } finally {
+      _deletingMessage = false;
+      changed();
+    }
+  }
+
   Future<void> clear() async {
     _playbackRequest = null;
     _epoch++;
@@ -1633,6 +1784,7 @@ class AiChatController extends ChangeNotifier {
     await cancelRecording();
     await endCall();
     await _events.catchError((Object _) {});
+    _draftImages.clear();
     await store.clear();
     failed = false;
     busy = false;
@@ -1644,8 +1796,25 @@ class AiChatController extends ChangeNotifier {
     changed();
   }
 
+  void _clearDraftImages() {
+    for (final image in _draftImages) {
+      if (image.file != null &&
+          !store.messages.any(
+            (m) => m.images.any((i) => i.file == image.file),
+          )) {
+        unawaited(
+          File(
+            store.path(image.file!),
+          ).delete().then<void>((_) {}).catchError((Object _) {}),
+        );
+      }
+    }
+    _draftImages.clear();
+  }
+
   @override
   void dispose() {
+    _clearDraftImages();
     _replyPlaybackUnavailable = true;
     if (loaded && busy) {
       // Leaving is not a failed send. Keep captions already shown, and the

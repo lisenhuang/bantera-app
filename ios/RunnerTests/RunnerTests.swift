@@ -9,6 +9,28 @@ import WidgetKit
 
 class RunnerTests: XCTestCase {
   @MainActor
+  func testCuePlaybackRestoresMediaCategoryAndModeAfterCall() throws {
+    let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
+    let session = AVAudioSession.sharedInstance()
+    for _ in 0..<2 {
+      try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetoothHFP])
+      try app.prepareMediaPlayback()
+      XCTAssertEqual(session.category, .playback)
+      XCTAssertEqual(session.mode, .default)
+      XCTAssertFalse(session.currentRoute.outputs.contains { $0.portType == .builtInReceiver })
+    }
+  }
+
+  @MainActor
+  func testCuePlaybackCannotStealActiveAiCallAudio() throws {
+    let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
+    let audio = try XCTUnwrap(app.aiAudioBridge)
+    audio.reserveCallKitAudio()
+    defer { audio.stopCallKitAudio() }
+    XCTAssertThrowsError(try app.prepareMediaPlayback())
+  }
+
+  @MainActor
   func testCallKitReservationSurvivesListenerReplacementAndRejectsPlayback() throws {
     let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
     let audio = try XCTUnwrap(app.aiAudioBridge)

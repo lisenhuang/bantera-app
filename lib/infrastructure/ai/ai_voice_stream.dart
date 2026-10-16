@@ -34,11 +34,13 @@ class AiVoiceStream {
     required this.onReset,
     this.onTranscript,
     this.onToolCall,
+    this.requiresImages = false,
   }) {
     _ready.future.ignore();
     _reply.future.ignore();
     unawaited(_open(connect));
   }
+  final bool requiresImages;
   final Future<void> Function(Uint8List) onAudio;
   final Future<void> Function() onReset;
   final void Function(String role, String text)? onTranscript;
@@ -135,6 +137,9 @@ class AiVoiceStream {
     final json = jsonDecode(event as String) as Map<String, dynamic>;
     switch (json['type']) {
       case 'ready':
+        if (requiresImages && json['acceptImages'] != true) {
+          throw const AiVoiceFailure('images_unavailable');
+        }
         if (_serverReady) throw StateError('Duplicate ready');
         _serverReady = true;
         for (final chunk in _pending) {

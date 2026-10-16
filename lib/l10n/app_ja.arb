@@ -96,6 +96,7 @@
   "navProfile": "プロフィール",
   "chatsTitle": "チャット",
   "chatNoChatsYet": "まだチャットがありません。",
+  "chatHideSameNativeSpeakers": "母語が同じ人を非表示",
   "chatOnlineSection": "オンライン",
   "chatDirectMessagesSection": "DM",
   "chatAudioDuration": "オーディオ {duration}",
@@ -615,7 +616,7 @@
   "aiImagesSearching": "画像を検索中…",
   "aiImagesUnavailable": "画像を取得できません。後でもう一度お試しください。",
   "aiImageShare": "画像を保存・共有",
-  "aiImagesHelp": "画像をリクエストして、見えるものを説明する練習ができます。この端末でウェブ上の画像を検索し、必要に応じて Wikimedia Commons を使います。画像は端末のチャットに保存されます。画像をタップすると拡大・共有でき、出典から利用条件を確認できます。検索テーマは検索サービスに、タイトルと出典リンクは AI に送信されます。画像は Bantera にアップロードされません。",
+  "aiImagesHelp": "画像検索はこの端末で行われます。カメラ、写真、ファイルから最大4枚の画像を音声メッセージに添付できます。添付画像と音声はBanteraを経由してAIに送信され、処理されます。Banteraのサーバーにこれらの画像は保存されません。コピーはこの端末のチャット履歴に残ります。画像をタップすると拡大できます。ウェブ画像には利用権限を確認できる出典リンクが付きます。",
   "aiImagesRights": "利用条件は出典で確認してください",
   "vocabTitle": "単語帳",
   "vocabAdd": "単語を追加",
@@ -643,5 +644,13 @@
   "aiKeysDescription": "Gemini のレッスンと音声チャットに適用されます。変更は新しいリクエストから有効です。アクセス権とキーは管理者が管理します。",
   "aiKeysRegular": "通常のキーのみ",
   "aiKeysFallback": "有料キーを予備として使用",
-  "aiKeysPaidOnly": "有料キーのみ"
+  "aiKeysPaidOnly": "有料キーのみ",
+  "aiAttachImages": "画像を添付",
+  "aiAttachmentHint": "画像を4枚まで追加してから、音声メッセージを録音してください。",
+  "aiAttachmentLocked": "録音中は画像を変更できません。変更するには録音をキャンセルしてください。",
+  "aiAttachmentError": "画像を追加できませんでした。小さい写真か別の画像をお試しください。",
+  "aiCamera": "カメラ",
+  "aiPhotos": "写真",
+  "aiFiles": "ファイル",
+  "aiRemoveImage": "画像を削除"
 }

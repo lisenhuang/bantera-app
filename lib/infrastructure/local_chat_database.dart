@@ -160,6 +160,7 @@ class LocalChatDatabase extends _$LocalChatDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA synchronous = FULL');
     },
   );
 }

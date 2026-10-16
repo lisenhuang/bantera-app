@@ -223,6 +223,7 @@ class AiApiClient {
     List<Map<String, String>> history,
     String requestId, {
     required bool hasMetBanteraAi,
+    List<Map<String, String>> images = const [],
   }) async {
     final token = await _token(owner);
     final deviceData = await AiDeviceData.snapshot(owner);
@@ -248,6 +249,7 @@ class AiApiClient {
         'requestId': requestId,
         'streamTranscripts': true,
         'acceptNoSpeech': true,
+        if (images.isNotEmpty) 'images': images,
         'history': AiSearchCapabilities.withContext(history),
         'deviceData': deviceData,
         'metadata': {...meta, 'conversationId': conversationId?.call()},
