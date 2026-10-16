@@ -4,7 +4,7 @@ This repository is maintained by [@lisenhuang](https://github.com/lisenhuang). K
 
 ## Local checks
 
-Use the toolchain versions declared by the CI workflow and package files. From this repository root:
+Use the toolchain versions declared by the CI workflow and package files, including Java 21 for the Android tests. Robolectric's Android SDK 36 tests require Java 21 even though the app targets Java 17 bytecode. From this repository root:
 
 ```sh
 flutter pub get --enforce-lockfile

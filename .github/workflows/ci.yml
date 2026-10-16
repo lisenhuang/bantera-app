@@ -58,7 +58,8 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: '17'
+          # Robolectric's Android SDK 36 tests require Java 21.
+          java-version: '21'
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.41.9'
@@ -75,6 +76,8 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-test-results
-          path: build/app/reports/tests/testDebugUnitTest/
+          path: |
+            build/**/reports/tests/testDebugUnitTest/
+            build/**/test-results/testDebugUnitTest/
           if-no-files-found: warn
           retention-days: 14
