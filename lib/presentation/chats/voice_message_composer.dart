@@ -79,9 +79,65 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
     final enabled = widget.enabled && !_starting && !_finishing;
     final recording = widget.recording;
     final remaining = widget.remainingSeconds;
+    final countdown =
+        '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}';
+    final countdownStyle = theme.textTheme.labelLarge?.copyWith(
+      color: colors.error,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    // Equal side gutters center the label within the whole button, even with
+    // the icon on the left and a scaled countdown on the right.
+    final timerPainter = TextPainter(
+      text: TextSpan(text: recording ? countdown : '', style: countdownStyle),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final sideWidth =
+        (timerPainter.width > 20 ? timerPainter.width : 20.0) + 10;
+    timerPainter.dispose();
     final label = recording
         ? (_holding ? l.chatRecordingReleaseToSend : l.chatTapToSendAudio)
         : (widget.busyLabel ?? l.chatTapOrHoldToRecordAudio);
+    Widget contentRow({required bool inlineCountdown}) {
+      final gutter = inlineCountdown ? sideWidth : 30.0;
+      return Row(
+        children: [
+          SizedBox(
+            width: gutter,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              heightFactor: 1,
+              child: Icon(
+                recording && !_holding ? Icons.send_rounded : Icons.mic,
+                size: 20,
+                color: recording ? colors.error : colors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: recording ? colors.error : colors.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: gutter,
+            child: inlineCountdown
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    heightFactor: 1,
+                    child: Text(countdown, style: countdownStyle),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -95,9 +151,7 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
               button: true,
               enabled: enabled,
               label: label,
-              value: recording
-                  ? '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}'
-                  : null,
+              value: recording ? countdown : null,
               onTap: enabled && !_holding ? _tap : null,
               excludeSemantics: true,
               child: RawGestureDetector(
@@ -148,37 +202,23 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
                       color: recording ? colors.error : colors.outlineVariant,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        recording && !_holding ? Icons.send_rounded : Icons.mic,
-                        size: 20,
-                        color: recording
-                            ? colors.error
-                            : colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          label,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: recording ? colors.error : colors.onSurface,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      if (recording) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colors.error,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ],
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final inlineCountdown =
+                          recording &&
+                          constraints.maxWidth >= sideWidth * 2 + 80;
+                      final row = contentRow(inlineCountdown: inlineCountdown);
+                      if (!recording || inlineCountdown) return row;
+                      // Keep large accessibility text readable on narrow phones.
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          row,
+                          const SizedBox(height: 4),
+                          Text(countdown, style: countdownStyle),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
