@@ -421,6 +421,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Ses kaydetmek için basılı tut';
 
   @override
+  String get chatTapOrHoldToRecordAudio =>
+      'Kaydetmek için dokun veya basılı tut';
+
+  @override
+  String get chatTapToSendAudio => 'Göndermek için dokun';
+
+  @override
   String get chatRecordingStatus => 'Kaydediliyor...';
 
   @override

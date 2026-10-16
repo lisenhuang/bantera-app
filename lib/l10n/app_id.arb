@@ -128,6 +128,8 @@
   "chatSendingAudio": "Mengirim audio...",
   "chatRecordingReleaseToSend": "Merekam... lepaskan untuk mengirim",
   "chatHoldToRecordAudio": "Tahan untuk merekam audio",
+  "chatTapOrHoldToRecordAudio": "Ketuk atau tahan untuk merekam",
+  "chatTapToSendAudio": "Ketuk untuk mengirim",
   "chatRecordingStatus": "Merekam...",
   "chatGroupLabel": "Grup",
   "chatNotificationsEnabledForDm": "Notifikasi diaktifkan untuk DM ini.",

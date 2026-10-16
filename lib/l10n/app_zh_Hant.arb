@@ -128,6 +128,8 @@
   "chatSendingAudio": "正在傳送音訊…",
   "chatRecordingReleaseToSend": "正在錄音…放開即可傳送",
   "chatHoldToRecordAudio": "按住錄音",
+  "chatTapOrHoldToRecordAudio": "點一下或按住錄音",
+  "chatTapToSendAudio": "點一下傳送",
   "chatRecordingStatus": "正在錄音…",
   "chatGroupLabel": "群組",
   "chatNotificationsEnabledForDm": "已開啟此私訊的通知。",

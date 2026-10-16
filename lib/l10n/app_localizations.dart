@@ -895,6 +895,18 @@ abstract class AppLocalizations {
   /// **'Hold to record audio'**
   String get chatHoldToRecordAudio;
 
+  /// No description provided for @chatTapOrHoldToRecordAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap or hold to record'**
+  String get chatTapOrHoldToRecordAudio;
+
+  /// No description provided for @chatTapToSendAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to send'**
+  String get chatTapToSendAudio;
+
   /// No description provided for @chatRecordingStatus.
   ///
   /// In en, this message translates to:

@@ -418,6 +418,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Nhấn giữ để ghi âm';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'Chạm hoặc nhấn giữ để ghi âm';
+
+  @override
+  String get chatTapToSendAudio => 'Chạm để gửi';
+
+  @override
   String get chatRecordingStatus => 'Đang ghi âm...';
 
   @override

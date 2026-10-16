@@ -142,6 +142,8 @@
   "chatSendingAudio": "正在发送音频...",
   "chatRecordingReleaseToSend": "正在录音...松开发送",
   "chatHoldToRecordAudio": "长按录制音频",
+  "chatTapOrHoldToRecordAudio": "点击或长按录音",
+  "chatTapToSendAudio": "点击发送",
   "chatRecordingStatus": "正在录音...",
   "chatGroupLabel": "群组",
   "chatNotificationsEnabledForDm": "已开启这条私信的通知。",

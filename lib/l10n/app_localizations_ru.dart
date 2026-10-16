@@ -417,6 +417,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Удерживай для записи';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'Нажмите или удерживайте для записи';
+
+  @override
+  String get chatTapToSendAudio => 'Нажмите для отправки';
+
+  @override
   String get chatRecordingStatus => 'Запись...';
 
   @override

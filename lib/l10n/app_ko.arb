@@ -142,6 +142,8 @@
   "chatSendingAudio": "오디오 보내는 중...",
   "chatRecordingReleaseToSend": "녹음 중...손을 떼면 전송",
   "chatHoldToRecordAudio": "길게 눌러 오디오 녹음",
+  "chatTapOrHoldToRecordAudio": "탭하거나 길게 눌러 녹음",
+  "chatTapToSendAudio": "탭하여 보내기",
   "chatRecordingStatus": "녹음 중...",
   "chatGroupLabel": "그룹",
   "chatNotificationsEnabledForDm": "이 DM의 알림을 켰습니다.",

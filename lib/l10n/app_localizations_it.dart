@@ -421,6 +421,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Tieni premuto per registrare';
 
   @override
+  String get chatTapOrHoldToRecordAudio =>
+      'Tocca o tieni premuto per registrare';
+
+  @override
+  String get chatTapToSendAudio => 'Tocca per inviare';
+
+  @override
   String get chatRecordingStatus => 'Registrazione...';
 
   @override

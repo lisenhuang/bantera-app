@@ -404,6 +404,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatHoldToRecordAudio => '길게 눌러 오디오 녹음';
 
   @override
+  String get chatTapOrHoldToRecordAudio => '탭하거나 길게 눌러 녹음';
+
+  @override
+  String get chatTapToSendAudio => '탭하여 보내기';
+
+  @override
   String get chatRecordingStatus => '녹음 중...';
 
   @override

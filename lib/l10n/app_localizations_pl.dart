@@ -418,6 +418,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Przytrzymaj, aby nagrać';
 
   @override
+  String get chatTapOrHoldToRecordAudio =>
+      'Dotknij lub przytrzymaj, aby nagrać';
+
+  @override
+  String get chatTapToSendAudio => 'Dotknij, aby wysłać';
+
+  @override
   String get chatRecordingStatus => 'Nagrywanie...';
 
   @override

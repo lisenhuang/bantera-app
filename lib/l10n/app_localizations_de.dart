@@ -420,6 +420,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Zum Aufnehmen halten';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'Zum Aufnehmen tippen oder halten';
+
+  @override
+  String get chatTapToSendAudio => 'Zum Senden tippen';
+
+  @override
   String get chatRecordingStatus => 'Aufnahme …';
 
   @override

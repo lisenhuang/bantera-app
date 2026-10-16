@@ -128,6 +128,8 @@
   "chatSendingAudio": "Надсилання аудіо...",
   "chatRecordingReleaseToSend": "Запис... відпусти, щоб надіслати",
   "chatHoldToRecordAudio": "Утримуй, щоб записати аудіо",
+  "chatTapOrHoldToRecordAudio": "Торкнись або утримуй для запису",
+  "chatTapToSendAudio": "Торкнись, щоб надіслати",
   "chatRecordingStatus": "Запис...",
   "chatGroupLabel": "Група",
   "chatNotificationsEnabledForDm": "Сповіщення для цього чату ввімкнено.",

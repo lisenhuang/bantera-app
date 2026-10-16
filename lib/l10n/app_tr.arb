@@ -128,6 +128,8 @@
   "chatSendingAudio": "Ses gönderiliyor...",
   "chatRecordingReleaseToSend": "Kaydediliyor... göndermek için bırak",
   "chatHoldToRecordAudio": "Ses kaydetmek için basılı tut",
+  "chatTapOrHoldToRecordAudio": "Kaydetmek için dokun veya basılı tut",
+  "chatTapToSendAudio": "Göndermek için dokun",
   "chatRecordingStatus": "Kaydediliyor...",
   "chatGroupLabel": "Grup",
   "chatNotificationsEnabledForDm": "Bu özel sohbet için bildirimler açıldı.",

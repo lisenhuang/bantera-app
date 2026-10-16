@@ -142,6 +142,8 @@
   "chatSendingAudio": "音声を送信中...",
   "chatRecordingReleaseToSend": "録音中...離すと送信",
   "chatHoldToRecordAudio": "長押しして音声を録音",
+  "chatTapOrHoldToRecordAudio": "タップまたは長押しで録音",
+  "chatTapToSendAudio": "タップして送信",
   "chatRecordingStatus": "録音中...",
   "chatGroupLabel": "グループ",
   "chatNotificationsEnabledForDm": "このDMの通知をオンにしました。",

@@ -422,6 +422,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Maintiens pour enregistrer';
 
   @override
+  String get chatTapOrHoldToRecordAudio =>
+      'Appuie ou maintiens pour enregistrer';
+
+  @override
+  String get chatTapToSendAudio => 'Appuie pour envoyer';
+
+  @override
   String get chatRecordingStatus => 'Enregistrement...';
 
   @override

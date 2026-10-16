@@ -128,6 +128,8 @@
   "chatSendingAudio": "Audio wird gesendet …",
   "chatRecordingReleaseToSend": "Aufnahme … zum Senden loslassen",
   "chatHoldToRecordAudio": "Zum Aufnehmen halten",
+  "chatTapOrHoldToRecordAudio": "Zum Aufnehmen tippen oder halten",
+  "chatTapToSendAudio": "Zum Senden tippen",
   "chatRecordingStatus": "Aufnahme …",
   "chatGroupLabel": "Gruppe",
   "chatNotificationsEnabledForDm": "Mitteilungen für diese DM aktiviert.",

@@ -418,6 +418,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get chatHoldToRecordAudio => 'Tahan untuk merekam audio';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'Ketuk atau tahan untuk merekam';
+
+  @override
+  String get chatTapToSendAudio => 'Ketuk untuk mengirim';
+
+  @override
   String get chatRecordingStatus => 'Merekam...';
 
   @override

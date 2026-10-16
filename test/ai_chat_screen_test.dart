@@ -191,11 +191,7 @@ void main() {
       expect(find.text('A streamed reply'), findsOneWidget);
       expect(find.text('🇮🇪 🇮🇳'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      final recordButton = tester.widget<IconButton>(
-        find.byKey(const Key('voice-tap-record-send')),
-      );
-      expect(recordButton.onPressed, isNotNull);
-      await tester.tap(find.byKey(const Key('voice-tap-record-send')));
+      await tester.tap(find.byKey(const Key('voice-record-button')));
       await tester.pump();
       expect(controller.recording, isTrue);
       expect(find.text('3:00'), findsOneWidget);
@@ -299,7 +295,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(notice, findsNothing);
       expect(find.byType(TextField), findsNothing);
-      expect(find.byTooltip('Record a voice message'), findsOneWidget);
+      expect(find.byKey(const Key('voice-record-button')), findsOneWidget);
       controller.recording = true;
       controller.recordingRemaining = 90;
       controller.changed();
@@ -310,14 +306,14 @@ void main() {
       controller.recording = false;
       controller.changed();
       await tester.pumpAndSettle();
-      final hold = find.text('Hold to record audio');
+      final hold = find.byKey(const Key('voice-record-button'));
       final gesture = await tester.startGesture(tester.getCenter(hold));
       await tester.pump(const Duration(milliseconds: 600));
       await tester.pump();
       expect(controller.recording, isTrue);
       expect(find.text('3:00'), findsOneWidget);
       expect(find.byTooltip('Cancel'), findsNothing);
-      expect(find.textContaining('Release to send'), findsNothing);
+      expect(find.text('Recording... release to send'), findsOneWidget);
       await gesture.up();
       await tester.pumpAndSettle();
       expect(controller.sentRecordings, 1);

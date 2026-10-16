@@ -1,8 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Shared recording gestures for AI and human DMs. A pending permission prompt
-/// never turns a released hold into an unintended hands-free recording.
+/// One control for tap-to-record/tap-to-send and hold-to-record/release-to-send.
+/// Releasing during permission/startup cancels the pending hold safely.
 class VoiceMessageComposer extends StatefulWidget {
   const VoiceMessageComposer({
     super.key,
@@ -38,9 +39,10 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
       _starting = true;
       _holding = hold;
     });
+    final cancel = widget.onCancel;
     try {
       await widget.onStart();
-      if (mounted && hold && !_holding) await widget.onCancel();
+      if (mounted && hold && !_holding) await cancel();
     } finally {
       if (mounted) setState(() => _starting = false);
     }
@@ -59,6 +61,11 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
     }
   }
 
+  void _tap() {
+    if (_holding) return;
+    widget.recording ? _finish() : _start();
+  }
+
   void _release({bool cancel = false}) {
     if (!_holding) return;
     setState(() => _holding = false);
@@ -68,10 +75,13 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final theme = Theme.of(context), colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context), colors = theme.colorScheme;
     final enabled = widget.enabled && !_starting && !_finishing;
     final recording = widget.recording;
     final remaining = widget.remainingSeconds;
+    final label = recording
+        ? (_holding ? l.chatRecordingReleaseToSend : l.chatTapToSendAudio)
+        : (widget.busyLabel ?? l.chatTapOrHoldToRecordAudio);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -81,56 +91,95 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              key: const Key('voice-hold-record'),
-              onLongPressStart: enabled && !recording
-                  ? (_) => _start(hold: true)
+            child: Semantics(
+              button: true,
+              enabled: enabled,
+              label: label,
+              value: recording
+                  ? '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}'
                   : null,
-              // Keep release handlers attached while startup or recording is active.
-              onLongPressEnd: (_) => _release(),
-              onLongPressCancel: () => _release(cancel: true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                constraints: const BoxConstraints(minHeight: 48),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: recording
-                      ? colors.error.withValues(alpha: .1)
-                      : colors.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: recording ? colors.error : colors.outlineVariant,
+              onTap: enabled && !_holding ? _tap : null,
+              excludeSemantics: true,
+              child: RawGestureDetector(
+                key: const Key('voice-record-button'),
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                gestures: {
+                  TapGestureRecognizer:
+                      GestureRecognizerFactoryWithHandlers<
+                        TapGestureRecognizer
+                      >(
+                        TapGestureRecognizer.new,
+                        (recognizer) => recognizer.onTap = enabled && !_holding
+                            ? _tap
+                            : null,
+                      ),
+                  LongPressGestureRecognizer:
+                      GestureRecognizerFactoryWithHandlers<
+                        LongPressGestureRecognizer
+                      >(
+                        () => LongPressGestureRecognizer(
+                          duration: const Duration(milliseconds: 300),
+                        ),
+                        (recognizer) {
+                          recognizer.onLongPressStart = enabled && !recording
+                              ? (_) => _start(hold: true)
+                              : null;
+                          // Keep release/cancel attached during async startup.
+                          recognizer.onLongPressEnd = (_) => _release();
+                          recognizer.onLongPressCancel = () =>
+                              _release(cancel: true);
+                        },
+                      ),
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  constraints: const BoxConstraints(minHeight: 48),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.busyLabel ??
-                            (recording
-                                ? l.chatRecordingStatus
-                                : l.chatHoldToRecordAudio),
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: recording ? colors.error : colors.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                  decoration: BoxDecoration(
+                    color: recording
+                        ? colors.error.withValues(alpha: .1)
+                        : colors.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: recording ? colors.error : colors.outlineVariant,
                     ),
-                    if (recording) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.error,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        recording && !_holding ? Icons.send_rounded : Icons.mic,
+                        size: 20,
+                        color: recording
+                            ? colors.error
+                            : colors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: recording ? colors.error : colors.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
+                      if (recording) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: colors.error,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -141,18 +190,6 @@ class _VoiceMessageComposerState extends State<VoiceMessageComposer> {
               onPressed: enabled ? () => _finish(cancel: true) : null,
               icon: const Icon(Icons.close),
             ),
-          const SizedBox(width: 12),
-          IconButton.filled(
-            key: const Key('voice-tap-record-send'),
-            tooltip: recording ? l.aiSend : l.aiRecordVoiceMessage,
-            onPressed: !enabled || _holding
-                ? null
-                : recording
-                ? () => _finish()
-                : () => _start(),
-            style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
-            icon: Icon(recording ? Icons.send_rounded : Icons.mic),
-          ),
         ],
       ),
     );

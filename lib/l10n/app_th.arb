@@ -128,6 +128,8 @@
   "chatSendingAudio": "กำลังส่งเสียง...",
   "chatRecordingReleaseToSend": "กำลังอัดเสียง... ปล่อยเพื่อส่ง",
   "chatHoldToRecordAudio": "กดค้างเพื่ออัดเสียง",
+  "chatTapOrHoldToRecordAudio": "แตะหรือกดค้างเพื่อบันทึกเสียง",
+  "chatTapToSendAudio": "แตะเพื่อส่ง",
   "chatRecordingStatus": "กำลังอัดเสียง...",
   "chatGroupLabel": "กลุ่ม",
   "chatNotificationsEnabledForDm": "เปิดการแจ้งเตือนสำหรับแชทส่วนตัวนี้แล้ว",

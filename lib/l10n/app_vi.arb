@@ -128,6 +128,8 @@
   "chatSendingAudio": "Đang gửi âm thanh...",
   "chatRecordingReleaseToSend": "Đang ghi âm... thả tay để gửi",
   "chatHoldToRecordAudio": "Nhấn giữ để ghi âm",
+  "chatTapOrHoldToRecordAudio": "Chạm hoặc nhấn giữ để ghi âm",
+  "chatTapToSendAudio": "Chạm để gửi",
   "chatRecordingStatus": "Đang ghi âm...",
   "chatGroupLabel": "Nhóm",
   "chatNotificationsEnabledForDm": "Đã bật thông báo cho cuộc trò chuyện này.",

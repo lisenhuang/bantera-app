@@ -142,6 +142,8 @@
   "chatSendingAudio": "Sending audio...",
   "chatRecordingReleaseToSend": "Recording... release to send",
   "chatHoldToRecordAudio": "Hold to record audio",
+  "chatTapOrHoldToRecordAudio": "Tap or hold to record",
+  "chatTapToSendAudio": "Tap to send",
   "chatRecordingStatus": "Recording...",
   "chatGroupLabel": "Group",
   "chatNotificationsEnabledForDm": "Notifications enabled for this DM.",

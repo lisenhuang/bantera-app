@@ -399,6 +399,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatHoldToRecordAudio => '长按录制音频';
 
   @override
+  String get chatTapOrHoldToRecordAudio => '点击或长按录音';
+
+  @override
+  String get chatTapToSendAudio => '点击发送';
+
+  @override
   String get chatRecordingStatus => '正在录音...';
 
   @override
@@ -2340,6 +2346,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get chatHoldToRecordAudio => '按住錄音';
+
+  @override
+  String get chatTapOrHoldToRecordAudio => '點一下或按住錄音';
+
+  @override
+  String get chatTapToSendAudio => '點一下傳送';
 
   @override
   String get chatRecordingStatus => '正在錄音…';

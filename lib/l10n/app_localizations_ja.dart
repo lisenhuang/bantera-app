@@ -402,6 +402,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatHoldToRecordAudio => '長押しして音声を録音';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'タップまたは長押しで録音';
+
+  @override
+  String get chatTapToSendAudio => 'タップして送信';
+
+  @override
   String get chatRecordingStatus => '録音中...';
 
   @override

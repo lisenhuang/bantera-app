@@ -416,6 +416,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get chatHoldToRecordAudio => 'กดค้างเพื่ออัดเสียง';
 
   @override
+  String get chatTapOrHoldToRecordAudio => 'แตะหรือกดค้างเพื่อบันทึกเสียง';
+
+  @override
+  String get chatTapToSendAudio => 'แตะเพื่อส่ง';
+
+  @override
   String get chatRecordingStatus => 'กำลังอัดเสียง...';
 
   @override

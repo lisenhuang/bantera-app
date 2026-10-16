@@ -54,7 +54,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   final Set<String> _translatingIds = <String>{};
   bool _isRecording = false;
   bool _isSending = false;
-  bool _isPressing = false;
   VoiceWordProgress? _wordProgress;
   String? _currentPlayingMessageId;
   Duration _currentPlaybackPosition = Duration.zero;
@@ -328,9 +327,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     );
   }
 
-  Widget _buildComposer(BuildContext context, AppLocalizations l10n) {
-    if (!_isGroup) {
-      return SafeArea(
+  Widget _buildComposer(BuildContext context, AppLocalizations l10n) =>
+      SafeArea(
         top: false,
         child: VoiceMessageComposer(
           enabled: !_isSending && !_stoppingRecording,
@@ -342,78 +340,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           onCancel: _cancelRecording,
         ),
       );
-    }
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onLongPressDown: _isSending
-                    ? null
-                    : (_) {
-                        setState(() => _isPressing = true);
-                        _startRecording();
-                      },
-                onLongPressStart: null,
-                onLongPressEnd: _isSending ? null : (_) => _stopRecording(),
-                onLongPressCancel: _isSending ? null : _cancelRecording,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: (_isRecording || _isPressing)
-                        ? Colors.red.withValues(alpha: 0.1)
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: (_isRecording || _isPressing)
-                          ? Colors.redAccent
-                          : Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _isSending
-                        ? l10n.chatSendingAudio
-                        : (_isRecording || _isPressing)
-                        ? l10n.chatRecordingReleaseToSend
-                        : l10n.chatHoldToRecordAudio,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: (_isRecording || _isPressing)
-                          ? Colors.redAccent
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: (_isRecording || _isPressing)
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: (_isRecording || _isPressing)
-                  ? Colors.redAccent
-                  : Theme.of(context).colorScheme.primary,
-              child: const Icon(CupertinoIcons.mic_fill, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   String _subtitleText(AppLocalizations l10n) {
     if (_threadId != null && _chat.isPartnerRecording(_threadId!)) {
@@ -667,10 +593,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         _currentPlayingMessageId = null;
         _currentPlaybackPosition = Duration.zero;
       });
-      if (_isGroup && !_isPressing) {
-        await _cancelRecording();
-        return;
-      }
       _recordingCountdown.start();
       if (_threadId != null && !_isGroup) {
         unawaited(
@@ -685,7 +607,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _cancelRecording() async {
-    if (mounted) setState(() => _isPressing = false);
     if (!_isRecording || _stoppingRecording) return;
     _recordingCountdown.cancel();
     _stoppingRecording = true;
@@ -712,7 +633,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     // may arrive together, but must never upload the same recording twice.
     setState(() {
       _isRecording = false;
-      _isPressing = false;
       _isSending = true;
     });
     File? audioFile;
