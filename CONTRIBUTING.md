@@ -11,10 +11,10 @@ flutter pub get --enforce-lockfile
 flutter analyze --no-pub --no-fatal-infos
 flutter test --no-pub --coverage
 flutter build apk --debug --no-pub
-(cd android && ./gradlew testDebugUnitTest --no-daemon)
+(cd android && ./gradlew :app:testDebugUnitTest --no-daemon)
 ```
 
-CI pins Flutter 3.41.9, restores `pubspec.lock`, fails on analyzer errors or warnings, runs all Flutter unit/widget tests with LCOV coverage, compiles an Android debug APK, and runs the native Kotlin tests. Analyzer informational lints remain visible but do not fail the build. Coverage is available as an artifact, not a claimed coverage target. iOS compilation and native audio behavior are separate checks; CI does not exercise a physical phone.
+CI pins Flutter 3.41.9, restores `pubspec.lock`, fails on analyzer errors or warnings, runs all Flutter unit/widget tests with LCOV coverage, compiles an Android debug APK, and runs Bantera's native Kotlin tests. The explicit `:app:` Gradle task selects this repository's tests; third-party plugins' standalone test suites are maintained upstream. Those plugins are still compiled into the debug APK. Analyzer informational lints remain visible but do not fail the build. Coverage is available as an artifact, not a claimed coverage target. iOS compilation and native audio behavior are separate checks; CI does not exercise a physical phone.
 
 ## Review expectations
 

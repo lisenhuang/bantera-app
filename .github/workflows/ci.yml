@@ -68,9 +68,9 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Compile Android without release signing credentials
         run: flutter build apk --debug --no-pub
-      - name: Native Kotlin unit tests
+      - name: Bantera native Kotlin unit tests
         working-directory: android
-        run: ./gradlew testDebugUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
       - name: Upload native test reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
