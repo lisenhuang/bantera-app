@@ -10,7 +10,9 @@ class _Call extends AiChatController {
   _Call() : super.forTesting(AiHistoryStore('test'), callKitManaged: true);
   int starts = 0, ends = 0;
   bool disposed = false;
+  bool refuseStart = false;
   Completer<void>? endGate;
+  Completer<void>? startGate;
   @override
   Future<void> initialize() async {
     loaded = true;
@@ -19,6 +21,8 @@ class _Call extends AiChatController {
   @override
   Future<void> startCall() async {
     starts++;
+    await startGate?.future;
+    if (disposed || refuseStart) return;
     calling = true;
     connected = true;
     changed();
@@ -128,6 +132,148 @@ void main() {
       expect(methods.last, 'end');
     },
   );
+  test(
+    'route and mute updates during consent check do not end an answered call',
+    () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final chat = _Call()..startGate = Completer<void>();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat,
+        acceptCallback: (_) async => 200,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('answer');
+      await event('audioActivated');
+      // Real startCall awaits saved consent before setting calling=true. Native
+      // route/mute events may arrive in that gap on a locked-screen answer.
+      await event('audioRoute', speaker: false);
+      await event('mute', muted: true);
+      expect(callback.id, 'callback');
+      expect(callback.accepted, isTrue);
+      expect(chat.disposed, isFalse);
+      expect(methods, isNot(contains('end')));
+      chat.startGate!.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(chat.calling, isTrue);
+      expect(chat.muted, isTrue);
+      expect(methods.last, 'audioStarted');
+      await callback.close();
+    },
+  );
+
+  for (final status in ['answered', 'missed', null]) {
+    test('late ringing poll ($status) cannot end an accepted call', () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final chat = _Call();
+      final response = Completer<String?>();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat,
+        acceptCallback: (_) async => 200,
+        readCallbackStatus: (_) => response.future,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      final polling = callback.checkStatusForTesting();
+      await event('answer');
+      await event('audioActivated');
+      response.complete(status);
+      await polling;
+      expect(callback.accepted, isTrue);
+      expect(chat.calling, isTrue);
+      expect(methods, isNot(contains('end')));
+      await callback.close();
+    });
+  }
+
+  test('a missed callback still closes while ringing', () async {
+    final service = CallKitService.forTesting();
+    final methods = <String>[];
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      methods.add(call.method);
+      return true;
+    });
+    final callback = AiCallbackNotifier.forTesting(
+      callKit: service,
+      createController: _Call.new,
+      acceptCallback: (_) async => 200,
+      readCallbackStatus: (_) async => 'missed',
+    );
+    callback.id = 'callback';
+    callback.ringing = true;
+    addTearDown(callback.dispose);
+    await callback.checkStatusForTesting();
+    expect(callback.id, isNull);
+    expect(methods, ['end']);
+  });
+
+  test('startup refusal still ends the system call', () async {
+    final service = CallKitService.forTesting();
+    final methods = <String>[];
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      methods.add(call.method);
+      return true;
+    });
+    final chat = _Call()..refuseStart = true;
+    final callback = AiCallbackNotifier.forTesting(
+      callKit: service,
+      createController: () => chat,
+      acceptCallback: (_) async => 200,
+    );
+    callback.id = 'callback';
+    callback.ringing = true;
+    addTearDown(callback.dispose);
+    await event('answer');
+    await event('audioActivated');
+    expect(callback.id, isNull);
+    expect(chat.disposed, isTrue);
+    expect(methods, ['answerReady', 'end']);
+  });
+
+  test(
+    'system hangup during startup is respected after consent resolves',
+    () async {
+      final service = CallKitService.forTesting();
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        methods.add(call.method);
+        return true;
+      });
+      final chat = _Call()..startGate = Completer<void>();
+      final callback = AiCallbackNotifier.forTesting(
+        callKit: service,
+        createController: () => chat,
+        acceptCallback: (_) async => 200,
+      );
+      callback.id = 'callback';
+      callback.ringing = true;
+      addTearDown(callback.dispose);
+      await event('answer');
+      await event('audioActivated');
+      await event('ended');
+      expect(callback.id, isNull);
+      chat.startGate!.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(chat.calling, isFalse);
+      expect(chat.disposed, isTrue);
+      expect(methods, ['answerReady', 'end']);
+    },
+  );
+
   test(
     'activation before answer is retained without starting before acceptance',
     () async {

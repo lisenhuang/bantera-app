@@ -35,14 +35,17 @@ class AiCallbackNotifier extends ChangeNotifier {
     required CallKitService callKit,
     required AiChatController Function() createController,
     required Future<int> Function(String) acceptCallback,
+    Future<String?> Function(String)? readCallbackStatus,
   }) : _callKitOverride = callKit,
        _createController = createController,
-       _acceptCallback = acceptCallback {
+       _acceptCallback = acceptCallback,
+       _readCallbackStatus = readCallbackStatus {
     _listenCallKit();
   }
   CallKitService? _callKitOverride;
   AiChatController Function()? _createController;
   Future<int> Function(String)? _acceptCallback;
+  Future<String?> Function(String)? _readCallbackStatus;
   CallKitService get _callKit => _callKitOverride ?? CallKitService.instance;
   bool get usesSystemCallInterface => _callKit.supported;
   StreamSubscription<Map<String, dynamic>>? _callKitEvents;
@@ -71,6 +74,7 @@ class AiCallbackNotifier extends ChangeNotifier {
   Future<void>? _closing;
   AiChatController? controller;
   bool _started = false;
+  bool _observedCalling = false;
   bool _audioActive = false;
   bool _lastMuted = false;
   bool _lastSpeaker = false;
@@ -198,17 +202,27 @@ class AiCallbackNotifier extends ChangeNotifier {
     return request.close().timeout(const Duration(seconds: 8));
   }
 
+  @visibleForTesting
+  Future<void> checkStatusForTesting() => _check();
+
   Future<void> _check() async {
     if (id == null || accepting || !ringing) return;
     final current = id;
     final client = HttpClient();
     try {
-      final response = await _request(client, 'GET', current!);
-      final body = await utf8.decoder.bind(response).join();
-      if (id == current &&
-          !accepting &&
-          (response.statusCode != 200 ||
-              (jsonDecode(body) as Map)['status'] != 'ringing')) {
+      final String? status;
+      if (_readCallbackStatus != null) {
+        status = await _readCallbackStatus!(current!);
+      } else {
+        final response = await _request(client, 'GET', current!);
+        final body = await utf8.decoder.bind(response).join();
+        status = response.statusCode == 200
+            ? (jsonDecode(body) as Map)['status'] as String?
+            : null;
+      }
+      // A poll begun while ringing can return after our acceptance completed.
+      // Its answered status must not hang up the call we just accepted.
+      if (id == current && ringing && !accepting && status != 'ringing') {
         await close();
       }
     } catch (_) {
@@ -270,6 +284,7 @@ class AiCallbackNotifier extends ChangeNotifier {
       accepted = true;
       aiActive = true;
       _started = false;
+      _observedCalling = false;
       chat.setMuted(_lastMuted);
       if (_callKit.supported) {
         _activationTimeout = Timer(const Duration(seconds: 12), () {
@@ -320,13 +335,21 @@ class AiCallbackNotifier extends ChangeNotifier {
     final chat = controller;
     if (chat == null || !_started) return;
     if (!chat.calling) {
+      // startCall awaits consent before setting calling. Route/mute/history
+      // notifications in that gap are not a hang-up. Completion of startCall
+      // still closes rejected startup; a genuine active-to-ended transition
+      // or explicit failure must close immediately.
+      if (!_observedCalling && !chat.failed) return;
       if (chat.failed) _reportFailure('callback_audio_failed');
       unawaited(close());
-    } else if (chat.muted != _lastMuted) {
-      _lastMuted = chat.muted;
-      unawaited(
-        _callKit.report('requestMute', {'callId': id, 'muted': chat.muted}),
-      );
+    } else {
+      _observedCalling = true;
+      if (chat.muted != _lastMuted) {
+        _lastMuted = chat.muted;
+        unawaited(
+          _callKit.report('requestMute', {'callId': id, 'muted': chat.muted}),
+        );
+      }
     }
   }
 
@@ -347,6 +370,7 @@ class AiCallbackNotifier extends ChangeNotifier {
     chat?.removeListener(_callChanged);
     _activationTimeout?.cancel();
     _started = false;
+    _observedCalling = false;
     _audioActive = false;
     ringing = false;
     accepted = false;
