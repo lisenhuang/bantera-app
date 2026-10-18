@@ -1951,7 +1951,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Gemini 수업과 음성 채팅에 적용됩니다. 변경 사항은 새 요청부터 적용됩니다. 권한과 키는 관리자가 관리합니다.';
+      'Google 수업과 음성 채팅에 적용됩니다. 변경 사항은 새 요청부터 적용됩니다. 권한과 키는 관리자가 관리합니다.';
 
   @override
   String get aiKeysRegular => '일반 키만 사용';
@@ -1985,4 +1985,55 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiRemoveImage => '이미지 삭제';
+
+  @override
+  String get aiConsentTitle => 'AI 데이터 공유를 허용할까요?';
+
+  @override
+  String get aiConsentIntro =>
+      '동의하면 Bantera가 사용하는 기능에 필요한 다음 데이터를 서버를 통해 각 AI 제공업체에 전송합니다.';
+
+  @override
+  String get aiConsentGoogle =>
+      '대화, 수업 및 알림: 음성, 전사문, 첨부 이미지, 프롬프트, 관련 채팅 기록과 요약, 이름, 언어 및 수준 설정, 연습 활동, 저장한 수업과 문구, 조회한 단어, 시간대 및 알림 내용. Google은 입력을 이해하고 맞춤 답변, 수업 텍스트와 음성을 생성하는 데 사용합니다. Google은 무료 서비스에서 처리한 데이터를 제품 개선 및 사람의 검토에도 사용할 수 있습니다. 민감하거나 기밀인 정보는 공유하지 마세요.';
+
+  @override
+  String get aiConsentCloudflare =>
+      '아바타: 이름, 선택한 성별 및 언어 설정. 수업 표지: 수업 제목과 언어. Cloudflare는 이 데이터로 이미지를 생성합니다.';
+
+  @override
+  String get aiConsentChoice =>
+      '기능에 필요한 데이터만 전송합니다. “나중에”를 선택해도 AI가 필요 없는 기능은 사용할 수 있습니다. 설정 > AI 데이터 공유에서 이 기기의 향후 공유를 끌 수 있습니다.';
+
+  @override
+  String get aiConsentPolicy => '개인정보 처리방침';
+
+  @override
+  String get aiConsentDecline => '나중에';
+
+  @override
+  String get aiConsentAgree => '동의하고 계속';
+
+  @override
+  String get aiConsentSettings => 'AI 데이터 공유';
+
+  @override
+  String get aiConsentEnabled => '이 기기에서 AI 데이터 공유가 허용됩니다.';
+
+  @override
+  String get aiConsentDisabled => '이 기기의 AI 데이터 공유가 꺼져 있습니다.';
+
+  @override
+  String get aiConsentRevoke => 'AI 공유 끄기';
+
+  @override
+  String get aiConsentExistingRequests =>
+      '이미 전송된 요청은 완료될 수 있습니다. 예약된 알림은 계속 실행될 수 있으므로 아래에서 관리하고 취소하세요. 공유를 꺼도 이미 전송된 데이터는 삭제되지 않습니다.';
+
+  @override
+  String get aiConsentSaveFailed => '선택을 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get aiConsentSearch =>
+      'AI 웹 또는 이미지 검색을 사용하면 검색어가 Microsoft Bing, DuckDuckGo 또는 Wikimedia Commons에도 전송되고 결과가 Google과 공유될 수 있습니다.';
 }

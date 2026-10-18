@@ -1940,7 +1940,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Gemini のレッスンと音声チャットに適用されます。変更は新しいリクエストから有効です。アクセス権とキーは管理者が管理します。';
+      'Google のレッスンと音声チャットに適用されます。変更は新しいリクエストから有効です。アクセス権とキーは管理者が管理します。';
 
   @override
   String get aiKeysRegular => '通常のキーのみ';
@@ -1974,4 +1974,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiRemoveImage => '画像を削除';
+
+  @override
+  String get aiConsentTitle => 'AI へのデータ共有を許可しますか？';
+
+  @override
+  String get aiConsentIntro =>
+      '同意すると、Bantera は利用する機能に必要な以下のデータを、サーバー経由で各 AI 提供元に送信します。';
+
+  @override
+  String get aiConsentGoogle =>
+      '会話・レッスン・リマインダー：音声、文字起こし、添付画像、プロンプト、関連するチャット履歴と要約、名前、言語とレベルの設定、練習状況、保存したレッスンやフレーズ、調べた単語、タイムゾーン、リマインダーの詳細。Google は入力の理解と、あなたに合わせた返信、レッスンの文章や音声の生成に使用します。 Google は無料サービスで処理したデータを製品改善や人による確認にも使用する場合があります。機密情報やセンシティブな情報を共有しないでください。';
+
+  @override
+  String get aiConsentCloudflare =>
+      'アバター：名前、選択した性別、言語設定。レッスンの表紙：タイトルと言語。Cloudflare は画像の生成に使用します。';
+
+  @override
+  String get aiConsentChoice =>
+      '機能に必要なデータのみ送信します。「今はしない」を選んでも AI が不要な機能は使えます。設定 > AI データ共有で、この端末からの今後の共有を停止できます。';
+
+  @override
+  String get aiConsentPolicy => 'プライバシーポリシー';
+
+  @override
+  String get aiConsentDecline => '今はしない';
+
+  @override
+  String get aiConsentAgree => '同意して続ける';
+
+  @override
+  String get aiConsentSettings => 'AI データ共有';
+
+  @override
+  String get aiConsentEnabled => 'この端末で AI データ共有が許可されています。';
+
+  @override
+  String get aiConsentDisabled => 'この端末の AI データ共有はオフです。';
+
+  @override
+  String get aiConsentRevoke => 'AI 共有をオフにする';
+
+  @override
+  String get aiConsentExistingRequests =>
+      '送信済みの処理は完了する場合があります。予定済みのリマインダーは継続する場合があるため、以下で管理・取消してください。共有をオフにしても送信済みのデータは削除されません。';
+
+  @override
+  String get aiConsentSaveFailed => '選択を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get aiConsentSearch =>
+      'AI のウェブ・画像検索では、検索語が Microsoft Bing、DuckDuckGo または Wikimedia Commons にも送られ、結果が Google と共有される場合があります。';
 }

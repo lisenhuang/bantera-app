@@ -1,3 +1,4 @@
+import '../../core/ai_consent.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -310,6 +311,12 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
 
     final session = AuthSessionNotifier.instance.session;
     if (session == null) return;
+
+    if (!await AiConsent.instance.request() ||
+        !mounted ||
+        AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey) {
+      return;
+    }
 
     final scenarioText = _selectedScenario == null
         ? ''

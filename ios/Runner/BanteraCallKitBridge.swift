@@ -5,12 +5,24 @@ import PushKit
 import WebRTC
 import UIKit
 import os
+import StoreKit
+
+enum BanteraCallKitRegionPolicy {
+  static func allows(storefront: String?, deviceRegion: String?) -> Bool {
+    let store = storefront?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+    let device = deviceRegion?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+    let mainlandCodes = ["CN", "CHN"]
+    if let store, mainlandCodes.contains(store) { return false }
+    if let device, mainlandCodes.contains(device) { return false }
+    return !(store ?? "").isEmpty || !(device ?? "").isEmpty
+  }
+}
 
 /// Owns system calls independently of a Flutter view, including locked-screen launches.
 final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDelegate {
-  private let provider: CXProvider
-  private let aiProvider: CXProvider
-  private let controller = CXCallController()
+  private var provider: CXProvider?
+  private var aiProvider: CXProvider?
+  private var controller: CXCallController?
   private var registry: PKPushRegistry!
   private var channel: FlutterMethodChannel?
   private var ready = false
@@ -30,22 +42,105 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   private let logger = Logger(subsystem: "bantera.lisenhuang.com", category: "AiCallback")
   private var routeObserver: NSObjectProtocol?
   private let defaults = UserDefaults.standard
+  private(set) var systemCallsAllowed = false
+  private(set) var regionalPolicyResolved = false
+  var hasSystemCallProviders: Bool { provider != nil || aiProvider != nil }
+  var hasVoipRegistration: Bool { registry?.desiredPushTypes?.contains(.voIP) ?? false }
+  private var regionTask: Task<Void, Never>?
+  private var storefrontTask: Task<Void, Never>?
+  private var regionObservers: [NSObjectProtocol] = []
 
-  override init() {
-    provider = CXProvider(configuration: Self.configuration(ai: false))
-    aiProvider = CXProvider(configuration: Self.configuration(ai: true))
+  override convenience init() {
+    self.init(monitorRegions: true)
+  }
+
+  init(monitorRegions: Bool) {
     super.init()
-    provider.setDelegate(self, queue: .main)
-    aiProvider.setDelegate(self, queue: .main)
+    guard monitorRegions else { return }
     routeObserver = NotificationCenter.default.addObserver(
       forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
     ) { [weak self] _ in
       guard let self, self.audioActive else { return }
       self.emitAiRoute()
     }
-    registry = PKPushRegistry(queue: .main)
-    registry.delegate = self
-    registry.desiredPushTypes = [.voIP]
+    // No CallKit objects or VoIP registration until the regional policy resolves.
+    for name in [UIApplication.didBecomeActiveNotification, NSLocale.currentLocaleDidChangeNotification] {
+      regionObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+        _ = self?.refreshRegion()
+      })
+    }
+    storefrontTask = Task { @MainActor [weak self] in
+      for await _ in Storefront.updates {
+        guard let self else { return }
+        await self.refreshRegion().value
+      }
+    }
+    _ = refreshRegion()
+  }
+
+  @discardableResult
+  private func refreshRegion() -> Task<Void, Never> {
+    if let regionTask { return regionTask }
+    let task = Task { @MainActor [weak self] in
+      guard let self else { return }
+      let storefront = await Storefront.current
+      self.applyRegion(storefront: storefront?.countryCode, deviceRegion: Locale.current.region?.identifier)
+      self.regionTask = nil
+    }
+    regionTask = task
+    return task
+  }
+
+  // Internal so simulator tests can exercise the same enforcement used at startup.
+  func applyRegion(storefront: String?, deviceRegion: String?) {
+    let wasResolved = regionalPolicyResolved
+    let previouslyAllowed = systemCallsAllowed
+    regionalPolicyResolved = true
+    let allowed = BanteraCallKitRegionPolicy.allows(storefront: storefront, deviceRegion: deviceRegion)
+    if wasResolved && allowed == systemCallsAllowed { return }
+    if !allowed {
+      events.removeAll { !["tokenInvalidated", "availabilityChanged"].contains($0["event"] as? String ?? "") }
+      for (id, data) in Array(calls) {
+        finish(id, reason: .failed)
+        emit("ended", data)
+      }
+      if registry == nil { registry = PKPushRegistry(queue: .main) }
+      let oldToken = token ?? defaults.string(forKey: "callkit.voipToken") ?? registry?.pushToken(for: .voIP)?.map { String(format: "%02x", $0) }.joined()
+      // Removing the desired type unregisters PushKit; never receive VoIP pushes
+      // merely to discard them without reporting a system call.
+      registry.desiredPushTypes = []
+      registry.delegate = nil
+      token = nil
+      defaults.removeObject(forKey: "callkit.voipToken")
+      if let oldToken, !oldToken.isEmpty {
+        var pending = Set(defaults.stringArray(forKey: "callkit.revokedTokens") ?? [])
+        pending.insert(oldToken)
+        defaults.set(Array(pending), forKey: "callkit.revokedTokens")
+      }
+      provider?.invalidate()
+      aiProvider?.invalidate()
+      provider = nil
+      aiProvider = nil
+      controller = nil
+    } else if !systemCallsAllowed {
+      provider = CXProvider(configuration: Self.configuration(ai: false))
+      aiProvider = CXProvider(configuration: Self.configuration(ai: true))
+      controller = CXCallController()
+      provider?.setDelegate(self, queue: .main)
+      aiProvider?.setDelegate(self, queue: .main)
+      if registry == nil { registry = PKPushRegistry(queue: .main) }
+      systemCallsAllowed = true
+      registry.delegate = self
+      registry.desiredPushTypes = [.voIP]
+    }
+    let changed = previouslyAllowed != allowed || !wasResolved
+    systemCallsAllowed = allowed
+    if changed { emit("availabilityChanged", ["available": allowed]) }
+  }
+
+  private var registrationInfo: [String: Any] {
+    ["token": systemCallsAllowed ? token ?? "" : "", "available": systemCallsAllowed,
+     "isSandbox": BanteraPushNotificationsBridge.isApnsSandboxEnvironment(), "deviceId": deviceId]
   }
 
   static func configuration(ai: Bool) -> CXProviderConfiguration {
@@ -62,11 +157,11 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     (data["callerUserId"] as? String)?.lowercased() == "ba07e2a0-a100-4000-8000-000000000001"
   }
 
-  private func provider(for data: [String: Any]) -> CXProvider {
+  private func provider(for data: [String: Any]) -> CXProvider? {
     Self.isAi(data) ? aiProvider : provider
   }
 
-  private func provider(for id: UUID, data: [String: Any]) -> CXProvider {
+  private func provider(for id: UUID, data: [String: Any]) -> CXProvider? {
     callProviders[id] ?? provider(for: data)
   }
 
@@ -92,11 +187,14 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       switch call.method {
       case "ready":
         self.defaults.set(args["userId"] as? String, forKey: "callkit.userId")
-        self.ready = true
-        let queued = self.events
-        self.events.removeAll()
-        result(["token": self.token ?? "", "isSandbox": BanteraPushNotificationsBridge.isApnsSandboxEnvironment(), "deviceId": self.deviceId])
-        for event in queued { self.channel?.invokeMethod("event", arguments: event) }
+        Task { @MainActor in
+          await self.refreshRegion().value
+          self.ready = true
+          let queued = self.events
+          self.events.removeAll()
+          result(self.registrationInfo)
+          for event in queued { self.channel?.invokeMethod("event", arguments: event) }
+        }
       case "setUser":
         self.defaults.set(args["userId"] as? String, forKey: "callkit.userId")
         if args["userId"] as? String == nil {
@@ -104,10 +202,22 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
         }
         result(nil)
       case "token":
-        result(["token": self.token ?? "", "isSandbox": BanteraPushNotificationsBridge.isApnsSandboxEnvironment(), "deviceId": self.deviceId])
+        Task { @MainActor in
+          await self.refreshRegion().value
+          result(self.registrationInfo)
+        }
+      case "revokedTokens":
+        result(self.defaults.stringArray(forKey: "callkit.revokedTokens") ?? [])
+      case "ackRevokedToken":
+        var pending = self.defaults.stringArray(forKey: "callkit.revokedTokens") ?? []
+        pending.removeAll { $0 == args["token"] as? String }
+        self.defaults.set(pending, forKey: "callkit.revokedTokens")
+        result(nil)
       case "incoming":
+        guard self.systemCallsAllowed else { return result(true) }
         self.reportIncoming(args, completion: { error in result(error == nil) })
       case "outgoing":
+        guard self.systemCallsAllowed, let controller = self.controller else { return result(true) }
         guard let id else { return result(false) }
         if self.calls[id] != nil { return result(true) }
         self.calls[id] = args
@@ -115,20 +225,20 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
         self.prepareAudio()
         let action = CXStartCallAction(call: id, handle: CXHandle(type: .generic, value: args["callerName"] as? String ?? "Bantera"))
         action.isVideo = !Self.isAi(args) && args["mediaKind"] as? String == "video"
-        self.controller.request(CXTransaction(action: action)) { error in
+        controller.request(CXTransaction(action: action)) { error in
           DispatchQueue.main.async {
             if error != nil { self.finish(id, reason: .failed) }
             result(error == nil)
           }
         }
       case "requestAnswer":
-        guard let id else { return result(false) }
-        self.controller.request(CXTransaction(action: CXAnswerCallAction(call: id))) { error in
+        guard self.systemCallsAllowed, let controller = self.controller, let id else { return result(false) }
+        controller.request(CXTransaction(action: CXAnswerCallAction(call: id))) { error in
           DispatchQueue.main.async { result(error == nil) }
         }
       case "requestMute":
-        guard let id else { return result(false) }
-        self.controller.request(CXTransaction(action: CXSetMutedCallAction(call: id, muted: args["muted"] as? Bool == true))) { error in
+        guard self.systemCallsAllowed, let controller = self.controller, let id else { return result(false) }
+        controller.request(CXTransaction(action: CXSetMutedCallAction(call: id, muted: args["muted"] as? Bool == true))) { error in
           DispatchQueue.main.async { result(error == nil) }
         }
       case "answerReady":
@@ -143,7 +253,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
         if let id { self.endAnswerTask(id) }
         result(nil)
       case "connected":
-        if let id, self.outgoing.contains(id), let data = self.calls[id] { self.provider(for: id, data: data).reportOutgoingCall(with: id, connectedAt: Date()) }
+        if let id, self.outgoing.contains(id), let data = self.calls[id] { self.provider(for: id, data: data)?.reportOutgoingCall(with: id, connectedAt: Date()) }
         result(nil)
       case "end":
         if let id { self.finish(id, reason: .remoteEnded) }
@@ -168,8 +278,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
-    guard type == .voIP else { return }
+    guard type == .voIP, systemCallsAllowed else { return }
     token = pushCredentials.token.map { String(format: "%02x", $0) }.joined()
+    defaults.set(token, forKey: "callkit.voipToken")
     emit("token", [:])
   }
 
@@ -177,12 +288,13 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     guard type == .voIP else { return }
     let oldToken = token
     token = nil
+    defaults.removeObject(forKey: "callkit.voipToken")
     emit("tokenInvalidated", ["token": oldToken ?? ""])
   }
 
   func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload,
                     for type: PKPushType, completion: @escaping () -> Void) {
-    guard type == .voIP else { completion(); return }
+    guard type == .voIP, systemCallsAllowed else { completion(); return }
     var data: [String: Any] = [:]
     for (key, value) in payload.dictionaryPayload { if let key = key as? String { data[key] = value } }
     // Report synchronously from the PushKit callback, before Dart or any network work.
@@ -190,6 +302,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   private func reportIncoming(_ data: [String: Any], fromPush: Bool = false, completion: @escaping (Error?) -> Void) {
+    guard systemCallsAllowed, let provider = provider(for: data) else {
+      completion(NSError(domain: "BanteraCallKit", code: 1)); return
+    }
     let parsedId = (data["callId"] as? String).flatMap(UUID.init(uuidString:))
     let id = parsedId ?? UUID()
     if calls[id] != nil && !fromPush { completion(nil); return }
@@ -202,7 +317,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       // Later startup callbacks must preserve the route the person selected.
       prepareAudio(resetToReceiver: true)
     }
-    provider(for: data).reportNewIncomingCall(with: id, update: update) { [weak self] error in
+    provider.reportNewIncomingCall(with: id, update: update) { [weak self] error in
       DispatchQueue.main.async {
         guard let self else { completion(error); return }
         if duplicate { completion(error); return }
@@ -245,6 +360,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   deinit {
+    regionTask?.cancel()
+    storefrontTask?.cancel()
+    for observer in regionObservers { NotificationCenter.default.removeObserver(observer) }
     if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
   }
 
@@ -287,7 +405,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     answers.removeValue(forKey: id)?.fail()
     outgoing.remove(id)
     let owner = callProviders.removeValue(forKey: id) ?? provider(for: data)
-    owner.reportCall(with: id, endedAt: Date(), reason: reason)
+    owner?.reportCall(with: id, endedAt: Date(), reason: reason)
     if calls.isEmpty { RTCAudioSession.sharedInstance().useManualAudio = false }
   }
 
@@ -298,7 +416,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-    guard calls[action.callUUID] != nil else { action.fail(); return }
+    guard systemCallsAllowed, calls[action.callUUID] != nil else { action.fail(); return }
     // CallKit chooses the provider for outgoing transactions. Retain the actual
     // delegate so activation and completion use that provider as well.
     callProviders[action.callUUID] = provider
@@ -308,7 +426,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
   }
 
   func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-    guard let data = calls[action.callUUID] else { action.fail(); return }
+    guard systemCallsAllowed, let data = calls[action.callUUID] else { action.fail(); return }
     callProviders[action.callUUID] = provider
     if !Self.isAi(data) { answers[action.callUUID] = action }
     if Self.isAi(data) {

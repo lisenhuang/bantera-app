@@ -1,3 +1,4 @@
+import '../support/ai_consent_test_support.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -29,6 +30,7 @@ void main() {
           final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
           addTearDown(() => server.close(force: true));
           final client = AuthApiClient.forTesting(
+            requireAiConsent: await approvedAiConsentForTest(),
             baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
           );
           var posts = 0;
@@ -100,6 +102,7 @@ void main() {
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
       final client = AuthApiClient.forTesting(
+        requireAiConsent: await approvedAiConsentForTest(),
         baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
       );
       var posts = 0;
@@ -147,6 +150,7 @@ void main() {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     addTearDown(() => server.close(force: true));
     final client = AuthApiClient.forTesting(
+      requireAiConsent: await approvedAiConsentForTest(),
       baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
     );
     var requests = 0;
@@ -185,6 +189,7 @@ void main() {
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
       final client = AuthApiClient.forTesting(
+        requireAiConsent: await approvedAiConsentForTest(),
         baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
       );
       var posts = 0;
@@ -230,6 +235,7 @@ void main() {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     addTearDown(() => server.close(force: true));
     final client = AuthApiClient.forTesting(
+      requireAiConsent: await approvedAiConsentForTest(),
       baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
       recoveryTimeout: const Duration(milliseconds: 60),
       recoveryPollInterval: const Duration(milliseconds: 10),

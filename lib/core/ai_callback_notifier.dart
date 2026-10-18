@@ -1,3 +1,4 @@
+import 'ai_consent.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -217,11 +218,18 @@ class AiCallbackNotifier extends ChangeNotifier {
   }
 
   Future<void> accept({bool system = false}) async {
+    await _callKit.refreshAvailability();
     if (id == null || !ringing || accepting) return;
     if (_callKit.supported && !system) {
       await _callKit.report('requestAnswer', {'callId': id});
       return;
     }
+    if (_createController == null &&
+        (_owner == null || !await AiConsent.instance.isAllowed(_owner!))) {
+      await close();
+      return;
+    }
+    if (id == null || !ringing || accepting) return;
     accepting = true;
     notifyListeners();
     final current = id;

@@ -1,3 +1,5 @@
+import 'core/ai_consent.dart';
+import 'presentation/shared/ai_consent_dialog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -62,10 +64,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    AiConsent.instance.present = () async {
+      final context = aiReminderNavigatorKey.currentState?.overlay?.context;
+      return context != null && context.mounted
+          ? showAiConsentDialog(context)
+          : false;
+    };
   }
 
   @override
   void dispose() {
+    AiConsent.instance.present = null;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

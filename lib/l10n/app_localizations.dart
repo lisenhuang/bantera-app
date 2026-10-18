@@ -3713,7 +3713,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiKeysDescription.
   ///
   /// In en, this message translates to:
-  /// **'Applies to Gemini lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.'**
+  /// **'Applies to Google lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.'**
   String get aiKeysDescription;
 
   /// No description provided for @aiKeysRegular.
@@ -3781,6 +3781,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove image'**
   String get aiRemoveImage;
+
+  /// No description provided for @aiConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow AI data sharing?'**
+  String get aiConsentTitle;
+
+  /// No description provided for @aiConsentIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'With your permission, Bantera sends the following data through its servers to these AI providers for the features you use.'**
+  String get aiConsentIntro;
+
+  /// No description provided for @aiConsentGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'For conversations, lessons and reminders: your voice audio, transcripts, attached images, prompts, relevant chat history and summaries, name, language and level preferences, practice activity, saved lessons and phrases, requested vocabulary, time zone, and reminder details. Google uses this data to understand your input and generate personalised replies, lesson text and speech. Google may also use data from unpaid processing for product improvement and human review. Do not share sensitive or confidential information.'**
+  String get aiConsentGoogle;
+
+  /// No description provided for @aiConsentCloudflare.
+  ///
+  /// In en, this message translates to:
+  /// **'For avatars: your name, selected gender and language preferences. For lesson covers: the lesson title and language. Cloudflare uses this data to generate images.'**
+  String get aiConsentCloudflare;
+
+  /// No description provided for @aiConsentChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the data needed for the feature is sent. Choose Not now to keep using features that do not need AI. You can turn off future sharing on this device in Settings > AI data sharing.'**
+  String get aiConsentChoice;
+
+  /// No description provided for @aiConsentPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get aiConsentPolicy;
+
+  /// No description provided for @aiConsentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get aiConsentDecline;
+
+  /// No description provided for @aiConsentAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get aiConsentAgree;
+
+  /// No description provided for @aiConsentSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'AI data sharing'**
+  String get aiConsentSettings;
+
+  /// No description provided for @aiConsentEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'AI data sharing is allowed on this device.'**
+  String get aiConsentEnabled;
+
+  /// No description provided for @aiConsentDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'AI data sharing is off on this device.'**
+  String get aiConsentDisabled;
+
+  /// No description provided for @aiConsentRevoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off AI sharing'**
+  String get aiConsentRevoke;
+
+  /// No description provided for @aiConsentExistingRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests already sent may finish. Scheduled reminders may still run; manage and cancel them below. Turning off sharing does not delete data already sent.'**
+  String get aiConsentExistingRequests;
+
+  /// No description provided for @aiConsentSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your choice could not be saved. Please try again.'**
+  String get aiConsentSaveFailed;
+
+  /// No description provided for @aiConsentSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'If you use AI web or image search, queries are also sent to Microsoft Bing, DuckDuckGo or Wikimedia Commons, and results may be shared with Google.'**
+  String get aiConsentSearch;
 }
 
 class _AppLocalizationsDelegate

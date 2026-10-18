@@ -146,6 +146,7 @@ class DmCallNotifier extends ChangeNotifier {
   }
 
   Future<void> acceptIncomingCall({bool fromSystem = false}) async {
+    await CallKitService.instance.refreshAvailability();
     if (_phase != DmCallPhase.incoming ||
         _callId == null ||
         _mediaKind == null) {
@@ -467,6 +468,9 @@ class DmCallNotifier extends ChangeNotifier {
     final payload = event['payload'];
     if (payload is! Map) {
       return;
+    }
+    if (type == 'call.incoming' || type == 'call.outgoing.created') {
+      await CallKitService.instance.refreshAvailability();
     }
 
     final map = payload.map((key, value) => MapEntry(key.toString(), value));

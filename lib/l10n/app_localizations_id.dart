@@ -2031,7 +2031,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Berlaku untuk pelajaran dan obrolan suara Gemini. Perubahan berlaku untuk permintaan baru. Administrator mengelola akses dan kunci.';
+      'Berlaku untuk pelajaran dan obrolan suara Google. Perubahan berlaku untuk permintaan baru. Administrator mengelola akses dan kunci.';
 
   @override
   String get aiKeysRegular => 'Hanya kunci reguler';
@@ -2068,4 +2068,57 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Hapus gambar';
+
+  @override
+  String get aiConsentTitle => 'Izinkan berbagi data AI?';
+
+  @override
+  String get aiConsentIntro =>
+      'Dengan izin Anda, Bantera mengirim data berikut melalui servernya ke penyedia AI untuk fitur yang digunakan.';
+
+  @override
+  String get aiConsentGoogle =>
+      'Percakapan, pelajaran, dan pengingat: suara, transkrip, gambar terlampir, perintah, riwayat dan ringkasan chat terkait, nama, bahasa dan tingkat, aktivitas latihan, pelajaran dan frasa tersimpan, kosakata yang diminta, zona waktu, dan detail pengingat. Google menggunakannya untuk memahami masukan dan menghasilkan balasan personal, teks pelajaran, dan suara. Google juga dapat menggunakan data dari pemrosesan gratis untuk peningkatan produk dan peninjauan manusia. Jangan bagikan informasi sensitif atau rahasia.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'Avatar: nama, gender pilihan, dan bahasa. Sampul pelajaran: judul dan bahasa. Cloudflare menggunakan data ini untuk membuat gambar.';
+
+  @override
+  String get aiConsentChoice =>
+      'Hanya data yang diperlukan yang dikirim. “Nanti saja” tetap memungkinkan fitur tanpa AI. Matikan berbagi berikutnya pada perangkat ini di Pengaturan > Berbagi data AI.';
+
+  @override
+  String get aiConsentPolicy => 'Kebijakan Privasi';
+
+  @override
+  String get aiConsentDecline => 'Nanti saja';
+
+  @override
+  String get aiConsentAgree => 'Setuju dan lanjutkan';
+
+  @override
+  String get aiConsentSettings => 'Berbagi data AI';
+
+  @override
+  String get aiConsentEnabled =>
+      'Berbagi data AI diizinkan pada perangkat ini.';
+
+  @override
+  String get aiConsentDisabled =>
+      'Berbagi data AI nonaktif pada perangkat ini.';
+
+  @override
+  String get aiConsentRevoke => 'Matikan berbagi AI';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Permintaan yang sudah dikirim mungkin tetap selesai. Pengingat terjadwal mungkin tetap berjalan; kelola dan batalkan di bawah. Menonaktifkan berbagi tidak menghapus data yang sudah dikirim.';
+
+  @override
+  String get aiConsentSaveFailed => 'Pilihan tidak dapat disimpan. Coba lagi.';
+
+  @override
+  String get aiConsentSearch =>
+      'Jika menggunakan pencarian web atau gambar AI, kueri juga dikirim ke Microsoft Bing, DuckDuckGo atau Wikimedia Commons, dan hasil dapat dibagikan ke Google.';
 }

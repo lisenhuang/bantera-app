@@ -2027,7 +2027,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Gemini dersleri ve sesli sohbetleri için geçerlidir. Değişiklikler yeni isteklere uygulanır. Erişimi ve anahtarı yönetici yönetir.';
+      'Google dersleri ve sesli sohbetleri için geçerlidir. Değişiklikler yeni isteklere uygulanır. Erişimi ve anahtarı yönetici yönetir.';
 
   @override
   String get aiKeysRegular => 'Yalnızca normal anahtarlar';
@@ -2064,4 +2064,56 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Görseli kaldır';
+
+  @override
+  String get aiConsentTitle => 'AI veri paylaşımına izin verilsin mi?';
+
+  @override
+  String get aiConsentIntro =>
+      'İzninizle Bantera, kullandığınız özellikler için aşağıdaki verileri sunucuları üzerinden AI sağlayıcılarına gönderir.';
+
+  @override
+  String get aiConsentGoogle =>
+      'Sohbet, ders ve hatırlatıcılar: ses, dökümler, eklenen görseller, istemler, ilgili sohbet geçmişi ve özetler, ad, dil ve seviye tercihleri, pratik etkinliği, kayıtlı dersler ve ifadeler, istenen kelimeler, saat dilimi ve hatırlatıcı ayrıntıları. Google bunları girdinizi anlamak, kişisel yanıtlar, ders metinleri ve ses üretmek için kullanır. Google, ücretsiz işlenen verileri ürün iyileştirme ve insan incelemesi için de kullanabilir. Hassas veya gizli bilgi paylaşmayın.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'Avatarlar: ad, seçilen cinsiyet ve dil tercihleri. Ders kapakları: ders başlığı ve dili. Cloudflare bu verilerle görsel üretir.';
+
+  @override
+  String get aiConsentChoice =>
+      'Yalnızca gerekli veriler gönderilir. “Şimdi değil” ile AI gerektirmeyen özellikleri kullanabilirsiniz. Bu cihazdaki gelecekteki paylaşımı Ayarlar > AI veri paylaşımı bölümünde kapatabilirsiniz.';
+
+  @override
+  String get aiConsentPolicy => 'Gizlilik Politikası';
+
+  @override
+  String get aiConsentDecline => 'Şimdi değil';
+
+  @override
+  String get aiConsentAgree => 'Kabul et ve devam et';
+
+  @override
+  String get aiConsentSettings => 'AI veri paylaşımı';
+
+  @override
+  String get aiConsentEnabled =>
+      'Bu cihazda AI veri paylaşımına izin veriliyor.';
+
+  @override
+  String get aiConsentDisabled => 'Bu cihazda AI veri paylaşımı kapalı.';
+
+  @override
+  String get aiConsentRevoke => 'AI paylaşımını kapat';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Gönderilmiş istekler tamamlanabilir. Planlanan hatırlatıcılar devam edebilir; aşağıdan yönetin ve iptal edin. Paylaşımı kapatmak gönderilen verileri silmez.';
+
+  @override
+  String get aiConsentSaveFailed => 'Seçiminiz kaydedilemedi. Tekrar deneyin.';
+
+  @override
+  String get aiConsentSearch =>
+      'AI web veya görsel aramasında sorgular Microsoft Bing, DuckDuckGo veya Wikimedia Commons’a da gönderilir ve sonuçlar Google ile paylaşılabilir.';
 }

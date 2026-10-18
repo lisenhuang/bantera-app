@@ -2028,7 +2028,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Áp dụng cho bài học và trò chuyện thoại Gemini. Thay đổi áp dụng cho yêu cầu mới. Quản trị viên quản lý quyền truy cập và khóa.';
+      'Áp dụng cho bài học và trò chuyện thoại Google. Thay đổi áp dụng cho yêu cầu mới. Quản trị viên quản lý quyền truy cập và khóa.';
 
   @override
   String get aiKeysRegular => 'Chỉ dùng khóa thông thường';
@@ -2065,4 +2065,57 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Xóa ảnh';
+
+  @override
+  String get aiConsentTitle => 'Cho phép chia sẻ dữ liệu AI?';
+
+  @override
+  String get aiConsentIntro =>
+      'Khi bạn đồng ý, Bantera gửi dữ liệu sau qua máy chủ của mình đến các nhà cung cấp AI cho tính năng bạn sử dụng.';
+
+  @override
+  String get aiConsentGoogle =>
+      'Hội thoại, bài học và lời nhắc: giọng nói, bản chép lời, ảnh đính kèm, yêu cầu, lịch sử và tóm tắt trò chuyện liên quan, tên, ngôn ngữ và trình độ, hoạt động luyện tập, bài học và câu đã lưu, từ vựng được hỏi, múi giờ và chi tiết lời nhắc. Google dùng dữ liệu này để hiểu yêu cầu và tạo phản hồi cá nhân hóa, văn bản bài học và giọng nói. Google cũng có thể dùng dữ liệu xử lý miễn phí để cải thiện sản phẩm và cho nhân viên đánh giá. Không chia sẻ thông tin nhạy cảm hoặc bí mật.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'Ảnh đại diện: tên, giới tính đã chọn và ngôn ngữ. Bìa bài học: tiêu đề và ngôn ngữ. Cloudflare dùng dữ liệu này để tạo ảnh.';
+
+  @override
+  String get aiConsentChoice =>
+      'Chỉ gửi dữ liệu cần thiết. Chọn “Để sau” vẫn dùng được các tính năng không cần AI. Tắt chia sẻ sau này trên thiết bị này tại Cài đặt > Chia sẻ dữ liệu AI.';
+
+  @override
+  String get aiConsentPolicy => 'Chính sách quyền riêng tư';
+
+  @override
+  String get aiConsentDecline => 'Để sau';
+
+  @override
+  String get aiConsentAgree => 'Đồng ý và tiếp tục';
+
+  @override
+  String get aiConsentSettings => 'Chia sẻ dữ liệu AI';
+
+  @override
+  String get aiConsentEnabled =>
+      'Đã cho phép chia sẻ dữ liệu AI trên thiết bị này.';
+
+  @override
+  String get aiConsentDisabled =>
+      'Đã tắt chia sẻ dữ liệu AI trên thiết bị này.';
+
+  @override
+  String get aiConsentRevoke => 'Tắt chia sẻ AI';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Yêu cầu đã gửi có thể vẫn hoàn tất. Lời nhắc đã lên lịch có thể tiếp tục; quản lý và hủy bên dưới. Tắt chia sẻ không xóa dữ liệu đã gửi.';
+
+  @override
+  String get aiConsentSaveFailed => 'Không thể lưu lựa chọn. Vui lòng thử lại.';
+
+  @override
+  String get aiConsentSearch =>
+      'Khi tìm web hoặc ảnh bằng AI, truy vấn cũng được gửi đến Microsoft Bing, DuckDuckGo hoặc Wikimedia Commons và kết quả có thể được chia sẻ với Google.';
 }

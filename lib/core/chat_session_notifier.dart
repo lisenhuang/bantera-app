@@ -1022,7 +1022,16 @@ class ChatSessionNotifier extends ChangeNotifier {
   }
 
   void _voipTokenChanged() {
-    unawaited(_syncVoipToken());
+    // Regional restrictions restore normal call alerts instead of PushKit.
+    _lastRegisteredPushTokenKey = null;
+    _lastRegisteredVoipTokenKey = null;
+    if (_globalNotificationsEnabled) {
+      // This registers APNs first, then VoIP in its finally block. Reversing
+      // that order could restore duplicate call alerts on unrestricted devices.
+      unawaited(_syncPushToken(promptForPermission: false));
+    } else {
+      unawaited(_syncVoipToken());
+    }
   }
 
   Future<void> _syncVoipToken() async {
@@ -1038,8 +1047,19 @@ class ChatSessionNotifier extends ChangeNotifier {
 
   Future<void> _registerVoipToken() async {
     final session = AuthSessionNotifier.instance.session;
-    if (session == null || !_globalNotificationsEnabled) return;
+    if (session == null) return;
     try {
+      for (final revoked in await CallKitService.instance.revokedTokens()) {
+        if (AuthSessionNotifier.instance.session?.cacheKey !=
+            session.cacheKey) {
+          return;
+        }
+        await _withRetry<void>(
+          (access) => _apiClient.unregisterVoipToken(access, revoked),
+        );
+        await CallKitService.instance.acknowledgeRevokedToken(revoked);
+      }
+      if (!_globalNotificationsEnabled) return;
       final token = await CallKitService.instance.token();
       if (token == null) return;
       final alert = await PushNotificationsService.instance.getCachedToken();

@@ -1,3 +1,4 @@
+import '../shared/ai_consent_dialog.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -555,6 +556,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
               _buildSectionHeader(context, l10n.sectionPermissions),
+              Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: const Icon(Icons.auto_awesome_outlined),
+                  title: Text(l10n.aiConsentSettings),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: auth.session == null
+                      ? null
+                      : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AiConsentSettingsScreen(),
+                            ),
+                          );
+                        },
+                ),
+              ),
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(

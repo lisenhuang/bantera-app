@@ -1,3 +1,4 @@
+import '../support/ai_consent_test_support.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -57,6 +58,7 @@ void main() {
       });
       addTearDown(serving.cancel);
       final client = AuthApiClient.forTesting(
+        requireAiConsent: await approvedAiConsentForTest(),
         baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
       );
       await client.fetchPublicVideos(
@@ -101,6 +103,7 @@ void main() {
         });
         addTearDown(serving.cancel);
         final client = AuthApiClient.forTesting(
+          requireAiConsent: await approvedAiConsentForTest(),
           baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
         );
         final generate = useV3

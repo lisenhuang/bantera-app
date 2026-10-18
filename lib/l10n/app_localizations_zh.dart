@@ -1944,7 +1944,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiKeysTitle => 'AI 密钥偏好';
 
   @override
-  String get aiKeysDescription => '适用于 Gemini 课程和语音聊天。更改对新请求生效。管理员管理权限和密钥。';
+  String get aiKeysDescription => '适用于 Google 课程和语音聊天。更改对新请求生效。管理员管理权限和密钥。';
 
   @override
   String get aiKeysRegular => '仅使用常规密钥';
@@ -1978,6 +1978,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiRemoveImage => '移除图片';
+
+  @override
+  String get aiConsentTitle => '允许分享 AI 数据？';
+
+  @override
+  String get aiConsentIntro => '经你同意，Bantera 会通过服务器向以下 AI 服务商发送你使用相关功能所需的数据。';
+
+  @override
+  String get aiConsentGoogle =>
+      '对话、课程和提醒：语音、转录文字、附加图片、提示词、相关聊天记录及摘要、姓名、语言和水平偏好、练习活动、收藏的课程和句子、查询的词汇、时区及提醒详情。Google 使用这些数据理解你的输入，并生成个性化回复、课程文本和语音。 Google 也可能将免费服务处理的数据用于产品改进和人工审核。请勿分享敏感或机密信息。';
+
+  @override
+  String get aiConsentCloudflare =>
+      '头像：姓名、所选性别及语言偏好。课程封面：课程标题及语言。Cloudflare 使用这些数据生成图片。';
+
+  @override
+  String get aiConsentChoice =>
+      '仅发送该功能所需的数据。选择“暂不”仍可使用无需 AI 的功能。你可以在“设置 > AI 数据分享”中关闭此设备后续的数据分享。';
+
+  @override
+  String get aiConsentPolicy => '隐私政策';
+
+  @override
+  String get aiConsentDecline => '暂不';
+
+  @override
+  String get aiConsentAgree => '同意并继续';
+
+  @override
+  String get aiConsentSettings => 'AI 数据分享';
+
+  @override
+  String get aiConsentEnabled => '此设备已允许 AI 数据分享。';
+
+  @override
+  String get aiConsentDisabled => '此设备已关闭 AI 数据分享。';
+
+  @override
+  String get aiConsentRevoke => '关闭 AI 数据分享';
+
+  @override
+  String get aiConsentExistingRequests =>
+      '已发送的请求可能仍会完成。已安排的提醒可能继续执行，请在下方管理和取消。关闭分享不会删除已发送的数据。';
+
+  @override
+  String get aiConsentSaveFailed => '无法保存你的选择，请重试。';
+
+  @override
+  String get aiConsentSearch =>
+      '使用 AI 网页或图片搜索时，查询也会发送至 Microsoft Bing、DuckDuckGo 或 Wikimedia Commons，搜索结果可能分享给 Google。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3924,7 +3974,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiKeysTitle => 'AI 金鑰偏好';
 
   @override
-  String get aiKeysDescription => '適用於 Gemini 課程和語音聊天。變更對新請求生效。管理員管理權限和金鑰。';
+  String get aiKeysDescription => '適用於 Google 課程和語音聊天。變更對新請求生效。管理員管理權限和金鑰。';
 
   @override
   String get aiKeysRegular => '僅使用一般金鑰';
@@ -3958,4 +4008,54 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiRemoveImage => '移除圖片';
+
+  @override
+  String get aiConsentTitle => '允許分享 AI 資料？';
+
+  @override
+  String get aiConsentIntro => '經你同意，Bantera 會透過伺服器向以下 AI 服務商傳送你使用相關功能所需的資料。';
+
+  @override
+  String get aiConsentGoogle =>
+      '對話、課程及提醒：語音、轉錄文字、附加圖片、提示詞、相關聊天記錄及摘要、姓名、語言及程度偏好、練習活動、收藏的課程及句子、查詢的詞彙、時區及提醒詳情。Google 使用這些資料理解你的輸入，並產生個人化回覆、課程文字及語音。 Google 也可能將免費服務處理的資料用於產品改進及人工審查。請勿分享敏感或機密資訊。';
+
+  @override
+  String get aiConsentCloudflare =>
+      '頭像：姓名、所選性別及語言偏好。課程封面：課程標題及語言。Cloudflare 使用這些資料產生圖片。';
+
+  @override
+  String get aiConsentChoice =>
+      '僅傳送該功能所需的資料。選擇「暫不」仍可使用無需 AI 的功能。你可以在「設定 > AI 資料分享」中關閉此裝置後續的資料分享。';
+
+  @override
+  String get aiConsentPolicy => '私隱政策';
+
+  @override
+  String get aiConsentDecline => '暫不';
+
+  @override
+  String get aiConsentAgree => '同意並繼續';
+
+  @override
+  String get aiConsentSettings => 'AI 資料分享';
+
+  @override
+  String get aiConsentEnabled => '此裝置已允許 AI 資料分享。';
+
+  @override
+  String get aiConsentDisabled => '此裝置已關閉 AI 資料分享。';
+
+  @override
+  String get aiConsentRevoke => '關閉 AI 資料分享';
+
+  @override
+  String get aiConsentExistingRequests =>
+      '已傳送的請求可能仍會完成。已安排的提醒可能繼續執行，請在下方管理及取消。關閉分享不會刪除已傳送的資料。';
+
+  @override
+  String get aiConsentSaveFailed => '無法儲存你的選擇，請重試。';
+
+  @override
+  String get aiConsentSearch =>
+      '使用 AI 網頁或圖片搜尋時，查詢也會傳送至 Microsoft Bing、DuckDuckGo 或 Wikimedia Commons，搜尋結果可能分享給 Google。';
 }

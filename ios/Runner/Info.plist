@@ -8,8 +8,6 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Bantera</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Save your Bantera word progress image to Photos.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -44,8 +42,21 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>bantera.practice</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bantera</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -53,14 +64,18 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Choose photos for your profile or to share with Bantera AI.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Bantera uses your camera for video calls and photos you choose to share with Bantera AI.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Bantera requires microphone access to record practice audio, chat messages, and live calls.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save your Bantera word progress image to Photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos for your profile or to share with Bantera AI.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Bantera uses speech recognition to transcribe practice recordings and uploaded audio.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -82,8 +97,6 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
@@ -103,18 +116,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>bantera.practice</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>bantera</string>
-			</array>
-		</dict>
-	</array>
-	<key>FlutterDeepLinkingEnabled</key>
-	<false/>
 </dict>
 </plist>

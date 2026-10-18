@@ -1,3 +1,4 @@
+import '../../../core/ai_consent.dart';
 import '../../../infrastructure/ai/ai_image_input.dart';
 import '../../../infrastructure/ai/ai_vocabulary.dart';
 import '../../../infrastructure/ai/ai_emoji_tool.dart';
@@ -36,6 +37,7 @@ class AiChatController extends ChangeNotifier {
     : owner = AuthSessionNotifier.instance.session!.cacheKey,
       store = AiHistoryStore(AuthSessionNotifier.instance.session!.cacheKey) {
     AuthSessionNotifier.instance.addListener(_accountChanged);
+    AiConsent.instance.addListener(_consentChanged);
     DmCallNotifier.instance.addListener(_humanCallChanged);
   }
   @visibleForTesting
@@ -161,7 +163,9 @@ class AiChatController extends ChangeNotifier {
   Future<void> _replyAudioWork = Future.value();
   int _replyPlayedFrames = 0;
   bool _deletingMessage = false;
+  bool _consentStopping = false;
   bool get canRecord =>
+      !_consentStopping &&
       !_deletingMessage &&
       _endingCall == null &&
       available &&
@@ -235,7 +239,9 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> _refreshMemory() async {
-    if (_testing || !available) return;
+    if (_testing || !available || !await AiConsent.instance.isAllowed(owner)) {
+      return;
+    }
     await store.refreshMemory(
       (previous, turns) => _api.summarize(owner, previous, turns),
       active: () => available,
@@ -247,7 +253,7 @@ class AiChatController extends ChangeNotifier {
     try {
       await store.load();
       if (!available) return;
-      privacyNoticeVisible = !store.privacyNoticeDismissed;
+      privacyNoticeVisible = false; // Explicit consent replaces the old banner.
       loaded = true;
       _api.conversationId = () => store.conversationId;
       store.onSaved = _refreshMemory;
@@ -338,6 +344,33 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
+  void _consentChanged() {
+    if (_testing || !available || AiConsent.instance.isKnownAllowed(owner)) {
+      return;
+    }
+    _consentStopping = true;
+    _epoch++;
+    _webSearch.cancel();
+    _imageSearch.cancel();
+    _api.close();
+    _api = AiApiClient()..conversationId = () => store.conversationId;
+    // Invalidate callbacks and stop every outbound stream synchronously; do not
+    // wait for playback, storage or another socket to finish closing first.
+    unawaited(_socket?.close());
+    unawaited(_voiceStream?.close());
+    unawaited(_receivingStream?.close());
+    unawaited(
+      Future.wait([cancelRecording(), endCall()])
+          .whenComplete(() {
+            _consentStopping = false;
+            if (!available) return;
+            busy = false;
+            changed();
+          })
+          .catchError((Object _) => <void>[]),
+    );
+  }
+
   void _humanCallChanged() {
     if (DmCallNotifier.instance.isActive) {
       _replyPlaybackUnavailable = true;
@@ -416,6 +449,8 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> record() async {
+    if (!canRecord || preparingImages) return;
+    if (!_testing && !await AiConsent.instance.request()) return;
     if (!canRecord || preparingImages) return;
     _recordStarting = true;
     final epoch = _epoch;
@@ -1166,6 +1201,14 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> startCall() async {
+    if (_consentStopping) return;
+    if (!_testing) {
+      // A locked-screen callback cannot obtain new consent.
+      final allowed = callbackId != null
+          ? await AiConsent.instance.isAllowed(owner)
+          : await AiConsent.instance.request();
+      if (!allowed) return;
+    }
     if (_deletingMessage) return;
     if (_endingCall != null ||
         (!callKitManaged && AiCallbackNotifier.instance.aiActive)) {
@@ -1853,6 +1896,7 @@ class AiChatController extends ChangeNotifier {
     _elapsed.stop();
     _countdown?.cancel();
     _connectTimeout?.cancel();
+    AiConsent.instance.removeListener(_consentChanged);
     AuthSessionNotifier.instance.removeListener(_accountChanged);
     DmCallNotifier.instance.removeListener(_humanCallChanged);
     unawaited(endCall());

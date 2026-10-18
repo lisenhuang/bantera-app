@@ -2089,7 +2089,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Gilt für Gemini-Lektionen und Sprachchats. Änderungen gelten für neue Anfragen. Der Administrator verwaltet Zugriff und Schlüssel.';
+      'Gilt für Google-Lektionen und Sprachchats. Änderungen gelten für neue Anfragen. Der Administrator verwaltet Zugriff und Schlüssel.';
 
   @override
   String get aiKeysRegular => 'Nur reguläre Schlüssel';
@@ -2126,4 +2126,57 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Bild entfernen';
+
+  @override
+  String get aiConsentTitle => 'Datenfreigabe für KI erlauben?';
+
+  @override
+  String get aiConsentIntro =>
+      'Mit deiner Zustimmung sendet Bantera die folgenden Daten über seine Server an diese KI-Anbieter für die genutzten Funktionen.';
+
+  @override
+  String get aiConsentGoogle =>
+      'Gespräche, Lektionen und Erinnerungen: Sprachaufnahmen, Transkripte, angehängte Bilder, Eingaben, relevanter Chatverlauf und Zusammenfassungen, Name, Sprachen und Lernniveau, Lernaktivität, gespeicherte Lektionen und Sätze, angefragte Vokabeln, Zeitzone und Erinnerungsdetails. Google nutzt dies, um deine Eingaben zu verstehen und persönliche Antworten, Lektionstexte und Sprache zu erzeugen. Google kann Daten aus kostenloser Verarbeitung auch zur Produktverbesserung und menschlichen Prüfung nutzen. Teile keine sensiblen oder vertraulichen Informationen.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'Avatare: Name, gewähltes Geschlecht und Sprachen. Lektionscover: Titel und Sprache. Cloudflare nutzt diese Daten zur Bilderzeugung.';
+
+  @override
+  String get aiConsentChoice =>
+      'Nur benötigte Daten werden gesendet. Mit „Jetzt nicht“ kannst du Funktionen ohne KI weiter nutzen. Künftige Freigaben auf diesem Gerät kannst du unter Einstellungen > KI-Datenfreigabe ausschalten.';
+
+  @override
+  String get aiConsentPolicy => 'Datenschutzerklärung';
+
+  @override
+  String get aiConsentDecline => 'Jetzt nicht';
+
+  @override
+  String get aiConsentAgree => 'Zustimmen und fortfahren';
+
+  @override
+  String get aiConsentSettings => 'KI-Datenfreigabe';
+
+  @override
+  String get aiConsentEnabled =>
+      'KI-Datenfreigabe ist auf diesem Gerät erlaubt.';
+
+  @override
+  String get aiConsentDisabled => 'KI-Datenfreigabe ist auf diesem Gerät aus.';
+
+  @override
+  String get aiConsentRevoke => 'KI-Datenfreigabe ausschalten';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Bereits gesendete Anfragen können abgeschlossen werden. Geplante Erinnerungen können weiterlaufen; verwalte und storniere sie unten. Ausschalten löscht keine bereits gesendeten Daten.';
+
+  @override
+  String get aiConsentSaveFailed =>
+      'Deine Auswahl konnte nicht gespeichert werden. Versuche es erneut.';
+
+  @override
+  String get aiConsentSearch =>
+      'Bei KI-Web- oder Bildsuche werden Suchanfragen auch an Microsoft Bing, DuckDuckGo oder Wikimedia Commons gesendet; Ergebnisse können mit Google geteilt werden.';
 }

@@ -1,3 +1,5 @@
+import '../../../core/ai_consent.dart';
+import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
 import 'ai_vocabulary_screen.dart';
 import 'ai_image_cards.dart';
@@ -22,12 +24,13 @@ import 'ai_chat_navigation.dart';
 
 final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
 final _aiNavigation = AiChatNavigation();
-void openAiChat([BuildContext? context]) {
+void openAiChat([BuildContext? context]) async {
   final navigator = context == null
       ? aiReminderNavigatorKey.currentState
       : Navigator.of(context, rootNavigator: true);
   if (navigator == null) return;
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
+  if (!await AiConsent.instance.request() || !navigator.mounted) return;
   unawaited(
     _aiNavigation.open(navigator, (_) {
       final callback = AiCallbackNotifier.instance;
@@ -552,7 +555,8 @@ class _AiChatScreenState extends State<AiChatScreen>
                   context: context,
                   builder: (context) => AlertDialog(
                     title: Text(l.aiPrivacyNotice),
-                    content: Text(l.aiLocalHistory),
+                    scrollable: true,
+                    content: const AiConsentDetails(),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),

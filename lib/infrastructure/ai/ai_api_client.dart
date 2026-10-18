@@ -1,3 +1,4 @@
+import '../../core/ai_consent.dart';
 import 'ai_search_capabilities.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -90,17 +91,31 @@ class AiApiClient {
     }
   }
 
+  Future<void> _checkRequestConsent(
+    String owner,
+    HttpClientRequest request,
+  ) async {
+    try {
+      await AiConsent.instance.require(owner);
+    } catch (_) {
+      request.abort();
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> summarize(
     String owner,
     String? previous,
     List<Map<String, String>> turns,
   ) async {
+    await AiConsent.instance.require(owner);
     final token = await _token(owner);
     final request = await _http.postUrl(
       Uri.parse('${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/summary'),
     );
     request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
     request.headers.contentType = ContentType.json;
+    await _checkRequestConsent(owner, request);
     request.write(jsonEncode({'previousSummary': previous, 'turns': turns}));
     final response = await request.close().timeout(const Duration(seconds: 55));
     if (response.statusCode != 200) {
@@ -126,6 +141,7 @@ class AiApiClient {
     required String requestId,
     required bool hasMetBanteraAi,
   }) async {
+    await AiConsent.instance.require(owner);
     final deviceData = await AiDeviceData.snapshot(owner);
     final meta = await metadata(hasMetBanteraAi: hasMetBanteraAi);
     final token = await _token(owner);
@@ -144,6 +160,7 @@ class AiApiClient {
         '--$boundary\r\nContent-Disposition: form-data; name="$name"\r\n\r\n$value\r\n',
       ),
     );
+    await _checkRequestConsent(owner, request);
     field('history', jsonEncode(history));
     field('deviceData', jsonEncode(deviceData));
     field(
@@ -187,7 +204,9 @@ class AiApiClient {
     int remainingSeconds = 540,
     String? callbackId,
   }) async {
+    await AiConsent.instance.require(owner);
     final token = await _token(owner);
+    final meta = await metadata(hasMetBanteraAi: hasMetBanteraAi);
     final base = Uri.parse(ApiConfigNotifier.instance.baseUrl);
     final socket = await WebSocket.connect(
       base
@@ -202,6 +221,10 @@ class AiApiClient {
       await socket.close();
       throw StateError('Cancelled');
     }
+    if (!await AiConsent.instance.isAllowed(owner)) {
+      await socket.close();
+      throw const AiConsentRequired();
+    }
     socket.add(
       jsonEncode({
         'type': 'start',
@@ -209,10 +232,7 @@ class AiApiClient {
         'callbackId': ?callbackId,
         'remainingSeconds': remainingSeconds,
         'history': AiSearchCapabilities.withContext(history),
-        'metadata': {
-          ...await metadata(hasMetBanteraAi: hasMetBanteraAi),
-          'conversationId': conversationId?.call(),
-        },
+        'metadata': {...meta, 'conversationId': conversationId?.call()},
       }),
     );
     return socket;
@@ -225,6 +245,7 @@ class AiApiClient {
     required bool hasMetBanteraAi,
     List<Map<String, String>> images = const [],
   }) async {
+    await AiConsent.instance.require(owner);
     final token = await _token(owner);
     final deviceData = await AiDeviceData.snapshot(owner);
     final meta = await metadata(hasMetBanteraAi: hasMetBanteraAi);
@@ -242,6 +263,10 @@ class AiApiClient {
     if (_closed) {
       await socket.close();
       throw StateError('Cancelled');
+    }
+    if (!await AiConsent.instance.isAllowed(owner)) {
+      await socket.close();
+      throw const AiConsentRequired();
     }
     socket.add(
       jsonEncode({

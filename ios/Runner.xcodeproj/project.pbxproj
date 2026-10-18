@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BACE00010000000000000001 /* BanteraEchoGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BACE00010000000000000002 /* BanteraEchoGuard.swift */; };
 		006ECCE411BF10875506CD1D /* BanteraPracticeSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFCA74AC8BD31AE72AAD1DC /* BanteraPracticeSnapshot.swift */; };
 		048E6540B03DF686D193E631 /* BanteraPracticeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9408B33DD6625C710F34DEE4 /* BanteraPracticeWidget.swift */; };
 		0689D96B2A0B973F25627008 /* BanteraPracticeWidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C5A2E52C0736BCA724F70E /* BanteraPracticeWidgetBridge.swift */; };
@@ -32,6 +31,7 @@
 		A7B8C9D11ED2DC5600515810 /* BanteraTranslationPrepareCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B8C9D01ED2DC5600515810 /* BanteraTranslationPrepareCoordinator.swift */; };
 		B816E9111B610BE01D18E373 /* BanteraPracticeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9408B33DD6625C710F34DEE4 /* BanteraPracticeWidget.swift */; };
 		B8C9D0E21ED2DC5600515820 /* BanteraLegacyTranslationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E11ED2DC5600515820 /* BanteraLegacyTranslationCoordinator.swift */; };
+		BACE00010000000000000001 /* BanteraEchoGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BACE00010000000000000002 /* BanteraEchoGuard.swift */; };
 		C011CA110000000000000001 /* BanteraCallKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C011CA110000000000000002 /* BanteraCallKitBridge.swift */; };
 		D1E2F3021ED2DC5600515810 /* BanteraIosVersionRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3011ED2DC5600515810 /* BanteraIosVersionRouting.swift */; };
 		DDAB10D21716EB9B6149D967 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 308AEC4CDA649D7753A613E0 /* Localizable.strings */; };
@@ -80,7 +80,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BACE00010000000000000002 /* BanteraEchoGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanteraEchoGuard.swift; sourceTree = "<group>"; };
 		0BFDB2C6FAADDBE3C8209B72 /* BanteraAiCallWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BanteraAiCallWidget.swift; sourceTree = "<group>"; };
 		0C8630D587F5D493E9C6578E /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
@@ -125,6 +124,7 @@
 		B16017B4E1E2AF8FDE2D18FC /* es */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B71A259D3CAF57141262DBB7 /* pl */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B8C9D0E11ED2DC5600515820 /* BanteraLegacyTranslationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanteraLegacyTranslationCoordinator.swift; sourceTree = "<group>"; };
+		BACE00010000000000000002 /* BanteraEchoGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanteraEchoGuard.swift; sourceTree = "<group>"; };
 		BF9961778E8AD36769F0C618 /* tr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C011CA110000000000000002 /* BanteraCallKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanteraCallKitBridge.swift; sourceTree = "<group>"; };
 		C1228DF88A3BEFFCDB2ED112 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
@@ -173,7 +173,6 @@
 				A7EA6A4DBA4C91A61AA5CBFD /* BanteraAiCallActivity.swift */,
 				1DFCA74AC8BD31AE72AAD1DC /* BanteraPracticeSnapshot.swift */,
 			);
-			name = Shared;
 			path = Shared;
 			sourceTree = "<group>";
 		};
@@ -276,7 +275,6 @@
 				9408B33DD6625C710F34DEE4 /* BanteraPracticeWidget.swift */,
 				E30C8D5667C57D09E7F96921 /* BanteraAiCallWidget.entitlements */,
 			);
-			name = BanteraAiCallWidget;
 			path = BanteraAiCallWidget;
 			sourceTree = "<group>";
 		};

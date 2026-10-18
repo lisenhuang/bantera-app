@@ -1,3 +1,4 @@
+import 'ai_consent.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -288,6 +289,10 @@ class UserProfileNotifier extends ChangeNotifier {
       return false;
     }
 
+    if (!await AiConsent.instance.request() ||
+        AuthSessionNotifier.instance.session?.cacheKey != session.cacheKey) {
+      return false;
+    }
     _plainErrorMessage = null;
     _authApiError = null;
     try {

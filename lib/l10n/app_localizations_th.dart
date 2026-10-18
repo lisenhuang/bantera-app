@@ -2010,7 +2010,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'ใช้กับฟีเจอร์ Gemini รวมถึงบทเรียนและแชตเสียง การเปลี่ยนแปลงมีผลกับคำขอใหม่ ส่วนการโทรปัจจุบันจะดำเนินต่อ ผู้ดูแลจัดการสิทธิ์และคีย์';
+      'ใช้กับฟีเจอร์ Google รวมถึงบทเรียนและแชตเสียง การเปลี่ยนแปลงมีผลกับคำขอใหม่ ส่วนการโทรปัจจุบันจะดำเนินต่อ ผู้ดูแลจัดการสิทธิ์และคีย์';
 
   @override
   String get aiKeysRegular => 'ใช้คีย์ปกติเท่านั้น';
@@ -2047,4 +2047,55 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'ลบรูปภาพ';
+
+  @override
+  String get aiConsentTitle => 'อนุญาตให้แชร์ข้อมูลกับ AI หรือไม่?';
+
+  @override
+  String get aiConsentIntro =>
+      'เมื่อคุณยินยอม Bantera จะส่งข้อมูลต่อไปนี้ผ่านเซิร์ฟเวอร์ไปยังผู้ให้บริการ AI สำหรับฟีเจอร์ที่คุณใช้';
+
+  @override
+  String get aiConsentGoogle =>
+      'การสนทนา บทเรียน และการเตือน: เสียง ข้อความถอดเสียง รูปที่แนบ คำสั่ง ประวัติแชตและสรุปที่เกี่ยวข้อง ชื่อ ภาษาและระดับ กิจกรรมฝึก บทเรียนและวลีที่บันทึก คำศัพท์ที่ขอ เขตเวลา และรายละเอียดการเตือน Google ใช้ข้อมูลเพื่อเข้าใจคำขอและสร้างคำตอบเฉพาะบุคคล ข้อความบทเรียน และเสียง Google อาจใช้ข้อมูลจากการประมวลผลฟรีเพื่อปรับปรุงผลิตภัณฑ์และให้เจ้าหน้าที่ตรวจสอบด้วย อย่าแชร์ข้อมูลอ่อนไหวหรือเป็นความลับ';
+
+  @override
+  String get aiConsentCloudflare =>
+      'รูปโปรไฟล์: ชื่อ เพศที่เลือก และภาษา ปกบทเรียน: ชื่อบทเรียนและภาษา Cloudflare ใช้ข้อมูลนี้เพื่อสร้างรูปภาพ';
+
+  @override
+  String get aiConsentChoice =>
+      'ส่งเฉพาะข้อมูลที่จำเป็น เลือก “ไว้ก่อน” เพื่อใช้ฟีเจอร์ที่ไม่ต้องใช้ AI ต่อไป ปิดการแชร์ในอนาคตบนอุปกรณ์นี้ได้ที่ การตั้งค่า > การแชร์ข้อมูล AI';
+
+  @override
+  String get aiConsentPolicy => 'นโยบายความเป็นส่วนตัว';
+
+  @override
+  String get aiConsentDecline => 'ไว้ก่อน';
+
+  @override
+  String get aiConsentAgree => 'ยอมรับและดำเนินการต่อ';
+
+  @override
+  String get aiConsentSettings => 'การแชร์ข้อมูล AI';
+
+  @override
+  String get aiConsentEnabled => 'อนุญาตการแชร์ข้อมูล AI บนอุปกรณ์นี้แล้ว';
+
+  @override
+  String get aiConsentDisabled => 'ปิดการแชร์ข้อมูล AI บนอุปกรณ์นี้แล้ว';
+
+  @override
+  String get aiConsentRevoke => 'ปิดการแชร์ AI';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'คำขอที่ส่งแล้วอาจดำเนินการจนเสร็จ การเตือนที่ตั้งไว้อาจยังทำงานอยู่ จัดการและยกเลิกด้านล่าง การปิดแชร์ไม่ลบข้อมูลที่ส่งไปแล้ว';
+
+  @override
+  String get aiConsentSaveFailed => 'บันทึกตัวเลือกไม่ได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get aiConsentSearch =>
+      'เมื่อใช้การค้นหาเว็บหรือรูปด้วย AI คำค้นจะถูกส่งไปยัง Microsoft Bing, DuckDuckGo หรือ Wikimedia Commons ด้วย และอาจแชร์ผลลัพธ์กับ Google';
 }

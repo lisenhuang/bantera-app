@@ -1,3 +1,5 @@
+import '../core/auth_session_notifier.dart';
+import '../core/ai_consent.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' show log;
@@ -19,12 +21,15 @@ class AuthApiClient {
   @visibleForTesting
   AuthApiClient.forTesting({
     required Uri baseUrl,
+    Future<void> Function(String accessToken)? requireAiConsent,
     Duration recoveryPollInterval = Duration.zero,
     Duration recoveryTimeout = const Duration(seconds: 2),
   }) : _baseUrlOverride = baseUrl,
+       _requireAiConsentOverride = requireAiConsent,
        _recoveryPollInterval = recoveryPollInterval,
        _recoveryTimeout = recoveryTimeout;
 
+  Future<void> Function(String)? _requireAiConsentOverride;
   Uri? _baseUrlOverride;
   Duration _recoveryPollInterval = const Duration(seconds: 5);
   Duration _recoveryTimeout = const Duration(minutes: 12);
@@ -221,10 +226,32 @@ class AuthApiClient {
     return _profileFromJson(json);
   }
 
+  Future<void> _requireAiConsent(String accessToken) async {
+    try {
+      if (_requireAiConsentOverride case final check?) {
+        await check(accessToken);
+        return;
+      }
+      final session = AuthSessionNotifier.instance.session;
+      if (session == null ||
+          session.userId == null ||
+          _wordActivityTokenSubject(accessToken) != session.userId) {
+        throw const AiConsentRequired();
+      }
+      await AiConsent.instance.require(session.cacheKey);
+    } on AiConsentRequired {
+      throw const AuthApiException(
+        code: 'ai_consent_required',
+        message: 'Allow AI data sharing in Settings before using this feature.',
+      );
+    }
+  }
+
   Future<void> requestGeneratedProfileImage({
     required String accessToken,
     required String avatarGender,
   }) async {
+    await _requireAiConsent(accessToken);
     await _sendJsonRequest(
       method: 'POST',
       path: '/api/me/profile-image/generate',
@@ -617,6 +644,7 @@ class AuthApiClient {
     bool retried = false,
     String? clientJobId,
   }) async {
+    await _requireAiConsent(accessToken);
     final supportsRecovery = useV2 || useV3;
     var jobId = clientJobId ?? const Uuid().v4();
     var started = false;
@@ -647,6 +675,7 @@ class AuthApiClient {
           .postUrl(_resolve(endpointPath))
           .timeout(_authRequestTimeout);
       generationRequest = request;
+      await _requireAiConsent(accessToken);
       request.headers.set(
         HttpHeaders.authorizationHeader,
         'Bearer $accessToken',
@@ -752,6 +781,7 @@ class AuthApiClient {
         );
       }
     } on AuthApiException catch (error) {
+      if (error.code == 'ai_consent_required') generationRequest?.abort();
       if (!supportsRecovery || (error.statusCode ?? 0) < 500) rethrow;
     } on SocketException {
       if (!supportsRecovery) await _throwNetworkFailure();
@@ -1454,6 +1484,7 @@ class AuthApiClient {
     required List<String> originalLines,
     required List<VideoTranscriptCue> transcribedCues,
   }) async {
+    await _requireAiConsent(accessToken);
     try {
       final json = await _sendJsonRequest(
         method: 'POST',
@@ -1540,6 +1571,16 @@ class AuthApiClient {
         HttpHeaders.authorizationHeader,
         'Bearer $accessToken',
       );
+    }
+    if (path == '/api/me/profile-image/generate' ||
+        (path.startsWith('/api/me/videos/') &&
+            path.endsWith('/transcript/correct'))) {
+      try {
+        await _requireAiConsent(accessToken ?? '');
+      } catch (_) {
+        request.abort();
+        rethrow;
+      }
     }
     if (payload != null) {
       request.headers.contentType = ContentType.json;

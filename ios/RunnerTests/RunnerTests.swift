@@ -8,6 +8,59 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testCallKitRegionPolicyRejectsMainlandChinaAndUnknownRegion() {
+    XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: "CHN", deviceRegion: "NZ"))
+    XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: "NZL", deviceRegion: "CN"))
+    XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: " cn ", deviceRegion: nil))
+    XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: nil, deviceRegion: nil))
+    XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: "", deviceRegion: " "))
+    XCTAssertTrue(BanteraCallKitRegionPolicy.allows(storefront: "NZL", deviceRegion: "NZ"))
+    XCTAssertTrue(BanteraCallKitRegionPolicy.allows(storefront: nil, deviceRegion: "NZ"))
+    for (store, region) in [("HKG", "HK"), ("MAC", "MO"), ("TWN", "TW")] {
+      XCTAssertTrue(BanteraCallKitRegionPolicy.allows(storefront: store, deviceRegion: region))
+    }
+  }
+
+  @MainActor
+  func testChinaPolicyPreventsProvidersAndVoipRegistrationAndHandlesRegionChanges() {
+    let bridge = BanteraCallKitBridge(monitorRegions: false)
+    XCTAssertFalse(bridge.regionalPolicyResolved)
+    XCTAssertFalse(bridge.hasSystemCallProviders)
+    XCTAssertFalse(bridge.hasVoipRegistration)
+    bridge.applyRegion(storefront: "CHN", deviceRegion: "NZ")
+    XCTAssertFalse(bridge.systemCallsAllowed)
+    XCTAssertFalse(bridge.hasSystemCallProviders)
+    XCTAssertFalse(bridge.hasVoipRegistration)
+    bridge.applyRegion(storefront: "NZL", deviceRegion: "NZ")
+    XCTAssertTrue(bridge.systemCallsAllowed)
+    XCTAssertTrue(bridge.hasSystemCallProviders)
+    XCTAssertTrue(bridge.hasVoipRegistration)
+    bridge.applyRegion(storefront: "NZL", deviceRegion: "CN")
+    XCTAssertFalse(bridge.systemCallsAllowed)
+    XCTAssertFalse(bridge.hasSystemCallProviders)
+    XCTAssertFalse(bridge.hasVoipRegistration)
+  }
+
+  @MainActor
+  func testChinaPolicyQueuesStoredTokenForBackendRemoval() {
+    let defaults = UserDefaults.standard
+    let savedToken = defaults.object(forKey: "callkit.voipToken")
+    let savedRevocations = defaults.object(forKey: "callkit.revokedTokens")
+    defer {
+      defaults.set(savedToken, forKey: "callkit.voipToken")
+      defaults.set(savedRevocations, forKey: "callkit.revokedTokens")
+    }
+    let token = String(repeating: "ab", count: 32)
+    defaults.set(token, forKey: "callkit.voipToken")
+    defaults.removeObject(forKey: "callkit.revokedTokens")
+    let bridge = BanteraCallKitBridge(monitorRegions: false)
+    bridge.applyRegion(storefront: "CHN", deviceRegion: "NZ")
+    XCTAssertNil(defaults.string(forKey: "callkit.voipToken"))
+    XCTAssertEqual(defaults.stringArray(forKey: "callkit.revokedTokens"), [token])
+    bridge.applyRegion(storefront: "CHN", deviceRegion: "NZ")
+    XCTAssertEqual(defaults.stringArray(forKey: "callkit.revokedTokens"), [token])
+  }
+
   @MainActor
   func testCuePlaybackRestoresMediaCategoryAndModeAfterCall() throws {
     let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)

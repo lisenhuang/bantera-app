@@ -2095,7 +2095,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Для уроков и голосовых чатов Gemini. Изменения применяются к новым запросам. Доступом и ключом управляет администратор.';
+      'Для уроков и голосовых чатов Google. Изменения применяются к новым запросам. Доступом и ключом управляет администратор.';
 
   @override
   String get aiKeysRegular => 'Только обычные ключи';
@@ -2132,4 +2132,58 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Удалить изображение';
+
+  @override
+  String get aiConsentTitle => 'Разрешить передачу данных ИИ?';
+
+  @override
+  String get aiConsentIntro =>
+      'С вашего согласия Bantera передаёт следующие данные через свои серверы поставщикам ИИ для используемых функций.';
+
+  @override
+  String get aiConsentGoogle =>
+      'Беседы, уроки и напоминания: голос, расшифровки, прикреплённые изображения, запросы, нужная история чата и её сводки, имя, языки и уровень, учебная активность, сохранённые уроки и фразы, запрошенные слова, часовой пояс и сведения о напоминаниях. Google использует их для понимания запросов и создания персональных ответов, текстов уроков и речи. Google также может использовать данные бесплатной обработки для улучшения продуктов и проверки людьми. Не передавайте конфиденциальные или чувствительные сведения.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'Аватары: имя, выбранный пол и языки. Обложки уроков: название и язык. Cloudflare использует эти данные для создания изображений.';
+
+  @override
+  String get aiConsentChoice =>
+      'Отправляются только нужные данные. «Не сейчас» оставляет доступ к функциям без ИИ. Будущую передачу на этом устройстве можно отключить в Настройки > Передача данных ИИ.';
+
+  @override
+  String get aiConsentPolicy => 'Политика конфиденциальности';
+
+  @override
+  String get aiConsentDecline => 'Не сейчас';
+
+  @override
+  String get aiConsentAgree => 'Согласиться и продолжить';
+
+  @override
+  String get aiConsentSettings => 'Передача данных ИИ';
+
+  @override
+  String get aiConsentEnabled =>
+      'Передача данных ИИ разрешена на этом устройстве.';
+
+  @override
+  String get aiConsentDisabled =>
+      'Передача данных ИИ отключена на этом устройстве.';
+
+  @override
+  String get aiConsentRevoke => 'Отключить передачу ИИ';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Отправленные запросы могут завершиться. Запланированные напоминания могут продолжить работу; управляйте ими и отменяйте ниже. Отключение не удаляет уже отправленные данные.';
+
+  @override
+  String get aiConsentSaveFailed =>
+      'Не удалось сохранить выбор. Повторите попытку.';
+
+  @override
+  String get aiConsentSearch =>
+      'При веб-поиске или поиске изображений с ИИ запросы также передаются Microsoft Bing, DuckDuckGo или Wikimedia Commons, а результаты могут передаваться Google.';
 }

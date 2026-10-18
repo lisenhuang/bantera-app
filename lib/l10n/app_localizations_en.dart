@@ -2090,7 +2090,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiKeysDescription =>
-      'Applies to Gemini lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.';
+      'Applies to Google lessons and voice chats. Changes affect new requests. Your administrator manages access and the key.';
 
   @override
   String get aiKeysRegular => 'Regular keys only';
@@ -2127,4 +2127,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiRemoveImage => 'Remove image';
+
+  @override
+  String get aiConsentTitle => 'Allow AI data sharing?';
+
+  @override
+  String get aiConsentIntro =>
+      'With your permission, Bantera sends the following data through its servers to these AI providers for the features you use.';
+
+  @override
+  String get aiConsentGoogle =>
+      'For conversations, lessons and reminders: your voice audio, transcripts, attached images, prompts, relevant chat history and summaries, name, language and level preferences, practice activity, saved lessons and phrases, requested vocabulary, time zone, and reminder details. Google uses this data to understand your input and generate personalised replies, lesson text and speech. Google may also use data from unpaid processing for product improvement and human review. Do not share sensitive or confidential information.';
+
+  @override
+  String get aiConsentCloudflare =>
+      'For avatars: your name, selected gender and language preferences. For lesson covers: the lesson title and language. Cloudflare uses this data to generate images.';
+
+  @override
+  String get aiConsentChoice =>
+      'Only the data needed for the feature is sent. Choose Not now to keep using features that do not need AI. You can turn off future sharing on this device in Settings > AI data sharing.';
+
+  @override
+  String get aiConsentPolicy => 'Privacy Policy';
+
+  @override
+  String get aiConsentDecline => 'Not now';
+
+  @override
+  String get aiConsentAgree => 'Agree and continue';
+
+  @override
+  String get aiConsentSettings => 'AI data sharing';
+
+  @override
+  String get aiConsentEnabled => 'AI data sharing is allowed on this device.';
+
+  @override
+  String get aiConsentDisabled => 'AI data sharing is off on this device.';
+
+  @override
+  String get aiConsentRevoke => 'Turn off AI sharing';
+
+  @override
+  String get aiConsentExistingRequests =>
+      'Requests already sent may finish. Scheduled reminders may still run; manage and cancel them below. Turning off sharing does not delete data already sent.';
+
+  @override
+  String get aiConsentSaveFailed =>
+      'Your choice could not be saved. Please try again.';
+
+  @override
+  String get aiConsentSearch =>
+      'If you use AI web or image search, queries are also sent to Microsoft Bing, DuckDuckGo or Wikimedia Commons, and results may be shared with Google.';
 }

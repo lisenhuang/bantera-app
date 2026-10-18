@@ -267,18 +267,8 @@ void main() {
       final notice = find.textContaining(
         'Received AI chat history stays on this device.',
       );
-      expect(notice, findsOneWidget);
-      // The dismissal writes to disk; keep its queued futures outside fake time.
-      await tester.runAsync(() => tester.tap(find.byTooltip('Close')));
-      await tester.pumpAndSettle();
+      // The passive banner is replaced by consent before AI actions.
       expect(notice, findsNothing);
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 50)),
-      );
-      final reopened = AiChatController.forTesting(AiHistoryStore('test'));
-      await tester.runAsync(reopened.initialize);
-      expect(reopened.privacyNoticeVisible, isFalse);
-      reopened.dispose();
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Usage'));
@@ -295,7 +285,8 @@ void main() {
       await tester.tap(find.text('Privacy notice'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(notice, findsOneWidget);
+      expect(find.text('Google'), findsOneWidget);
+      expect(find.text('Cloudflare'), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, 'Close'));
       await tester.pumpAndSettle();
       expect(notice, findsNothing);
