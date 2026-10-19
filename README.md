@@ -148,9 +148,8 @@ lib/
 ### 🔊 Fixing AI speaker echo on iPhone
 
 [**How we investigated and fixed AI self-interruption**](docs/ios-echo-investigation.md)
-explains the physical iPhone tests, before-and-after audio measurements, rejected
-experiments, and the short protective window used alongside Apple's echo
-cancellation. Includes signal-flow diagrams, result tables and regression guidance.
+explains the cause, physical iPhone measurements, and the fix with a short
+diagram and results table. Includes the interruption tradeoff and regression checks.
 
 ### Bantera AI: web search on the device
 
