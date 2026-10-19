@@ -23,6 +23,20 @@
 - **Deployment target:** **iOS 18.0** (`IPHONEOS_DEPLOYMENT_TARGET`, CocoaPods `platform`, and Pod `post_install` alignment).
 - **Policy:** Do **not** maintain compatibility for **iOS &lt; 18.0**. It is acceptable to use APIs and patterns that assume 18.0+ without fallback for older OS versions.
 
+## iOS AI callback regression gate
+
+- **AI callbacks are a protected existing feature.** Every app code change must preserve scheduling, incoming CallKit presentation, answering while the app is backgrounded and the iPhone is locked, and two-way audio after answering. A call must not immediately terminate or remain silently connected because of a regression. Preserve the mainland-China CallKit restriction.
+- Before handing off or pushing any app code change, run the existing callback and CallKit regression tests, even if the change appears unrelated:
+
+  ```sh
+  flutter test --no-pub test/ai_callback_notifier_test.dart test/infrastructure/callkit_service_test.dart
+  ```
+
+- For changes affecting call lifecycle, authentication/consent, AI sessions or tools, provider/key selection, networking, background execution, PushKit, CallKit or audio, also run the relevant additional tests (including `test/ai_audio_route_test.dart`, `test/ai_call_clock_test.dart` and `test/ai_live_interruption_test.dart` where applicable), inspect both foreground and locked-screen callback paths, and add a regression test for each newly fixed failure. Verify regular-key, paid-fallback and paid-only behavior when key routing is affected.
+- Preserve startup invariants: an accepted callback starts a fresh AI session; intermediate route/mute/consent notifications and late ringing-status responses must not end an accepted or starting call. Coordinate audio startup with CallKit activation, preserve system speaker/receiver selection, and keep the call connecting until AI audio begins. Failures must end cleanly with a generic user-facing explanation, not expose provider/key errors.
+- Automated tests do not prove real locked-screen CallKit audio. For relevant releases, include a physical-device acceptance check: request a callback, lock the receiving iPhone, answer without opening the app, verify the call stays connected with AI audio and microphone responses, switch speaker/receiver, then end cleanly. Perform this check only with explicit user permission; an install request alone is not testing permission. Otherwise leave this check to the user and clearly mark it unverified.
+- Do not claim callback behavior is verified from a successful build or installation alone. Report tests performed and any outstanding physical-device check. Fix failing regression tests before declaring the change ready; do not bypass them. Documentation-only changes do not require these runtime checks.
+
 ## Locales
 
 - **Taiwan Chinese (`zh-TW`):** Always hidden from both the **native** and **learning** pickers when the effective app UI language is **Simplified Chinese**, including System default resolving to Simplified Chinese. For other UI languages, it is shown only once the user's IP is confirmed to be **outside mainland China**. `RegionService` (`lib/infrastructure/region_service.dart`) reads the country from Cloudflare's `https://api.bantera.app/cdn-cgi/trace` (`loc=XX`); a failed lookup keeps it hidden and is retried next time. `fetchNativeLanguageOptions` / `fetchLearningLanguageOptions` apply the filter, and onboarding/edit profile reapply it when opening a picker so cached lists cannot bypass a UI language change. The backend still accepts `zh-TW`; existing saved profile values are not rewritten.
