@@ -710,8 +710,8 @@ class AiChatController extends ChangeNotifier {
       }
       if (!available || epoch != _epoch) return;
       if (reply == null) {
-        // Older deployed servers and failed pre-send connections retain the safe
-        // upload path. Never resubmit automatically once a stream was committed.
+        // Retry pre-send connection failures with the same device-tool transport.
+        // Never resubmit automatically once a stream was committed.
         await stream.close();
         await _reply(message);
       } else {
@@ -926,44 +926,32 @@ class AiChatController extends ChangeNotifier {
     final elapsed = Stopwatch()..start();
     var phase = 'reply';
     var saved = false;
-    AiVoiceStream? imageStream;
+    AiVoiceStream? retryStream;
     try {
+      // Replays need the same device tools as first attempts. The legacy HTTP
+      // upload cannot execute vocabulary/search tools and silently loses them.
       Map<String, dynamic> reply;
-      if (message.images.isNotEmpty) {
-        final wave = await File(store.path(message.audio!)).readAsBytes();
-        if (wave.length < 44 ||
-            String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
-          throw const FormatException('Invalid recording');
-        }
-        imageStream = _openVoiceStream(message, epoch);
-        _receivingStream = imageStream;
-        imageStream.add(Uint8List.sublistView(wave, 44));
-        reply = await imageStream.send(
-          await (_voiceMetadata?.call() ??
-              AiApiClient.metadata(
-                hasMetBanteraAi: await store.hasMetBefore(),
-              )),
-        );
-      } else {
-        reply = await _api.reply(
-          owner: owner,
-          history: store.context(excluding: message.id),
-          audioPath: store.path(message.audio!),
-          requestId: message.id,
-          hasMetBanteraAi: await store.hasMetBefore(),
-        );
+      final wave = await File(store.path(message.audio!)).readAsBytes();
+      if (wave.length < 44 ||
+          String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
+        throw const FormatException('Invalid recording');
       }
+      retryStream = _openVoiceStream(message, epoch);
+      _receivingStream = retryStream;
+      retryStream.add(Uint8List.sublistView(wave, 44));
+      reply = await retryStream.send(
+        await (_voiceMetadata?.call() ??
+            AiApiClient.metadata(hasMetBanteraAi: await store.hasMetBefore())),
+      );
       if (!available || epoch != _epoch) return;
       if (reply['noSpeech'] == true) {
         await _discardSilentMessage(message);
         return;
       }
       phase = 'save';
-      await _saveReply(message, reply, epoch, autoplay: imageStream == null);
+      await _saveReply(message, reply, epoch, autoplay: false);
       saved = true;
-      if (imageStream != null &&
-          _replyAudioStarted &&
-          !_replyPlaybackUnavailable) {
+      if (_replyAudioStarted && !_replyPlaybackUnavailable) {
         await _replyAudioCommand<void>(
           'drain',
         ).timeout(const Duration(seconds: 95));
@@ -978,9 +966,9 @@ class AiChatController extends ChangeNotifier {
         error: error,
       );
       if (available && epoch == _epoch) {
-        await imageStream?.close();
+        await retryStream?.close();
         final partial = saved ? null : voiceReply.interrupted(null);
-        final audio = imageStream?.partialAudio;
+        final audio = retryStream?.partialAudio;
         final hasPartial =
             partial != null && (partial.text.isNotEmpty || audio != null);
         message.failed = !saved && !hasPartial;
@@ -994,9 +982,9 @@ class AiChatController extends ChangeNotifier {
         );
       }
     } finally {
-      await imageStream?.close();
-      if (identical(_receivingStream, imageStream)) _receivingStream = null;
-      if (imageStream != null) await _stopReplyPlayback();
+      await retryStream?.close();
+      if (identical(_receivingStream, retryStream)) _receivingStream = null;
+      if (retryStream != null) await _stopReplyPlayback();
     }
     changed();
   }

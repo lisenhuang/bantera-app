@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -66,7 +67,9 @@ class AiVocabulary {
     DateTime Function()? now,
     Future<String> Function()? timeZone,
     String Function()? language,
-  }) : _storagePath =
+    Random? random,
+  }) : _random = random ?? Random.secure(),
+       _storagePath =
            storagePath ??
            (() async => (await const MethodChannel(
              'bantera/ai_audio',
@@ -85,6 +88,7 @@ class AiVocabulary {
   static final changes = ValueNotifier<int>(0);
   static final Map<String, Future<void>> _queues = {};
   final String owner;
+  final Random _random;
   final Future<String> Function() _storagePath, _timeZone;
   final bool Function() _isActive;
   final DateTime Function() _now;
@@ -168,6 +172,67 @@ class AiVocabulary {
     final items = _words(data);
     final now = _now().toUtc();
     final action = _text(args, 'action', 30, required: true);
+    if (['stats', 'latest', 'quiz'].contains(action)) {
+      final language = _text(args, 'language', 100).toLowerCase();
+      final query = _text(args, 'query', 100).toLowerCase();
+      final matches = items
+          .where(
+            (w) =>
+                (language.isEmpty || w.language.toLowerCase() == language) &&
+                (query.isEmpty ||
+                    '${w.word} ${w.meaning}'.toLowerCase().contains(query)),
+          )
+          .toList();
+      final base = <String, dynamic>{
+        'ok': true,
+        'storage': 'device only',
+        'total': items.length,
+        'matched': matches.length,
+        'now': now.toIso8601String(),
+      };
+      if (action == 'stats') {
+        final languages = <String, int>{};
+        for (final word in matches) {
+          languages.update(word.language, (n) => n + 1, ifAbsent: () => 1);
+        }
+        return {
+          ...base,
+          'unreviewed': matches.where((w) => w.reviews == 0).length,
+          'due': matches.where((w) => !w.dueAt.isAfter(now)).length,
+          'byLanguage': languages,
+        };
+      }
+      if (action == 'latest') {
+        return {...base, 'word': matches.firstOrNull?.toJson()};
+      }
+      final selection = _text(args, 'selection', 20);
+      if (!['', 'recent', 'new', 'due', 'all'].contains(selection)) {
+        throw const FormatException('Invalid selection');
+      }
+      final excluded = args['excludeIds'] ?? <String>[];
+      if (excluded is! List ||
+          excluded.length > 20 ||
+          excluded.any((id) => id is! String || id.length > 100)) {
+        throw const FormatException('Invalid exclusions');
+      }
+      // Choose on the device, across the requested pool, rather than asking
+      // the model to pick from the first page of a potentially large notebook.
+      final pool = switch (selection) {
+        'new' => matches.where((w) => w.reviews == 0).toList(),
+        'due' => matches.where((w) => !w.dueAt.isAfter(now)).toList(),
+        'all' => matches,
+        _ => matches.take(20).toList(),
+      }..removeWhere((w) => excluded.contains(w.id));
+      _check();
+      return {
+        ...base,
+        'selection': selection.isEmpty ? 'recent' : selection,
+        'eligible': pool.length,
+        'word': pool.isEmpty
+            ? null
+            : pool[_random.nextInt(pool.length)].toJson(),
+      };
+    }
     if (action == 'list' || action == 'review_suggestions') {
       final query = _text(args, 'query', 100).toLowerCase();
       final language = _text(args, 'language', 100);

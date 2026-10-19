@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app/infrastructure/ai/ai_vocabulary.dart';
 
@@ -15,6 +16,7 @@ void main() {
     now: () => now,
     timeZone: () async => 'Pacific/Auckland',
     language: () => 'en-NZ',
+    random: Random(17),
   );
   setUp(() async {
     root = await Directory.systemTemp.createTemp('vocabulary-test');
@@ -145,6 +147,120 @@ void main() {
       expect(await file.readAsString(), '{broken');
     },
   );
+  test(
+    'stats and latest use all saved words, respect filters and do not disclose the notebook',
+    () async {
+      expect((await store.execute({'action': 'stats'}))['total'], 0);
+      expect((await store.execute({'action': 'latest'}))['word'], isNull);
+      for (var i = 0; i < 25; i++) {
+        await add('word$i');
+        now = now.add(const Duration(minutes: 1));
+      }
+      await store.execute({
+        'action': 'add',
+        'word': 'bonjour',
+        'meaning': 'hello',
+        'language': 'fr-FR',
+      });
+      final stats = await store.execute({'action': 'stats'});
+      expect(stats['total'], 26);
+      expect(stats['unreviewed'], 26);
+      expect(stats['byLanguage'], {'en-NZ': 25, 'fr-FR': 1});
+      expect(stats.containsKey('items'), isFalse);
+      expect(stats.containsKey('word'), isFalse);
+      expect(
+        (await store.execute({
+          'action': 'stats',
+          'language': 'fr-FR',
+        }))['matched'],
+        1,
+      );
+      expect(
+        (await store.execute({
+          'action': 'latest',
+          'language': 'en-NZ',
+        }))['word']['word'],
+        'word24',
+      );
+      expect(
+        (await store.execute({'action': 'latest'}))['word']['word'],
+        'bonjour',
+      );
+    },
+  );
+
+  test(
+    'quiz samples the whole selected pool, skips exclusions and never marks review',
+    () async {
+      for (var i = 0; i < 30; i++) {
+        await add('word$i');
+        now = now.add(const Duration(minutes: 1));
+      }
+      final before = (await store.words()).map((w) => w.toJson()).toList();
+      final selected = <String>{};
+      for (var i = 0; i < 100; i++) {
+        final result = await store.execute({
+          'action': 'quiz',
+          'selection': 'all',
+        });
+        expect(result['eligible'], 30);
+        selected.add(result['word']['word'] as String);
+      }
+      expect(selected.any((w) => int.parse(w.substring(4)) < 10), isTrue);
+      final recent = await store.execute({'action': 'quiz'});
+      expect(recent['eligible'], 20);
+      expect(
+        int.parse((recent['word']['word'] as String).substring(4)),
+        greaterThanOrEqualTo(10),
+      );
+      final excluded = (await store.words()).take(20).map((w) => w.id).toList();
+      final empty = await store.execute({
+        'action': 'quiz',
+        'excludeIds': excluded,
+      });
+      expect(empty['word'], isNull);
+      expect(empty['eligible'], 0);
+      expect((await store.words()).map((w) => w.toJson()).toList(), before);
+    },
+  );
+
+  test(
+    'new and due quizzes filter correctly and empty pools stay empty',
+    () async {
+      expect((await store.execute({'action': 'quiz'}))['word'], isNull);
+      final old = (await add('broth'))['word'];
+      now = now.add(const Duration(days: 2));
+      final fresh = (await add('skewer'))['word'];
+      expect(
+        (await store.execute({
+          'action': 'quiz',
+          'selection': 'due',
+        }))['word']['id'],
+        old['id'],
+      );
+      await store.execute({'action': 'review', 'id': old['id']});
+      final quiz = await store.execute({'action': 'quiz', 'selection': 'new'});
+      expect(quiz['word']['id'], fresh['id']);
+      expect(quiz['word']['reviews'], 0);
+      expect(
+        (await store.execute({'action': 'quiz', 'query': 'missing'}))['word'],
+        isNull,
+      );
+      expect(
+        (await store.execute({'action': 'quiz', 'selection': 'due'}))['word'],
+        isNull,
+      );
+      await expectLater(
+        store.execute({'action': 'quiz', 'excludeIds': 'bad'}),
+        throwsFormatException,
+      );
+      await expectLater(
+        store.execute({'action': 'quiz', 'selection': 'unknown'}),
+        throwsFormatException,
+      );
+    },
+  );
+
   test('invalid input rejected without creating entries', () async {
     await expectLater(
       store.execute({'action': 'add', 'word': '', 'meaning': 'x'}),
