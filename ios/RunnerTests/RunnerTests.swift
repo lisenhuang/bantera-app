@@ -8,6 +8,43 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  @MainActor
+  func testUnavailableLiveActivitiesKeepCallChannelSafe() throws {
+    let messenger = CompatibilityTestMessenger()
+    let bridge = BanteraAiCallActivityBridge(messenger: messenger, enabled: false)
+    XCTAssertFalse(bridge.isAvailable)
+    let codec = FlutterStandardMethodCodec.sharedInstance()
+    let handler = try XCTUnwrap(messenger.handlers["bantera/ai_call_activity"])
+    for method in ["start", "update", "stop"] {
+      var responded = false
+      handler(codec.encode(FlutterMethodCall(methodName: method, arguments: nil))) { data in
+        responded = true
+        let value = codec.decodeEnvelope(data!)
+        if method == "start" { XCTAssertEqual(value as? Bool, false) }
+        else { XCTAssertNil(value) }
+      }
+      XCTAssertTrue(responded)
+    }
+    let calls = BanteraCallKitBridge(monitorRegions: false)
+    calls.applyRegion(storefront: "NZL", deviceRegion: "NZ")
+    XCTAssertTrue(calls.hasSystemCallProviders)
+  }
+
+  func testMockVersionCannotEnableUnavailableNativeFrameworks() {
+    let previous = BanteraIosVersionRouting.devMockIosMajorVersion
+    defer { BanteraIosVersionRouting.devMockIosMajorVersion = previous }
+    BanteraIosVersionRouting.devMockIosMajorVersion = 99
+    XCTAssertEqual(BanteraIosVersionRouting.useTranslationFrameworkRoutingPath,
+      BanteraIosVersionRouting.realIosMajorVersion >= 18)
+    XCTAssertEqual(BanteraIosVersionRouting.useSpeechTranscriberRoutingPath,
+      BanteraIosVersionRouting.realIosMajorVersion >= 26)
+    for major in [15, 16, 17] {
+      BanteraIosVersionRouting.devMockIosMajorVersion = major
+      XCTAssertFalse(BanteraIosVersionRouting.useTranslationFrameworkRoutingPath)
+      XCTAssertFalse(BanteraIosVersionRouting.useSpeechTranscriberRoutingPath)
+    }
+  }
+
   func testCallKitRegionPolicyRejectsMainlandChinaAndUnknownRegion() {
     XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: "CHN", deviceRegion: "NZ"))
     XCTAssertFalse(BanteraCallKitRegionPolicy.allows(storefront: "NZL", deviceRegion: "CN"))
@@ -320,6 +357,7 @@ class PracticeWidgetTests: XCTestCase {
 
   @MainActor
   func testRenderSmallAndMediumPracticeWidgets() throws {
+    guard #available(iOS 16.0, *) else { throw XCTSkip("ImageRenderer requires iOS 16; the widget itself supports iOS 15.") }
     let snapshot = BanteraPracticeSnapshot(dateKey: BanteraPracticeSnapshot.dayKey(Date()),
       signedIn: true, spoken: 1278, listened: 3257, locale: "en", labels: [
         "today": "Today", "words": "Words", "spoken": "Speaking", "listened": "Listening", "chat": "Bantera AI"
@@ -597,4 +635,15 @@ final class BanteraAudioReadinessTests: XCTestCase {
     XCTAssertFalse(gate.timedOut(now: 12))
     XCTAssertTrue(gate.timedOut(now: 17))
   }
+}
+
+private final class CompatibilityTestMessenger: NSObject, FlutterBinaryMessenger {
+  var handlers: [String: FlutterBinaryMessageHandler] = [:]
+  func send(onChannel channel: String, message: Data?) {}
+  func send(onChannel channel: String, message: Data?, binaryReply callback: FlutterBinaryReply?) { callback?(nil) }
+  func setMessageHandlerOnChannel(_ channel: String, binaryMessageHandler handler: FlutterBinaryMessageHandler?) -> FlutterBinaryMessengerConnection {
+    handlers[channel] = handler
+    return 1
+  }
+  func cleanUpConnection(_ connection: FlutterBinaryMessengerConnection) {}
 }

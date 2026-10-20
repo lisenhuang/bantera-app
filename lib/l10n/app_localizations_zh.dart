@@ -265,6 +265,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get closeLabel => '关闭';
 
   @override
+  String get longerDialogues => '较长对话';
+
+  @override
   String get navDiscover => '对话';
 
   @override
@@ -2444,6 +2447,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get closeLabel => '關閉';
+
+  @override
+  String get longerDialogues => '較長對話';
 
   @override
   String get navDiscover => '對話';

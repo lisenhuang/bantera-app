@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/chat_session_notifier.dart';
 import '../../core/auth_session_notifier.dart';
-import '../../core/settings_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import 'chat_discovery.dart';
 import '../../domain/models/chat_models.dart';
@@ -29,7 +28,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
   final ChatSessionNotifier _chat = ChatSessionNotifier.instance;
   late final Listenable _changes = Listenable.merge([
     _chat,
-    SettingsNotifier.instance,
     UserProfileNotifier.instance,
     AuthSessionNotifier.instance,
   ]);
@@ -40,10 +38,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
     super.didUpdateWidget(oldWidget);
     if (widget.active && !oldWidget.active) _avatarRefreshToken++;
   }
-
-  String? get _owner => AuthSessionNotifier.instance.session?.cacheKey;
-  bool get _hideSameNative =>
-      SettingsNotifier.instance.hideSameNativeSpeakers(_owner);
 
   @override
   void initState() {
@@ -67,12 +61,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
               icon: const Icon(Icons.more_vert),
               onSelected: _handleMenuAction,
               itemBuilder: (context) => [
-                CheckedPopupMenuItem(
-                  value: _ChatsMenuAction.hideSameNative,
-                  checked: _hideSameNative,
-                  enabled: _owner != null,
-                  child: Text(l10n.chatHideSameNativeSpeakers),
-                ),
                 PopupMenuItem(
                   value: _ChatsMenuAction.blockedUsers,
                   child: ChatMenuItemRow(
@@ -215,15 +203,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   void _handleMenuAction(_ChatsMenuAction action) {
     switch (action) {
-      case _ChatsMenuAction.hideSameNative:
-        final owner = _owner;
-        if (owner != null) {
-          SettingsNotifier.instance.setHideSameNativeSpeakers(
-            owner,
-            !_hideSameNative,
-          );
-        }
-        break;
       case _ChatsMenuAction.blockedUsers:
         Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const BlockedUsersScreen()),
@@ -250,7 +229,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
       existingDmUserIds: dmUserIds,
       learningLanguage: profile.learningLanguage,
       nativeLanguage: profile.nativeLanguage,
-      hideSameNativeSpeakers: _hideSameNative,
     );
     final onlineDms = dms.where((thread) => _isDmOnline(thread, onlineUserIds));
     final offlineDms = dms.where(
@@ -279,7 +257,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
   }
 }
 
-enum _ChatsMenuAction { blockedUsers, hideSameNative }
+enum _ChatsMenuAction { blockedUsers }
 
 sealed class _ChatHomeItem {
   const _ChatHomeItem();

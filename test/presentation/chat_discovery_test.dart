@@ -28,24 +28,16 @@ void main() {
     person('existing', 'ja-JP', 'zh'),
     person('unset', null, null),
   ];
-  List<ChatUserSummary> discover(bool hide) => discoverableOnlineUsers(
+  List<ChatUserSummary> discover() => discoverableOnlineUsers(
     users: people,
     existingDmUserIds: {'existing'},
     learningLanguage: 'en-NZ',
     nativeLanguage: 'zh-CN',
-    hideSameNativeSpeakers: hide,
   );
   test(
     'discovery removes shared-native-only matches and leaves DM input untouched',
     () {
-      expect(discover(false).map((p) => p.id), [
-        'same-native-peer',
-        'exchange',
-        'learner-of-my-native',
-        'peer',
-        'native',
-      ]);
-      expect(discover(true).map((p) => p.id), [
+      expect(discover().map((p) => p.id), [
         'exchange',
         'learner-of-my-native',
         'peer',
@@ -67,7 +59,7 @@ void main() {
     },
   );
   test(
-    'hide native preference defaults off and survives relaunch separately per account',
+    'legacy discovery preferences are preserved but cannot expose same-native strangers',
     () async {
       final directory = await Directory.systemTemp.createTemp(
         'bantera-discovery-',
@@ -88,6 +80,8 @@ void main() {
       final reopened = SettingsNotifier.forTesting(settingsFile: file);
       await reopened.initialize();
       expect(reopened.hideSameNativeSpeakers('alice'), isFalse);
+      expect(discover().any((p) => p.id == 'same-native-peer'), isFalse);
+      expect(people.singleWhere((p) => p.id == 'existing').isOnline, isTrue);
     },
   );
 }

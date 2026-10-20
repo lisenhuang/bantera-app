@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import 'settings_notifier.dart';
 
@@ -36,7 +37,7 @@ bool get supportsCreateTabOnApple {
   if (major == null) {
     return false;
   }
-  return major >= 18;
+  return major >= 18 && (realAppleOperatingSystemMajorVersion ?? 0) >= 18;
 }
 
 /// True when Apple devices should show on-device practice video UI.
@@ -51,7 +52,7 @@ bool get supportsOnDevicePracticeVideo {
   if (major == null) {
     return false;
   }
-  return major >= 26;
+  return major >= 26 && (realAppleOperatingSystemMajorVersion ?? 0) >= 26;
 }
 
 /// Returns the real iOS/macOS major version, ignoring any dev mock override.
@@ -75,9 +76,31 @@ int? get appleOperatingSystemMajorVersion {
 /// (iOS / iPadOS 18+) or Google ML Kit on-device translation (Android).
 /// Use this to gate translation UI — do not use [isLegacyAppleOsPre26] for translation checks.
 bool get supportsBuiltInTranslation {
-  if (Platform.isAndroid) return true; // ML Kit on-device translation
-  if (!Platform.isIOS) return false;
-  final major = appleOperatingSystemMajorVersion;
-  if (major == null) return false;
-  return major >= 18;
+  // Only the Flutter test runner can override this. Dev settings cannot elevate
+  // the real OS capability, and release builds never use the test override.
+  if (kDebugMode &&
+      Platform.environment.containsKey('FLUTTER_TEST') &&
+      translationCapabilityForTesting != null) {
+    return translationCapabilityForTesting!;
+  }
+  return translationSupportedOn(
+    isIOS: Platform.isIOS,
+    isAndroid: Platform.isAndroid,
+    realMajor: realAppleOperatingSystemMajorVersion,
+    effectiveMajor: appleOperatingSystemMajorVersion,
+  );
 }
+
+@visibleForTesting
+bool? translationCapabilityForTesting;
+
+bool translationSupportedOn({
+  required bool isIOS,
+  required bool isAndroid,
+  int? realMajor,
+  int? effectiveMajor,
+}) =>
+    isAndroid ||
+    (isIOS &&
+        (realMajor ?? 0) >= 18 &&
+        (effectiveMajor ?? realMajor ?? 0) >= 18);

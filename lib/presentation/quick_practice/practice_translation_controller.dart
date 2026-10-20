@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../core/apple_system_version.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/translation_service.dart';
@@ -14,6 +15,13 @@ class PracticeTranslationController extends ChangeNotifier {
   bool _disposed = false;
   bool loading = false, failed = false;
   Map<String, String> translations = {};
+
+  /// This guard also protects scoring when an old/stale UI action is invoked.
+  static Future<bool> markUsed(Future<void> Function() persist) async {
+    if (!supportsBuiltInTranslation) return false;
+    await persist();
+    return true;
+  }
 
   static String locale(String value) {
     final code = value.trim().replaceAll('_', '-');
@@ -37,7 +45,7 @@ class PracticeTranslationController extends ChangeNotifier {
     required bool Function() canStart,
     bool retry = false,
   }) {
-    if (_disposed) return Future.value();
+    if (_disposed || !supportsBuiltInTranslation) return Future.value();
     source = locale(source);
     target = locale(target);
     final key = jsonEncode([source, target, texts]);
@@ -57,7 +65,7 @@ class PracticeTranslationController extends ChangeNotifier {
     _queue = _queue.then((_) async {
       if (!current()) return;
       try {
-        if (!canStart()) return;
+        if (!supportsBuiltInTranslation || !canStart()) return;
         if (_sameLanguage(source, target)) {
           translations = Map.of(texts);
           return;

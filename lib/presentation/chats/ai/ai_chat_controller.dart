@@ -1,3 +1,4 @@
+import '../../../core/apple_system_version.dart';
 import '../../../core/ai_consent.dart';
 import '../../../infrastructure/ai/ai_image_input.dart';
 import '../../../infrastructure/ai/ai_vocabulary.dart';
@@ -1069,7 +1070,8 @@ class AiChatController extends ChangeNotifier {
   }
 
   void translate(AiMessage message, {bool force = false}) {
-    if (!Platform.isIOS ||
+    if (!supportsBuiltInTranslation ||
+        !Platform.isIOS ||
         message.text.trim().isEmpty ||
         translating.contains(message.id)) {
       return;

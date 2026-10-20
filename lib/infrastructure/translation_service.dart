@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
+import '../core/apple_system_version.dart';
 import 'transcription_locale_option.dart';
 
 class TranslationLocaleOption {
@@ -37,6 +38,15 @@ class TranslationService {
   static final TranslationService instance = TranslationService._();
   static const MethodChannel _channel = MethodChannel('bantera/translation');
 
+  static void _requireSupport() {
+    if (!supportsBuiltInTranslation) {
+      throw const TranslationException(
+        code: 'unsupported_os',
+        message: 'On-device translation is unavailable on this device.',
+      );
+    }
+  }
+
   /// Ensures on-device translation language packs are downloaded for the pair.
   /// On iOS 26+, may present the system download UI (SwiftUI `translationTask`).
   /// No-op when the target is already installed.
@@ -44,6 +54,7 @@ class TranslationService {
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
   }) async {
+    _requireSupport();
     // iOS: Apple Translation framework. Android: Google ML Kit (both on-device).
     try {
       await _channel
@@ -70,6 +81,7 @@ class TranslationService {
   /// Used for native-language pickers that need the full translation language list.
   /// Returns empty list on non-iOS or when unavailable.
   Future<List<TranslationLocaleOption>> fetchAllTranslationLocales() async {
+    if (!supportsBuiltInTranslation) return const [];
     try {
       final locales =
           await _channel.invokeListMethod<dynamic>(
@@ -91,6 +103,7 @@ class TranslationService {
   Future<List<TranslationLocaleOption>> fetchSupportedLocales({
     required String sourceLocaleIdentifier,
   }) async {
+    _requireSupport();
     try {
       final locales =
           await _channel.invokeListMethod<dynamic>(
@@ -124,6 +137,7 @@ class TranslationService {
     required String targetLocaleIdentifier,
     required List<Cue> cues,
   }) async {
+    _requireSupport();
     final inputCues = cues
         .where((cue) => cue.originalText.trim().isNotEmpty)
         .map((cue) => <String, Object?>{'id': cue.id, 'text': cue.originalText})

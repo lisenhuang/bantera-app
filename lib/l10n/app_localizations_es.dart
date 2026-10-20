@@ -278,6 +278,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get closeLabel => 'Cerrar';
 
   @override
+  String get longerDialogues => 'Diálogos más largos';
+
+  @override
   String get navDiscover => 'Diálogos';
 
   @override

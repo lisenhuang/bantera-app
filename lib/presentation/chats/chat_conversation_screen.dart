@@ -837,7 +837,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _translateMessage(ChatMessageItem message) async {
-    if (_translatingIds.contains(message.messageId)) {
+    if (!supportsBuiltInTranslation ||
+        _translatingIds.contains(message.messageId)) {
       return;
     }
 
@@ -1214,12 +1215,14 @@ class _MessageBubble extends StatelessWidget {
                     style: theme.textTheme.bodyLarge,
                   ),
                 ),
-              if (message.localTranslationStatus == 'processing')
+              if (supportsBuiltInTranslation &&
+                  message.localTranslationStatus == 'processing')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(l10n.chatTranslating),
                 ),
-              if (message.localTranslationStatus == 'failed')
+              if (supportsBuiltInTranslation &&
+                  message.localTranslationStatus == 'failed')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
@@ -1229,7 +1232,8 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (message.localTranslationText != null &&
+              if (supportsBuiltInTranslation &&
+                  message.localTranslationText != null &&
                   message.localTranslationText!.trim().isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

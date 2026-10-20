@@ -1,9 +1,12 @@
+import 'package:app/core/apple_system_version.dart';
 import 'dart:async';
 import 'package:app/presentation/quick_practice/practice_translation_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUp(() => translationCapabilityForTesting = true);
+  tearDown(() => translationCapabilityForTesting = null);
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('bantera/translation');
   final messenger =

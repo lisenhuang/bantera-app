@@ -64,13 +64,16 @@ void main() {
     double scale = 1,
     Locale locale = const Locale('en'),
     VoidCallback? onTap,
+    VoidCallback? onDialogues,
+    TargetPlatform platform = TargetPlatform.iOS,
   }) async {
     await tester.binding.setSurfaceSize(Size(width, 400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme,
+        theme: (dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme)
+            .copyWith(platform: platform),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -82,9 +85,9 @@ void main() {
         ),
         home: Scaffold(
           appBar: PracticeHeader(
+            onLongerDialogues: onDialogues ?? () {},
             goal: target,
             today: today,
-            level: 'B2',
             onGoalPressed: onTap ?? () {},
           ),
         ),
@@ -93,7 +96,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('title is geometrically centred with level left and ring right', (
+  testWidgets('title stays centred with goal left and menu right', (
     tester,
   ) async {
     var taps = 0;
@@ -110,11 +113,12 @@ void main() {
     expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
     expect(
       tester.getCenter(find.byKey(const ValueKey('practice-goal-ring'))).dx,
-      greaterThan(title.dx),
-    );
-    expect(
-      tester.getCenter(find.byKey(const ValueKey('practice-level'))).dx,
       lessThan(title.dx),
+    );
+    expect(find.byKey(const ValueKey('practice-level')), findsNothing);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey('practice-more-menu'))).dx,
+      greaterThan(title.dx),
     );
     await tester.tap(find.byKey(const ValueKey('practice-goal-ring')));
     expect(taps, 1);
@@ -164,6 +168,51 @@ void main() {
       );
     }
   });
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    for (final dark in [false, true]) {
+      testWidgets('overflow menu fits $platform dark=$dark at large text', (
+        tester,
+      ) async {
+        var opened = 0;
+        await mount(
+          tester,
+          width: 320,
+          scale: 2,
+          dark: dark,
+          platform: platform,
+          onDialogues: () => opened++,
+        );
+        final menu = find.byKey(const ValueKey('practice-more-menu'));
+        expect(tester.getSize(menu), const Size(48, 48));
+        expect(tester.getCenter(menu).dx, greaterThan(160));
+        expect(
+          tester.getCenter(find.byKey(const ValueKey('practice-title'))).dx,
+          closeTo(160, .1),
+        );
+        expect(
+          tester
+              .getSize(find.byKey(const ValueKey('practice-header-bar')))
+              .height,
+          kToolbarHeight,
+        );
+        expect(tester.widget<PopupMenuButton<String>>(menu).tooltip, 'More');
+        await tester.tap(menu);
+        await tester.pumpAndSettle();
+        final item = find.byType(PopupMenuItem<String>);
+        expect(item, findsOneWidget);
+        expect(
+          find.descendant(of: item, matching: find.byType(Icon)),
+          findsNothing,
+        );
+        expect(find.text('Longer dialogues'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text('Longer dialogues'));
+        await tester.pumpAndSettle();
+        expect(opened, 1);
+      });
+    }
+  }
+
   testWidgets('daily goal ring light and dark design captures', (tester) async {
     for (final dark in [false, true]) {
       await mount(tester, dark: dark);

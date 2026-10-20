@@ -2,8 +2,33 @@ import ActivityKit
 import Flutter
 import Foundation
 
+/// Optional system UI. The Flutter call channel remains safe on iOS 15/16.0/16.1.
 @MainActor
 final class BanteraAiCallActivityBridge {
+  private var implementation: AnyObject?
+  private var unavailableChannel: FlutterMethodChannel?
+  var isAvailable: Bool { implementation != nil }
+
+  init(messenger: FlutterBinaryMessenger, enabled: Bool = true) {
+    if #available(iOS 16.2, *), enabled {
+      implementation = BanteraSupportedAiCallActivityBridge(messenger: messenger)
+    } else {
+      let channel = FlutterMethodChannel(name: "bantera/ai_call_activity", binaryMessenger: messenger)
+      channel.setMethodCallHandler { call, result in
+        switch call.method {
+        case "start": result(false)
+        case "update", "stop": result(nil)
+        default: result(FlutterMethodNotImplemented)
+        }
+      }
+      unavailableChannel = channel
+    }
+  }
+}
+
+@available(iOS 16.2, *)
+@MainActor
+private final class BanteraSupportedAiCallActivityBridge {
   private let channel: FlutterMethodChannel
   private var activity: Activity<BanteraAiCallAttributes>?
   private var observer: NSObjectProtocol?

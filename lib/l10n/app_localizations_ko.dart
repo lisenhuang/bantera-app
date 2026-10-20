@@ -267,6 +267,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get closeLabel => '닫기';
 
   @override
+  String get longerDialogues => '더 긴 대화';
+
+  @override
   String get navDiscover => '대화';
 
   @override

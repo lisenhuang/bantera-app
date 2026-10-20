@@ -278,6 +278,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get closeLabel => 'Fechar';
 
   @override
+  String get longerDialogues => 'Diálogos mais longos';
+
+  @override
   String get navDiscover => 'Diálogos';
 
   @override

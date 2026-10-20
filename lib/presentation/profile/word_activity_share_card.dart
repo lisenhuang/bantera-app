@@ -16,6 +16,7 @@ class WordActivityShareCard extends StatelessWidget {
     required this.total,
     this.avatar,
     this.learningLanguage,
+    this.date,
   });
   static const size = Size(540, 960);
   static const backgroundAsset =
@@ -30,6 +31,7 @@ class WordActivityShareCard extends StatelessWidget {
   final WordTotals total;
   final ImageProvider? avatar;
   final String? learningLanguage;
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,7 @@ class WordActivityShareCard extends StatelessWidget {
               Positioned(
                 top: 52,
                 left: 34,
-                right: 160,
+                right: 184,
                 height: 76,
                 child: Row(
                   children: [
@@ -121,7 +123,7 @@ class WordActivityShareCard extends StatelessWidget {
               Positioned(
                 top: 68,
                 right: 34,
-                width: 96,
+                width: 132,
                 height: 37,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -133,9 +135,13 @@ class WordActivityShareCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: _ArtworkText(
-                    l10n.wordActivityShareToday,
+                    (Localizations.localeOf(context).languageCode == 'zh'
+                            ? DateFormat('yyyy.MM.dd', l10n.localeName)
+                            : DateFormat.yMMMd(l10n.localeName))
+                        .format(date ?? DateTime.now()),
+                    key: const ValueKey('share-date'),
                     fontSize: 16,
-                    maxLines: 2,
+                    maxLines: 1,
                     alignment: Alignment.center,
                   ),
                 ),

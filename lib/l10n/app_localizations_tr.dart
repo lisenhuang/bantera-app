@@ -279,6 +279,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get closeLabel => 'Kapat';
 
   @override
+  String get longerDialogues => 'Daha uzun diyaloglar';
+
+  @override
   String get navDiscover => 'Diyaloglar';
 
   @override

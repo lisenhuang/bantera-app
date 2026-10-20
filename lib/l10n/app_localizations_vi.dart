@@ -277,6 +277,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get closeLabel => 'Đóng';
 
   @override
+  String get longerDialogues => 'Hội thoại dài hơn';
+
+  @override
   String get navDiscover => 'Hội thoại';
 
   @override

@@ -265,6 +265,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get closeLabel => '閉じる';
 
   @override
+  String get longerDialogues => '長めの会話';
+
+  @override
   String get navDiscover => '会話';
 
   @override

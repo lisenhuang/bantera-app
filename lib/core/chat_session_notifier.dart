@@ -1,3 +1,4 @@
+import 'apple_system_version.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -652,6 +653,7 @@ class ChatSessionNotifier extends ChangeNotifier {
   }
 
   Future<ChatMessageItem?> translateMessage(ChatMessageItem message) async {
+    if (!supportsBuiltInTranslation) return null;
     final source = (message.localTranscriptLanguageCode ?? '').trim();
     final transcript = (message.localTranscriptText ?? '').trim();
     if (source.isEmpty || transcript.isEmpty) {

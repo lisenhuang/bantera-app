@@ -195,9 +195,14 @@ void main() {
     await prepared(tester);
     await tester.tap(find.text('Save to Photos'));
     await tester.pump();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(seconds: 2)),
-    );
+    // Image encoding uses real async work; wait for the channel, not a fixed
+    // two-second delay that fails on a busy build machine.
+    for (var i = 0; i < 200 && attempts == 0; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
     await tester.pumpAndSettle();
     expect(attempts, 1);
     expect(find.text('Saved to Photos'), findsNothing);

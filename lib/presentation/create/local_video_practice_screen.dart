@@ -11,6 +11,7 @@ import '../../core/user_profile_notifier.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/local_practice_repository.dart';
 import '../../infrastructure/translation_service.dart';
+import '../../core/apple_system_version.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../practice/practice_player_screen.dart';
 import '../shared/locale_flag.dart';
@@ -412,6 +413,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
     required String localPracticeId,
     required AppLocalizations l10n,
   }) async {
+    if (!supportsBuiltInTranslation) return const {};
     final translationLanguage = UserProfileNotifier.instance.translationLanguage
         ?.trim();
     if (translationLanguage == null || translationLanguage.isEmpty) {

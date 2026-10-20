@@ -20,8 +20,8 @@
 
 ## iOS minimum
 
-- **Deployment target:** **iOS 18.0** (`IPHONEOS_DEPLOYMENT_TARGET`, CocoaPods `platform`, and Pod `post_install` alignment).
-- **Policy:** Do **not** maintain compatibility for **iOS &lt; 18.0**. It is acceptable to use APIs and patterns that assume 18.0+ without fallback for older OS versions.
+- **Deployment target:** **iOS 15.0** (`IPHONEOS_DEPLOYMENT_TARGET`, CocoaPods `platform`, and Pod `post_install` alignment).
+- **Policy:** Maintain iOS 15.0+ compatibility, including 15.0–15.4. Guard newer native APIs, stored types, startup and optional frameworks. Dedicated translation is unavailable on iOS 15–17; retain Apple on-device translation on iOS 18+ and Android translation unchanged. Media workflows using SpeechTranscriber still require iOS 26. Preserve saved translations/preferences on unsupported OS versions. Never lower a dependency’s declared minimum to suppress a build error.
 
 ## iOS AI callback regression gate
 

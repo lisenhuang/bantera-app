@@ -7,10 +7,11 @@ import WidgetKit
 struct BanteraWidgetBundle: WidgetBundle {
   var body: some Widget {
     BanteraPracticeWidget()
-    BanteraAiCallWidget()
+    if #available(iOSApplicationExtension 16.2, *) { BanteraAiCallWidget() }
   }
 }
 
+@available(iOSApplicationExtension 16.2, *)
 struct BanteraAiCallWidget: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: BanteraAiCallAttributes.self) { context in
@@ -57,7 +58,17 @@ struct BanteraAiCallWidget: Widget {
     else { Text(timerInterval: Date()...max(Date(), context.state.endsAt), countsDown: true, showsHours: false) }
   }
 
-  private func controls(_ context: ActivityViewContext<BanteraAiCallAttributes>) -> some View {
+  @ViewBuilder private func controls(_ context: ActivityViewContext<BanteraAiCallAttributes>) -> some View {
+    if #available(iOSApplicationExtension 17.0, *) {
+      interactiveControls(context)
+    } else {
+      Link("Bantera AI", destination: BanteraPracticeSnapshot.chatURL)
+        .font(.caption.weight(.semibold))
+    }
+  }
+
+  @available(iOSApplicationExtension 17.0, *)
+  private func interactiveControls(_ context: ActivityViewContext<BanteraAiCallAttributes>) -> some View {
     HStack(spacing: 10) {
       Button(intent: BanteraAiCallControlIntent(callID: context.attributes.callID, action: "mute")) {
         Label(LocalizedStringKey(context.state.muted ? "ai.call.unmute" : "ai.call.mute"), systemImage: context.state.muted ? "mic.slash.fill" : "mic.fill")

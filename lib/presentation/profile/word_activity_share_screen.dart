@@ -43,6 +43,8 @@ class WordActivityShareScreen extends StatefulWidget {
 
 class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
   final _captureKey = GlobalKey();
+  // Keep the preview and cached exported image on the same local calendar day.
+  final _shareDate = DateTime.now();
   static const _photos = MethodChannel('bantera/photos');
   ImageProvider? _avatar;
   bool _preparing = true;
@@ -275,6 +277,7 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
               child: RepaintBoundary(
                 key: _captureKey,
                 child: WordActivityShareCard(
+                  date: _shareDate,
                   name: widget.name,
                   learningLanguage: widget.learningLanguage,
                   avatar: _avatar,

@@ -278,6 +278,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get closeLabel => 'Tutup';
 
   @override
+  String get longerDialogues => 'Dialog lebih panjang';
+
+  @override
   String get navDiscover => 'Dialog';
 
   @override

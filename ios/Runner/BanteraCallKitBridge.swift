@@ -84,7 +84,7 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     let task = Task { @MainActor [weak self] in
       guard let self else { return }
       let storefront = await Storefront.current
-      self.applyRegion(storefront: storefront?.countryCode, deviceRegion: Locale.current.region?.identifier)
+      self.applyRegion(storefront: storefront?.countryCode, deviceRegion: Locale.current.regionCode)
       self.regionTask = nil
     }
     regionTask = task

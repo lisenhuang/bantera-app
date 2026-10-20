@@ -1,3 +1,5 @@
+import 'package:app/core/apple_system_version.dart';
+import 'package:app/presentation/discover/discover_screen.dart';
 import 'dart:io';
 import 'package:app/core/practice_review_service.dart';
 import 'package:app/core/theme.dart';
@@ -6,7 +8,6 @@ import 'package:app/presentation/shared/daily_goal_celebration_dialog.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/quick_practice_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -68,6 +69,8 @@ class _RouteCoveredPracticeState extends State<RouteCoveredPractice>
 }
 
 void main() {
+  setUp(() => translationCapabilityForTesting = true);
+  tearDown(() => translationCapabilityForTesting = null);
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await (FontLoader(
@@ -91,15 +94,20 @@ void main() {
     bool dark = false,
     double width = 393,
     double scale = 1,
+    double height = 852,
+    Locale locale = const Locale('en'),
+    TargetPlatform platform = TargetPlatform.iOS,
     Map<String, dynamic>? feedback,
     Map<String, dynamic> material = exercise,
   }) async {
-    await tester.binding.setSurfaceSize(Size(width, 852));
+    await tester.binding.setSurfaceSize(Size(width, height));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme,
+        theme: (dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme)
+            .copyWith(platform: platform),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
@@ -121,11 +129,6 @@ void main() {
                 label: 'Practice',
               ),
               BottomNavigationBarItem(
-                icon: Icon(CupertinoIcons.chat_bubble_2),
-                activeIcon: Icon(CupertinoIcons.chat_bubble_2_fill),
-                label: 'Dialogues',
-              ),
-              BottomNavigationBarItem(
                 icon: Icon(Icons.chat_bubble_outline),
                 label: 'Chats',
               ),
@@ -140,6 +143,108 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  for (final major in [15, 16, 17]) {
+    testWidgets(
+      'iOS $major hides translation including a previously assisted exercise',
+      (tester) async {
+        translationCapabilityForTesting = translationSupportedOn(
+          isIOS: true,
+          isAndroid: false,
+          realMajor: major,
+        );
+        final assisted = {...exercise, 'translationUsed': true};
+        await mount(tester, material: assisted, width: 320);
+        expect(
+          find.byKey(const ValueKey('practice-show-translation')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('practice-translation-scoring')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('practice-translation-cue')),
+          findsNothing,
+        );
+        expect(find.text('Where is the station?'), findsOneWidget);
+        expect(assisted['translationUsed'], isTrue);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'dialogues and its library return to the same answered translated practice',
+    (tester) async {
+      await mount(
+        tester,
+        material: {...exercise, 'translationUsed': true},
+        feedback: {
+          'outcome': 'correct',
+          'choice': 0,
+          'transcript': 'It’s next to the bank.',
+        },
+      );
+      final practiceState = tester.state(find.byType(QuickPracticeScreen));
+      expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Longer dialogues'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiscoverScreen), findsOneWidget);
+      expect(find.byType(BackButton), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('dialogues-library-menu')));
+      await tester.pumpAndSettle();
+      expect(find.text('Practice History'), findsOneWidget);
+      expect(find.text('Saved Media'), findsOneWidget);
+      expect(find.text('Saved Cues'), findsOneWidget);
+      // Close the library menu, then use the standard page back button.
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(
+        tester.state(find.byType(QuickPracticeScreen)),
+        same(practiceState),
+      );
+      expect(find.text('Where is the station?'), findsOneWidget);
+      expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+      expect(
+        find.text('Translation used · This exercise won’t change your level.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('practice-pinned-next')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'audio buttons lead the waveform and replies without A/B labels',
+    (tester) async {
+      await mount(tester, width: 320, scale: 1.7);
+      final cuePlay = find.byKey(const ValueKey('practice-play-cue'));
+      final cueText = find.text('Where is the station?');
+      expect(
+        tester.getTopLeft(cuePlay).dy,
+        greaterThan(tester.getBottomLeft(cueText).dy),
+      );
+      for (var i = 0; i < 2; i++) {
+        final play = find.byKey(ValueKey('practice-play-option$i'));
+        final text = find.text(
+          (exercise['choices'] as List)[i]['text'] as String,
+        );
+        expect(tester.getCenter(play).dx, lessThan(tester.getTopLeft(text).dx));
+        expect(tester.getSize(play).width, greaterThanOrEqualTo(48));
+      }
+      expect(find.text('A'), findsNothing);
+      expect(find.text('B'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('choices prompt speech instead of accepting a tapped answer', (
     tester,
@@ -241,7 +346,7 @@ void main() {
     );
   }
   testWidgets(
-    'level dropdown shows all levels and locked selection only explains',
+    'level sheet shows all levels and locked selection only explains',
     (tester) async {
       await mount(
         tester,
@@ -255,6 +360,7 @@ void main() {
           findsOneWidget,
         );
       }
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text('Current level: B1'), findsOneWidget);
       expect(find.byIcon(Icons.lock_outline_rounded), findsNWidgets(3));
       await expectLater(
@@ -345,6 +451,68 @@ void main() {
     expect(tester.getTopLeft(header), position);
     expect(find.text('Practice'), findsNWidgets(2));
   });
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    for (final dark in [false, true]) {
+      testWidgets(
+        'level sheet preserves answer on dismissal: $platform dark=$dark',
+        (tester) async {
+          await mount(
+            tester,
+            width: 320,
+            height: 568,
+            scale: 2,
+            dark: dark,
+            platform: platform,
+            locale: const Locale('zh'),
+            material: {
+              ...exercise,
+              'level': 'B1',
+              'currentLevel': 'B1',
+              'translationUsed': true,
+            },
+            feedback: {
+              'outcome': 'correct',
+              'transcript': 'It’s next to the bank.',
+            },
+          );
+          final screen = find.byType(QuickPracticeScreen);
+          final state = tester.state(screen);
+          final button = find.byKey(const ValueKey('practice-level-menu'));
+          expect(find.text('先听，再说出你的回答。'), findsNothing);
+          expect(tester.getTopLeft(button).dy, greaterThan(kToolbarHeight));
+          expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+          expect(
+            find.descendant(of: find.byType(AppBar), matching: button),
+            findsNothing,
+          );
+          await tester.tap(button);
+          await tester.pumpAndSettle();
+          final sheet = find.byKey(const ValueKey('practice-level-sheet'));
+          expect(sheet, findsOneWidget);
+          final last = find.byKey(const ValueKey('practice-level-option-C2'));
+          await tester.ensureVisible(last);
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          final close = find.descendant(
+            of: sheet,
+            matching: find.byType(IconButton),
+          );
+          await tester.ensureVisible(close);
+          await tester.tap(close);
+          await tester.pumpAndSettle();
+          expect(sheet, findsNothing);
+          expect(identical(tester.state(screen), state), isTrue);
+          expect(find.text('B1'), findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('practice-pinned-next')),
+            findsOneWidget,
+          );
+          expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+        },
+      );
+    }
+  }
+
   testWidgets('shows the exercise level and tolerates older API responses', (
     tester,
   ) async {
@@ -357,7 +525,7 @@ void main() {
     expect(find.text('Where is the station?'), findsOneWidget);
   });
   testWidgets(
-    'level help opens from the dropdown footer and returns to the same exercise',
+    'level help opens from the level sheet footer and returns to the same exercise',
     (tester) async {
       await mount(tester);
       expect(
@@ -538,7 +706,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('practice-set-goal')));
     await tester.pumpAndSettle();
     expect(find.text('Daily goal'), findsOneWidget);
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('Where is the station?'), findsOneWidget);
     expect(tester.takeException(), isNull);

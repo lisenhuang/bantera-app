@@ -20,7 +20,6 @@ import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
-import 'discover/discover_screen.dart';
 import 'profile/profile_screen.dart';
 import 'quick_practice/quick_practice_screen.dart';
 
@@ -75,7 +74,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         return;
       }
       PracticeWidgetService.instance.chatRequested.value = false;
-      setState(() => _currentIndex = 2);
+      setState(() => _currentIndex = 1);
       openAiReminderChat();
     });
     WidgetsBinding.instance.ensureVisualUpdate();
@@ -85,7 +84,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     final request = GoalReminderService.instance.profileRequested;
     if (!mounted || !request.value) return;
     request.value = false;
-    setState(() => _currentIndex = 3);
+    setState(() => _currentIndex = 2);
   }
 
   void _updateUnread() {
@@ -240,8 +239,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     final l10n = AppLocalizations.of(context)!;
     final screens = <Widget>[
       QuickPracticeScreen(active: _currentIndex == 0 && !_covered),
-      const DiscoverScreen(),
-      ChatsScreen(active: _currentIndex == 2 && !_covered),
+      ChatsScreen(active: _currentIndex == 1 && !_covered),
       const ProfileScreen(),
     ];
     final maxIndex = screens.length - 1;
@@ -264,16 +262,11 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
             label: l10n.navPractice,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.chat_bubble_2),
-            activeIcon: const Icon(CupertinoIcons.chat_bubble_2_fill),
-            label: l10n.navDiscover,
-          ),
-          BottomNavigationBarItem(
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
                 Icon(
-                  stackIndex == 2
+                  stackIndex == 1
                       ? CupertinoIcons.chat_bubble_text_fill
                       : CupertinoIcons.chat_bubble_text,
                 ),

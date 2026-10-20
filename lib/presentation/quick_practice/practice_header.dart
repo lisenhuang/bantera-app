@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'practice_level_menu.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show NumberFormat;
@@ -24,18 +23,14 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     required this.goal,
     required this.today,
     required this.onGoalPressed,
-    this.level,
-    this.currentLevel,
-    this.onLevelSelected,
     this.goalAnchor,
+    this.onLongerDialogues,
   });
   final DailyWordGoal? goal;
   final WordTotals today;
   final VoidCallback? onGoalPressed;
-  final String? level;
-  final String? currentLevel;
-  final ValueChanged<String>? onLevelSelected;
   final Key? goalAnchor;
+  final VoidCallback? onLongerDialogues;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -194,30 +189,37 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         );
-        final levelControl = SizedBox(
-          width: side,
-          height: buttonSize,
-          child: level == null
-              ? const SizedBox.shrink()
-              : PracticeLevelMenu(
-                  level: level!,
-                  currentLevel: currentLevel ?? level!,
-                  onSelected: onLevelSelected,
-                ),
-        );
         return SizedBox(
           height: buttonSize,
           child: Row(
             children: [
-              levelControl,
-              const SizedBox(width: 8),
+              goalControl,
               Expanded(
                 child: Center(
                   child: FittedBox(fit: BoxFit.scaleDown, child: title),
                 ),
               ),
-              const SizedBox(width: 8),
-              goalControl,
+              SizedBox(
+                width: buttonSize,
+                height: buttonSize,
+                child: PopupMenuButton<String>(
+                  key: const ValueKey('practice-more-menu'),
+                  enabled: onLongerDialogues != null,
+                  tooltip: l.more,
+                  icon: const Icon(Icons.more_horiz),
+                  position: PopupMenuPosition.under,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  onSelected: (_) => onLongerDialogues?.call(),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'dialogues',
+                      child: Text(l.longerDialogues),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         );

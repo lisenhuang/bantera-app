@@ -1,3 +1,4 @@
+import 'package:app/core/apple_system_version.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -73,6 +74,8 @@ class _TranslationController extends AiChatController {
 }
 
 void main() {
+  setUp(() => translationCapabilityForTesting = true);
+  tearDown(() => translationCapabilityForTesting = null);
   testWidgets(
     'inline call fits phone width and clear history requires confirmation',
     (tester) async {
@@ -176,6 +179,22 @@ void main() {
         expect(rect.center.dy, closeTo(playRect.center.dy, 1));
       }
       expect(find.text('Previously generated translation'), findsNothing);
+      // A saved translation must remain stored but never appear on iOS 15–17.
+      controller.visibleTranslations.add(store.messages.first.id);
+      translationCapabilityForTesting = false;
+      controller.changed();
+      await tester.pump();
+      expect(find.byIcon(Icons.translate), findsNothing);
+      expect(find.text('Previously generated translation'), findsNothing);
+      expect(
+        store.messages.first.translation,
+        'Previously generated translation',
+      );
+      controller.visibleTranslations.clear();
+      translationCapabilityForTesting = true;
+      controller.changed();
+      await tester.pump();
+
       controller.busy = true;
       controller.changed();
       await tester.pump();

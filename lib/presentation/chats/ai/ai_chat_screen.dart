@@ -1,3 +1,4 @@
+import '../../../core/apple_system_version.dart';
 import '../../../core/ai_consent.dart';
 import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
@@ -867,7 +868,8 @@ class _AiChatScreenState extends State<AiChatScreen>
         ? (_position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
         : 0.0;
     final translationAction =
-        defaultTargetPlatform == TargetPlatform.iOS &&
+        supportsBuiltInTranslation &&
+            defaultTargetPlatform == TargetPlatform.iOS &&
             m.text.isNotEmpty &&
             !receiving
         ? IconButton(
@@ -957,7 +959,8 @@ class _AiChatScreenState extends State<AiChatScreen>
                     style: theme.textTheme.headlineSmall,
                   ),
                 ),
-              if (_chat.visibleTranslations.contains(m.id) &&
+              if (supportsBuiltInTranslation &&
+                  _chat.visibleTranslations.contains(m.id) &&
                   m.translation.isNotEmpty) ...[
                 const Divider(height: 20),
                 if (user)
@@ -970,7 +973,8 @@ class _AiChatScreenState extends State<AiChatScreen>
                 else
                   AiMessageMarkdown(text: m.translation, selectable: false),
               ],
-              if (_chat.translating.contains(m.id))
+              if (supportsBuiltInTranslation &&
+                  _chat.translating.contains(m.id))
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(

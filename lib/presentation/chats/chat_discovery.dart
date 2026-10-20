@@ -21,11 +21,9 @@ List<ChatUserSummary> discoverableOnlineUsers({
   required Set<String> existingDmUserIds,
   required String? learningLanguage,
   required String? nativeLanguage,
-  required bool hideSameNativeSpeakers,
 }) => users.where((other) {
   if (existingDmUserIds.contains(other.id)) return false;
-  if (hideSameNativeSpeakers &&
-      sameChatLanguage(nativeLanguage, other.nativeLanguage)) {
+  if (sameChatLanguage(nativeLanguage, other.nativeLanguage)) {
     return false;
   }
   return sameChatLanguage(learningLanguage, other.learningLanguage) ||

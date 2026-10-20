@@ -1,3 +1,5 @@
+import '../../core/apple_system_version.dart';
+import '../discover/discover_screen.dart';
 import '../../infrastructure/learning_language_catalog.dart';
 import 'practice_transcript_feedback.dart';
 import 'practice_header.dart';
@@ -477,7 +479,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   void _requestTranslations({bool retry = false}) {
     final exercise = _exercise;
-    if (widget.previewExercise != null ||
+    if (!supportsBuiltInTranslation ||
+        widget.previewExercise != null ||
         exercise == null ||
         !_translationRevealed ||
         !_allowed ||
@@ -504,7 +507,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Widget _translationLine(String id) {
-    if (!_translationRevealed) return const SizedBox.shrink();
+    if (!supportsBuiltInTranslation || !_translationRevealed) {
+      return const SizedBox.shrink();
+    }
     final text =
         widget.previewExercise?['translations']?[id] as String? ??
         _translations.translations[id];
@@ -558,7 +563,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _revealTranslations() async {
-    if (_translationRevealed ||
+    if (!supportsBuiltInTranslation ||
+        _translationRevealed ||
         _busy ||
         _recording ||
         _confirmingNext ||
@@ -598,7 +604,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       }
       // Persist exclusion before revealing any hint. It survives relaunches and
       // excludes answers already given during this unfinished exercise.
-      if (widget.previewExercise == null) await _api('$id/translation', {});
+      final marked = await PracticeTranslationController.markUsed(() async {
+        if (widget.previewExercise == null) await _api('$id/translation', {});
+      });
+      if (!marked) return;
       if (!mounted || epoch != _epoch || _exercise?['id'] != id) return;
       setState(() => _translationRevealed = true);
     } catch (_) {
@@ -848,6 +857,18 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
+  Future<void> _openLongerDialogues() async {
+    if (_recording || _busy || _confirmingNext) return;
+    await _stopAudio();
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: '/practice/dialogues'),
+        builder: (_) => const DiscoverScreen(),
+      ),
+    );
+  }
+
   Future<void> _showGoalSettings() async {
     if (_goalSettingsOpen || _recording || _busy || _confirmingNext) return;
     setState(() => _goalSettingsOpen = true);
@@ -1054,30 +1075,24 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         child: widget.previewExercise != null
             ? PracticeHeader(
                 goalAnchor: _goalAnchor,
+                onLongerDialogues: _recording || _busy || _confirmingNext
+                    ? null
+                    : _openLongerDialogues,
                 goal: null,
                 today: const WordTotals(),
-                level: showLevel ? level as String : null,
-                currentLevel: _currentLevel,
-                onLevelSelected:
-                    _recording || _busy || _confirmingNext || _loading
-                    ? null
-                    : _selectLevel,
                 onGoalPressed: _showGoalSettings,
               )
             : ListenableBuilder(
                 listenable: WordActivityNotifier.instance,
                 builder: (context, _) => PracticeHeader(
                   goalAnchor: _goalAnchor,
+                  onLongerDialogues: _recording || _busy || _confirmingNext
+                      ? null
+                      : _openLongerDialogues,
                   goal: WordActivityNotifier.instance.dailyGoal,
                   today: WordActivityNotifier.instance
                       .summaryFor(_locale)
                       .today,
-                  level: showLevel ? level as String : null,
-                  currentLevel: _currentLevel,
-                  onLevelSelected:
-                      _recording || _busy || _confirmingNext || _loading
-                      ? null
-                      : _selectLevel,
                   onGoalPressed: _recording || _busy || _confirmingNext
                       ? null
                       : _showGoalSettings,
@@ -1150,14 +1165,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 8),
-                  Text(
-                    l.quickInstruction,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: c.onSurfaceVariant,
-                      fontWeight: FontWeight.w400,
+                  if (showLevel)
+                    Center(
+                      child: PracticeLevelMenu(
+                        level: level as String,
+                        currentLevel: _currentLevel ?? level,
+                        onSelected:
+                            _recording || _busy || _confirmingNext || _loading
+                            ? null
+                            : _selectLevel,
+                      ),
                     ),
-                  ),
                   if (exercise?['reviewMode'] == true &&
                       _currentLevel != null) ...[
                     const SizedBox(height: 8),
@@ -1238,11 +1256,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                                   ),
                                 ),
                               ),
-                              _playButton(
-                                'cue',
-                                exercise['cueAudioUrl'] as String,
-                                c.primary,
-                              ),
                             ],
                           ),
                           const SizedBox(height: 18),
@@ -1257,36 +1270,49 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                           ),
                           _translationLine('cue'),
                           const SizedBox(height: 12),
-                          ValueListenableBuilder<double>(
-                            valueListenable: _cueProgress,
-                            builder: (context, progress, _) =>
-                                ChatAudioWaveform(
-                                  animateProgress: true,
-                                  progress: progress,
-                                  receiving: false,
-                                  audioKey: exercise['cueAudioUrl'] as String,
-                                  loadAudioPath: _audioCache == null
-                                      ? null
-                                      : () async {
-                                          final path = await _audioCache!
-                                              .prepare(
-                                                exercise['cueAudioUrl']
-                                                    as String,
-                                              );
-                                          if (path == null) {
-                                            throw StateError(
-                                              'Audio unavailable',
-                                            );
-                                          }
-                                          return path;
-                                        },
+                          Row(
+                            children: [
+                              _playButton(
+                                'cue',
+                                exercise['cueAudioUrl'] as String,
+                                c.primary,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ValueListenableBuilder<double>(
+                                  valueListenable: _cueProgress,
+                                  builder: (context, progress, _) =>
+                                      ChatAudioWaveform(
+                                        animateProgress: true,
+                                        progress: progress,
+                                        receiving: false,
+                                        audioKey:
+                                            exercise['cueAudioUrl'] as String,
+                                        loadAudioPath: _audioCache == null
+                                            ? null
+                                            : () async {
+                                                final path = await _audioCache!
+                                                    .prepare(
+                                                      exercise['cueAudioUrl']
+                                                          as String,
+                                                    );
+                                                if (path == null) {
+                                                  throw StateError(
+                                                    'Audio unavailable',
+                                                  );
+                                                }
+                                                return path;
+                                              },
+                                      ),
                                 ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 25),
-                    if (!_translationRevealed)
+                    if (supportsBuiltInTranslation && !_translationRevealed)
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: TextButton.icon(
@@ -1298,19 +1324,20 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                           label: Text(l.quickShowTranslation),
                         ),
                       ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        _translationRevealed
-                            ? l.quickTranslationExcluded
-                            : l.quickTranslationHint,
-                        key: const ValueKey('practice-translation-scoring'),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: c.onSurfaceVariant,
-                          height: 1.4,
+                    if (supportsBuiltInTranslation)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Text(
+                          _translationRevealed
+                              ? l.quickTranslationExcluded
+                              : l.quickTranslationHint,
+                          key: const ValueKey('practice-translation-scoring'),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: c.onSurfaceVariant,
+                            height: 1.4,
+                          ),
                         ),
                       ),
-                    ),
                     Text(
                       l.quickCue2,
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -1444,6 +1471,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       : TextDirection.ltr;
   Widget _playButton(String id, String url, Color color) =>
       IconButton.filledTonal(
+        key: ValueKey('practice-play-$id'),
         onPressed: _recording || _busy ? null : () => _play(id, url),
         tooltip: _playing == id ? l.practiceStop : l.practiceListenCarefully,
         style: IconButton.styleFrom(
@@ -1486,32 +1514,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           ),
           child: Row(
             children: [
-              Container(
-                width: 30,
-                height: 30,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? accent.withValues(alpha: .12)
-                      : c.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: selected
-                    ? Icon(
-                        correct
-                            ? CupertinoIcons.checkmark
-                            : CupertinoIcons.arrow_uturn_left,
-                        size: 15,
-                        color: accent,
-                      )
-                    : Text(
-                        index == 0 ? 'A' : 'B',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: c.onSurfaceVariant,
-                        ),
-                      ),
+              _playButton(
+                'option$index',
+                choice['audioUrl'] as String,
+                c.primary,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1529,12 +1535,16 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                   ],
                 ),
               ),
-              const SizedBox(width: 6),
-              _playButton(
-                'option$index',
-                choice['audioUrl'] as String,
-                c.primary,
-              ),
+              if (selected) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  correct
+                      ? CupertinoIcons.checkmark
+                      : CupertinoIcons.arrow_uturn_left,
+                  size: 18,
+                  color: accent,
+                ),
+              ],
             ],
           ),
         ),

@@ -631,6 +631,12 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get closeLabel;
 
+  /// No description provided for @longerDialogues.
+  ///
+  /// In en, this message translates to:
+  /// **'Longer dialogues'**
+  String get longerDialogues;
+
   /// No description provided for @navDiscover.
   ///
   /// In en, this message translates to:

@@ -30,9 +30,16 @@ struct BanteraPracticeProvider: TimelineProvider {
 struct BanteraPracticeWidget: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: BanteraPracticeSnapshot.kind, provider: BanteraPracticeProvider()) { entry in
-      BanteraPracticeEntryView(snapshot: entry.snapshot)
-        .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
-        .widgetURL(BanteraPracticeSnapshot.chatURL)
+      if #available(iOS 17.0, iOSApplicationExtension 17.0, *) {
+        BanteraPracticeEntryView(snapshot: entry.snapshot)
+          .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+          .widgetURL(BanteraPracticeSnapshot.chatURL)
+      } else {
+        BanteraPracticeEntryView(snapshot: entry.snapshot)
+          .padding(16)
+          .background(Color(uiColor: .systemBackground))
+          .widgetURL(BanteraPracticeSnapshot.chatURL)
+      }
     }
     .configurationDisplayName("practice.widget.title")
     .description("practice.widget.description")

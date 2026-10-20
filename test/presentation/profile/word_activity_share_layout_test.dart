@@ -68,6 +68,7 @@ void main() {
               child: RepaintBoundary(
                 key: capture,
                 child: WordActivityShareCard(
+                  date: DateTime(2026, 10, 20),
                   name: count == 296
                       ? 'Ethan Hunt'
                       : 'Alexandra Nguyễn 山田 지민 with a very long multilingual profile name',
@@ -97,6 +98,20 @@ void main() {
         expect(tester.takeException(), isNull, reason: '$locale / $count');
         final context = tester.element(find.byType(WordActivityShareCard));
         final l10n = AppLocalizations.of(context)!;
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('share-date')),
+            matching: find.text(
+              locale.languageCode == 'zh'
+                  ? '2026.10.20'
+                  : DateFormat.yMMMd(
+                      l10n.localeName,
+                    ).format(DateTime(2026, 10, 20)),
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.wordActivityShareToday), findsNothing);
         if (locale.languageCode == 'zh' && count != 1) {
           expect(
             find.text(locale.scriptCode == 'Hant' ? '把英語\n說出口。' : '把英语\n说出口。'),

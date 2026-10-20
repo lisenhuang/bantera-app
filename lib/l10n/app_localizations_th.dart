@@ -277,6 +277,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get closeLabel => 'ปิด';
 
   @override
+  String get longerDialogues => 'บทสนทนาที่ยาวขึ้น';
+
+  @override
   String get navDiscover => 'บทสนทนา';
 
   @override

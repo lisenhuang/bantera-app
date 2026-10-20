@@ -277,6 +277,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get closeLabel => 'Закрити';
 
   @override
+  String get longerDialogues => 'Довші діалоги';
+
+  @override
   String get navDiscover => 'Діалоги';
 
   @override

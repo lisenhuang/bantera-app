@@ -2,6 +2,7 @@ import ActivityKit
 import AppIntents
 import Foundation
 
+@available(iOS 16.2, *)
 struct BanteraAiCallAttributes: ActivityAttributes {
   struct ContentState: Codable, Hashable {
     var endsAt: Date
@@ -16,6 +17,7 @@ extension Notification.Name {
   static let banteraAiCallControl = Notification.Name("bantera.ai.call.control")
 }
 
+@available(iOS 17.0, *)
 struct BanteraAiCallControlIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Bantera AI call"
   static var openAppWhenRun = false

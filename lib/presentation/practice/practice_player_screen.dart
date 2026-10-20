@@ -2291,7 +2291,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       );
     }
 
-    if (_subtitleState == SubtitleState.original) {
+    if (!supportsBuiltInTranslation ||
+        _subtitleState == SubtitleState.original) {
       return _buildOriginalSubtitlePanel(
         cue: cue,
         colorScheme: colorScheme,
@@ -2602,6 +2603,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _showTranslatedSubtitle() async {
+    if (!supportsBuiltInTranslation) return;
     final sourceLocaleIdentifier = _sourceLocaleIdentifier;
     final targetLocale = await _ensureTranslationLanguage(
       sourceLocaleIdentifier: sourceLocaleIdentifier,
@@ -2701,6 +2703,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     required List<Cue> cues,
     required String excludedCueId,
   }) async {
+    if (!supportsBuiltInTranslation) return;
     final backgroundKey = _backgroundTranslationKey(
       cueMode,
       targetLocaleIdentifier,
@@ -2956,6 +2959,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _changeTranslationLanguage() async {
+    if (!supportsBuiltInTranslation) return;
     final sourceLocaleIdentifier = _sourceLocaleIdentifier;
 
     List<TranslationLocaleOption> locales;
@@ -3199,6 +3203,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _loadPersistedTranslations() async {
+    if (!supportsBuiltInTranslation) return;
     final localPracticeId = _savedLocalPracticeId;
     final localTargetLanguage = widget.mediaItem.translatedLanguage?.trim();
     if (localPracticeId != null &&

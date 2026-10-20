@@ -277,6 +277,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get closeLabel => 'Закрыть';
 
   @override
+  String get longerDialogues => 'Более длинные диалоги';
+
+  @override
   String get navDiscover => 'Диалоги';
 
   @override
