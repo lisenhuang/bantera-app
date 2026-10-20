@@ -672,5 +672,13 @@
   "quickShowTranslation": "Afficher la traduction",
   "quickTranslationHint": "Afficher la traduction exclut cet exercice des changements de niveau.",
   "quickTranslationExcluded": "Traduction consultée · Cet exercice ne changera pas votre niveau.",
-  "quickCompletedToday": "Terminés aujourd’hui"
+  "quickCompletedToday": "Terminés aujourd’hui",
+  "quickChooseLevel": "Choisir le niveau",
+  "quickCurrentLevel": "Niveau actuel : {level}",
+  "quickLevelLocked": "Niveau pas encore atteint",
+  "quickSwitchLevel": "Pratiquer au niveau {level} ?",
+  "quickLevelLockedBody": "Atteins {level} en pratiquant pour le débloquer. Ton niveau actuel est {current}.",
+  "quickReviewLevelBody": "Ton niveau {current} et ta progression sont conservés. Les exercices plus faciles ne changent pas ton niveau. Tu peux revenir à {current} à tout moment.",
+  "quickReturnLevelBody": "Continue à ton niveau actuel. Les réponses sans traduction compteront de nouveau pour les changements de niveau.",
+  "quickReviewMode": "Révision · Niveau actuel : {level}"
 }

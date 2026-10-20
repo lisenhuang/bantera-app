@@ -1,3 +1,4 @@
+import '../../infrastructure/learning_language_catalog.dart';
 import '../../core/ai_consent.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -83,7 +84,10 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
     final learningLang =
         UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
     if (learningLang.isEmpty) return false;
-    if (_selectedLocale == null) return false;
+    if (_selectedLocale == null ||
+        !supportsAudioDialogueLanguage(_selectedLocale!.identifier)) {
+      return false;
+    }
     if (SettingsNotifier.instance.audioLevel == null) return false;
     if ((_selectedScenario?.isCustom ?? false) &&
         _customScenarioController.text.trim().isEmpty) {
@@ -126,7 +130,12 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
       final learningLang =
           UserProfileNotifier.instance.learningLanguage?.trim() ?? '';
 
-      final defaultLocale = _matchLearningLanguage(locales, learningLang);
+      final defaultLocale = _matchLearningLanguage(
+        locales
+            .where((option) => supportsAudioDialogueLanguage(option.identifier))
+            .toList(),
+        learningLang,
+      );
 
       AiScenario? restoredScenario;
       try {

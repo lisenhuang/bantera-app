@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'practice_level_menu.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show NumberFormat;
@@ -24,12 +25,16 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     required this.today,
     required this.onGoalPressed,
     this.level,
+    this.currentLevel,
+    this.onLevelSelected,
     this.goalAnchor,
   });
   final DailyWordGoal? goal;
   final WordTotals today;
   final VoidCallback? onGoalPressed;
   final String? level;
+  final String? currentLevel;
+  final ValueChanged<String>? onLevelSelected;
   final Key? goalAnchor;
 
   @override
@@ -192,36 +197,13 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
         final levelControl = SizedBox(
           width: side,
           height: buttonSize,
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: level == null
-                ? const SizedBox.shrink()
-                : FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Container(
-                      key: const ValueKey('practice-level'),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: c.primary.withValues(alpha: .08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: c.primary.withValues(alpha: .18),
-                        ),
-                      ),
-                      child: Text(
-                        level!,
-                        textDirection: TextDirection.ltr,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: c.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-          ),
+          child: level == null
+              ? const SizedBox.shrink()
+              : PracticeLevelMenu(
+                  level: level!,
+                  currentLevel: currentLevel ?? level!,
+                  onSelected: onLevelSelected,
+                ),
         );
         return SizedBox(
           height: buttonSize,

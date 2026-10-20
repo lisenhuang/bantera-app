@@ -672,5 +672,13 @@
   "quickShowTranslation": "Pokaż tłumaczenie",
   "quickTranslationHint": "Wyświetlenie tłumaczenia wyklucza to ćwiczenie ze zmian poziomu.",
   "quickTranslationExcluded": "Użyto tłumaczenia · To ćwiczenie nie zmieni twojego poziomu.",
-  "quickCompletedToday": "Ukończone dzisiaj"
+  "quickCompletedToday": "Ukończone dzisiaj",
+  "quickChooseLevel": "Wybierz poziom ćwiczeń",
+  "quickCurrentLevel": "Obecny poziom: {level}",
+  "quickLevelLocked": "Poziom jeszcze nieosiągnięty",
+  "quickSwitchLevel": "Ćwiczyć na poziomie {level}?",
+  "quickLevelLockedBody": "Osiągnij {level} przez ćwiczenia, aby go odblokować. Twój obecny poziom to {current}.",
+  "quickReviewLevelBody": "Twój poziom {current} i postępy zostaną zachowane. Łatwiejsze ćwiczenia nie wpływają na zmiany poziomu. Możesz wrócić do {current} w dowolnej chwili.",
+  "quickReturnLevelBody": "Kontynuuj na obecnym poziomie. Odpowiedzi bez tłumaczenia znów będą liczyć się do zmian poziomu.",
+  "quickReviewMode": "Powtórka · Obecny poziom: {level}"
 }

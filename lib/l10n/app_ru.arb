@@ -672,5 +672,13 @@
   "quickShowTranslation": "Показать перевод",
   "quickTranslationHint": "Если открыть перевод, это упражнение не повлияет на уровень.",
   "quickTranslationExcluded": "Перевод использован · Это упражнение не изменит ваш уровень.",
-  "quickCompletedToday": "Выполнено сегодня"
+  "quickCompletedToday": "Выполнено сегодня",
+  "quickChooseLevel": "Выбрать уровень практики",
+  "quickCurrentLevel": "Текущий уровень: {level}",
+  "quickLevelLocked": "Уровень ещё не достигнут",
+  "quickSwitchLevel": "Практиковаться на {level}?",
+  "quickLevelLockedBody": "Достигните {level} с помощью практики, чтобы открыть его. Ваш текущий уровень — {current}.",
+  "quickReviewLevelBody": "Ваш уровень {current} и прогресс сохранятся. Более лёгкие упражнения не влияют на изменение уровня. Вы можете вернуться к {current} в любой момент.",
+  "quickReturnLevelBody": "Продолжайте на текущем уровне. Ответы без перевода снова будут учитываться при изменении уровня.",
+  "quickReviewMode": "Повторение · Текущий уровень: {level}"
 }

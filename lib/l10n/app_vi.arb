@@ -672,5 +672,13 @@
   "quickShowTranslation": "Hiện bản dịch",
   "quickTranslationHint": "Nếu xem bản dịch, bài tập này sẽ không được tính khi điều chỉnh trình độ.",
   "quickTranslationExcluded": "Đã dùng bản dịch · Bài tập này không thay đổi trình độ của bạn.",
-  "quickCompletedToday": "Hoàn thành hôm nay"
+  "quickCompletedToday": "Hoàn thành hôm nay",
+  "quickChooseLevel": "Chọn cấp độ luyện tập",
+  "quickCurrentLevel": "Cấp độ hiện tại: {level}",
+  "quickLevelLocked": "Chưa đạt cấp độ này",
+  "quickSwitchLevel": "Luyện tập ở {level}?",
+  "quickLevelLockedBody": "Hãy luyện tập để đạt {level} và mở khóa. Cấp độ hiện tại của bạn là {current}.",
+  "quickReviewLevelBody": "Cấp độ {current} và tiến độ của bạn vẫn được lưu. Bài tập dễ hơn không ảnh hưởng đến thay đổi cấp độ. Bạn có thể quay lại {current} bất cứ lúc nào.",
+  "quickReturnLevelBody": "Tiếp tục ở cấp độ hiện tại. Các câu trả lời không dùng bản dịch sẽ lại được tính để điều chỉnh cấp độ.",
+  "quickReviewMode": "Ôn tập · Cấp độ hiện tại: {level}"
 }

@@ -2312,4 +2312,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickCompletedToday => 'Completed today';
+
+  @override
+  String get quickChooseLevel => 'Choose practice level';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return 'Current level: $level';
+  }
+
+  @override
+  String get quickLevelLocked => 'Level not reached yet';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return 'Practise at $level?';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return 'Reach $level through practice to unlock it. Your current level is $current.';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return 'Your $current level and progress stay saved. Easier practice does not affect level changes. You can return to $current at any time.';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      'Continue at your current level. Answers without translation will count towards level changes again.';
+
+  @override
+  String quickReviewMode(String level) {
+    return 'Review · Current level: $level';
+  }
 }

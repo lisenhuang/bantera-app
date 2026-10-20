@@ -9,11 +9,17 @@ class PracticeTranscriptFeedback extends StatelessWidget {
     required this.choices,
     required this.locale,
     this.choice,
+    this.onReplay,
+    this.replayEnabled = true,
+    this.replaying = false,
+    this.replayLoading = false,
     this.uncertainWords = const [],
   });
   final String transcript, locale;
   final List<String> choices, uncertainWords;
   final int? choice;
+  final VoidCallback? onReplay;
+  final bool replayEnabled, replaying, replayLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -49,18 +55,50 @@ class PracticeTranscriptFeedback extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: c.outlineVariant),
           ),
-          child: transcript.trim().isEmpty
-              ? Text(
-                  l.compareNoTranscriptGenerated,
-                  style: theme.textTheme.bodyMedium,
-                )
-              : _highlightedText(
-                  context,
-                  transcript,
-                  diff.heard,
-                  direction,
-                  'practice-heard-text',
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: transcript.trim().isEmpty
+                    ? Text(
+                        l.compareNoTranscriptGenerated,
+                        style: theme.textTheme.bodyMedium,
+                      )
+                    : _highlightedText(
+                        context,
+                        transcript,
+                        diff.heard,
+                        direction,
+                        'practice-heard-text',
+                      ),
+              ),
+              if (onReplay != null) ...[
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  key: const ValueKey('practice-replay-recording'),
+                  tooltip: replaying
+                      ? l.practiceStopRecording
+                      : l.comparePlayAttempt,
+                  onPressed: replayEnabled ? onReplay : null,
+                  icon: replayLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          replaying
+                              ? Icons.stop_rounded
+                              : Icons.play_arrow_rounded,
+                        ),
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
                 ),
+              ],
+            ],
+          ),
         ),
         if (diff.choice != null && highlighted) ...[
           const SizedBox(height: 14),

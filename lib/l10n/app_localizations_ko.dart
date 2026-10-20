@@ -2161,4 +2161,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get quickCompletedToday => '오늘 완료';
+
+  @override
+  String get quickChooseLevel => '연습 레벨 선택';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return '현재 레벨: $level';
+  }
+
+  @override
+  String get quickLevelLocked => '아직 도달하지 않은 레벨';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return '$level에서 연습할까요?';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return '연습으로 $level에 도달하면 이용할 수 있어요. 현재 레벨은 $current입니다.';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return '$current 레벨과 진행 상황은 저장됩니다. 낮은 레벨 연습은 레벨 변화에 영향을 주지 않으며 언제든 $current로 돌아갈 수 있어요.';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      '현재 레벨에서 계속 연습합니다. 번역 없이 답한 결과가 다시 레벨 변화에 반영됩니다.';
+
+  @override
+  String quickReviewMode(String level) {
+    return '복습 · 현재 레벨: $level';
+  }
 }

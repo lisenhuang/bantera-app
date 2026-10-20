@@ -2252,4 +2252,39 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get quickCompletedToday => 'Selesai hari ini';
+
+  @override
+  String get quickChooseLevel => 'Pilih tingkat latihan';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return 'Tingkat saat ini: $level';
+  }
+
+  @override
+  String get quickLevelLocked => 'Tingkat belum tercapai';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return 'Berlatih di $level?';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return 'Capai $level melalui latihan untuk membukanya. Tingkatmu saat ini adalah $current.';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return 'Tingkat $current dan progresmu tetap tersimpan. Latihan yang lebih mudah tidak memengaruhi perubahan tingkat. Kamu bisa kembali ke $current kapan saja.';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      'Lanjutkan di tingkat saat ini. Jawaban tanpa terjemahan akan kembali dihitung untuk perubahan tingkat.';
+
+  @override
+  String quickReviewMode(String level) {
+    return 'Ulasan · Tingkat saat ini: $level';
+  }
 }

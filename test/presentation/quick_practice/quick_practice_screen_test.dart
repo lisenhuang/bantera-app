@@ -196,6 +196,140 @@ void main() {
       );
     },
   );
+  for (final outcome in [null, 'correct', 'incorrect', 'unclear']) {
+    testWidgets(
+      'microphone stays directly below choices with $outcome feedback',
+      (tester) async {
+        await mount(
+          tester,
+          feedback: outcome == null
+              ? null
+              : {
+                  'outcome': outcome,
+                  'choice': 0,
+                  'transcript': 'It’s next to the bank.',
+                  'explanation': List.filled(
+                    20,
+                    'Long feedback should stay below recording.',
+                  ).join(' '),
+                },
+        );
+        final mic = find.byKey(const ValueKey('practice-record-button'));
+        final lastChoice = find.text('It opens at nine.');
+        expect(
+          tester.getTopLeft(mic).dy,
+          greaterThan(tester.getBottomLeft(lastChoice).dy),
+        );
+        expect(
+          tester.getTopLeft(mic).dy - tester.getBottomLeft(lastChoice).dy,
+          lessThan(100),
+        );
+        if (outcome != null) {
+          expect(
+            tester
+                .getTopLeft(find.byKey(const ValueKey('practice-feedback')))
+                .dy,
+            greaterThan(tester.getBottomLeft(mic).dy),
+          );
+        }
+        await Scrollable.ensureVisible(tester.element(mic), alignment: 1);
+        await tester.pumpAndSettle();
+        expect(mic.hitTestable(), findsOneWidget);
+        expect(lastChoice.hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+  testWidgets(
+    'level dropdown shows all levels and locked selection only explains',
+    (tester) async {
+      await mount(
+        tester,
+        material: {...exercise, 'level': 'B1', 'currentLevel': 'B1'},
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+      await tester.pumpAndSettle();
+      for (final level in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) {
+        expect(
+          find.byKey(ValueKey('practice-level-option-$level')),
+          findsOneWidget,
+        );
+      }
+      expect(find.text('Current level: B1'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsNWidgets(3));
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/practice-level-menu.png'),
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-level-option-C1')));
+      await tester.pumpAndSettle();
+      expect(find.text('Level not reached yet'), findsOneWidget);
+      expect(
+        find.text(
+          'Reach C1 through practice to unlock it. Your current level is B1.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+      expect(find.text('B1'), findsOneWidget);
+      expect(find.text('Where is the station?'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'lower level confirmation preserves earned level and allows returning',
+    (tester) async {
+      await mount(
+        tester,
+        material: {...exercise, 'level': 'B1', 'currentLevel': 'B1'},
+      );
+      Future<void> choose(String level) async {
+        await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(ValueKey('practice-level-option-$level')));
+        await tester.pumpAndSettle();
+      }
+
+      await choose('A1');
+      expect(find.text('Practise at A1?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('B1'), findsOneWidget);
+      await choose('A1');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(find.text('Review · Current level: B1'), findsOneWidget);
+      expect(find.text('A1'), findsOneWidget);
+      await choose('B1');
+      expect(
+        find.text(
+          'Continue at your current level. Answers without translation will count towards level changes again.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(find.text('Review · Current level: B1'), findsNothing);
+      expect(find.text('B1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'retired saved language asks for another language without preparing material',
+    (tester) async {
+      await mount(tester, material: {...exercise, 'locale': 'mi-NZ'});
+      expect(
+        find.text('Choose a learning language in your profile.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('practice-record-button')),
+        findsNothing,
+      );
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('Practice toolbar stays fixed while the exercise scrolls', (
     tester,
   ) async {
@@ -223,9 +357,15 @@ void main() {
     expect(find.text('Where is the station?'), findsOneWidget);
   });
   testWidgets(
-    'level help opens from the bottom link and returns to the same exercise',
+    'level help opens from the dropdown footer and returns to the same exercise',
     (tester) async {
       await mount(tester);
+      expect(
+        find.byKey(const ValueKey('practice-level-help-link')),
+        findsNothing,
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+      await tester.pumpAndSettle();
       final link = find.byKey(const ValueKey('practice-level-help-link'));
       await tester.ensureVisible(link);
       await tester.tap(link);
@@ -248,6 +388,8 @@ void main() {
     tester,
   ) async {
     await mount(tester, width: 320, scale: 1.7, dark: true);
+    await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+    await tester.pumpAndSettle();
     final link = find.byKey(const ValueKey('practice-level-help-link'));
     await tester.ensureVisible(link);
     await tester.tap(link);

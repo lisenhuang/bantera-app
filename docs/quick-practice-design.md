@@ -616,3 +616,86 @@ installation and successful launch of **2.25.6 (394)** on iPhone 17 Pro. APK
 signature verification passed and package metadata confirms versionCode 394.
 Android physical runtime was not exercised. No backend/website deployment,
 Git commit/push or store submission was needed or performed for this UI update.
+
+## Recording beside the replies: 20 October 2026
+
+App **2.25.7 (395)** keeps the microphone and recording status directly after the
+two Cue 2 choices in every answer state. Feedback, transcript comparison and
+errors now follow the recording controls. Receiving feedback no longer scrolls
+automatically away from the reply text. The successful pinned Next action remains.
+
+Verification: all 24 Practice screen tests passed, including control order and
+visibility with long correct/incorrect/unclear feedback; 17 callback/CallKit
+regression tests passed. Changed-file analysis passed. Updated light transcript
+layout visually inspected. No backend change is required. Physical locked-screen
+callback audio remains unverified.
+
+The 395 build was superseded before installation by the combined level-picker
+and recording-replay release below.
+
+## Level dropdown and recorded-answer replay: 20 October 2026
+
+App **2.26.1 (397)** opens an anchored dropdown from the top-left level badge.
+All six CEFR labels are visible. Levels above the current earned level are grey
+with a lock, but tapping them opens an explanation. This uses the current level,
+not the historical maximum: a former B2 is locked again after a drop to B1.
+Choosing a lower level confirms review mode, saves the choice per account/language,
+and preserves the earned level and scoring window. Returning to the earned level
+restores normal scoring. Review answers never affect level changes. The menu
+shows the earned level separately from the selected practice level, and the page
+shows a review caption. Existing toolbar height and pinned successful Next remain.
+
+The transcript card includes a 48px play/stop control on its right when a recorded
+clip is available, including when transcription fails. It plays the original local
+WAV using the same audio player and call/lifecycle guards as cue playback, so clips
+do not overlap. No new audio upload or AI request is introduced. The clip is removed
+on a successful new recording, advancement, account/language change, consent
+revocation, or disposal. It is temporary and does not become a saved recording.
+Recognized words heard during replay use the existing listening activity tracker.
+
+Design references: Duolingo's separate review flow
+(https://blog.duolingo.com/how-to-review-lessons-on-duolingo/), Material list states
+(https://m3.material.io/components/lists/overview), Duolingo self-recording guidance
+(https://blog.duolingo.com/improve-pronunciation-in-new-language-tips/) and Apple's
+audio controls guidance
+(https://developer.apple.com/design/human-interface-guidelines/playing-audio).
+The adapted UI keeps selection in a compact anchored menu and playback beside
+the actual transcript rather than adding another page or replacing source audio.
+
+Verification: **86** focused Practice/cache/callback/CallKit/audio tests passed;
+analysis passed. Tests cover menu locks/confirmations, preserved earned level,
+recording-control position, replay/play-stop/disabled/loading states, absent clips,
+empty transcripts, and a narrow multilingual transcript layout. Menu and microphone
+layout goldens were inspected. Backend 1.25.0 adds persisted review state and an
+opt-in API field so older clients retain their existing level/resume behavior.
+Physical microphone replay and locked-screen CallKit audio are not established
+by these automated tests.
+
+Debug and signed release iOS builds passed. The signed **2.26.1 (397)** app was
+verified, installed and successfully launched through CoreDevice on the connected
+iPhone 17 Pro. This establishes installation/launch, not physical recording replay
+or locked-screen callback audio. Backend 1.25.0 was deployed and independently
+verified on both public domains (156/156 HTTP availability samples passed).
+
+## Level help in the dropdown: 20 October 2026
+
+App **2.26.2 (398)** moves “How levels work?” to a separated footer item beneath
+C2 in the top-left level dropdown. The page's bottom link is removed. The existing
+help sheet and scoring explanation are reused. Closing help preserves the current
+exercise. The menu remains scrollable on smaller screens and with larger text.
+
+All 32 Practice screen/header tests passed, including opening help from the menu,
+returning to the unchanged exercise and narrow/large-text layouts. The updated
+menu golden was inspected. No backend change or additional deployment is required.
+
+The 17 required callback/CallKit tests and targeted analysis also passed. Debug
+and signed release iOS builds passed; signature and version **2.26.2 (398)** were
+verified. CoreDevice confirmed installation and launch on iPhone 17 Pro. Physical
+recording playback and locked-screen callback audio remain unverified. No Git
+commit/push or App Store submission was performed.
+
+The release APK also built successfully. apksigner verification confirms the
+Bantera signing certificate; package metadata is `com.lisenhuang.bantera`,
+versionName **2.26.2**, versionCode **398**. Output:
+`build/app/outputs/flutter-apk/app-release.apk`. Android physical runtime was not
+tested. The website-hosted APK was not replaced.

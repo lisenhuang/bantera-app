@@ -2146,4 +2146,39 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickCompletedToday => '今日の完了数';
+
+  @override
+  String get quickChooseLevel => '練習レベルを選ぶ';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return '現在のレベル：$level';
+  }
+
+  @override
+  String get quickLevelLocked => 'まだ到達していないレベルです';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return '$level で練習しますか？';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return '練習で $level に到達すると利用できます。現在のレベルは $current です。';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return '$current のレベルと進捗は保存されます。低いレベルでの練習はレベルの変化に影響しません。いつでも $current に戻れます。';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      '現在のレベルで練習を続けます。翻訳を使わない回答が再びレベルの判定に反映されます。';
+
+  @override
+  String quickReviewMode(String level) {
+    return '復習 · 現在のレベル：$level';
+  }
 }

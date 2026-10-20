@@ -707,5 +707,13 @@
   "quickShowTranslation": "显示翻译",
   "quickTranslationHint": "查看翻译后，本题将不计入等级调整。",
   "quickTranslationExcluded": "已查看翻译 · 本题不会影响你的等级。",
-  "quickCompletedToday": "今日完成"
+  "quickCompletedToday": "今日完成",
+  "quickChooseLevel": "选择练习等级",
+  "quickCurrentLevel": "当前等级：{level}",
+  "quickLevelLocked": "尚未达到此等级",
+  "quickSwitchLevel": "练习 {level} 等级？",
+  "quickLevelLockedBody": "通过练习达到 {level} 后即可解锁。你当前的等级是 {current}。",
+  "quickReviewLevelBody": "你的 {current} 等级和进度会保留。较低等级的练习不会影响等级变化，你可以随时返回 {current}。",
+  "quickReturnLevelBody": "回到当前等级继续练习。不使用翻译的回答将再次计入等级变化。",
+  "quickReviewMode": "复习 · 当前等级：{level}"
 }

@@ -933,5 +933,51 @@
   "quickShowTranslation": "Show translation",
   "quickTranslationHint": "Showing translation excludes this exercise from level changes.",
   "quickTranslationExcluded": "Translation used · This exercise won’t change your level.",
-  "quickCompletedToday": "Completed today"
+  "quickCompletedToday": "Completed today",
+  "quickChooseLevel": "Choose practice level",
+  "quickCurrentLevel": "Current level: {level}",
+  "quickLevelLocked": "Level not reached yet",
+  "quickSwitchLevel": "Practise at {level}?",
+  "quickLevelLockedBody": "Reach {level} through practice to unlock it. Your current level is {current}.",
+  "quickReviewLevelBody": "Your {current} level and progress stay saved. Easier practice does not affect level changes. You can return to {current} at any time.",
+  "quickReturnLevelBody": "Continue at your current level. Answers without translation will count towards level changes again.",
+  "quickReviewMode": "Review · Current level: {level}",
+  "@quickCurrentLevel": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@quickSwitchLevel": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@quickLevelLockedBody": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "@quickReviewLevelBody": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "@quickReviewMode": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  }
 }

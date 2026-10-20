@@ -707,5 +707,13 @@
   "quickShowTranslation": "翻訳を表示",
   "quickTranslationHint": "翻訳を表示すると、この練習はレベル判定の対象外になります。",
   "quickTranslationExcluded": "翻訳を使用 · この練習はレベルに影響しません。",
-  "quickCompletedToday": "今日の完了数"
+  "quickCompletedToday": "今日の完了数",
+  "quickChooseLevel": "練習レベルを選ぶ",
+  "quickCurrentLevel": "現在のレベル：{level}",
+  "quickLevelLocked": "まだ到達していないレベルです",
+  "quickSwitchLevel": "{level} で練習しますか？",
+  "quickLevelLockedBody": "練習で {level} に到達すると利用できます。現在のレベルは {current} です。",
+  "quickReviewLevelBody": "{current} のレベルと進捗は保存されます。低いレベルでの練習はレベルの変化に影響しません。いつでも {current} に戻れます。",
+  "quickReturnLevelBody": "現在のレベルで練習を続けます。翻訳を使わない回答が再びレベルの判定に反映されます。",
+  "quickReviewMode": "復習 · 現在のレベル：{level}"
 }

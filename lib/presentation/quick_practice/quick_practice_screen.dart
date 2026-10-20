@@ -1,6 +1,7 @@
+import '../../infrastructure/learning_language_catalog.dart';
 import 'practice_transcript_feedback.dart';
-import 'practice_level_help.dart';
 import 'practice_header.dart';
+import 'practice_level_menu.dart';
 import 'practice_word_flight.dart';
 import 'practice_translation_controller.dart';
 import '../profile/daily_word_goal_section.dart';
@@ -55,16 +56,12 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final _player = AudioPlayer();
   late final _recorder = AudioRecorder();
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  );
+  late final AnimationController _pulse;
   StreamSubscription<void>? _completion;
   StreamSubscription<Duration>? _position, _duration;
   int _audioWords = 0, _audioCredited = 0, _audioDurationMs = 0;
   String? _audioOwner, _audioLocale;
   String _playbackEvent = '';
-  final _feedbackKey = GlobalKey();
   final _microphoneAnchor = GlobalKey();
   final _goalAnchor = GlobalKey();
   final _wordFlight = PracticeWordFlight();
@@ -78,28 +75,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   int _audioGeneration = 0;
   bool _confirmingNext = false, _goalSettingsOpen = false;
   bool _translationRevealed = false;
+  String? _currentLevel, _practiceLevel;
   @override
   void setState(VoidCallback fn) {
-    final previousFeedback = _feedback;
     super.setState(fn);
-    if (_feedback != null &&
-        previousFeedback != _feedback &&
-        widget.previewExercise == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final target = _feedbackKey.currentContext;
-        if (mounted && target != null) {
-          unawaited(
-            Scrollable.ensureVisible(
-              target,
-              alignment: 0.1,
-              duration: MediaQuery.disableAnimationsOf(context)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 250),
-            ),
-          );
-        }
-      });
-    }
     if (widget.previewExercise == null) {
       practiceInteractionBusy.value =
           _busy ||
@@ -132,7 +111,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   Timer? _completionDayTimer;
   int _completionGeneration = 0;
   Map<String, dynamic>? _exercise, _feedback;
-  String? _owner, _locale, _error, _recordPath, _playing;
+  String? _owner, _locale, _error, _recordPath, _replayPath, _playing;
   String _requestId = const Uuid().v4();
   String? _previousId;
   bool _loading = false, _recording = false, _busy = false, _allowed = false;
@@ -153,11 +132,22 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   @override
   void initState() {
     super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
     if (widget.previewExercise != null) {
       _exercise = widget.previewExercise;
+      _currentLevel =
+          _exercise?['currentLevel'] as String? ??
+          _exercise?['level'] as String?;
+      _practiceLevel = _exercise?['level'] as String?;
       _translationRevealed = _exercise?['translationUsed'] == true;
       _feedback = widget.previewFeedback;
-      _locale = 'en-NZ';
+      final previewLocale = _exercise?['locale'] as String? ?? 'en-NZ';
+      _locale = supportsAudioDialogueLanguage(previewLocale)
+          ? previewLocale
+          : null;
       _allowed = true;
       return;
     }
@@ -212,7 +202,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   void _profileChanged() {
     final owner = AuthSessionNotifier.instance.session?.cacheKey;
-    final locale = UserProfileNotifier.instance.learningLanguage;
+    final savedLocale = UserProfileNotifier.instance.learningLanguage;
+    final locale =
+        savedLocale != null && supportsAudioDialogueLanguage(savedLocale)
+        ? savedLocale
+        : null;
     final profile = UserProfileNotifier.instance;
     final target =
         [profile.translationLanguage, profile.nativeLanguage, l.localeName]
@@ -228,6 +222,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       return;
     }
     _translationTarget = target;
+    unawaited(_discardReplay());
     _translations.clear();
     _epoch++;
     _poll?.cancel();
@@ -235,6 +230,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     unawaited(_audioCache?.dispose());
     _audioCache = null;
     setState(() {
+      _currentLevel = null;
+      _practiceLevel = null;
       _owner = owner;
       _locale = locale;
       _exercise = null;
@@ -294,6 +291,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   void _consentChanged() {
     if (_owner != null && !AiConsent.instance.isKnownAllowed(_owner!)) {
       _epoch++;
+      unawaited(_discardReplay());
       _poll?.cancel();
       unawaited(_stopAudio());
       setState(() {
@@ -365,8 +363,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         'locale': _locale,
         'previousId': _previousId,
         'deferLevelScoring': true,
+        'useSelectedLevel': true,
       });
       if (!mounted || epoch != _epoch) return;
+      _currentLevel =
+          response['currentLevel'] as String? ?? response['level'] as String?;
+      _practiceLevel =
+          response['practiceLevel'] as String? ?? response['level'] as String?;
       if (response['status'] == 'ready') {
         unawaited(_audioCache?.dispose());
         final cache = _audioCache = QuickPracticeAudioCache();
@@ -428,12 +431,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _loadingAudio = id;
       });
       await _player.stop();
-      final path = await _audioCache?.prepare(url);
+      final path = id == 'recording'
+          ? _replayPath
+          : await _audioCache?.prepare(url);
+      if (id == 'recording' && path == null) return;
       if (!current()) return;
       await PracticeAudioRoute.prepare();
       if (!current()) return;
       _audioWords = activityWordCount(
-        id == 'cue'
+        id == 'recording'
+            ? (_feedback?['transcript'] as String? ?? '')
+            : id == 'cue'
             ? _exercise!['cue'] as String
             : ((_exercise!['choices'] as List)[int.parse(id.substring(6))]
                       as Map)['text']
@@ -630,6 +638,16 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
+  Future<void> _discardReplay() async {
+    final path = _replayPath;
+    _replayPath = null;
+    if (path != null) {
+      try {
+        await File(path).delete();
+      } catch (_) {}
+    }
+  }
+
   Future<void> _record() async {
     if (_busy || _exercise == null) return;
     if (_recording) {
@@ -674,6 +692,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         await _recorder.cancel();
         return;
       }
+      await _discardReplay();
+      if (!mounted || epoch != _epoch) return;
       HapticFeedback.lightImpact();
       setState(() {
         _recording = true;
@@ -714,6 +734,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _recorder.stop();
       if (path == null) throw StateError('Missing recording');
+      if (!mounted || epoch != _epoch || _exercise?['id'] != exerciseId) return;
+      _replayPath = path;
       final transcript = await VideoProcessingService.instance
           .transcribeRecordedAudio(
             inputFile: File(path),
@@ -814,7 +836,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             )
             .catchError((_) {});
       }
-      if (path != null) {
+      if (path != null && path != _replayPath) {
         try {
           await File(path).delete();
         } catch (_) {}
@@ -839,6 +861,67 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (mounted) {
         setState(() => _goalSettingsOpen = false);
         _requestTranslations();
+      }
+    }
+  }
+
+  Future<void> _selectLevel(String selected) async {
+    if (_recording ||
+        _busy ||
+        _confirmingNext ||
+        _loading ||
+        _currentLevel == null) {
+      return;
+    }
+    if (selected == (_exercise?['level'] ?? _practiceLevel)) return;
+    final epoch = _epoch;
+    setState(() => _confirmingNext = true);
+    _poll?.cancel();
+    await _stopAudio();
+    if (!mounted || epoch != _epoch) return;
+    try {
+      final confirmed = await confirmPracticeLevel(
+        context,
+        selected: selected,
+        current: _currentLevel!,
+      );
+      if (!confirmed || !mounted || epoch != _epoch) return;
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted || !widget.active || epoch != _epoch) return;
+      if (widget.previewExercise != null) {
+        setState(() {
+          _practiceLevel = selected;
+          _exercise = {
+            ..._exercise!,
+            'level': selected,
+            'reviewMode': selected != _currentLevel,
+          };
+          _feedback = null;
+        });
+        return;
+      }
+      final state = await _api('level', {'locale': _locale, 'level': selected});
+      if (!mounted || epoch != _epoch) return;
+      _currentLevel = state['currentLevel'] as String;
+      _practiceLevel = state['practiceLevel'] as String;
+      await _advance(autoplay: true);
+    } on AuthApiException catch (error) {
+      if (mounted && epoch == _epoch) {
+        _notice(
+          error.code == 'practice_level_locked'
+              ? l.quickLevelLocked
+              : l.quickUnavailable,
+        );
+      }
+    } catch (_) {
+      if (mounted && epoch == _epoch) _notice(l.quickUnavailable);
+    } finally {
+      if (mounted) {
+        setState(() => _confirmingNext = false);
+        _requestTranslations();
+        if (_exercise == null && widget.active && epoch == _epoch) {
+          unawaited(_load());
+        }
       }
     }
   }
@@ -893,6 +976,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final epoch = _epoch;
     await _stopAudio();
     if (!mounted || epoch != _epoch) return;
+    await _discardReplay();
+    if (!mounted || epoch != _epoch) return;
     _translations.clear();
     setState(() {
       _previousId = _exercise?['id'] as String?;
@@ -910,6 +995,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   @override
   void dispose() {
     _wordFlight.cancel();
+    unawaited(_discardReplay());
     _completionDayTimer?.cancel();
     _completionGeneration++;
     _translations.removeListener(_translationsChanged);
@@ -951,7 +1037,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final theme = Theme.of(context), c = theme.colorScheme;
     final dark = theme.brightness == Brightness.dark;
     final exercise = _exercise;
-    final level = exercise?['level'];
+    final level = exercise?['level'] ?? _practiceLevel;
     final hasCorrectAnswer =
         exercise != null && _feedback?['outcome'] == 'correct';
     final showLevel = const [
@@ -971,6 +1057,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 goal: null,
                 today: const WordTotals(),
                 level: showLevel ? level as String : null,
+                currentLevel: _currentLevel,
+                onLevelSelected:
+                    _recording || _busy || _confirmingNext || _loading
+                    ? null
+                    : _selectLevel,
                 onGoalPressed: _showGoalSettings,
               )
             : ListenableBuilder(
@@ -982,6 +1073,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       .summaryFor(_locale)
                       .today,
                   level: showLevel ? level as String : null,
+                  currentLevel: _currentLevel,
+                  onLevelSelected:
+                      _recording || _busy || _confirmingNext || _loading
+                      ? null
+                      : _selectLevel,
                   onGoalPressed: _recording || _busy || _confirmingNext
                       ? null
                       : _showGoalSettings,
@@ -1062,6 +1158,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       fontWeight: FontWeight.w400,
                     ),
                   ),
+                  if (exercise?['reviewMode'] == true &&
+                      _currentLevel != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      l.quickReviewMode(_currentLevel!),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   if (!_allowed || _locale == null)
                     _empty(
@@ -1221,17 +1328,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       const SizedBox(height: 12),
                     ],
                     const SizedBox(height: 10),
-                    if (_feedback != null) _result(),
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(_error!, style: TextStyle(color: c.error)),
-                      ),
-                    if (_error == l.compareMicrophoneDeniedPermanent)
-                      TextButton(
-                        onPressed: openAppSettings,
-                        child: Text(l.compareOpenIphoneSettings),
-                      ),
                     AnimatedBuilder(
                       animation: _pulse,
                       builder: (context, child) => Container(
@@ -1248,6 +1344,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                             height: 76,
                             key: _microphoneAnchor,
                             child: FilledButton(
+                              key: const ValueKey('practice-record-button'),
                               onPressed: _busy ? null : _record,
                               style: FilledButton.styleFrom(
                                 shape: const CircleBorder(),
@@ -1303,6 +1400,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         ),
                       ),
                     const SizedBox(height: 18),
+                    if (_feedback != null) _result(),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(_error!, style: TextStyle(color: c.error)),
+                      ),
+                    if (_error == l.compareMicrophoneDeniedPermanent)
+                      TextButton(
+                        onPressed: openAppSettings,
+                        child: Text(l.compareOpenIphoneSettings),
+                      ),
                     if (!_recording && !_busy && !hasCorrectAnswer)
                       _feedback != null
                           ? FilledButton.icon(
@@ -1321,24 +1429,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                               child: Text(l.quickNext),
                             ),
                   ],
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      key: const ValueKey('practice-level-help-link'),
-                      onPressed: _recording || _busy
-                          ? null
-                          : () => showPracticeLevelHelp(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: c.onSurfaceVariant,
-                      ),
-                      child: Text(
-                        l.quickLevelsLink,
-                        style: const TextStyle(
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -1458,7 +1548,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final c = Theme.of(context).colorScheme;
     final color = correct ? const Color(0xFF008266) : c.primary;
     return Semantics(
-      key: _feedbackKey,
+      key: const ValueKey('practice-feedback'),
       liveRegion: true,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -1484,6 +1574,12 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
               ),
             ),
             PracticeTranscriptFeedback(
+              onReplay: _replayPath == null
+                  ? null
+                  : () => _play('recording', ''),
+              replayEnabled: !_busy && !_recording && !_confirmingNext,
+              replaying: _playing == 'recording',
+              replayLoading: _loadingAudio == 'recording',
               transcript: _feedback!['transcript'] as String? ?? '',
               choices: (_exercise!['choices'] as List)
                   .map((c) => c['text'] as String)

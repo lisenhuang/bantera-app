@@ -2249,4 +2249,39 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickCompletedToday => 'Hoàn thành hôm nay';
+
+  @override
+  String get quickChooseLevel => 'Chọn cấp độ luyện tập';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return 'Cấp độ hiện tại: $level';
+  }
+
+  @override
+  String get quickLevelLocked => 'Chưa đạt cấp độ này';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return 'Luyện tập ở $level?';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return 'Hãy luyện tập để đạt $level và mở khóa. Cấp độ hiện tại của bạn là $current.';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return 'Cấp độ $current và tiến độ của bạn vẫn được lưu. Bài tập dễ hơn không ảnh hưởng đến thay đổi cấp độ. Bạn có thể quay lại $current bất cứ lúc nào.';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      'Tiếp tục ở cấp độ hiện tại. Các câu trả lời không dùng bản dịch sẽ lại được tính để điều chỉnh cấp độ.';
+
+  @override
+  String quickReviewMode(String level) {
+    return 'Ôn tập · Cấp độ hiện tại: $level';
+  }
 }

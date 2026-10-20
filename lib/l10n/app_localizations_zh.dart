@@ -2149,6 +2149,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickCompletedToday => '今日完成';
+
+  @override
+  String get quickChooseLevel => '选择练习等级';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return '当前等级：$level';
+  }
+
+  @override
+  String get quickLevelLocked => '尚未达到此等级';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return '练习 $level 等级？';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return '通过练习达到 $level 后即可解锁。你当前的等级是 $current。';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return '你的 $current 等级和进度会保留。较低等级的练习不会影响等级变化，你可以随时返回 $current。';
+  }
+
+  @override
+  String get quickReturnLevelBody => '回到当前等级继续练习。不使用翻译的回答将再次计入等级变化。';
+
+  @override
+  String quickReviewMode(String level) {
+    return '复习 · 当前等级：$level';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4300,4 +4334,38 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickCompletedToday => '今日完成';
+
+  @override
+  String get quickChooseLevel => '選擇練習等級';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return '目前等級：$level';
+  }
+
+  @override
+  String get quickLevelLocked => '尚未達到此等級';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return '練習 $level 等級？';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return '透過練習達到 $level 後即可解鎖。你目前的等級是 $current。';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return '你的 $current 等級和進度會保留。較低等級的練習不會影響等級變化，你可以隨時返回 $current。';
+  }
+
+  @override
+  String get quickReturnLevelBody => '回到目前等級繼續練習。不使用翻譯的回答將再次計入等級變化。';
+
+  @override
+  String quickReviewMode(String level) {
+    return '複習 · 目前等級：$level';
+  }
 }

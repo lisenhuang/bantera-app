@@ -430,3 +430,21 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     flagEmoji: '🇺🇸',
   ),
 ];
+
+/// Keep picker exclusions consistent across device, API and cached source lists.
+List<TranscriptionLocaleOption> availableProfileLanguages(
+  Iterable<TranscriptionLocaleOption> options, {
+  bool nativeLanguage = false,
+}) => options
+    .where(
+      (option) =>
+          supportsAudioDialogueLanguage(option.identifier) &&
+          (!nativeLanguage ||
+              normalizeLocaleIdentifierForLookup(option.identifier) !=
+                  'yue-cn'),
+    )
+    .toList();
+
+/// Full audio dialogues require supported transcription/timing as well as TTS.
+bool supportsAudioDialogueLanguage(String identifier) =>
+    primaryLanguageCodeForLocaleIdentifier(identifier) != 'mi';

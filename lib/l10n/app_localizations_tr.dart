@@ -2248,4 +2248,39 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickCompletedToday => 'Bugün tamamlanan';
+
+  @override
+  String get quickChooseLevel => 'Alıştırma düzeyini seç';
+
+  @override
+  String quickCurrentLevel(String level) {
+    return 'Mevcut düzey: $level';
+  }
+
+  @override
+  String get quickLevelLocked => 'Bu düzeye henüz ulaşmadın';
+
+  @override
+  String quickSwitchLevel(String level) {
+    return '$level düzeyinde çalışılsın mı?';
+  }
+
+  @override
+  String quickLevelLockedBody(String level, String current) {
+    return 'Kilidini açmak için pratik yaparak $level düzeyine ulaş. Mevcut düzeyin $current.';
+  }
+
+  @override
+  String quickReviewLevelBody(String current) {
+    return '$current düzeyin ve ilerlemen korunur. Daha kolay alıştırmalar düzey değişikliklerini etkilemez. İstediğin zaman $current düzeyine dönebilirsin.';
+  }
+
+  @override
+  String get quickReturnLevelBody =>
+      'Mevcut düzeyinde devam et. Çeviri kullanmadan verilen yanıtlar düzey değişiklikleri için yeniden sayılacak.';
+
+  @override
+  String quickReviewMode(String level) {
+    return 'Tekrar · Mevcut düzey: $level';
+  }
 }

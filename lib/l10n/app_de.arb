@@ -672,5 +672,13 @@
   "quickShowTranslation": "Übersetzung anzeigen",
   "quickTranslationHint": "Mit Übersetzung zählt diese Übung nicht für deine Stufeneinstufung.",
   "quickTranslationExcluded": "Übersetzung verwendet · Diese Übung ändert deine Stufe nicht.",
-  "quickCompletedToday": "Heute abgeschlossen"
+  "quickCompletedToday": "Heute abgeschlossen",
+  "quickChooseLevel": "Übungsniveau wählen",
+  "quickCurrentLevel": "Aktuelles Niveau: {level}",
+  "quickLevelLocked": "Niveau noch nicht erreicht",
+  "quickSwitchLevel": "Auf {level} üben?",
+  "quickLevelLockedBody": "Erreiche {level} durch Üben, um es freizuschalten. Dein aktuelles Niveau ist {current}.",
+  "quickReviewLevelBody": "Dein Niveau {current} und dein Fortschritt bleiben gespeichert. Leichtere Übungen ändern dein Niveau nicht. Du kannst jederzeit zu {current} zurückkehren.",
+  "quickReturnLevelBody": "Übe auf deinem aktuellen Niveau weiter. Antworten ohne Übersetzung zählen wieder für Niveauänderungen.",
+  "quickReviewMode": "Wiederholung · Aktuelles Niveau: {level}"
 }

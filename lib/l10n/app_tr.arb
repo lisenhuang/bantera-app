@@ -672,5 +672,13 @@
   "quickShowTranslation": "Çeviriyi göster",
   "quickTranslationHint": "Çeviriyi açarsan bu alıştırma seviye değişikliklerinde sayılmaz.",
   "quickTranslationExcluded": "Çeviri kullanıldı · Bu alıştırma seviyeni değiştirmez.",
-  "quickCompletedToday": "Bugün tamamlanan"
+  "quickCompletedToday": "Bugün tamamlanan",
+  "quickChooseLevel": "Alıştırma düzeyini seç",
+  "quickCurrentLevel": "Mevcut düzey: {level}",
+  "quickLevelLocked": "Bu düzeye henüz ulaşmadın",
+  "quickSwitchLevel": "{level} düzeyinde çalışılsın mı?",
+  "quickLevelLockedBody": "Kilidini açmak için pratik yaparak {level} düzeyine ulaş. Mevcut düzeyin {current}.",
+  "quickReviewLevelBody": "{current} düzeyin ve ilerlemen korunur. Daha kolay alıştırmalar düzey değişikliklerini etkilemez. İstediğin zaman {current} düzeyine dönebilirsin.",
+  "quickReturnLevelBody": "Mevcut düzeyinde devam et. Çeviri kullanmadan verilen yanıtlar düzey değişiklikleri için yeniden sayılacak.",
+  "quickReviewMode": "Tekrar · Mevcut düzey: {level}"
 }

@@ -168,7 +168,10 @@ class VideoProcessingService {
   /// and otherwise shown only once the IP is confirmed outside mainland China.
   Future<List<TranscriptionLocaleOption>> fetchNativeLanguageOptions() async =>
       RegionService.instance.filterLanguageOptions(
-        await _fetchAllNativeLanguageOptions(),
+        availableProfileLanguages(
+          await _fetchAllNativeLanguageOptions(),
+          nativeLanguage: true,
+        ),
       );
 
   Future<List<TranscriptionLocaleOption>>
@@ -267,8 +270,10 @@ class VideoProcessingService {
   /// Chinese (Taiwan) is hidden for Simplified Chinese UI, and otherwise shown
   /// only once the IP is confirmed outside mainland China.
   Future<List<TranscriptionLocaleOption>>
-  fetchLearningLanguageOptions() async => RegionService.instance
-      .filterLanguageOptions(await _fetchAllLearningLanguageOptions());
+  fetchLearningLanguageOptions() async =>
+      RegionService.instance.filterLanguageOptions(
+        availableProfileLanguages(await _fetchAllLearningLanguageOptions()),
+      );
 
   Future<List<TranscriptionLocaleOption>>
   _fetchAllLearningLanguageOptions() async {

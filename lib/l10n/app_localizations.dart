@@ -4111,6 +4111,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed today'**
   String get quickCompletedToday;
+
+  /// No description provided for @quickChooseLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose practice level'**
+  String get quickChooseLevel;
+
+  /// No description provided for @quickCurrentLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current level: {level}'**
+  String quickCurrentLevel(String level);
+
+  /// No description provided for @quickLevelLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Level not reached yet'**
+  String get quickLevelLocked;
+
+  /// No description provided for @quickSwitchLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise at {level}?'**
+  String quickSwitchLevel(String level);
+
+  /// No description provided for @quickLevelLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach {level} through practice to unlock it. Your current level is {current}.'**
+  String quickLevelLockedBody(String level, String current);
+
+  /// No description provided for @quickReviewLevelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {current} level and progress stay saved. Easier practice does not affect level changes. You can return to {current} at any time.'**
+  String quickReviewLevelBody(String current);
+
+  /// No description provided for @quickReturnLevelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue at your current level. Answers without translation will count towards level changes again.'**
+  String get quickReturnLevelBody;
+
+  /// No description provided for @quickReviewMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Review · Current level: {level}'**
+  String quickReviewMode(String level);
 }
 
 class _AppLocalizationsDelegate
