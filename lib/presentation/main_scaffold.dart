@@ -272,7 +272,11 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(CupertinoIcons.chat_bubble_text_fill),
+                Icon(
+                  stackIndex == 2
+                      ? CupertinoIcons.chat_bubble_text_fill
+                      : CupertinoIcons.chat_bubble_text,
+                ),
                 if (_hasUnreadChats)
                   Positioned(
                     top: -2,
@@ -291,7 +295,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
             label: l10n.chatsTitle,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.person_solid),
+            icon: const Icon(CupertinoIcons.person),
+            activeIcon: const Icon(CupertinoIcons.person_solid),
             label: l10n.navProfile,
           ),
         ],
