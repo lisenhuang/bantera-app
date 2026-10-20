@@ -1556,6 +1556,19 @@ class AuthApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> quickPractice({
+    required String path,
+    required Map<String, dynamic> payload,
+    required String accessToken,
+  }) async {
+    await _requireAiConsent(accessToken);
+    return _sendJsonRequest(
+      method: 'POST', path: '/api/me/practice/$path', payload: payload,
+      accessToken: accessToken,
+      expectedUserId: _wordActivityTokenSubject(accessToken),
+    ).timeout(const Duration(seconds: 100));
+  }
+
   Future<Map<String, dynamic>> _sendJsonRequest({
     required String method,
     required String path,
@@ -1571,6 +1584,10 @@ class AuthApiClient {
         HttpHeaders.authorizationHeader,
         'Bearer $accessToken',
       );
+    }
+    if (path.startsWith('/api/me/practice/')) {
+      await _requireAiConsent(accessToken ?? '');
+      request.headers.set('X-Practice-Consent', '1');
     }
     if (path == '/api/me/profile-image/generate' ||
         (path.startsWith('/api/me/videos/') &&

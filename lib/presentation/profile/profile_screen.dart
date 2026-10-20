@@ -2,21 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../infrastructure/saved_cue_repository.dart';
-import '../../infrastructure/practice_progress_store.dart';
-import '../../core/auth_session_notifier.dart';
-import 'practice_history_screen.dart';
-import 'profile_library_section.dart';
 import '../../l10n/app_localizations.dart';
-import '../../core/profile_stats_notifier.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../core/app_resume_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../shared/learning_language_label.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
-import 'saved_cues_screen.dart';
-import 'saved_screen.dart';
 import 'settings_screen.dart';
 import 'word_activity_section.dart';
 import 'daily_word_goal_section.dart';
@@ -30,24 +22,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _historyLoaded = false;
-
-  Future<void> _loadHistory() async {
-    try {
-      await PracticeProgressStore.instance.load();
-      if (mounted) setState(() => _historyLoaded = true);
-    } catch (_) {
-      // The history destination provides a retry if local storage is unavailable.
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     WordActivityNotifier.instance.retain();
-    unawaited(_loadHistory());
-    unawaited(ProfileStatsNotifier.instance.refresh());
-    unawaited(SavedCueRepository.instance.load());
     unawaited(WordActivityNotifier.instance.sync());
   }
 
@@ -62,16 +40,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListenableBuilder(
       listenable: Listenable.merge([
         UserProfileNotifier.instance,
-        ProfileStatsNotifier.instance,
         WordActivityNotifier.instance,
         AppResumeNotifier.instance,
-        SavedCueRepository.instance,
-        PracticeProgressStore.instance,
-        AuthSessionNotifier.instance,
       ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
-        final stats = ProfileStatsNotifier.instance;
         final language = learningLanguageLabel(profile.learningLanguage);
         final l10n = AppLocalizations.of(context)!;
         final activity = WordActivityNotifier.instance.summaryFor(
@@ -182,29 +155,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ProfileLibrarySection(
-                  savedCount: stats.savedCount,
-                  cueCount: SavedCueRepository.instance.entries.length,
-                  historyCount: _historyLoaded
-                      ? PracticeProgressStore.instance.entries.length
-                      : null,
-                  recent: PracticeProgressStore.instance.entries.firstOrNull,
-                  onSavedMedia: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SavedScreen()),
-                  ),
-                  onSavedCues: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SavedCuesScreen()),
-                  ),
-                  onHistory: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PracticeHistoryScreen(),
                     ),
                   ),
                 ),

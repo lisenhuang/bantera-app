@@ -278,7 +278,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get closeLabel => 'Fermer';
 
   @override
-  String get navDiscover => 'Découvrir';
+  String get navDiscover => 'Dialogues';
 
   @override
   String get navCreate => 'Créer';
@@ -2183,4 +2183,141 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'Avec la recherche web ou d’images IA, les requêtes sont aussi envoyées à Microsoft Bing, DuckDuckGo ou Wikimedia Commons, et les résultats peuvent être partagés avec Google.';
+
+  @override
+  String get navPractice => 'Pratique';
+
+  @override
+  String get quickInstruction => 'Écoutez, puis dites votre réponse.';
+
+  @override
+  String get quickPreparing => 'Préparation de votre exercice…';
+
+  @override
+  String get quickPreparingHint =>
+      'Une courte conversation arrive. Nous préparons la suite pendant votre entraînement.';
+
+  @override
+  String get quickCue1 => 'Réplique 1 · Écouter';
+
+  @override
+  String get quickCue2 => 'Réplique 2 · Votre réponse';
+
+  @override
+  String get quickSpeakHint =>
+      'Touchez le micro et dites une des réponses à voix haute.';
+
+  @override
+  String get quickSpeak => 'Touchez pour parler';
+
+  @override
+  String get quickChecking => 'Vérification de votre réponse…';
+
+  @override
+  String get quickCorrect => 'Cette réponse convient. Bien joué.';
+
+  @override
+  String get quickIncorrect => 'Essayez l’autre réponse.';
+
+  @override
+  String get quickUnclear => 'Je n’ai pas bien entendu. Réessayez.';
+
+  @override
+  String get quickNext => 'Exercice suivant';
+
+  @override
+  String get quickAgain => 'Dire à nouveau';
+
+  @override
+  String get quickUnavailable =>
+      'La préparation prend un peu plus de temps. Réessayez.';
+
+  @override
+  String get quickStart => 'Commencer';
+
+  @override
+  String get quickChooseLanguage =>
+      'Choisissez une langue à apprendre dans votre profil.';
+
+  @override
+  String get quickCallActive => 'Terminez votre appel avant de vous entraîner.';
+
+  @override
+  String get goalCelebrationMessage =>
+      'Vous avez pris du temps pour apprendre aujourd’hui. Chaque mot compte.';
+
+  @override
+  String get goalCelebrationContinue => 'Continuer à pratiquer';
+
+  @override
+  String get quickHeard => 'Ce que nous avons entendu';
+
+  @override
+  String get quickCompareReply => 'Comparez avec cette réponse';
+
+  @override
+  String get quickDifferenceHint =>
+      'Les passages surlignés indiquent des différences ou une reconnaissance incertaine, pas des erreurs de prononciation avérées.';
+
+  @override
+  String get quickRecognitionNote =>
+      'La reconnaissance vocale peut se tromper.';
+
+  @override
+  String get quickLevelsLink => 'Comment fonctionnent les niveaux?';
+
+  @override
+  String get quickLevelsIntro =>
+      'Chaque langue commence au niveau A1. Ton niveau s’adapte automatiquement au fil des exercices.';
+
+  @override
+  String get quickLevelsWindow =>
+      'Après 12 exercices évalués à ton niveau actuel, nous examinons tes 12 derniers résultats.';
+
+  @override
+  String get quickLevelsUp =>
+      '10–12 réponses correctes : tu montes d’un niveau.';
+
+  @override
+  String get quickLevelsStay =>
+      '5–9 réponses correctes : tu restes à ce niveau.';
+
+  @override
+  String get quickLevelsDown =>
+      '0–4 réponses correctes : tu descends d’un niveau.';
+
+  @override
+  String get quickLevelsScoring =>
+      'Seule ta première réponse clairement reconnue à chaque exercice compte. Les enregistrements peu clairs et les exercices ignorés ne comptent pas.\n\nLes exercices avec traduction ne comptent pas pour les changements de niveau. Les résultats sans traduction comptent au passage à l’exercice suivant.';
+
+  @override
+  String get quickLevelsReset =>
+      'Après un changement de niveau, une nouvelle série de 12 commence. A1 est le niveau le plus bas et C2 le plus élevé.';
+
+  @override
+  String get quickSkipTitle => 'Passer cet exercice ?';
+
+  @override
+  String get quickSkipMessage =>
+      'Tu n’as pas encore réussi cet exercice. Passer au suivant ?';
+
+  @override
+  String get quickSkipAction => 'Passer l’exercice';
+
+  @override
+  String get quickSetGoal => 'Fixer un objectif';
+
+  @override
+  String get quickShowTranslation => 'Afficher la traduction';
+
+  @override
+  String get quickTranslationHint =>
+      'Afficher la traduction exclut cet exercice des changements de niveau.';
+
+  @override
+  String get quickTranslationExcluded =>
+      'Traduction consultée · Cet exercice ne changera pas votre niveau.';
+
+  @override
+  String get quickCompletedToday => 'Terminés aujourd’hui';
 }

@@ -634,7 +634,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDiscover.
   ///
   /// In en, this message translates to:
-  /// **'Discover'**
+  /// **'Dialogues'**
   String get navDiscover;
 
   /// No description provided for @navCreate.
@@ -3871,6 +3871,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If you use AI web or image search, queries are also sent to Microsoft Bing, DuckDuckGo or Wikimedia Commons, and results may be shared with Google.'**
   String get aiConsentSearch;
+
+  /// No description provided for @navPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get navPractice;
+
+  /// No description provided for @quickInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen, then say your reply.'**
+  String get quickInstruction;
+
+  /// No description provided for @quickPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your practice…'**
+  String get quickPreparing;
+
+  /// No description provided for @quickPreparingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A short conversation is on its way. We’ll prepare the next ones while you practise.'**
+  String get quickPreparingHint;
+
+  /// No description provided for @quickCue1.
+  ///
+  /// In en, this message translates to:
+  /// **'Cue 1 · Listen'**
+  String get quickCue1;
+
+  /// No description provided for @quickCue2.
+  ///
+  /// In en, this message translates to:
+  /// **'Cue 2 · Your reply'**
+  String get quickCue2;
+
+  /// No description provided for @quickSpeakHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the microphone and say one of the replies aloud.'**
+  String get quickSpeakHint;
+
+  /// No description provided for @quickSpeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to speak'**
+  String get quickSpeak;
+
+  /// No description provided for @quickChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening to your answer…'**
+  String get quickChecking;
+
+  /// No description provided for @quickCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'That reply fits. Nicely done.'**
+  String get quickCorrect;
+
+  /// No description provided for @quickIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the other reply.'**
+  String get quickIncorrect;
+
+  /// No description provided for @quickUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'I couldn’t hear clearly. Please try again.'**
+  String get quickUnclear;
+
+  /// No description provided for @quickNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next practice'**
+  String get quickNext;
+
+  /// No description provided for @quickAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Say it again'**
+  String get quickAgain;
+
+  /// No description provided for @quickUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice is taking a little longer. Please try again.'**
+  String get quickUnavailable;
+
+  /// No description provided for @quickStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start practising'**
+  String get quickStart;
+
+  /// No description provided for @quickChooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a learning language in your profile.'**
+  String get quickChooseLanguage;
+
+  /// No description provided for @quickCallActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your call before practising.'**
+  String get quickCallActive;
+
+  /// No description provided for @goalCelebrationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You made time for your language today. Every word counts.'**
+  String get goalCelebrationMessage;
+
+  /// No description provided for @goalCelebrationContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep practising'**
+  String get goalCelebrationContinue;
+
+  /// No description provided for @quickHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'What we heard'**
+  String get quickHeard;
+
+  /// No description provided for @quickCompareReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare with this reply'**
+  String get quickCompareReply;
+
+  /// No description provided for @quickDifferenceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights show differences or uncertain words, not proven pronunciation errors.'**
+  String get quickDifferenceHint;
+
+  /// No description provided for @quickRecognitionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition can make mistakes.'**
+  String get quickRecognitionNote;
+
+  /// No description provided for @quickLevelsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How levels work?'**
+  String get quickLevelsLink;
+
+  /// No description provided for @quickLevelsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Each language starts at A1. Your level adjusts automatically as you practise.'**
+  String get quickLevelsIntro;
+
+  /// No description provided for @quickLevelsWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'After 12 scored exercises at your current level, we review your latest 12 results.'**
+  String get quickLevelsWindow;
+
+  /// No description provided for @quickLevelsUp.
+  ///
+  /// In en, this message translates to:
+  /// **'10–12 correct: move up one level.'**
+  String get quickLevelsUp;
+
+  /// No description provided for @quickLevelsStay.
+  ///
+  /// In en, this message translates to:
+  /// **'5–9 correct: stay at this level.'**
+  String get quickLevelsStay;
+
+  /// No description provided for @quickLevelsDown.
+  ///
+  /// In en, this message translates to:
+  /// **'0–4 correct: move down one level.'**
+  String get quickLevelsDown;
+
+  /// No description provided for @quickLevelsScoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nExercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.'**
+  String get quickLevelsScoring;
+
+  /// No description provided for @quickLevelsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'After a level change, a new set of 12 begins. A1 is the lowest level and C2 the highest.'**
+  String get quickLevelsReset;
+
+  /// No description provided for @quickSkipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this practice?'**
+  String get quickSkipTitle;
+
+  /// No description provided for @quickSkipMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven’t completed this exercise correctly yet. Move to the next one?'**
+  String get quickSkipMessage;
+
+  /// No description provided for @quickSkipAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip practice'**
+  String get quickSkipAction;
+
+  /// No description provided for @quickSetGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Set goal'**
+  String get quickSetGoal;
+
+  /// No description provided for @quickShowTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Show translation'**
+  String get quickShowTranslation;
+
+  /// No description provided for @quickTranslationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing translation excludes this exercise from level changes.'**
+  String get quickTranslationHint;
+
+  /// No description provided for @quickTranslationExcluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation used · This exercise won’t change your level.'**
+  String get quickTranslationExcluded;
+
+  /// No description provided for @quickCompletedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed today'**
+  String get quickCompletedToday;
 }
 
 class _AppLocalizationsDelegate

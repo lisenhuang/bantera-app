@@ -9,11 +9,13 @@ class ChatAudioWaveform extends StatefulWidget {
     required this.receiving,
     this.audioKey,
     this.loadAudioPath,
+    this.animateProgress = false,
   });
   final double progress;
   final bool receiving;
   final String? audioKey;
   final Future<String> Function()? loadAudioPath;
+  final bool animateProgress;
   @override
   State<ChatAudioWaveform> createState() => _ChatAudioWaveformState();
 }
@@ -55,6 +57,7 @@ class _ChatAudioWaveformState extends State<ChatAudioWaveform> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return SizedBox(
+      width: double.infinity,
       height: 32,
       child: _peaks.isEmpty
           ? Center(
@@ -70,12 +73,20 @@ class _ChatAudioWaveformState extends State<ChatAudioWaveform> {
             )
           : Semantics(
               value: '${(widget.progress.clamp(0.0, 1.0) * 100).round()}%',
-              child: CustomPaint(
-                painter: AudioWaveformPainter(
-                  _peaks,
-                  widget.progress,
-                  colors.primary,
-                  colors.outlineVariant,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: widget.progress.clamp(0.0, 1.0)),
+                duration:
+                    widget.animateProgress &&
+                        !MediaQuery.disableAnimationsOf(context)
+                    ? const Duration(milliseconds: 180)
+                    : Duration.zero,
+                builder: (context, progress, _) => CustomPaint(
+                  painter: AudioWaveformPainter(
+                    _peaks,
+                    progress,
+                    colors.primary,
+                    colors.outlineVariant,
+                  ),
                 ),
               ),
             ),

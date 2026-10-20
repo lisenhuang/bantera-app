@@ -17,7 +17,9 @@ import 'chat_menu_item_row.dart';
 import 'group_chat_presentation.dart';
 
 class ChatsScreen extends StatefulWidget {
-  const ChatsScreen({super.key});
+  const ChatsScreen({super.key, this.active = true});
+
+  final bool active;
 
   @override
   State<ChatsScreen> createState() => _ChatsScreenState();
@@ -31,6 +33,14 @@ class _ChatsScreenState extends State<ChatsScreen> {
     UserProfileNotifier.instance,
     AuthSessionNotifier.instance,
   ]);
+  int _avatarRefreshToken = 0;
+
+  @override
+  void didUpdateWidget(ChatsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !oldWidget.active) _avatarRefreshToken++;
+  }
+
   String? get _owner => AuthSessionNotifier.instance.session?.cacheKey;
   bool get _hideSameNative =>
       SettingsNotifier.instance.hideSameNativeSpeakers(_owner);
@@ -75,7 +85,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
           ],
         ),
         body: RefreshIndicator(
-          onRefresh: () => _chat.refreshBootstrap(),
+          onRefresh: () async {
+            setState(() => _avatarRefreshToken++);
+            await _chat.refreshBootstrap();
+          },
           child: ListenableBuilder(
             listenable: _chat,
             builder: (context, _) {
@@ -161,6 +174,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                 ),
                                 _ChatThreadItem() => _ThreadCard(
                                   thread: item.thread,
+                                  avatarRefreshToken: _avatarRefreshToken,
                                   isOnline: item.isOnline,
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute<void>(
@@ -173,6 +187,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                 ),
                                 _ChatUserItem() => _UserCard(
                                   user: item.user,
+                                  avatarRefreshToken: _avatarRefreshToken,
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute<void>(
                                       builder: (_) =>
@@ -295,6 +310,7 @@ class _ChatUserItem extends _ChatHomeItem {
 
 class _ThreadCard extends StatelessWidget {
   const _ThreadCard({
+    required this.avatarRefreshToken,
     required this.thread,
     required this.isOnline,
     required this.onTap,
@@ -303,6 +319,7 @@ class _ThreadCard extends StatelessWidget {
   final ChatThreadSummary thread;
   final bool isOnline;
   final VoidCallback onTap;
+  final int avatarRefreshToken;
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +353,11 @@ class _ThreadCard extends StatelessWidget {
               )
             : Stack(
                 children: [
-                  ProfileAvatar(radius: 22, imageUrl: thread.avatarUrl),
+                  ProfileAvatar(
+                    radius: 22,
+                    imageUrl: thread.avatarUrl,
+                    refreshToken: avatarRefreshToken,
+                  ),
                   if (isOnline)
                     const Positioned(
                       right: 0,
@@ -407,10 +428,15 @@ class _ThreadCard extends StatelessWidget {
 }
 
 class _UserCard extends StatelessWidget {
-  const _UserCard({required this.user, required this.onTap});
+  const _UserCard({
+    required this.user,
+    required this.onTap,
+    required this.avatarRefreshToken,
+  });
 
   final ChatUserSummary user;
   final VoidCallback onTap;
+  final int avatarRefreshToken;
 
   @override
   Widget build(BuildContext context) {
@@ -429,7 +455,11 @@ class _UserCard extends StatelessWidget {
         ),
         leading: Stack(
           children: [
-            ProfileAvatar(radius: 22, imageUrl: user.avatarUrl),
+            ProfileAvatar(
+              radius: 22,
+              imageUrl: user.avatarUrl,
+              refreshToken: avatarRefreshToken,
+            ),
             Positioned(
               right: 0,
               bottom: 0,

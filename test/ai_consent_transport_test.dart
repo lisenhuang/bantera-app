@@ -49,6 +49,8 @@ void main() {
           'ai_consent_required',
         ),
       );
+      await expectLater(api.quickPractice(path: 'next', payload: {}, accessToken: 'no-consent'), denied);
+      await expectLater(api.quickPractice(path: 'example/answer', payload: {'transcript':'private'}, accessToken: 'no-consent'), denied);
       var started = false;
       await expectLater(
         api.generateAiAudioStreaming(

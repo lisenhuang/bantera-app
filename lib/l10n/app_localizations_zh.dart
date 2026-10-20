@@ -265,7 +265,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get closeLabel => '关闭';
 
   @override
-  String get navDiscover => '发现';
+  String get navDiscover => '对话';
 
   @override
   String get navCreate => '创作';
@@ -2028,6 +2028,127 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       '使用 AI 网页或图片搜索时，查询也会发送至 Microsoft Bing、DuckDuckGo 或 Wikimedia Commons，搜索结果可能分享给 Google。';
+
+  @override
+  String get navPractice => '练习';
+
+  @override
+  String get quickInstruction => '先听，再说出你的回答。';
+
+  @override
+  String get quickPreparing => '正在准备练习…';
+
+  @override
+  String get quickPreparingHint => '一段简短对话即将准备好。练习时，我们会继续准备下一题。';
+
+  @override
+  String get quickCue1 => '对话 1 · 听一听';
+
+  @override
+  String get quickCue2 => '对话 2 · 你的回答';
+
+  @override
+  String get quickSpeakHint => '点击麦克风，大声说出其中一个回答。';
+
+  @override
+  String get quickSpeak => '点击说话';
+
+  @override
+  String get quickChecking => '正在听你的回答…';
+
+  @override
+  String get quickCorrect => '回答合适，做得不错。';
+
+  @override
+  String get quickIncorrect => '试试另一个回答。';
+
+  @override
+  String get quickUnclear => '没听清楚，请再试一次。';
+
+  @override
+  String get quickNext => '下一个练习';
+
+  @override
+  String get quickAgain => '再说一次';
+
+  @override
+  String get quickUnavailable => '准备练习需要多一点时间，请重试。';
+
+  @override
+  String get quickStart => '开始练习';
+
+  @override
+  String get quickChooseLanguage => '请在个人资料中选择学习语言。';
+
+  @override
+  String get quickCallActive => '请先结束通话，再开始练习。';
+
+  @override
+  String get goalCelebrationMessage => '今天，你为语言学习留出了时间。每个词都算数。';
+
+  @override
+  String get goalCelebrationContinue => '继续练习';
+
+  @override
+  String get quickHeard => '识别到的内容';
+
+  @override
+  String get quickCompareReply => '与这句回复比较';
+
+  @override
+  String get quickDifferenceHint => '高亮表示不同或识别不确定的字词，并不代表一定存在发音错误。';
+
+  @override
+  String get quickRecognitionNote => '语音识别也可能出错。';
+
+  @override
+  String get quickLevelsLink => '等级如何调整？';
+
+  @override
+  String get quickLevelsIntro => '每种语言都从 A1 开始。练习等级会根据你的表现自动调整。';
+
+  @override
+  String get quickLevelsWindow => '在当前等级完成 12 次计分练习后，我们会评估最近 12 次的结果。';
+
+  @override
+  String get quickLevelsUp => '答对 10–12 次：上升一级。';
+
+  @override
+  String get quickLevelsStay => '答对 5–9 次：保持当前等级。';
+
+  @override
+  String get quickLevelsDown => '答对 0–4 次：下降一级。';
+
+  @override
+  String get quickLevelsScoring =>
+      '每道练习只计算第一次清晰识别的回答。识别不清的录音和跳过的练习不计入。\n\n查看过翻译的练习不计入等级调整。未使用翻译的答题结果会在进入下一题时计入。';
+
+  @override
+  String get quickLevelsReset => '等级变化后，重新累计 12 次练习。最低为 A1，最高为 C2。';
+
+  @override
+  String get quickSkipTitle => '跳过这次练习？';
+
+  @override
+  String get quickSkipMessage => '你还没有正确完成这次练习。要进入下一题吗？';
+
+  @override
+  String get quickSkipAction => '跳过练习';
+
+  @override
+  String get quickSetGoal => '设置目标';
+
+  @override
+  String get quickShowTranslation => '显示翻译';
+
+  @override
+  String get quickTranslationHint => '查看翻译后，本题将不计入等级调整。';
+
+  @override
+  String get quickTranslationExcluded => '已查看翻译 · 本题不会影响你的等级。';
+
+  @override
+  String get quickCompletedToday => '今日完成';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2291,7 +2412,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get closeLabel => '關閉';
 
   @override
-  String get navDiscover => '探索';
+  String get navDiscover => '對話';
 
   @override
   String get navCreate => '創作';
@@ -4058,4 +4179,125 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get aiConsentSearch =>
       '使用 AI 網頁或圖片搜尋時，查詢也會傳送至 Microsoft Bing、DuckDuckGo 或 Wikimedia Commons，搜尋結果可能分享給 Google。';
+
+  @override
+  String get navPractice => '練習';
+
+  @override
+  String get quickInstruction => '先聽，再說出你的回答。';
+
+  @override
+  String get quickPreparing => '正在準備練習…';
+
+  @override
+  String get quickPreparingHint => '一段簡短對話即將準備好。練習時，我們會繼續準備下一題。';
+
+  @override
+  String get quickCue1 => '對話 1 · 聽一聽';
+
+  @override
+  String get quickCue2 => '對話 2 · 你的回答';
+
+  @override
+  String get quickSpeakHint => '點選麥克風，大聲說出其中一個回答。';
+
+  @override
+  String get quickSpeak => '點選說話';
+
+  @override
+  String get quickChecking => '正在聽你的回答…';
+
+  @override
+  String get quickCorrect => '回答合適，做得不錯。';
+
+  @override
+  String get quickIncorrect => '試試另一個回答。';
+
+  @override
+  String get quickUnclear => '沒聽清楚，請再試一次。';
+
+  @override
+  String get quickNext => '下一個練習';
+
+  @override
+  String get quickAgain => '再說一次';
+
+  @override
+  String get quickUnavailable => '準備練習需要多一點時間，請重試。';
+
+  @override
+  String get quickStart => '開始練習';
+
+  @override
+  String get quickChooseLanguage => '請在個人資料中選擇學習語言。';
+
+  @override
+  String get quickCallActive => '請先結束通話，再開始練習。';
+
+  @override
+  String get goalCelebrationMessage => '今天，你為語言學習留出了時間。每個詞都算數。';
+
+  @override
+  String get goalCelebrationContinue => '繼續練習';
+
+  @override
+  String get quickHeard => '辨識到的內容';
+
+  @override
+  String get quickCompareReply => '與這句回覆比較';
+
+  @override
+  String get quickDifferenceHint => '醒目標示表示不同或辨識不確定的字詞，不代表一定有發音錯誤。';
+
+  @override
+  String get quickRecognitionNote => '語音辨識也可能出錯。';
+
+  @override
+  String get quickLevelsLink => '等級如何調整？';
+
+  @override
+  String get quickLevelsIntro => '每種語言都從 A1 開始。練習等級會根據你的表現自動調整。';
+
+  @override
+  String get quickLevelsWindow => '在目前等級完成 12 次計分練習後，我們會評估最近 12 次的結果。';
+
+  @override
+  String get quickLevelsUp => '答對 10–12 次：上升一級。';
+
+  @override
+  String get quickLevelsStay => '答對 5–9 次：維持目前等級。';
+
+  @override
+  String get quickLevelsDown => '答對 0–4 次：下降一級。';
+
+  @override
+  String get quickLevelsScoring =>
+      '每道練習只計算第一次清楚辨識的回答。辨識不清的錄音和跳過的練習不計入。\n\n查看過翻譯的練習不計入等級調整。未使用翻譯的答題結果會在進入下一題時計入。';
+
+  @override
+  String get quickLevelsReset => '等級變化後，重新累計 12 次練習。最低為 A1，最高為 C2。';
+
+  @override
+  String get quickSkipTitle => '略過這次練習？';
+
+  @override
+  String get quickSkipMessage => '你還沒有正確完成這次練習。要進入下一題嗎？';
+
+  @override
+  String get quickSkipAction => '略過練習';
+
+  @override
+  String get quickSetGoal => '設定目標';
+
+  @override
+  String get quickShowTranslation => '顯示翻譯';
+
+  @override
+  String get quickTranslationHint => '查看翻譯後，本題將不計入等級調整。';
+
+  @override
+  String get quickTranslationExcluded => '已查看翻譯 · 本題不會影響你的等級。';
+
+  @override
+  String get quickCompletedToday => '今日完成';
 }

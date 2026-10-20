@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_resume_notifier.dart';
+import '../core/ai_callback_notifier.dart';
+import '../core/daily_goal_celebration.dart';
+import '../core/word_activity_notifier.dart';
+import '../core/user_profile_notifier.dart';
+import 'shared/daily_goal_celebration_dialog.dart';
 import '../core/practice_widget_service.dart';
 import 'chats/ai/ai_chat_screen.dart';
 import '../core/goal_reminder_service.dart';
@@ -17,6 +22,7 @@ import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
 import 'discover/discover_screen.dart';
 import 'profile/profile_screen.dart';
+import 'quick_practice/quick_practice_screen.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -29,6 +35,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   ModalRoute<dynamic>? _reviewRoute;
   Timer? _reviewTimer;
   int _currentIndex = 0;
+  bool _covered = false;
   bool _checkingUpdate = false;
   bool _hasUnreadChats = false;
   StreamSubscription<List<ChatThreadSummary>>? _groupsSub;
@@ -36,15 +43,12 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   List<ChatThreadSummary> _groups = [];
   List<ChatThreadSummary> _dms = [];
 
-  static const List<Widget> _threeTabs = [
-    DiscoverScreen(),
-    ChatsScreen(),
-    ProfileScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
+    WordActivityNotifier.instance.addListener(_schedulePracticeReview);
+    WordActivityNotifier.instance.retain();
+    practiceInteractionBusy.addListener(_schedulePracticeReview);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
     AppResumeNotifier.instance.addListener(_onResume);
     GoalReminderService.instance.profileRequested.addListener(_openGoalProfile);
@@ -71,7 +75,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         return;
       }
       PracticeWidgetService.instance.chatRequested.value = false;
-      setState(() => _currentIndex = 1);
+      setState(() => _currentIndex = 2);
       openAiReminderChat();
     });
     WidgetsBinding.instance.ensureVisualUpdate();
@@ -81,7 +85,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     final request = GoalReminderService.instance.profileRequested;
     if (!mounted || !request.value) return;
     request.value = false;
-    setState(() => _currentIndex = 2);
+    setState(() => _currentIndex = 3);
   }
 
   void _updateUnread() {
@@ -105,33 +109,71 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   }
 
   @override
-  void didPushNext() => _reviewTimer?.cancel();
+  void didPushNext() {
+    setState(() => _covered = true);
+    _schedulePracticeReview();
+  }
 
   @override
-  void didPopNext() => _schedulePracticeReview();
+  void didPopNext() {
+    setState(() => _covered = false);
+    _schedulePracticeReview();
+  }
 
   bool get _canRequestReview =>
       mounted &&
-      (_reviewRoute?.isCurrent ?? false) &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed &&
       !DmCallNotifier.instance.isActive &&
-      (_currentIndex == 0 || _currentIndex == (2));
+      !AiCallbackNotifier.instance.aiActive &&
+      !AiCallbackNotifier.instance.ringing &&
+      !practiceInteractionBusy.value &&
+      practiceReviewRouteObserver.top is PageRoute;
 
   void _schedulePracticeReview() {
-    _reviewTimer?.cancel();
-    if (!PracticeReviewService.instance.enabled) return;
-    _reviewTimer = Timer(const Duration(seconds: 3), () {
-      unawaited(
-        PracticeReviewService.instance.requestIfEligible(
-          isSafe: () => _canRequestReview,
-        ),
+    // Continuous word updates must not keep postponing an achieved goal.
+    // The root dialog can appear over any pushed learning/settings page.
+    if (_reviewTimer?.isActive ?? false) return;
+    _reviewTimer = Timer(const Duration(milliseconds: 150), _celebrateGoal);
+  }
+
+  Future<void> _celebrateGoal() async {
+    _reviewTimer = null;
+    if (!mounted) return;
+    final activity = WordActivityNotifier.instance;
+    final owner = activity.accountId;
+    final language = UserProfileNotifier.instance.learningLanguage;
+    final today = activity.summaryFor(language).today;
+    if (!DailyGoalCelebration.reached(activity.dailyGoal, today)) return;
+    if (!_canRequestReview) {
+      _reviewTimer = Timer(const Duration(seconds: 2), _celebrateGoal);
+      return;
+    }
+    bool safe() =>
+        _canRequestReview &&
+        activity.accountId == owner &&
+        UserProfileNotifier.instance.learningLanguage == language;
+    final shown = await DailyGoalCelebration.instance.presentIfEligible(
+      owner: owner,
+      goal: activity.dailyGoal,
+      totals: today,
+      isSafe: safe,
+      present: () => showDailyGoalCelebration(context, totals: today),
+    );
+    if (shown && safe()) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      await PracticeReviewService.instance.requestIfEligible(
+        isSafe: safe,
+        dailyGoal: true,
       );
-    });
+    }
   }
 
   @override
   void dispose() {
     _reviewTimer?.cancel();
+    WordActivityNotifier.instance.removeListener(_schedulePracticeReview);
+    WordActivityNotifier.instance.release();
+    practiceInteractionBusy.removeListener(_schedulePracticeReview);
     practiceReviewRouteObserver.unsubscribe(this);
     _groupsSub?.cancel();
     _dmsSub?.cancel();
@@ -146,6 +188,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   }
 
   void _onResume() {
+    _schedulePracticeReview();
     _scheduleWidgetChat();
     _checkForUpdate();
   }
@@ -195,7 +238,12 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    const screens = _threeTabs;
+    final screens = <Widget>[
+      QuickPracticeScreen(active: _currentIndex == 0 && !_covered),
+      const DiscoverScreen(),
+      ChatsScreen(active: _currentIndex == 2 && !_covered),
+      const ProfileScreen(),
+    ];
     final maxIndex = screens.length - 1;
     final stackIndex = _currentIndex.clamp(0, maxIndex);
 
@@ -203,6 +251,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       body: IndexedStack(index: stackIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: stackIndex,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -211,7 +260,12 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         },
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.compass),
+            icon: const Icon(CupertinoIcons.waveform),
+            label: l10n.navPractice,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(CupertinoIcons.chat_bubble_2),
+            activeIcon: const Icon(CupertinoIcons.chat_bubble_2_fill),
             label: l10n.navDiscover,
           ),
           BottomNavigationBarItem(

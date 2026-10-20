@@ -277,7 +277,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get closeLabel => 'Đóng';
 
   @override
-  String get navDiscover => 'Khám phá';
+  String get navDiscover => 'Hội thoại';
 
   @override
   String get navCreate => 'Tạo';
@@ -2118,4 +2118,135 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'Khi tìm web hoặc ảnh bằng AI, truy vấn cũng được gửi đến Microsoft Bing, DuckDuckGo hoặc Wikimedia Commons và kết quả có thể được chia sẻ với Google.';
+
+  @override
+  String get navPractice => 'Luyện tập';
+
+  @override
+  String get quickInstruction => 'Nghe rồi nói câu trả lời.';
+
+  @override
+  String get quickPreparing => 'Đang chuẩn bị bài tập…';
+
+  @override
+  String get quickPreparingHint =>
+      'Một hội thoại ngắn sắp sẵn sàng. Chúng tôi chuẩn bị bài tiếp theo khi bạn luyện tập.';
+
+  @override
+  String get quickCue1 => 'Lời thoại 1 · Nghe';
+
+  @override
+  String get quickCue2 => 'Lời thoại 2 · Câu trả lời';
+
+  @override
+  String get quickSpeakHint =>
+      'Nhấn micrô và nói to một trong hai câu trả lời.';
+
+  @override
+  String get quickSpeak => 'Nhấn để nói';
+
+  @override
+  String get quickChecking => 'Đang kiểm tra câu trả lời…';
+
+  @override
+  String get quickCorrect => 'Câu trả lời phù hợp. Làm tốt lắm.';
+
+  @override
+  String get quickIncorrect => 'Hãy thử câu trả lời còn lại.';
+
+  @override
+  String get quickUnclear => 'Chưa nghe rõ. Vui lòng thử lại.';
+
+  @override
+  String get quickNext => 'Bài tập tiếp theo';
+
+  @override
+  String get quickAgain => 'Nói lại';
+
+  @override
+  String get quickUnavailable => 'Chuẩn bị lâu hơn một chút. Vui lòng thử lại.';
+
+  @override
+  String get quickStart => 'Bắt đầu luyện tập';
+
+  @override
+  String get quickChooseLanguage => 'Chọn ngôn ngữ học trong hồ sơ.';
+
+  @override
+  String get quickCallActive => 'Kết thúc cuộc gọi trước khi luyện tập.';
+
+  @override
+  String get goalCelebrationMessage =>
+      'Hôm nay bạn đã dành thời gian học ngôn ngữ. Mỗi từ đều có ý nghĩa.';
+
+  @override
+  String get goalCelebrationContinue => 'Tiếp tục luyện tập';
+
+  @override
+  String get quickHeard => 'Nội dung nhận dạng được';
+
+  @override
+  String get quickCompareReply => 'So sánh với câu trả lời này';
+
+  @override
+  String get quickDifferenceHint =>
+      'Phần tô sáng cho biết sự khác biệt hoặc từ được nhận dạng chưa chắc chắn, không khẳng định lỗi phát âm.';
+
+  @override
+  String get quickRecognitionNote => 'Nhận dạng giọng nói cũng có thể nhầm.';
+
+  @override
+  String get quickLevelsLink => 'Cách hoạt động của cấp độ?';
+
+  @override
+  String get quickLevelsIntro =>
+      'Mỗi ngôn ngữ bắt đầu từ A1. Cấp độ tự động điều chỉnh khi bạn luyện tập.';
+
+  @override
+  String get quickLevelsWindow =>
+      'Sau 12 bài tập được chấm ở cấp độ hiện tại, chúng tôi xem xét 12 kết quả gần nhất.';
+
+  @override
+  String get quickLevelsUp => 'Đúng 10–12 bài: tăng một cấp độ.';
+
+  @override
+  String get quickLevelsStay => 'Đúng 5–9 bài: giữ nguyên cấp độ.';
+
+  @override
+  String get quickLevelsDown => 'Đúng 0–4 bài: giảm một cấp độ.';
+
+  @override
+  String get quickLevelsScoring =>
+      'Chỉ câu trả lời đầu tiên được nhận dạng rõ ràng trong mỗi bài tập mới được tính. Bản ghi âm không rõ và bài tập bỏ qua không được tính.\n\nBài tập có dùng bản dịch không được tính khi điều chỉnh trình độ. Kết quả không dùng bản dịch được tính khi chuyển sang bài tiếp theo.';
+
+  @override
+  String get quickLevelsReset =>
+      'Sau khi đổi cấp độ, một nhóm 12 bài mới bắt đầu. A1 là cấp thấp nhất và C2 là cấp cao nhất.';
+
+  @override
+  String get quickSkipTitle => 'Bỏ qua bài luyện tập này?';
+
+  @override
+  String get quickSkipMessage =>
+      'Bạn chưa hoàn thành đúng bài tập này. Chuyển sang bài tiếp theo?';
+
+  @override
+  String get quickSkipAction => 'Bỏ qua bài luyện tập';
+
+  @override
+  String get quickSetGoal => 'Đặt mục tiêu';
+
+  @override
+  String get quickShowTranslation => 'Hiện bản dịch';
+
+  @override
+  String get quickTranslationHint =>
+      'Nếu xem bản dịch, bài tập này sẽ không được tính khi điều chỉnh trình độ.';
+
+  @override
+  String get quickTranslationExcluded =>
+      'Đã dùng bản dịch · Bài tập này không thay đổi trình độ của bạn.';
+
+  @override
+  String get quickCompletedToday => 'Hoàn thành hôm nay';
 }

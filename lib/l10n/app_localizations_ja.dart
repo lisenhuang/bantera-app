@@ -265,7 +265,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get closeLabel => '閉じる';
 
   @override
-  String get navDiscover => '発見';
+  String get navDiscover => '会話';
 
   @override
   String get navCreate => '作成';
@@ -2025,4 +2025,125 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'AI のウェブ・画像検索では、検索語が Microsoft Bing、DuckDuckGo または Wikimedia Commons にも送られ、結果が Google と共有される場合があります。';
+
+  @override
+  String get navPractice => '練習';
+
+  @override
+  String get quickInstruction => '聞いてから、返事を声に出しましょう。';
+
+  @override
+  String get quickPreparing => '練習を準備中…';
+
+  @override
+  String get quickPreparingHint => '短い会話を準備しています。練習中に次の問題も用意します。';
+
+  @override
+  String get quickCue1 => 'セリフ1 · 聞く';
+
+  @override
+  String get quickCue2 => 'セリフ2 · あなたの返事';
+
+  @override
+  String get quickSpeakHint => 'マイクを押して、どちらかの返事を声に出してください。';
+
+  @override
+  String get quickSpeak => 'タップして話す';
+
+  @override
+  String get quickChecking => '返事を確認中…';
+
+  @override
+  String get quickCorrect => '会話に合う返事です。';
+
+  @override
+  String get quickIncorrect => 'もう一方の返事を試しましょう。';
+
+  @override
+  String get quickUnclear => 'よく聞き取れませんでした。もう一度どうぞ。';
+
+  @override
+  String get quickNext => '次の練習';
+
+  @override
+  String get quickAgain => 'もう一度話す';
+
+  @override
+  String get quickUnavailable => '準備に時間がかかっています。もう一度お試しください。';
+
+  @override
+  String get quickStart => '練習を始める';
+
+  @override
+  String get quickChooseLanguage => 'プロフィールで学習言語を選んでください。';
+
+  @override
+  String get quickCallActive => '通話を終えてから練習してください。';
+
+  @override
+  String get goalCelebrationMessage => '今日も言語学習に取り組めました。一語一語が力になります。';
+
+  @override
+  String get goalCelebrationContinue => '練習を続ける';
+
+  @override
+  String get quickHeard => '聞き取れた内容';
+
+  @override
+  String get quickCompareReply => 'この返答と比較';
+
+  @override
+  String get quickDifferenceHint => '強調表示は違いや認識が不確かな箇所です。発音の誤りと断定するものではありません。';
+
+  @override
+  String get quickRecognitionNote => '音声認識が間違うこともあります。';
+
+  @override
+  String get quickLevelsLink => 'レベルの仕組み？';
+
+  @override
+  String get quickLevelsIntro => '各言語は A1 から始まります。練習に応じてレベルが自動で調整されます。';
+
+  @override
+  String get quickLevelsWindow => '現在のレベルで採点対象の練習を12問終えると、直近12問の結果を確認します。';
+
+  @override
+  String get quickLevelsUp => '10〜12問正解：1レベル上がります。';
+
+  @override
+  String get quickLevelsStay => '5〜9問正解：現在のレベルを維持します。';
+
+  @override
+  String get quickLevelsDown => '0〜4問正解：1レベル下がります。';
+
+  @override
+  String get quickLevelsScoring =>
+      '各練習で最初にはっきり認識された回答だけがカウントされます。不明瞭な録音やスキップした練習はカウントされません。\n\n翻訳を使用した練習はレベル判定に含まれません。翻訳を使用しなかった結果は、次の練習に進むと反映されます。';
+
+  @override
+  String get quickLevelsReset => 'レベルが変わると、新たに12問のカウントを始めます。最低は A1、最高は C2 です。';
+
+  @override
+  String get quickSkipTitle => 'この練習をスキップしますか？';
+
+  @override
+  String get quickSkipMessage => 'この問題にはまだ正解していません。次の問題に進みますか？';
+
+  @override
+  String get quickSkipAction => 'スキップ';
+
+  @override
+  String get quickSetGoal => '目標を設定';
+
+  @override
+  String get quickShowTranslation => '翻訳を表示';
+
+  @override
+  String get quickTranslationHint => '翻訳を表示すると、この練習はレベル判定の対象外になります。';
+
+  @override
+  String get quickTranslationExcluded => '翻訳を使用 · この練習はレベルに影響しません。';
+
+  @override
+  String get quickCompletedToday => '今日の完了数';
 }

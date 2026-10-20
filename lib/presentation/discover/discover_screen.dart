@@ -17,6 +17,7 @@ import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/transcription_locale_option.dart';
 import 'discover_filters.dart';
+import 'dialogues_library_menu.dart';
 import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
@@ -199,6 +200,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                 ),
               ),
+              const DialoguesLibraryMenu(),
             ],
             title: Text(AppLocalizations.of(context)!.navDiscover),
             bottom: PreferredSize(

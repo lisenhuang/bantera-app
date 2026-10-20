@@ -279,7 +279,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get closeLabel => 'Kapat';
 
   @override
-  String get navDiscover => 'Keşfet';
+  String get navDiscover => 'Diyaloglar';
 
   @override
   String get navCreate => 'Oluştur';
@@ -2116,4 +2116,136 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'AI web veya görsel aramasında sorgular Microsoft Bing, DuckDuckGo veya Wikimedia Commons’a da gönderilir ve sonuçlar Google ile paylaşılabilir.';
+
+  @override
+  String get navPractice => 'Pratik';
+
+  @override
+  String get quickInstruction => 'Dinle, sonra yanıtını söyle.';
+
+  @override
+  String get quickPreparing => 'Pratiğin hazırlanıyor…';
+
+  @override
+  String get quickPreparingHint =>
+      'Kısa bir diyalog hazırlanıyor. Sen pratik yaparken sıradakileri hazırlayacağız.';
+
+  @override
+  String get quickCue1 => 'Replik 1 · Dinle';
+
+  @override
+  String get quickCue2 => 'Replik 2 · Yanıtın';
+
+  @override
+  String get quickSpeakHint =>
+      'Mikrofona dokun ve yanıtlardan birini sesli söyle.';
+
+  @override
+  String get quickSpeak => 'Konuşmak için dokun';
+
+  @override
+  String get quickChecking => 'Yanıtın kontrol ediliyor…';
+
+  @override
+  String get quickCorrect => 'Bu yanıt uygun. Güzel iş.';
+
+  @override
+  String get quickIncorrect => 'Diğer yanıtı dene.';
+
+  @override
+  String get quickUnclear => 'Net duyamadım. Lütfen tekrar dene.';
+
+  @override
+  String get quickNext => 'Sonraki pratik';
+
+  @override
+  String get quickAgain => 'Tekrar söyle';
+
+  @override
+  String get quickUnavailable =>
+      'Hazırlık biraz daha uzun sürüyor. Lütfen tekrar dene.';
+
+  @override
+  String get quickStart => 'Başla';
+
+  @override
+  String get quickChooseLanguage => 'Profilinden öğrenmek istediğin dili seç.';
+
+  @override
+  String get quickCallActive => 'Pratik yapmadan önce aramanı bitir.';
+
+  @override
+  String get goalCelebrationMessage =>
+      'Bugün dil öğrenmeye zaman ayırdın. Her kelime önemli.';
+
+  @override
+  String get goalCelebrationContinue => 'Pratiğe devam et';
+
+  @override
+  String get quickHeard => 'Duyduğumuz ifade';
+
+  @override
+  String get quickCompareReply => 'Bu yanıtla karşılaştırın';
+
+  @override
+  String get quickDifferenceHint =>
+      'Vurgular, farklılıkları veya belirsiz algılanan sözcükleri gösterir; kesin telaffuz hataları değildir.';
+
+  @override
+  String get quickRecognitionNote => 'Ses tanıma sistemi de hata yapabilir.';
+
+  @override
+  String get quickLevelsLink => 'Seviyeler nasıl çalışır?';
+
+  @override
+  String get quickLevelsIntro =>
+      'Her dil A1 seviyesinden başlar. Seviyen pratik yaptıkça otomatik olarak ayarlanır.';
+
+  @override
+  String get quickLevelsWindow =>
+      'Mevcut seviyende puanlanan 12 alıştırmadan sonra son 12 sonucunu değerlendiririz.';
+
+  @override
+  String get quickLevelsUp => '10–12 doğru: bir seviye yükselirsin.';
+
+  @override
+  String get quickLevelsStay => '5–9 doğru: aynı seviyede kalırsın.';
+
+  @override
+  String get quickLevelsDown => '0–4 doğru: bir seviye düşersin.';
+
+  @override
+  String get quickLevelsScoring =>
+      'Her alıştırmada yalnızca net olarak tanınan ilk yanıtın sayılır. Anlaşılmayan kayıtlar ve atlanan alıştırmalar sayılmaz.\n\nÇeviri kullanılan alıştırmalar seviye değişikliklerinde sayılmaz. Çevirisiz sonuçlar bir sonraki alıştırmaya geçtiğinde sayılır.';
+
+  @override
+  String get quickLevelsReset =>
+      'Seviye değiştiğinde 12 alıştırmalık yeni bir grup başlar. En düşük seviye A1, en yüksek seviye C2’dir.';
+
+  @override
+  String get quickSkipTitle => 'Bu alıştırma atlansın mı?';
+
+  @override
+  String get quickSkipMessage =>
+      'Bu alıştırmayı henüz doğru tamamlamadın. Sonrakine geçilsin mi?';
+
+  @override
+  String get quickSkipAction => 'Alıştırmayı atla';
+
+  @override
+  String get quickSetGoal => 'Hedef belirle';
+
+  @override
+  String get quickShowTranslation => 'Çeviriyi göster';
+
+  @override
+  String get quickTranslationHint =>
+      'Çeviriyi açarsan bu alıştırma seviye değişikliklerinde sayılmaz.';
+
+  @override
+  String get quickTranslationExcluded =>
+      'Çeviri kullanıldı · Bu alıştırma seviyeni değiştirmez.';
+
+  @override
+  String get quickCompletedToday => 'Bugün tamamlanan';
 }

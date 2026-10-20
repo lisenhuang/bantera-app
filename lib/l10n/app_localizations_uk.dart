@@ -277,7 +277,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get closeLabel => 'Закрити';
 
   @override
-  String get navDiscover => 'Огляд';
+  String get navDiscover => 'Діалоги';
 
   @override
   String get navCreate => 'Створити';
@@ -2184,4 +2184,137 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'У вебпошуку чи пошуку зображень із ШІ запити також надсилаються Microsoft Bing, DuckDuckGo або Wikimedia Commons, а результати можуть передаватися Google.';
+
+  @override
+  String get navPractice => 'Практика';
+
+  @override
+  String get quickInstruction => 'Послухайте й промовте відповідь.';
+
+  @override
+  String get quickPreparing => 'Готуємо вправу…';
+
+  @override
+  String get quickPreparingHint =>
+      'Скоро з’явиться короткий діалог. Наступні підготуємо, поки ви практикуєтеся.';
+
+  @override
+  String get quickCue1 => 'Репліка 1 · Слухайте';
+
+  @override
+  String get quickCue2 => 'Репліка 2 · Ваша відповідь';
+
+  @override
+  String get quickSpeakHint =>
+      'Натисніть на мікрофон і промовте одну з відповідей.';
+
+  @override
+  String get quickSpeak => 'Натисніть і говоріть';
+
+  @override
+  String get quickChecking => 'Перевіряємо відповідь…';
+
+  @override
+  String get quickCorrect => 'Відповідь підходить. Гарна робота.';
+
+  @override
+  String get quickIncorrect => 'Спробуйте іншу відповідь.';
+
+  @override
+  String get quickUnclear => 'Не вдалося розчути. Спробуйте ще раз.';
+
+  @override
+  String get quickNext => 'Наступна вправа';
+
+  @override
+  String get quickAgain => 'Повторити';
+
+  @override
+  String get quickUnavailable =>
+      'Підготовка триває трохи довше. Спробуйте ще раз.';
+
+  @override
+  String get quickStart => 'Почати';
+
+  @override
+  String get quickChooseLanguage => 'Оберіть мову навчання у профілі.';
+
+  @override
+  String get quickCallActive => 'Завершіть дзвінок перед практикою.';
+
+  @override
+  String get goalCelebrationMessage =>
+      'Сьогодні ви знайшли час для мови. Кожне слово важливе.';
+
+  @override
+  String get goalCelebrationContinue => 'Продовжити практику';
+
+  @override
+  String get quickHeard => 'Що ми почули';
+
+  @override
+  String get quickCompareReply => 'Порівняйте з цією відповіддю';
+
+  @override
+  String get quickDifferenceHint =>
+      'Виділено відмінності або невпевнено розпізнані слова, а не підтверджені помилки вимови.';
+
+  @override
+  String get quickRecognitionNote =>
+      'Розпізнавання мовлення теж може помилятися.';
+
+  @override
+  String get quickLevelsLink => 'Як змінюються рівні?';
+
+  @override
+  String get quickLevelsIntro =>
+      'Кожна мова починається з A1. Рівень автоматично змінюється під час практики.';
+
+  @override
+  String get quickLevelsWindow =>
+      'Після 12 оцінених вправ на поточному рівні ми перевіряємо останні 12 результатів.';
+
+  @override
+  String get quickLevelsUp => '10–12 правильних: на один рівень вище.';
+
+  @override
+  String get quickLevelsStay => '5–9 правильних: рівень не змінюється.';
+
+  @override
+  String get quickLevelsDown => '0–4 правильні: на один рівень нижче.';
+
+  @override
+  String get quickLevelsScoring =>
+      'У кожній вправі враховується лише перша чітко розпізнана відповідь. Нерозбірливі записи та пропущені вправи не враховуються.\n\nВправи з перекладом не враховуються під час зміни рівня. Результати без перекладу враховуються після переходу до наступної вправи.';
+
+  @override
+  String get quickLevelsReset =>
+      'Після зміни рівня відлік 12 вправ починається знову. A1 — найнижчий рівень, C2 — найвищий.';
+
+  @override
+  String get quickSkipTitle => 'Пропустити цю вправу?';
+
+  @override
+  String get quickSkipMessage =>
+      'Ви ще не виконали цю вправу правильно. Перейти до наступної?';
+
+  @override
+  String get quickSkipAction => 'Пропустити вправу';
+
+  @override
+  String get quickSetGoal => 'Задати ціль';
+
+  @override
+  String get quickShowTranslation => 'Показати переклад';
+
+  @override
+  String get quickTranslationHint =>
+      'Якщо відкрити переклад, ця вправа не впливатиме на рівень.';
+
+  @override
+  String get quickTranslationExcluded =>
+      'Переклад використано · Ця вправа не змінить ваш рівень.';
+
+  @override
+  String get quickCompletedToday => 'Виконано сьогодні';
 }

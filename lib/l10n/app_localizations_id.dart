@@ -278,7 +278,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get closeLabel => 'Tutup';
 
   @override
-  String get navDiscover => 'Jelajahi';
+  String get navDiscover => 'Dialog';
 
   @override
   String get navCreate => 'Buat';
@@ -2121,4 +2121,135 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'Jika menggunakan pencarian web atau gambar AI, kueri juga dikirim ke Microsoft Bing, DuckDuckGo atau Wikimedia Commons, dan hasil dapat dibagikan ke Google.';
+
+  @override
+  String get navPractice => 'Latihan';
+
+  @override
+  String get quickInstruction => 'Dengarkan, lalu ucapkan jawabanmu.';
+
+  @override
+  String get quickPreparing => 'Menyiapkan latihan…';
+
+  @override
+  String get quickPreparingHint =>
+      'Percakapan singkat segera siap. Kami menyiapkan yang berikutnya saat kamu berlatih.';
+
+  @override
+  String get quickCue1 => 'Ucapan 1 · Dengarkan';
+
+  @override
+  String get quickCue2 => 'Ucapan 2 · Jawabanmu';
+
+  @override
+  String get quickSpeakHint => 'Ketuk mikrofon dan ucapkan salah satu jawaban.';
+
+  @override
+  String get quickSpeak => 'Ketuk untuk bicara';
+
+  @override
+  String get quickChecking => 'Memeriksa jawabanmu…';
+
+  @override
+  String get quickCorrect => 'Jawaban itu cocok. Bagus.';
+
+  @override
+  String get quickIncorrect => 'Coba jawaban lainnya.';
+
+  @override
+  String get quickUnclear => 'Kurang terdengar jelas. Silakan coba lagi.';
+
+  @override
+  String get quickNext => 'Latihan berikutnya';
+
+  @override
+  String get quickAgain => 'Ucapkan lagi';
+
+  @override
+  String get quickUnavailable =>
+      'Persiapan memerlukan waktu lebih lama. Silakan coba lagi.';
+
+  @override
+  String get quickStart => 'Mulai berlatih';
+
+  @override
+  String get quickChooseLanguage => 'Pilih bahasa yang dipelajari di profilmu.';
+
+  @override
+  String get quickCallActive => 'Akhiri panggilan sebelum berlatih.';
+
+  @override
+  String get goalCelebrationMessage =>
+      'Hari ini kamu meluangkan waktu untuk belajar bahasa. Setiap kata berarti.';
+
+  @override
+  String get goalCelebrationContinue => 'Terus berlatih';
+
+  @override
+  String get quickHeard => 'Yang kami dengar';
+
+  @override
+  String get quickCompareReply => 'Bandingkan dengan jawaban ini';
+
+  @override
+  String get quickDifferenceHint =>
+      'Sorotan menunjukkan perbedaan atau kata yang kurang jelas dikenali, bukan kesalahan pengucapan yang pasti.';
+
+  @override
+  String get quickRecognitionNote => 'Pengenalan suara bisa keliru.';
+
+  @override
+  String get quickLevelsLink => 'Cara kerja level?';
+
+  @override
+  String get quickLevelsIntro =>
+      'Setiap bahasa dimulai dari A1. Levelmu menyesuaikan secara otomatis saat berlatih.';
+
+  @override
+  String get quickLevelsWindow =>
+      'Setelah 12 latihan yang dinilai pada level saat ini, kami meninjau 12 hasil terakhirmu.';
+
+  @override
+  String get quickLevelsUp => '10–12 benar: naik satu level.';
+
+  @override
+  String get quickLevelsStay => '5–9 benar: tetap di level ini.';
+
+  @override
+  String get quickLevelsDown => '0–4 benar: turun satu level.';
+
+  @override
+  String get quickLevelsScoring =>
+      'Hanya jawaban pertama yang dikenali dengan jelas pada setiap latihan yang dihitung. Rekaman yang tidak jelas dan latihan yang dilewati tidak dihitung.\n\nLatihan dengan terjemahan tidak dihitung untuk perubahan level. Hasil tanpa terjemahan dihitung saat beralih ke latihan berikutnya.';
+
+  @override
+  String get quickLevelsReset =>
+      'Setelah level berubah, hitungan 12 latihan dimulai lagi. A1 adalah level terendah dan C2 yang tertinggi.';
+
+  @override
+  String get quickSkipTitle => 'Lewati latihan ini?';
+
+  @override
+  String get quickSkipMessage =>
+      'Kamu belum menyelesaikan latihan ini dengan benar. Lanjut ke latihan berikutnya?';
+
+  @override
+  String get quickSkipAction => 'Lewati latihan';
+
+  @override
+  String get quickSetGoal => 'Atur target';
+
+  @override
+  String get quickShowTranslation => 'Tampilkan terjemahan';
+
+  @override
+  String get quickTranslationHint =>
+      'Jika terjemahan dibuka, latihan ini tidak dihitung untuk perubahan level.';
+
+  @override
+  String get quickTranslationExcluded =>
+      'Terjemahan digunakan · Latihan ini tidak mengubah levelmu.';
+
+  @override
+  String get quickCompletedToday => 'Selesai hari ini';
 }

@@ -277,7 +277,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get closeLabel => 'ปิด';
 
   @override
-  String get navDiscover => 'สำรวจ';
+  String get navDiscover => 'บทสนทนา';
 
   @override
   String get navCreate => 'สร้าง';
@@ -2098,4 +2098,135 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'เมื่อใช้การค้นหาเว็บหรือรูปด้วย AI คำค้นจะถูกส่งไปยัง Microsoft Bing, DuckDuckGo หรือ Wikimedia Commons ด้วย และอาจแชร์ผลลัพธ์กับ Google';
+
+  @override
+  String get navPractice => 'ฝึกฝน';
+
+  @override
+  String get quickInstruction => 'ฟัง แล้วพูดคำตอบของคุณ';
+
+  @override
+  String get quickPreparing => 'กำลังเตรียมแบบฝึก…';
+
+  @override
+  String get quickPreparingHint =>
+      'บทสนทนาสั้น ๆ ใกล้พร้อมแล้ว เราจะเตรียมข้อต่อไประหว่างที่คุณฝึก';
+
+  @override
+  String get quickCue1 => 'บทพูด 1 · ฟัง';
+
+  @override
+  String get quickCue2 => 'บทพูด 2 · คำตอบของคุณ';
+
+  @override
+  String get quickSpeakHint => 'แตะไมโครโฟนแล้วพูดคำตอบหนึ่งข้อออกเสียง';
+
+  @override
+  String get quickSpeak => 'แตะเพื่อพูด';
+
+  @override
+  String get quickChecking => 'กำลังตรวจคำตอบ…';
+
+  @override
+  String get quickCorrect => 'คำตอบนี้เหมาะสม ทำได้ดี';
+
+  @override
+  String get quickIncorrect => 'ลองคำตอบอีกข้อ';
+
+  @override
+  String get quickUnclear => 'ได้ยินไม่ชัด โปรดลองอีกครั้ง';
+
+  @override
+  String get quickNext => 'แบบฝึกถัดไป';
+
+  @override
+  String get quickAgain => 'พูดอีกครั้ง';
+
+  @override
+  String get quickUnavailable =>
+      'การเตรียมใช้เวลานานขึ้นเล็กน้อย โปรดลองอีกครั้ง';
+
+  @override
+  String get quickStart => 'เริ่มฝึก';
+
+  @override
+  String get quickChooseLanguage => 'เลือกภาษาที่เรียนในโปรไฟล์';
+
+  @override
+  String get quickCallActive => 'วางสายก่อนเริ่มฝึก';
+
+  @override
+  String get goalCelebrationMessage =>
+      'วันนี้คุณได้ให้เวลากับการเรียนภาษา ทุกคำมีความหมาย';
+
+  @override
+  String get goalCelebrationContinue => 'ฝึกต่อ';
+
+  @override
+  String get quickHeard => 'สิ่งที่ระบบได้ยิน';
+
+  @override
+  String get quickCompareReply => 'เปรียบเทียบกับคำตอบนี้';
+
+  @override
+  String get quickDifferenceHint =>
+      'ข้อความที่เน้นคือส่วนที่ต่างกันหรือระบบฟังไม่แน่ชัด ไม่ได้ยืนยันว่าออกเสียงผิด';
+
+  @override
+  String get quickRecognitionNote => 'ระบบรู้จำเสียงอาจผิดพลาดได้';
+
+  @override
+  String get quickLevelsLink => 'ระดับทำงานอย่างไร?';
+
+  @override
+  String get quickLevelsIntro =>
+      'แต่ละภาษาเริ่มที่ A1 ระดับจะปรับโดยอัตโนมัติเมื่อคุณฝึกฝน';
+
+  @override
+  String get quickLevelsWindow =>
+      'หลังทำแบบฝึกหัดที่มีการให้คะแนนครบ 12 ข้อในระดับปัจจุบัน เราจะพิจารณาผล 12 ข้อล่าสุด';
+
+  @override
+  String get quickLevelsUp => 'ถูก 10–12 ข้อ: เลื่อนขึ้นหนึ่งระดับ';
+
+  @override
+  String get quickLevelsStay => 'ถูก 5–9 ข้อ: อยู่ระดับเดิม';
+
+  @override
+  String get quickLevelsDown => 'ถูก 0–4 ข้อ: ลดลงหนึ่งระดับ';
+
+  @override
+  String get quickLevelsScoring =>
+      'แต่ละข้อจะนับเฉพาะคำตอบแรกที่ระบบรู้จำได้ชัดเจน เสียงที่ไม่ชัดเจนและข้อที่ข้ามจะไม่นับ\n\nแบบฝึกหัดที่ใช้คำแปลจะไม่นับในการปรับระดับ ผลที่ไม่ใช้คำแปลจะนับเมื่อไปยังแบบฝึกหัดถัดไป';
+
+  @override
+  String get quickLevelsReset =>
+      'เมื่อระดับเปลี่ยน จะเริ่มนับแบบฝึกหัด 12 ข้อใหม่ A1 คือระดับต่ำสุด และ C2 คือระดับสูงสุด';
+
+  @override
+  String get quickSkipTitle => 'ข้ามแบบฝึกหัดนี้ไหม';
+
+  @override
+  String get quickSkipMessage =>
+      'คุณยังทำแบบฝึกหัดนี้ไม่ถูกต้อง ต้องการไปข้อถัดไปไหม';
+
+  @override
+  String get quickSkipAction => 'ข้ามแบบฝึกหัด';
+
+  @override
+  String get quickSetGoal => 'ตั้งเป้าหมาย';
+
+  @override
+  String get quickShowTranslation => 'แสดงคำแปล';
+
+  @override
+  String get quickTranslationHint =>
+      'หากดูคำแปล แบบฝึกหัดนี้จะไม่นับในการปรับระดับ';
+
+  @override
+  String get quickTranslationExcluded =>
+      'ใช้คำแปลแล้ว · แบบฝึกหัดนี้จะไม่เปลี่ยนระดับของคุณ';
+
+  @override
+  String get quickCompletedToday => 'สำเร็จวันนี้';
 }

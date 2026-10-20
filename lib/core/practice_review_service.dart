@@ -8,7 +8,28 @@ import 'package:path_provider/path_provider.dart';
 
 import 'auth_session_notifier.dart';
 
-final practiceReviewRouteObserver = RouteObserver<ModalRoute<dynamic>>();
+class PracticeRouteObserver extends RouteObserver<ModalRoute<dynamic>> {
+  Route<dynamic>? top;
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    top = route;
+    super.didPush(route, previousRoute);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    top = previousRoute;
+    super.didPop(route, previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    if (top == oldRoute) top = newRoute;
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+  }
+}
+
+final practiceReviewRouteObserver = PracticeRouteObserver();
 
 /// Device-local, account-isolated lesson history. Only iOS requests StoreKit reviews.
 class PracticeReviewService {
@@ -113,18 +134,23 @@ class PracticeReviewService {
     return _queue;
   }
 
-  Future<void> requestIfEligible({required bool Function() isSafe}) async {
+  Future<void> requestIfEligible({
+    required bool Function() isSafe,
+    bool dailyGoal = false,
+  }) async {
     if (!enabled || _requesting || _requestedThisSession) return;
     _requesting = true;
     try {
       await _queue;
       final owner = currentOwner();
-      if (owner == null || _pendingOwner != owner || !isSafe()) return;
+      if (owner == null || (!dailyGoal && _pendingOwner != owner) || !isSafe())
+        return;
       final data = await _load();
       final accounts = data['accounts'] as Map?;
       final account = accounts?[owner] as Map?;
       final completions = account?['completions'] as Map? ?? {};
-      if (completions.length < 3 || completions.values.toSet().length < 2) {
+      if (!dailyGoal &&
+          (completions.length < 3 || completions.values.toSet().length < 2)) {
         return;
       }
       final lastRequest = DateTime.tryParse(

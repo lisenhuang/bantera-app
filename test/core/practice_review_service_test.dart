@@ -53,6 +53,18 @@ void main() {
   tearDown(() => directory.deleteSync(recursive: true));
 
   test(
+    'daily goal qualifies without lesson history and respects review cooldown',
+    () async {
+      await service.requestIfEligible(isSafe: () => true, dailyGoal: true);
+      expect(requests, 1);
+      service = create();
+      now = now.add(const Duration(days: 1));
+      await service.requestIfEligible(isSafe: () => true, dailyGoal: true);
+      expect(requests, 1);
+    },
+  );
+
+  test(
     'Three distinct lessons across local calendar days request once',
     () async {
       await complete('one');

@@ -267,7 +267,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get closeLabel => '닫기';
 
   @override
-  String get navDiscover => '탐색';
+  String get navDiscover => '대화';
 
   @override
   String get navCreate => '만들기';
@@ -2036,4 +2036,129 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get aiConsentSearch =>
       'AI 웹 또는 이미지 검색을 사용하면 검색어가 Microsoft Bing, DuckDuckGo 또는 Wikimedia Commons에도 전송되고 결과가 Google과 공유될 수 있습니다.';
+
+  @override
+  String get navPractice => '연습';
+
+  @override
+  String get quickInstruction => '듣고 나서 답을 말해 보세요.';
+
+  @override
+  String get quickPreparing => '연습 준비 중…';
+
+  @override
+  String get quickPreparingHint => '짧은 대화를 준비하고 있어요. 연습하는 동안 다음 문제도 준비할게요.';
+
+  @override
+  String get quickCue1 => '대사 1 · 듣기';
+
+  @override
+  String get quickCue2 => '대사 2 · 나의 답';
+
+  @override
+  String get quickSpeakHint => '마이크를 누르고 두 답 중 하나를 소리 내어 말하세요.';
+
+  @override
+  String get quickSpeak => '눌러서 말하기';
+
+  @override
+  String get quickChecking => '답을 확인하고 있어요…';
+
+  @override
+  String get quickCorrect => '대화에 맞는 답이에요. 잘했어요.';
+
+  @override
+  String get quickIncorrect => '다른 답을 시도해 보세요.';
+
+  @override
+  String get quickUnclear => '잘 듣지 못했어요. 다시 말해 주세요.';
+
+  @override
+  String get quickNext => '다음 연습';
+
+  @override
+  String get quickAgain => '다시 말하기';
+
+  @override
+  String get quickUnavailable => '준비에 시간이 조금 더 걸려요. 다시 시도해 주세요.';
+
+  @override
+  String get quickStart => '연습 시작';
+
+  @override
+  String get quickChooseLanguage => '프로필에서 학습 언어를 선택하세요.';
+
+  @override
+  String get quickCallActive => '통화를 마친 후 연습해 주세요.';
+
+  @override
+  String get goalCelebrationMessage =>
+      '오늘도 언어 학습에 시간을 썼어요. 한 단어 한 단어가 쌓이고 있어요.';
+
+  @override
+  String get goalCelebrationContinue => '계속 연습하기';
+
+  @override
+  String get quickHeard => '인식된 내용';
+
+  @override
+  String get quickCompareReply => '이 답변과 비교';
+
+  @override
+  String get quickDifferenceHint =>
+      '강조된 부분은 차이가 있거나 인식이 불확실한 단어이며, 반드시 발음 오류를 뜻하지는 않습니다.';
+
+  @override
+  String get quickRecognitionNote => '음성 인식도 틀릴 수 있어요.';
+
+  @override
+  String get quickLevelsLink => '레벨 안내?';
+
+  @override
+  String get quickLevelsIntro => '각 언어는 A1에서 시작하며, 연습에 따라 레벨이 자동으로 조정됩니다.';
+
+  @override
+  String get quickLevelsWindow =>
+      '현재 레벨에서 채점되는 연습 12개를 완료하면 최근 12개의 결과를 확인합니다.';
+
+  @override
+  String get quickLevelsUp => '10~12개 정답: 한 레벨 올라갑니다.';
+
+  @override
+  String get quickLevelsStay => '5~9개 정답: 현재 레벨을 유지합니다.';
+
+  @override
+  String get quickLevelsDown => '0~4개 정답: 한 레벨 내려갑니다.';
+
+  @override
+  String get quickLevelsScoring =>
+      '각 연습에서 처음 명확하게 인식된 답변만 반영됩니다. 불명확한 녹음과 건너뛴 연습은 반영되지 않습니다.\n\n번역을 사용한 연습은 레벨 조정에 반영되지 않아요. 번역 없이 답한 결과는 다음 연습으로 넘어갈 때 반영돼요.';
+
+  @override
+  String get quickLevelsReset =>
+      '레벨이 바뀌면 12개 연습을 새로 집계합니다. 가장 낮은 레벨은 A1, 가장 높은 레벨은 C2입니다.';
+
+  @override
+  String get quickSkipTitle => '이 연습을 건너뛸까요?';
+
+  @override
+  String get quickSkipMessage => '아직 이 문제를 맞히지 못했어요. 다음 문제로 넘어갈까요?';
+
+  @override
+  String get quickSkipAction => '연습 건너뛰기';
+
+  @override
+  String get quickSetGoal => '목표 설정';
+
+  @override
+  String get quickShowTranslation => '번역 보기';
+
+  @override
+  String get quickTranslationHint => '번역을 보면 이 연습은 레벨 조정에 반영되지 않아요.';
+
+  @override
+  String get quickTranslationExcluded => '번역 사용 · 이 연습은 레벨에 영향을 주지 않아요.';
+
+  @override
+  String get quickCompletedToday => '오늘 완료';
 }
