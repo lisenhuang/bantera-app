@@ -290,6 +290,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navGoal => 'Ziel';
+
+  @override
   String get chatsTitle => 'Chats';
 
   @override
@@ -2236,7 +2239,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get quickStart => 'Übung starten';
 
   @override
-  String get quickChooseLanguage => 'Wähle in deinem Profil eine Lernsprache.';
+  String get quickChooseLanguage =>
+      'Wähle in den Einstellungen eine Lernsprache.';
 
   @override
   String get quickCallActive => 'Beende deinen Anruf, bevor du übst.';
@@ -2267,7 +2271,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Jede Sprache beginnt bei A1. Deine Stufe passt sich beim Üben automatisch an.';
+      'Jede Sprache beginnt bei A0. Deine Stufe passt sich beim Üben automatisch an.';
 
   @override
   String get quickLevelsWindow =>
@@ -2284,11 +2288,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Pro Übung zählt nur deine erste klar erkannte Antwort. Unklare Aufnahmen und übersprungene Übungen zählen nicht.\n\nÜbungen mit Übersetzung zählen nicht für Stufenänderungen. Ergebnisse ohne Übersetzung zählen, wenn du zur nächsten Übung gehst.';
+      'Pro Übung zählt nur deine erste klar erkannte Antwort. Unklare Aufnahmen und übersprungene Übungen zählen nicht.\n\nA1–C2: Übungen mit Übersetzung zählen nicht für Stufenänderungen. Ergebnisse ohne Übersetzung zählen, wenn du zur nächsten Übung gehst.';
 
   @override
   String get quickLevelsReset =>
-      'Nach einem Stufenwechsel beginnt eine neue Reihe von 12 Übungen. A1 ist die niedrigste Stufe, C2 die höchste.';
+      'Nach einem Stufenwechsel beginnt eine neue Reihe von 12 Übungen. A0 ist die niedrigste Stufe, C2 die höchste.';
 
   @override
   String get quickSkipTitle => 'Diese Übung überspringen?';
@@ -2351,4 +2355,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Wiederholung · Aktuelles Niveau: $level';
   }
+
+  @override
+  String get quickA0Label => 'Ganz von vorn';
+
+  @override
+  String get quickA0Description =>
+      'A0 ist Banteras Einstiegsstufe vor A1, angelehnt an Pre-A1. Sie ist keine offizielle GER-Stufe. Beginne mit einzelnen Wörtern und kurzen Alltagsausdrücken.';
+
+  @override
+  String get quickA0Hint =>
+      'Höre die Beispiele an, prüfe ihre Bedeutung und antworte dann. A0 bietet Lernhilfen; deine erste klar erkannte Antwort zählt.';
 }

@@ -279,6 +279,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get navProfile => '프로필';
 
   @override
+  String get navGoal => '목표';
+
+  @override
   String get chatsTitle => '채팅';
 
   @override
@@ -2089,7 +2092,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickStart => '연습 시작';
 
   @override
-  String get quickChooseLanguage => '프로필에서 학습 언어를 선택하세요.';
+  String get quickChooseLanguage => '설정에서 학습 언어를 선택하세요.';
 
   @override
   String get quickCallActive => '통화를 마친 후 연습해 주세요.';
@@ -2118,7 +2121,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickLevelsLink => '레벨 안내?';
 
   @override
-  String get quickLevelsIntro => '각 언어는 A1에서 시작하며, 연습에 따라 레벨이 자동으로 조정됩니다.';
+  String get quickLevelsIntro => '각 언어는 A0에서 시작하며, 연습에 따라 레벨이 자동으로 조정됩니다.';
 
   @override
   String get quickLevelsWindow =>
@@ -2135,11 +2138,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      '각 연습에서 처음 명확하게 인식된 답변만 반영됩니다. 불명확한 녹음과 건너뛴 연습은 반영되지 않습니다.\n\n번역을 사용한 연습은 레벨 조정에 반영되지 않아요. 번역 없이 답한 결과는 다음 연습으로 넘어갈 때 반영돼요.';
+      '각 연습에서 처음 명확하게 인식된 답변만 반영됩니다. 불명확한 녹음과 건너뛴 연습은 반영되지 않습니다.\n\nA1–C2: 번역을 사용한 연습은 레벨 조정에 반영되지 않아요. 번역 없이 답한 결과는 다음 연습으로 넘어갈 때 반영돼요.';
 
   @override
   String get quickLevelsReset =>
-      '레벨이 바뀌면 12개 연습을 새로 집계합니다. 가장 낮은 레벨은 A1, 가장 높은 레벨은 C2입니다.';
+      '레벨이 바뀌면 12개 연습을 새로 집계합니다. 가장 낮은 레벨은 A0, 가장 높은 레벨은 C2입니다.';
 
   @override
   String get quickSkipTitle => '이 연습을 건너뛸까요?';
@@ -2199,4 +2202,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String quickReviewMode(String level) {
     return '복습 · 현재 레벨: $level';
   }
+
+  @override
+  String get quickA0Label => '처음부터 시작';
+
+  @override
+  String get quickA0Description =>
+      'A0는 Pre-A1을 참고한 Bantera의 A1 이전 입문 단계이며, 공식 CEFR 등급은 아닙니다. 단어와 짧은 일상 표현부터 시작합니다.';
+
+  @override
+  String get quickA0Hint =>
+      '예시를 듣고 뜻을 확인한 뒤 답해 보세요. A0에서는 학습 도움을 받을 수 있으며, 처음 명확하게 인식된 답변이 평가에 반영됩니다.';
 }

@@ -55,7 +55,11 @@ class _ChatsScreenState extends State<ChatsScreen> {
       listenable: _changes,
       builder: (context, _) => Scaffold(
         appBar: AppBar(
-          title: Text(l10n.chatsTitle),
+          centerTitle: true,
+          title: const FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text('Bantera App'),
+          ),
           actions: [
             PopupMenuButton<_ChatsMenuAction>(
               icon: const Icon(Icons.more_vert),

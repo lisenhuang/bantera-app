@@ -290,6 +290,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
+  String get navGoal => 'Meta';
+
+  @override
   String get chatsTitle => 'Chats';
 
   @override
@@ -2239,7 +2242,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Elige un idioma de aprendizaje en tu perfil.';
+      'Elige un idioma de aprendizaje en Configuración.';
 
   @override
   String get quickCallActive => 'Termina la llamada antes de practicar.';
@@ -2270,7 +2273,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Cada idioma empieza en A1. Tu nivel se ajusta automáticamente mientras practicas.';
+      'Cada idioma empieza en A0. Tu nivel se ajusta automáticamente mientras practicas.';
 
   @override
   String get quickLevelsWindow =>
@@ -2287,11 +2290,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Solo cuenta tu primera respuesta reconocida con claridad en cada ejercicio. Las grabaciones poco claras y los ejercicios omitidos no cuentan.\n\nLos ejercicios con traducción no cuentan para cambiar de nivel. Los resultados sin traducción cuentan al pasar al siguiente ejercicio.';
+      'Solo cuenta tu primera respuesta reconocida con claridad en cada ejercicio. Las grabaciones poco claras y los ejercicios omitidos no cuentan.\n\nA1–C2: Los ejercicios con traducción no cuentan para cambiar de nivel. Los resultados sin traducción cuentan al pasar al siguiente ejercicio.';
 
   @override
   String get quickLevelsReset =>
-      'Al cambiar de nivel, empieza una nueva serie de 12 ejercicios. A1 es el nivel más bajo y C2 el más alto.';
+      'Al cambiar de nivel, empieza una nueva serie de 12 ejercicios. A0 es el nivel más bajo y C2 el más alto.';
 
   @override
   String get quickSkipTitle => '¿Saltar esta práctica?';
@@ -2354,4 +2357,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Repaso · Nivel actual: $level';
   }
+
+  @override
+  String get quickA0Label => 'Desde cero';
+
+  @override
+  String get quickA0Description =>
+      'A0 es la etapa inicial de Bantera anterior a A1, inspirada en Pre-A1. No es un nivel oficial del MCER. Empieza con palabras sueltas y expresiones cotidianas breves.';
+
+  @override
+  String get quickA0Hint =>
+      'Escucha los ejemplos y consulta su significado antes de responder. A0 incluye apoyo para aprender; cuenta tu primera respuesta reconocida con claridad.';
 }

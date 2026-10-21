@@ -246,11 +246,13 @@ void main() {
       file: (id) async => File('${dir.path}/$id.json'),
       apiClient: client,
     );
-    await notifier.sync();
+    await notifier.ensureLoaded();
+    expect(requests, 0); // Routing to Goal must not wait for the network.
     expect(notifier.dailyGoal?.listened, 0);
     expect(notifier.dailyGoal?.spoken, 300);
     expect(notifier.summary.today.listened, 15);
     session = sessionFor('user-b');
+    await notifier.ensureLoaded();
     expect(notifier.dailyGoal, isNull);
     expect(
       await notifier.setDailyGoal(

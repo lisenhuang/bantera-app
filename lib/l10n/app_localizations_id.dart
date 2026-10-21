@@ -290,6 +290,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navGoal => 'Target';
+
+  @override
   String get chatsTitle => 'Chat';
 
   @override
@@ -2176,7 +2179,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get quickStart => 'Mulai berlatih';
 
   @override
-  String get quickChooseLanguage => 'Pilih bahasa yang dipelajari di profilmu.';
+  String get quickChooseLanguage =>
+      'Pilih bahasa yang dipelajari di Pengaturan.';
 
   @override
   String get quickCallActive => 'Akhiri panggilan sebelum berlatih.';
@@ -2206,7 +2210,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Setiap bahasa dimulai dari A1. Levelmu menyesuaikan secara otomatis saat berlatih.';
+      'Setiap bahasa dimulai dari A0. Levelmu menyesuaikan secara otomatis saat berlatih.';
 
   @override
   String get quickLevelsWindow =>
@@ -2223,11 +2227,11 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Hanya jawaban pertama yang dikenali dengan jelas pada setiap latihan yang dihitung. Rekaman yang tidak jelas dan latihan yang dilewati tidak dihitung.\n\nLatihan dengan terjemahan tidak dihitung untuk perubahan level. Hasil tanpa terjemahan dihitung saat beralih ke latihan berikutnya.';
+      'Hanya jawaban pertama yang dikenali dengan jelas pada setiap latihan yang dihitung. Rekaman yang tidak jelas dan latihan yang dilewati tidak dihitung.\n\nA1–C2: Latihan dengan terjemahan tidak dihitung untuk perubahan level. Hasil tanpa terjemahan dihitung saat beralih ke latihan berikutnya.';
 
   @override
   String get quickLevelsReset =>
-      'Setelah level berubah, hitungan 12 latihan dimulai lagi. A1 adalah level terendah dan C2 yang tertinggi.';
+      'Setelah level berubah, hitungan 12 latihan dimulai lagi. A0 adalah level terendah dan C2 yang tertinggi.';
 
   @override
   String get quickSkipTitle => 'Lewati latihan ini?';
@@ -2290,4 +2294,15 @@ class AppLocalizationsId extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Ulasan · Tingkat saat ini: $level';
   }
+
+  @override
+  String get quickA0Label => 'Mulai dari nol';
+
+  @override
+  String get quickA0Description =>
+      'A0 adalah tahap awal Bantera sebelum A1, terinspirasi oleh Pre-A1. Ini bukan tingkat resmi CEFR. Mulailah dengan kata tunggal dan ungkapan sehari-hari yang pendek.';
+
+  @override
+  String get quickA0Hint =>
+      'Dengarkan contoh dan pelajari artinya, lalu coba menjawab. A0 menyediakan bantuan belajar; jawaban pertama yang dikenali dengan jelas akan dihitung.';
 }

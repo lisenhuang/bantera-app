@@ -291,6 +291,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navGoal => 'Hedef';
+
+  @override
   String get chatsTitle => 'Sohbetler';
 
   @override
@@ -2172,7 +2175,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get quickStart => 'Başla';
 
   @override
-  String get quickChooseLanguage => 'Profilinden öğrenmek istediğin dili seç.';
+  String get quickChooseLanguage => 'Ayarlardan öğrenmek istediğin dili seç.';
 
   @override
   String get quickCallActive => 'Pratik yapmadan önce aramanı bitir.';
@@ -2202,7 +2205,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Her dil A1 seviyesinden başlar. Seviyen pratik yaptıkça otomatik olarak ayarlanır.';
+      'Her dil A0 seviyesinden başlar. Seviyen pratik yaptıkça otomatik olarak ayarlanır.';
 
   @override
   String get quickLevelsWindow =>
@@ -2219,11 +2222,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Her alıştırmada yalnızca net olarak tanınan ilk yanıtın sayılır. Anlaşılmayan kayıtlar ve atlanan alıştırmalar sayılmaz.\n\nÇeviri kullanılan alıştırmalar seviye değişikliklerinde sayılmaz. Çevirisiz sonuçlar bir sonraki alıştırmaya geçtiğinde sayılır.';
+      'Her alıştırmada yalnızca net olarak tanınan ilk yanıtın sayılır. Anlaşılmayan kayıtlar ve atlanan alıştırmalar sayılmaz.\n\nA1–C2: Çeviri kullanılan alıştırmalar seviye değişikliklerinde sayılmaz. Çevirisiz sonuçlar bir sonraki alıştırmaya geçtiğinde sayılır.';
 
   @override
   String get quickLevelsReset =>
-      'Seviye değiştiğinde 12 alıştırmalık yeni bir grup başlar. En düşük seviye A1, en yüksek seviye C2’dir.';
+      'Seviye değiştiğinde 12 alıştırmalık yeni bir grup başlar. En düşük seviye A0, en yüksek seviye C2’dir.';
 
   @override
   String get quickSkipTitle => 'Bu alıştırma atlansın mı?';
@@ -2286,4 +2289,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Tekrar · Mevcut düzey: $level';
   }
+
+  @override
+  String get quickA0Label => 'Sıfırdan başla';
+
+  @override
+  String get quickA0Description =>
+      'A0, Pre-A1’den esinlenen, Bantera’nın A1 öncesi başlangıç aşamasıdır. Resmî bir CEFR seviyesi değildir. Tek kelimeler ve kısa günlük ifadelerle başlayın.';
+
+  @override
+  String get quickA0Hint =>
+      'Örnekleri dinleyip anlamlarını öğrenin, ardından yanıt verin. A0 öğrenme desteği içerir; ilk net algılanan yanıtınız değerlendirilir.';
 }

@@ -6,8 +6,6 @@ import 'practice_header.dart';
 import 'practice_level_menu.dart';
 import 'practice_word_flight.dart';
 import 'practice_translation_controller.dart';
-import '../profile/daily_word_goal_section.dart';
-import '../../domain/activity/word_activity.dart';
 import '../chats/chat_audio_waveform.dart';
 import '../../infrastructure/quick_practice_audio_cache.dart';
 import '../../domain/practice/practice_playback_intent.dart';
@@ -37,17 +35,21 @@ import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class QuickPracticeScreen extends StatefulWidget {
-  const QuickPracticeScreen({super.key, required this.active})
-    : previewExercise = null,
-      previewFeedback = null;
+  const QuickPracticeScreen({
+    super.key,
+    required this.active,
+    required this.goalTabAnchor,
+  }) : previewExercise = null,
+       previewFeedback = null;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
     required this.previewExercise,
     this.previewFeedback,
     this.active = true,
-  });
+  }) : goalTabAnchor = null;
   final bool active;
+  final GlobalKey? goalTabAnchor;
   final Map<String, dynamic>? previewExercise;
   final Map<String, dynamic>? previewFeedback;
   @override
@@ -65,7 +67,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   String? _audioOwner, _audioLocale;
   String _playbackEvent = '';
   final _microphoneAnchor = GlobalKey();
-  final _goalAnchor = GlobalKey();
   final _wordFlight = PracticeWordFlight();
   final _translations = PracticeTranslationController();
   String _translationTarget = '';
@@ -75,7 +76,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   QuickPracticeAudioCache? _audioCache;
   String? _loadingAudio;
   int _audioGeneration = 0;
-  bool _confirmingNext = false, _goalSettingsOpen = false;
+  bool _confirmingNext = false;
   bool _translationRevealed = false;
   String? _currentLevel, _practiceLevel;
   @override
@@ -88,7 +89,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _playing != null ||
           _loadingAudio != null ||
           _confirmingNext ||
-          _goalSettingsOpen ||
           _translations.loading;
     }
   }
@@ -127,7 +127,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool get _canUseAudio =>
       mounted &&
       widget.active &&
-      !_goalSettingsOpen &&
       !_callActive &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
@@ -144,7 +143,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _exercise?['currentLevel'] as String? ??
           _exercise?['level'] as String?;
       _practiceLevel = _exercise?['level'] as String?;
-      _translationRevealed = _exercise?['translationUsed'] == true;
+      _translationRevealed =
+          (_exercise?['level'] == 'A0' ||
+          _exercise?['translationUsed'] == true);
       _feedback = widget.previewFeedback;
       final previewLocale = _exercise?['locale'] as String? ?? 'en-NZ';
       _locale = supportsAudioDialogueLanguage(previewLocale)
@@ -366,6 +367,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         'previousId': _previousId,
         'deferLevelScoring': true,
         'useSelectedLevel': true,
+        'supportsA0': true,
       });
       if (!mounted || epoch != _epoch) return;
       _currentLevel =
@@ -384,7 +386,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         }
         setState(() {
           _exercise = response;
-          _translationRevealed = response['translationUsed'] == true;
+          _translationRevealed =
+              (response['level'] == 'A0' ||
+              response['translationUsed'] == true);
           _feedback = null;
           _loading = false;
           _waitingSince = null;
@@ -786,12 +790,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             : 'Uncertain words: ${uncertain.join(', ')}',
       });
       if (!mounted || epoch != _epoch) return;
-      // The same anchor holds the progress ring or the Set goal button.
-      if (spoken > 0 && _canUseAudio) {
+      // Credit flies to the persistent Goal tab, then its ring increments.
+      final goalTabAnchor = widget.goalTabAnchor;
+      if (spoken > 0 && _canUseAudio && goalTabAnchor != null) {
         await _wordFlight.show(
           context,
           _microphoneAnchor,
-          _goalAnchor,
+          goalTabAnchor,
           outcome: result['outcome'] as String?,
         );
       }
@@ -869,23 +874,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     );
   }
 
-  Future<void> _showGoalSettings() async {
-    if (_goalSettingsOpen || _recording || _busy || _confirmingNext) return;
-    setState(() => _goalSettingsOpen = true);
-    await _stopAudio();
-    if (!mounted) return;
-    try {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const DailyWordGoalScreen()),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _goalSettingsOpen = false);
-        _requestTranslations();
-      }
-    }
-  }
-
   Future<void> _selectLevel(String selected) async {
     if (_recording ||
         _busy ||
@@ -917,11 +905,16 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             'level': selected,
             'reviewMode': selected != _currentLevel,
           };
+          _translationRevealed = selected == 'A0';
           _feedback = null;
         });
         return;
       }
-      final state = await _api('level', {'locale': _locale, 'level': selected});
+      final state = await _api('level', {
+        'supportsA0': true,
+        'locale': _locale,
+        'level': selected,
+      });
       if (!mounted || epoch != _epoch) return;
       _currentLevel = state['currentLevel'] as String;
       _practiceLevel = state['practiceLevel'] as String;
@@ -1062,6 +1055,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final hasCorrectAnswer =
         exercise != null && _feedback?['outcome'] == 'correct';
     final showLevel = const [
+      'A0',
       'A1',
       'A2',
       'B1',
@@ -1070,34 +1064,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       'C2',
     ].contains(level);
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: widget.previewExercise != null
-            ? PracticeHeader(
-                goalAnchor: _goalAnchor,
-                onLongerDialogues: _recording || _busy || _confirmingNext
-                    ? null
-                    : _openLongerDialogues,
-                goal: null,
-                today: const WordTotals(),
-                onGoalPressed: _showGoalSettings,
-              )
-            : ListenableBuilder(
-                listenable: WordActivityNotifier.instance,
-                builder: (context, _) => PracticeHeader(
-                  goalAnchor: _goalAnchor,
-                  onLongerDialogues: _recording || _busy || _confirmingNext
-                      ? null
-                      : _openLongerDialogues,
-                  goal: WordActivityNotifier.instance.dailyGoal,
-                  today: WordActivityNotifier.instance
-                      .summaryFor(_locale)
-                      .today,
-                  onGoalPressed: _recording || _busy || _confirmingNext
-                      ? null
-                      : _showGoalSettings,
-                ),
-              ),
+      appBar: PracticeHeader(
+        onLongerDialogues: _recording || _busy || _confirmingNext
+            ? null
+            : _openLongerDialogues,
       ),
       bottomNavigationBar: hasCorrectAnswer
           ? DecoratedBox(
@@ -1324,11 +1294,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                           label: Text(l.quickShowTranslation),
                         ),
                       ),
-                    if (supportsBuiltInTranslation)
+                    if (supportsBuiltInTranslation || level == 'A0')
                       Padding(
                         padding: const EdgeInsets.only(bottom: 20),
                         child: Text(
-                          _translationRevealed
+                          level == 'A0'
+                              ? (exercise['reviewMode'] == true
+                                    ? l.quickReviewLevelBody(
+                                        _currentLevel ?? level,
+                                      )
+                                    : l.quickA0Hint)
+                              : _translationRevealed
                               ? l.quickTranslationExcluded
                               : l.quickTranslationHint,
                           key: const ValueKey('practice-translation-scoring'),

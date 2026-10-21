@@ -277,6 +277,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get navProfile => 'プロフィール';
 
   @override
+  String get navGoal => '目標';
+
+  @override
   String get chatsTitle => 'チャット';
 
   @override
@@ -2078,7 +2081,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickStart => '練習を始める';
 
   @override
-  String get quickChooseLanguage => 'プロフィールで学習言語を選んでください。';
+  String get quickChooseLanguage => '設定で学習言語を選んでください。';
 
   @override
   String get quickCallActive => '通話を終えてから練習してください。';
@@ -2105,7 +2108,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickLevelsLink => 'レベルの仕組み？';
 
   @override
-  String get quickLevelsIntro => '各言語は A1 から始まります。練習に応じてレベルが自動で調整されます。';
+  String get quickLevelsIntro => '各言語は A0 から始まります。練習に応じてレベルが自動で調整されます。';
 
   @override
   String get quickLevelsWindow => '現在のレベルで採点対象の練習を12問終えると、直近12問の結果を確認します。';
@@ -2121,10 +2124,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      '各練習で最初にはっきり認識された回答だけがカウントされます。不明瞭な録音やスキップした練習はカウントされません。\n\n翻訳を使用した練習はレベル判定に含まれません。翻訳を使用しなかった結果は、次の練習に進むと反映されます。';
+      '各練習で最初にはっきり認識された回答だけがカウントされます。不明瞭な録音やスキップした練習はカウントされません。\n\nA1–C2: 翻訳を使用した練習はレベル判定に含まれません。翻訳を使用しなかった結果は、次の練習に進むと反映されます。';
 
   @override
-  String get quickLevelsReset => 'レベルが変わると、新たに12問のカウントを始めます。最低は A1、最高は C2 です。';
+  String get quickLevelsReset => 'レベルが変わると、新たに12問のカウントを始めます。最低は A0、最高は C2 です。';
 
   @override
   String get quickSkipTitle => 'この練習をスキップしますか？';
@@ -2184,4 +2187,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String quickReviewMode(String level) {
     return '復習 · 現在のレベル：$level';
   }
+
+  @override
+  String get quickA0Label => 'ゼロからスタート';
+
+  @override
+  String get quickA0Description =>
+      'A0 は Pre-A1 を参考にした、A1 より前の Bantera 独自の入門段階です。CEFR の正式なレベルではありません。単語や短い日常表現から始めます。';
+
+  @override
+  String get quickA0Hint =>
+      '音声と意味を確認してから答えてみましょう。A0 では学習サポートを利用でき、最初にはっきり認識された回答が評価に反映されます。';
 }

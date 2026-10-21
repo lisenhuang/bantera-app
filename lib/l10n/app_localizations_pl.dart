@@ -289,6 +289,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navGoal => 'Cel';
+
+  @override
   String get chatsTitle => 'Czaty';
 
   @override
@@ -2251,7 +2254,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get quickStart => 'Zacznij ćwiczyć';
 
   @override
-  String get quickChooseLanguage => 'Wybierz język nauki w profilu.';
+  String get quickChooseLanguage => 'Wybierz język nauki w ustawieniach.';
 
   @override
   String get quickCallActive => 'Zakończ rozmowę przed ćwiczeniem.';
@@ -2281,7 +2284,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Każdy język zaczyna się od A1. Poziom dostosowuje się automatycznie w miarę ćwiczeń.';
+      'Każdy język zaczyna się od A0. Poziom dostosowuje się automatycznie w miarę ćwiczeń.';
 
   @override
   String get quickLevelsWindow =>
@@ -2298,11 +2301,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Liczy się tylko pierwsza wyraźnie rozpoznana odpowiedź w każdym ćwiczeniu. Niewyraźne nagrania i pominięte ćwiczenia nie są liczone.\n\nĆwiczenia z tłumaczeniem nie liczą się do zmian poziomu. Wyniki bez tłumaczenia liczą się po przejściu do następnego ćwiczenia.';
+      'Liczy się tylko pierwsza wyraźnie rozpoznana odpowiedź w każdym ćwiczeniu. Niewyraźne nagrania i pominięte ćwiczenia nie są liczone.\n\nA1–C2: Ćwiczenia z tłumaczeniem nie liczą się do zmian poziomu. Wyniki bez tłumaczenia liczą się po przejściu do następnego ćwiczenia.';
 
   @override
   String get quickLevelsReset =>
-      'Po zmianie poziomu zaczyna się nowa seria 12 ćwiczeń. A1 to najniższy poziom, a C2 najwyższy.';
+      'Po zmianie poziomu zaczyna się nowa seria 12 ćwiczeń. A0 to najniższy poziom, a C2 najwyższy.';
 
   @override
   String get quickSkipTitle => 'Pominąć to ćwiczenie?';
@@ -2365,4 +2368,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Powtórka · Obecny poziom: $level';
   }
+
+  @override
+  String get quickA0Label => 'Od zera';
+
+  @override
+  String get quickA0Description =>
+      'A0 to etap początkowy Bantera przed A1, inspirowany Pre-A1. Nie jest oficjalnym poziomem CEFR. Zacznij od pojedynczych słów i krótkich codziennych zwrotów.';
+
+  @override
+  String get quickA0Hint =>
+      'Posłuchaj przykładów i sprawdź ich znaczenie, a potem odpowiedz. A0 zapewnia pomoc w nauce; liczy się pierwsza wyraźnie rozpoznana odpowiedź.';
 }

@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:app/core/theme.dart';
-import 'package:app/domain/activity/daily_word_goal.dart';
-import 'package:app/domain/activity/word_activity.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/practice_header.dart';
 import 'package:flutter/material.dart';
@@ -22,48 +20,12 @@ void main() {
           .load();
     }
   });
-  const goal = DailyWordGoal(listened: 600, spoken: 400);
-  test(
-    'each goal contributes capped words; excess listening cannot mask speaking',
-    () {
-      expect(
-        practiceGoalProgress(goal, const WordTotals(listened: 100, spoken: 1)),
-        .101,
-      );
-      expect(practiceGoalProgress(goal, const WordTotals(listened: 10000)), .6);
-      expect(
-        practiceGoalProgress(
-          goal,
-          const WordTotals(listened: 10000, spoken: 400),
-        ),
-        1,
-      );
-      expect(practiceGoalProgress(null, const WordTotals()), isNull);
-      expect(
-        practiceGoalProgress(
-          const DailyWordGoal(listened: 0, spoken: 0),
-          const WordTotals(),
-        ),
-        isNull,
-      );
-      expect(
-        practiceGoalProgress(
-          const DailyWordGoal(listened: 0, spoken: 200),
-          const WordTotals(listened: 500, spoken: 100),
-        ),
-        .5,
-      );
-    },
-  );
   Future<void> mount(
     WidgetTester tester, {
-    DailyWordGoal? target = goal,
-    WordTotals today = const WordTotals(listened: 100, spoken: 1),
     bool dark = false,
     double width = 393,
     double scale = 1,
     Locale locale = const Locale('en'),
-    VoidCallback? onTap,
     VoidCallback? onDialogues,
     TargetPlatform platform = TargetPlatform.iOS,
   }) async {
@@ -84,89 +46,46 @@ void main() {
           child: child!,
         ),
         home: Scaffold(
-          appBar: PracticeHeader(
-            onLongerDialogues: onDialogues ?? () {},
-            goal: target,
-            today: today,
-            onGoalPressed: onTap ?? () {},
-          ),
+          appBar: PracticeHeader(onLongerDialogues: onDialogues ?? () {}),
         ),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('title stays centred with goal left and menu right', (
-    tester,
-  ) async {
-    var taps = 0;
-    await mount(tester, onTap: () => taps++);
-    expect(find.text('10.1%'), findsOneWidget);
-    final title = tester.getCenter(
-      find.byKey(const ValueKey('practice-title')),
-    );
-    expect(title.dx, closeTo(393 / 2, .1));
-    expect(
-      tester.getSize(find.byKey(const ValueKey('practice-header-bar'))).height,
-      kToolbarHeight,
-    );
-    expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
-    expect(
-      tester.getCenter(find.byKey(const ValueKey('practice-goal-ring'))).dx,
-      lessThan(title.dx),
-    );
-    expect(find.byKey(const ValueKey('practice-level')), findsNothing);
-    expect(
-      tester.getCenter(find.byKey(const ValueKey('practice-more-menu'))).dx,
-      greaterThan(title.dx),
-    );
-    await tester.tap(find.byKey(const ValueKey('practice-goal-ring')));
-    expect(taps, 1);
-  });
   testWidgets(
-    'missing goal shows actionable setup instead of a misleading zero',
+    'title stays centred without a goal control and menu stays right',
     (tester) async {
-      var taps = 0;
-      await mount(tester, target: null, onTap: () => taps++);
-      expect(find.text('Set goal'), findsOneWidget);
-      expect(find.byKey(const ValueKey('practice-goal-ring')), findsNothing);
-      await tester.tap(find.text('Set goal'));
-      expect(taps, 1);
-    },
-  );
-  testWidgets(
-    'word changes update percentage and unfinished goals never round to 100',
-    (tester) async {
-      await mount(tester, today: const WordTotals());
-      expect(find.text('0.0%'), findsOneWidget);
-      await mount(
-        tester,
-        target: const DailyWordGoal(listened: 100000, spoken: 100000),
-        today: const WordTotals(listened: 100000, spoken: 99999),
+      await mount(tester);
+      final title = tester.getCenter(
+        find.byKey(const ValueKey('practice-title')),
       );
-      expect(find.text('99.9%'), findsOneWidget);
-      await mount(tester, today: const WordTotals(listened: 600, spoken: 400));
-      expect(find.text('100.0%'), findsOneWidget);
-    },
-  );
-  testWidgets('localised setup and ring fit a small screen with large text', (
-    tester,
-  ) async {
-    for (final target in [null, goal]) {
-      await mount(
-        tester,
-        target: target,
-        width: 320,
-        scale: 1.7,
-        dark: true,
-        locale: const Locale('de'),
-      );
-      expect(tester.takeException(), isNull);
+      expect(title.dx, closeTo(393 / 2, .1));
+      expect(find.text('Bantera App'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byKey(const ValueKey('practice-set-goal')), findsNothing);
+      expect(find.byKey(const ValueKey('practice-goal-percent')), findsNothing);
       expect(
-        tester.getCenter(find.byKey(const ValueKey('practice-title'))).dx,
-        closeTo(160, .1),
+        tester.getCenter(find.byKey(const ValueKey('practice-more-menu'))).dx,
+        greaterThan(title.dx),
       );
-    }
+    },
+  );
+  testWidgets('localised header fits a small screen with large text', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      width: 320,
+      scale: 1.7,
+      dark: true,
+      locale: const Locale('de'),
+    );
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey('practice-title'))).dx,
+      closeTo(160, .1),
+    );
   });
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
     for (final dark in [false, true]) {
@@ -213,7 +132,7 @@ void main() {
     }
   }
 
-  testWidgets('daily goal ring light and dark design captures', (tester) async {
+  testWidgets('Practice header light and dark design captures', (tester) async {
     for (final dark in [false, true]) {
       await mount(tester, dark: dark);
       await expectLater(

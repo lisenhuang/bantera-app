@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ]),
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
-        final language = learningLanguageLabel(profile.learningLanguage);
+        final language = goalLearningLanguageLabel(profile.learningLanguage);
         final l10n = AppLocalizations.of(context)!;
         final activity = WordActivityNotifier.instance.summaryFor(
           profile.learningLanguage,
@@ -54,7 +54,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.navProfile),
+            centerTitle: true,
+            title: const FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text('Bantera App'),
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
@@ -109,25 +113,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       context,
                                     ).textTheme.titleLarge,
                                   ),
-                                  if (language.name.isNotEmpty) ...[
+                                  if (language.isNotEmpty) ...[
                                     const SizedBox(height: 4),
-                                    Text.rich(
-                                      TextSpan(
-                                        text: l10n.wordActivityLearningLanguage(
-                                          language.name,
-                                        ),
-                                        children: [
-                                          const TextSpan(text: ' '),
-                                          TextSpan(
-                                            text: language.flag,
-                                            style: const TextStyle(
-                                              fontFamilyFallback: [
-                                                'Apple Color Emoji',
-                                                'Noto Color Emoji',
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                    Text(
+                                      l10n.wordActivityLearningLanguage(
+                                        language,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

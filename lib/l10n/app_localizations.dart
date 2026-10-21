@@ -655,6 +655,12 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get navProfile;
 
+  /// No description provided for @navGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get navGoal;
+
   /// No description provided for @chatsTitle.
   ///
   /// In en, this message translates to:
@@ -3977,7 +3983,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickChooseLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Choose a learning language in your profile.'**
+  /// **'Choose a learning language in Settings.'**
   String get quickChooseLanguage;
 
   /// No description provided for @quickCallActive.
@@ -4031,7 +4037,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickLevelsIntro.
   ///
   /// In en, this message translates to:
-  /// **'Each language starts at A1. Your level adjusts automatically as you practise.'**
+  /// **'Each language starts at A0. Your level adjusts automatically as you practise.'**
   String get quickLevelsIntro;
 
   /// No description provided for @quickLevelsWindow.
@@ -4061,13 +4067,13 @@ abstract class AppLocalizations {
   /// No description provided for @quickLevelsScoring.
   ///
   /// In en, this message translates to:
-  /// **'Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nExercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.'**
+  /// **'Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nA1–C2: Exercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.'**
   String get quickLevelsScoring;
 
   /// No description provided for @quickLevelsReset.
   ///
   /// In en, this message translates to:
-  /// **'After a level change, a new set of 12 begins. A1 is the lowest level and C2 the highest.'**
+  /// **'After a level change, a new set of 12 begins. A0 is the lowest level and C2 the highest.'**
   String get quickLevelsReset;
 
   /// No description provided for @quickSkipTitle.
@@ -4165,6 +4171,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review · Current level: {level}'**
   String quickReviewMode(String level);
+
+  /// No description provided for @quickA0Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting from zero'**
+  String get quickA0Label;
+
+  /// No description provided for @quickA0Description.
+  ///
+  /// In en, this message translates to:
+  /// **'A0 is Bantera’s beginner stage before A1, inspired by Pre-A1. It is not an official CEFR level. Start with single words and short everyday expressions.'**
+  String get quickA0Description;
+
+  /// No description provided for @quickA0Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts.'**
+  String get quickA0Hint;
 }
 
 class _AppLocalizationsDelegate

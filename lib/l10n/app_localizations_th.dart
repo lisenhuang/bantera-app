@@ -289,6 +289,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get navProfile => 'โปรไฟล์';
 
   @override
+  String get navGoal => 'เป้าหมาย';
+
+  @override
   String get chatsTitle => 'แชท';
 
   @override
@@ -2153,7 +2156,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get quickStart => 'เริ่มฝึก';
 
   @override
-  String get quickChooseLanguage => 'เลือกภาษาที่เรียนในโปรไฟล์';
+  String get quickChooseLanguage => 'เลือกภาษาที่เรียนในการตั้งค่า';
 
   @override
   String get quickCallActive => 'วางสายก่อนเริ่มฝึก';
@@ -2183,7 +2186,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'แต่ละภาษาเริ่มที่ A1 ระดับจะปรับโดยอัตโนมัติเมื่อคุณฝึกฝน';
+      'แต่ละภาษาเริ่มที่ A0 ระดับจะปรับโดยอัตโนมัติเมื่อคุณฝึกฝน';
 
   @override
   String get quickLevelsWindow =>
@@ -2200,11 +2203,11 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'แต่ละข้อจะนับเฉพาะคำตอบแรกที่ระบบรู้จำได้ชัดเจน เสียงที่ไม่ชัดเจนและข้อที่ข้ามจะไม่นับ\n\nแบบฝึกหัดที่ใช้คำแปลจะไม่นับในการปรับระดับ ผลที่ไม่ใช้คำแปลจะนับเมื่อไปยังแบบฝึกหัดถัดไป';
+      'แต่ละข้อจะนับเฉพาะคำตอบแรกที่ระบบรู้จำได้ชัดเจน เสียงที่ไม่ชัดเจนและข้อที่ข้ามจะไม่นับ\n\nA1–C2: แบบฝึกหัดที่ใช้คำแปลจะไม่นับในการปรับระดับ ผลที่ไม่ใช้คำแปลจะนับเมื่อไปยังแบบฝึกหัดถัดไป';
 
   @override
   String get quickLevelsReset =>
-      'เมื่อระดับเปลี่ยน จะเริ่มนับแบบฝึกหัด 12 ข้อใหม่ A1 คือระดับต่ำสุด และ C2 คือระดับสูงสุด';
+      'เมื่อระดับเปลี่ยน จะเริ่มนับแบบฝึกหัด 12 ข้อใหม่ A0 คือระดับต่ำสุด และ C2 คือระดับสูงสุด';
 
   @override
   String get quickSkipTitle => 'ข้ามแบบฝึกหัดนี้ไหม';
@@ -2267,4 +2270,15 @@ class AppLocalizationsTh extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'ทบทวน · ระดับปัจจุบัน: $level';
   }
+
+  @override
+  String get quickA0Label => 'เริ่มจากศูนย์';
+
+  @override
+  String get quickA0Description =>
+      'A0 คือขั้นเริ่มต้นของ Bantera ก่อน A1 โดยอิงจาก Pre-A1 ไม่ใช่ระดับ CEFR อย่างเป็นทางการ เริ่มจากคำเดี่ยวและสำนวนสั้น ๆ ในชีวิตประจำวัน';
+
+  @override
+  String get quickA0Hint =>
+      'ฟังตัวอย่างและดูความหมายก่อนลองตอบ A0 มีตัวช่วยในการเรียน โดยจะนับคำตอบแรกที่ระบบได้ยินชัดเจน';
 }

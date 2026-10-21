@@ -95,6 +95,7 @@
   "navDiscover": "Dialogues",
   "navCreate": "Create",
   "navProfile": "Profile",
+  "navGoal": "Goal",
   "chatsTitle": "Chats",
   "chatNoChatsYet": "No chats yet.",
   "chatHideSameNativeSpeakers": "Hide people with my native language",
@@ -911,7 +912,7 @@
   "quickAgain": "Say it again",
   "quickUnavailable": "Practice is taking a little longer. Please try again.",
   "quickStart": "Start practising",
-  "quickChooseLanguage": "Choose a learning language in your profile.",
+  "quickChooseLanguage": "Choose a learning language in Settings.",
   "quickCallActive": "Finish your call before practising.",
   "goalCelebrationMessage": "You made time for your language today. Every word counts.",
   "goalCelebrationContinue": "Keep practising",
@@ -920,13 +921,13 @@
   "quickDifferenceHint": "Highlights show differences or uncertain words, not proven pronunciation errors.",
   "quickRecognitionNote": "Speech recognition can make mistakes.",
   "quickLevelsLink": "How levels work?",
-  "quickLevelsIntro": "Each language starts at A1. Your level adjusts automatically as you practise.",
+  "quickLevelsIntro": "Each language starts at A0. Your level adjusts automatically as you practise.",
   "quickLevelsWindow": "After 12 scored exercises at your current level, we review your latest 12 results.",
   "quickLevelsUp": "10–12 correct: move up one level.",
   "quickLevelsStay": "5–9 correct: stay at this level.",
   "quickLevelsDown": "0–4 correct: move down one level.",
-  "quickLevelsScoring": "Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nExercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.",
-  "quickLevelsReset": "After a level change, a new set of 12 begins. A1 is the lowest level and C2 the highest.",
+  "quickLevelsScoring": "Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nA1–C2: Exercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.",
+  "quickLevelsReset": "After a level change, a new set of 12 begins. A0 is the lowest level and C2 the highest.",
   "quickSkipTitle": "Skip this practice?",
   "quickSkipMessage": "You haven’t completed this exercise correctly yet. Move to the next one?",
   "quickSkipAction": "Skip practice",
@@ -980,5 +981,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "quickA0Label": "Starting from zero",
+  "quickA0Description": "A0 is Bantera’s beginner stage before A1, inspired by Pre-A1. It is not an official CEFR level. Start with single words and short everyday expressions.",
+  "quickA0Hint": "Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts."
 }

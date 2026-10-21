@@ -3,12 +3,51 @@ import 'package:app/domain/activity/word_activity.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/practice_header.dart';
 import 'package:app/presentation/quick_practice/practice_word_flight.dart';
+import 'package:app/presentation/shared/goal_tab_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('rocket accelerates from the Goal ring and exits above the screen', () {
+    const goal = Offset(330, 800);
+    Offset position(double rocketFraction) => WordFlightPainter(
+      const Offset(195, 600),
+      goal,
+      (1600 + 1400 * rocketFraction) / 3000,
+      Colors.purple,
+    ).rocketPosition;
+    expect(position(0), goal);
+    final firstQuarter = position(0).dy - position(.25).dy;
+    final lastQuarter = position(.75).dy - position(1).dy;
+    expect(lastQuarter, greaterThan(firstQuarter * 5));
+    expect(position(1).dx, goal.dx);
+    expect(position(1).dy, -120);
+  });
+
+  Widget goalTabBar(
+    GlobalKey target, {
+    DailyWordGoal? goal,
+    WordTotals today = const WordTotals(),
+  }) => BottomNavigationBar(
+    currentIndex: 0,
+    items: [
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.graphic_eq),
+        label: 'Practice',
+      ),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.chat_bubble_outline),
+        label: 'Chats',
+      ),
+      BottomNavigationBarItem(
+        icon: GoalTabIcon(key: target, goal: goal, today: today),
+        label: 'Goal',
+      ),
+    ],
+  );
+
   testWidgets(
-    'correct answer flies to Set goal and launches rocket without a goal',
+    'correct answer flies to bottom Goal tab and launches rocket without a goal',
     (tester) async {
       final flight = PracticeWordFlight();
       final source = GlobalKey(), target = GlobalKey();
@@ -18,12 +57,8 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) => Scaffold(
-              appBar: PracticeHeader(
-                goal: null,
-                today: const WordTotals(),
-                onGoalPressed: () {},
-                goalAnchor: target,
-              ),
+              appBar: const PracticeHeader(),
+              bottomNavigationBar: goalTabBar(target),
               body: Center(
                 child: TextButton(
                   key: source,
@@ -38,7 +73,7 @@ void main() {
       );
       await tester.tap(find.text('Correct'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 2050));
+      await tester.pump(const Duration(milliseconds: 2300));
       final painter =
           tester
                   .widget<CustomPaint>(
@@ -46,15 +81,15 @@ void main() {
                   )
                   .painter!
               as WordFlightPainter;
-      expect(
-        painter.end,
-        tester.getCenter(find.byKey(const ValueKey('practice-set-goal'))),
-      );
+      expect(painter.end, tester.getCenter(find.byKey(target)));
+      expect(painter.end.dx, greaterThan(painter.start.dx));
+      expect(painter.end.dy, greaterThan(painter.start.dy));
+      expect(find.byKey(const ValueKey('practice-set-goal')), findsNothing);
       expect(painter.particleProgress, 1);
       expect(painter.rocketProgress, closeTo(.5, .01));
       expect(find.byKey(const ValueKey('practice-goal-percent')), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('practice-set-goal')), findsOneWidget);
+      expect(find.byKey(target), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -100,7 +135,7 @@ void main() {
   }
   for (final reduced in [false, true]) {
     testWidgets(
-      'word particles arrive before goal increments, reduced=$reduced',
+      'particles reach bottom Goal tab before it increments, reduced=$reduced',
       (tester) async {
         final flight = PracticeWordFlight();
         final source = GlobalKey(), target = GlobalKey();
@@ -121,11 +156,11 @@ void main() {
               builder: (context) => ValueListenableBuilder<int>(
                 valueListenable: spoken,
                 builder: (_, words, _) => Scaffold(
-                  appBar: PracticeHeader(
+                  appBar: const PracticeHeader(),
+                  bottomNavigationBar: goalTabBar(
+                    target,
                     goal: const DailyWordGoal(listened: 0, spoken: 100),
                     today: WordTotals(spoken: words),
-                    onGoalPressed: () {},
-                    goalAnchor: target,
                   ),
                   body: Align(
                     alignment: const Alignment(0, .7),
@@ -161,7 +196,7 @@ void main() {
           expect(find.text('10.0%'), findsOneWidget);
         } else {
           expect(particles, findsOneWidget);
-          expect(find.text('0.0%'), findsOneWidget);
+          expect(find.text('0%'), findsOneWidget);
           await tester.pump(const Duration(milliseconds: 800));
           final paint =
               tester.widget<CustomPaint>(particles).painter!
@@ -170,23 +205,33 @@ void main() {
           expect(paint.rocketProgress, 0);
           expect(paint.start, tester.getCenter(find.byKey(source)));
           expect(paint.end, tester.getCenter(find.byKey(target)));
+          expect(paint.end.dx, greaterThan(paint.start.dx));
+          expect(paint.end.dy, greaterThan(paint.start.dy));
+          expect(
+            find.byKey(const ValueKey('practice-goal-ring')),
+            findsNothing,
+          );
           expect(spoken.value, 0);
-          await tester.pump(const Duration(milliseconds: 1250));
+          await tester.pump(const Duration(milliseconds: 1500));
           final launch =
               tester.widget<CustomPaint>(particles).painter!
                   as WordFlightPainter;
           expect(launch.particleProgress, 1);
           expect(launch.rocketProgress, closeTo(.5, .01));
+          expect(launch.end, tester.getCenter(find.byKey(target)));
           expect(spoken.value, 0);
-          expect(find.text('0.0%'), findsOneWidget);
-          await tester.pump(const Duration(milliseconds: 475));
+          expect(find.text('0%'), findsOneWidget);
+          await tester.pump(const Duration(milliseconds: 725));
           await tester.pump();
           await tester.pump();
           expect(particles, findsNothing);
           expect(spoken.value, 10);
           await tester.pump(const Duration(milliseconds: 300));
           final ring = tester.widget<CircularProgressIndicator>(
-            find.byType(CircularProgressIndicator),
+            find.descendant(
+              of: find.byKey(target),
+              matching: find.byType(CircularProgressIndicator),
+            ),
           );
           expect(ring.value, greaterThan(0));
           expect(ring.value, lessThan(.1));

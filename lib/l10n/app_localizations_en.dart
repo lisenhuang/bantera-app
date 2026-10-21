@@ -290,6 +290,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProfile => 'Profile';
 
   @override
+  String get navGoal => 'Goal';
+
+  @override
   String get chatsTitle => 'Chats';
 
   @override
@@ -2235,8 +2238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickStart => 'Start practising';
 
   @override
-  String get quickChooseLanguage =>
-      'Choose a learning language in your profile.';
+  String get quickChooseLanguage => 'Choose a learning language in Settings.';
 
   @override
   String get quickCallActive => 'Finish your call before practising.';
@@ -2266,7 +2268,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Each language starts at A1. Your level adjusts automatically as you practise.';
+      'Each language starts at A0. Your level adjusts automatically as you practise.';
 
   @override
   String get quickLevelsWindow =>
@@ -2283,11 +2285,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nExercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.';
+      'Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nA1–C2: Exercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.';
 
   @override
   String get quickLevelsReset =>
-      'After a level change, a new set of 12 begins. A1 is the lowest level and C2 the highest.';
+      'After a level change, a new set of 12 begins. A0 is the lowest level and C2 the highest.';
 
   @override
   String get quickSkipTitle => 'Skip this practice?';
@@ -2350,4 +2352,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Review · Current level: $level';
   }
+
+  @override
+  String get quickA0Label => 'Starting from zero';
+
+  @override
+  String get quickA0Description =>
+      'A0 is Bantera’s beginner stage before A1, inspired by Pre-A1. It is not an official CEFR level. Start with single words and short everyday expressions.';
+
+  @override
+  String get quickA0Hint =>
+      'Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts.';
 }

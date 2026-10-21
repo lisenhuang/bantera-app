@@ -277,6 +277,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navProfile => '我的';
 
   @override
+  String get navGoal => '目标';
+
+  @override
   String get chatsTitle => '聊天';
 
   @override
@@ -2081,7 +2084,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickStart => '开始练习';
 
   @override
-  String get quickChooseLanguage => '请在个人资料中选择学习语言。';
+  String get quickChooseLanguage => '请在设置中选择学习语言。';
 
   @override
   String get quickCallActive => '请先结束通话，再开始练习。';
@@ -2108,7 +2111,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickLevelsLink => '等级如何调整？';
 
   @override
-  String get quickLevelsIntro => '每种语言都从 A1 开始。练习等级会根据你的表现自动调整。';
+  String get quickLevelsIntro => '每种语言都从 A0 开始。练习等级会根据你的表现自动调整。';
 
   @override
   String get quickLevelsWindow => '在当前等级完成 12 次计分练习后，我们会评估最近 12 次的结果。';
@@ -2124,10 +2127,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      '每道练习只计算第一次清晰识别的回答。识别不清的录音和跳过的练习不计入。\n\n查看过翻译的练习不计入等级调整。未使用翻译的答题结果会在进入下一题时计入。';
+      '每道练习只计算第一次清晰识别的回答。识别不清的录音和跳过的练习不计入。\n\nA1–C2: 查看过翻译的练习不计入等级调整。未使用翻译的答题结果会在进入下一题时计入。';
 
   @override
-  String get quickLevelsReset => '等级变化后，重新累计 12 次练习。最低为 A1，最高为 C2。';
+  String get quickLevelsReset => '等级变化后，重新累计 12 次练习。最低为 A0，最高为 C2。';
 
   @override
   String get quickSkipTitle => '跳过这次练习？';
@@ -2186,6 +2189,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String quickReviewMode(String level) {
     return '复习 · 当前等级：$level';
   }
+
+  @override
+  String get quickA0Label => '从零开始';
+
+  @override
+  String get quickA0Description =>
+      'A0 是 Bantera 在 A1 之前的入门阶段，参考 Pre-A1，并非 CEFR 官方等级。从单词和简短日常用语开始。';
+
+  @override
+  String get quickA0Hint => '先听示范、理解意思，再尝试回答。A0 提供学习辅助，第一次清晰的回答计入等级评估。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2459,6 +2472,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get navProfile => '我的';
+
+  @override
+  String get navGoal => '目標';
 
   @override
   String get chatsTitle => '聊天';
@@ -4269,7 +4285,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickStart => '開始練習';
 
   @override
-  String get quickChooseLanguage => '請在個人資料中選擇學習語言。';
+  String get quickChooseLanguage => '請在設定中選擇學習語言。';
 
   @override
   String get quickCallActive => '請先結束通話，再開始練習。';
@@ -4296,7 +4312,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickLevelsLink => '等級如何調整？';
 
   @override
-  String get quickLevelsIntro => '每種語言都從 A1 開始。練習等級會根據你的表現自動調整。';
+  String get quickLevelsIntro => '每種語言都從 A0 開始。練習等級會根據你的表現自動調整。';
 
   @override
   String get quickLevelsWindow => '在目前等級完成 12 次計分練習後，我們會評估最近 12 次的結果。';
@@ -4312,10 +4328,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickLevelsScoring =>
-      '每道練習只計算第一次清楚辨識的回答。辨識不清的錄音和跳過的練習不計入。\n\n查看過翻譯的練習不計入等級調整。未使用翻譯的答題結果會在進入下一題時計入。';
+      '每道練習只計算第一次清楚辨識的回答。辨識不清的錄音和跳過的練習不計入。\n\nA1–C2: 查看過翻譯的練習不計入等級調整。未使用翻譯的答題結果會在進入下一題時計入。';
 
   @override
-  String get quickLevelsReset => '等級變化後，重新累計 12 次練習。最低為 A1，最高為 C2。';
+  String get quickLevelsReset => '等級變化後，重新累計 12 次練習。最低為 A0，最高為 C2。';
 
   @override
   String get quickSkipTitle => '略過這次練習？';
@@ -4374,4 +4390,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String quickReviewMode(String level) {
     return '複習 · 目前等級：$level';
   }
+
+  @override
+  String get quickA0Label => '從零開始';
+
+  @override
+  String get quickA0Description =>
+      'A0 是 Bantera 在 A1 之前的入門階段，參考 Pre-A1，並非 CEFR 官方等級。從單字和簡短日常用語開始。';
+
+  @override
+  String get quickA0Hint => '先聽示範、理解意思，再嘗試回答。A0 提供學習輔助，第一次清晰的回答計入等級評估。';
 }

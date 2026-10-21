@@ -21,7 +21,9 @@ import '../infrastructure/local_chat_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
 import 'profile/profile_screen.dart';
+import 'profile/daily_word_goal_section.dart';
 import 'quick_practice/quick_practice_screen.dart';
+import 'shared/goal_tab_icon.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -31,9 +33,12 @@ class MainScaffold extends StatefulWidget {
 }
 
 class _MainScaffoldState extends State<MainScaffold> with RouteAware {
+  final _goalTabAnchor = GlobalKey();
   ModalRoute<dynamic>? _reviewRoute;
   Timer? _reviewTimer;
   int _currentIndex = 0;
+  int _tabSelection = 0;
+  bool _goalSetupOpen = false;
   bool _covered = false;
   bool _checkingUpdate = false;
   bool _hasUnreadChats = false;
@@ -85,6 +90,36 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     if (!mounted || !request.value) return;
     request.value = false;
     setState(() => _currentIndex = 2);
+  }
+
+  void _selectTab(int index) {
+    final selection = ++_tabSelection;
+    setState(() => _currentIndex = index);
+    _schedulePracticeReview();
+    if (index == 2) unawaited(_openGoalSetupIfNeeded(selection));
+  }
+
+  Future<void> _openGoalSetupIfNeeded(int selection) async {
+    final activity = WordActivityNotifier.instance;
+    final owner = activity.accountId;
+    await activity.ensureLoaded();
+    if (!mounted ||
+        selection != _tabSelection ||
+        _currentIndex != 2 ||
+        _covered ||
+        _goalSetupOpen ||
+        owner != activity.accountId ||
+        activity.dailyGoal != null) {
+      return;
+    }
+    _goalSetupOpen = true;
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(builder: (_) => const DailyWordGoalScreen()),
+      );
+    } finally {
+      _goalSetupOpen = false;
+    }
   }
 
   void _updateUnread() {
@@ -139,32 +174,40 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     _reviewTimer = null;
     if (!mounted) return;
     final activity = WordActivityNotifier.instance;
+    await activity.ensureLoaded();
+    if (!mounted) return;
     final owner = activity.accountId;
     final language = UserProfileNotifier.instance.learningLanguage;
+    final goal = activity.dailyGoal;
     final today = activity.summaryFor(language).today;
-    if (!DailyGoalCelebration.reached(activity.dailyGoal, today)) return;
-    if (!_canRequestReview) {
+    final complete = DailyGoalCelebration.reached(goal, today);
+    if (complete && !_canRequestReview) {
       _reviewTimer = Timer(const Duration(seconds: 2), _celebrateGoal);
-      return;
     }
-    bool safe() =>
-        _canRequestReview &&
+    bool current() =>
+        mounted &&
         activity.accountId == owner &&
-        UserProfileNotifier.instance.learningLanguage == language;
-    final shown = await DailyGoalCelebration.instance.presentIfEligible(
+        UserProfileNotifier.instance.learningLanguage == language &&
+        activity.dailyGoal?.listened == goal?.listened &&
+        activity.dailyGoal?.spoken == goal?.spoken &&
+        DailyGoalCelebration.reached(
+              activity.dailyGoal,
+              activity.summaryFor(language).today,
+            ) ==
+            complete;
+    bool safe() => _canRequestReview && current();
+    await DailyGoalCelebration.instance.presentIfEligible(
       owner: owner,
-      goal: activity.dailyGoal,
+      goal: goal,
+      language: language,
       totals: today,
+      isCurrent: current,
       isSafe: safe,
-      present: () => showDailyGoalCelebration(context, totals: today),
-    );
-    if (shown && safe()) {
-      await Future<void>.delayed(const Duration(milliseconds: 600));
-      await PracticeReviewService.instance.requestIfEligible(
+      present: () => PracticeReviewService.instance.requestAfterCelebration(
+        dismissed: showDailyGoalCelebration(context, totals: today),
         isSafe: safe,
-        dailyGoal: true,
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -238,7 +281,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final screens = <Widget>[
-      QuickPracticeScreen(active: _currentIndex == 0 && !_covered),
+      QuickPracticeScreen(
+        active: _currentIndex == 0 && !_covered,
+        goalTabAnchor: _goalTabAnchor,
+      ),
       ChatsScreen(active: _currentIndex == 1 && !_covered),
       const ProfileScreen(),
     ];
@@ -250,47 +296,50 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: stackIndex,
         unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _schedulePracticeReview();
-        },
+        onTap: _selectTab,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.waveform),
+            icon: const SizedBox.square(
+              dimension: 36,
+              child: Center(child: Icon(CupertinoIcons.waveform, size: 28)),
+            ),
             label: l10n.navPractice,
           ),
           BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  stackIndex == 1
-                      ? CupertinoIcons.chat_bubble_text_fill
-                      : CupertinoIcons.chat_bubble_text,
-                ),
-                if (_hasUnreadChats)
-                  Positioned(
-                    top: -2,
-                    right: -4,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
+            icon: SizedBox.square(
+              dimension: 36,
+              child: Center(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      stackIndex == 1
+                          ? CupertinoIcons.chat_bubble_text_fill
+                          : CupertinoIcons.chat_bubble_text,
+                      size: 28,
                     ),
-                  ),
-              ],
+                    if (_hasUnreadChats)
+                      Positioned(
+                        top: -2,
+                        right: -4,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
             label: l10n.chatsTitle,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.person),
-            activeIcon: const Icon(CupertinoIcons.person_solid),
-            label: l10n.navProfile,
+            icon: LiveGoalTabIcon(key: _goalTabAnchor),
+            label: l10n.navGoal,
           ),
         ],
       ),

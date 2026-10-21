@@ -20,7 +20,7 @@ import '../../domain/ai_audio_constants.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
-import '../profile/edit_profile_screen.dart';
+import '../profile/settings_screen.dart';
 import '../shared/locale_flag.dart';
 import 'uploaded_video_detail_screen.dart';
 
@@ -542,7 +542,9 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(focusLanguages: true),
+                ),
               ),
               child: Container(
                 padding: const EdgeInsets.all(14),

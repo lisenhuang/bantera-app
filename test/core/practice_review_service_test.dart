@@ -1,14 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:app/core/practice_review_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  late Directory directory;
-  late File file;
-  late DateTime now;
   String? owner;
   late int requests;
   late PracticeReviewService service;
@@ -16,209 +11,150 @@ void main() {
   PracticeReviewService create({
     bool enabled = true,
     Future<bool> Function()? available,
+    Future<void> Function()? request,
   }) => PracticeReviewService(
     enabled: enabled,
     currentOwner: () => owner,
-    file: () async => file,
-    now: () => now,
+    dismissalDelay: Duration.zero,
     isAvailable: available ?? () async => true,
-    requestReview: () async {
-      requests++;
-    },
+    requestReview:
+        request ??
+        () async {
+          requests++;
+        },
   );
 
-  Future<void> complete(String lesson, {Set<String> cues = const {'a', 'b'}}) =>
-      service.recordCompletedCues(
-        owner: owner,
-        lessonId: lesson,
-        completedCueKeys: cues,
-        requiredCueKeys: {'a', 'b'},
-      );
-
-  Future<void> eligible() async {
-    await complete('one');
-    await complete('two');
-    now = now.add(const Duration(days: 1));
-    await complete('three');
-  }
+  Future<void> dismissed({bool safe = true}) => service.requestAfterCelebration(
+    dismissed: Future<void>.value(),
+    isSafe: () => safe,
+  );
 
   setUp(() {
-    directory = Directory.systemTemp.createTempSync('bantera-review-test-');
-    file = File('${directory.path}/review.json');
-    now = DateTime(2026, 10, 1, 23, 59);
     owner = 'learner-a';
     requests = 0;
     service = create();
   });
-  tearDown(() => directory.deleteSync(recursive: true));
+
+  test('no request occurs until the celebration is dismissed', () async {
+    final close = Completer<void>();
+    final pending = service.requestAfterCelebration(
+      dismissed: close.future,
+      isSafe: () => true,
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, 0);
+    close.complete();
+    await pending;
+    expect(requests, 1);
+  });
 
   test(
-    'daily goal qualifies without lesson history and respects review cooldown',
+    'each new dismissal requests review, without lesson or local cooldown gates',
     () async {
-      await service.requestIfEligible(isSafe: () => true, dailyGoal: true);
-      expect(requests, 1);
+      await dismissed();
+      await dismissed();
       service = create();
-      now = now.add(const Duration(days: 1));
-      await service.requestIfEligible(isSafe: () => true, dailyGoal: true);
-      expect(requests, 1);
+      await dismissed();
+      expect(requests, 3);
     },
   );
 
   test(
-    'Three distinct lessons across local calendar days request once',
+    'unsafe state skips review and does not trigger later on its own',
     () async {
-      await complete('one');
-      await complete('one');
-      await complete('two');
-      await service.requestIfEligible(isSafe: () => true);
+      await dismissed(safe: false);
+      await Future<void>.delayed(Duration.zero);
       expect(requests, 0);
-      now = now.add(const Duration(minutes: 2));
-      await complete('three');
-      expect(requests, 0); // Finishing audio alone never opens a prompt.
-      await service.requestIfEligible(isSafe: () => true);
-      await service.requestIfEligible(isSafe: () => true);
+      await dismissed();
       expect(requests, 1);
     },
   );
 
+  test('account changes while the celebration is open cancel review', () async {
+    final close = Completer<void>();
+    final pending = service.requestAfterCelebration(
+      dismissed: close.future,
+      isSafe: () => true,
+    );
+    owner = 'learner-b';
+    close.complete();
+    await pending;
+    expect(requests, 0);
+  });
+
   test(
-    'Three lessons in one day do not qualify, a later lesson does',
+    'rechecks safety and account after native availability returns',
     () async {
-      for (final id in ['one', 'two', 'three']) {
-        await complete(id);
+      for (final changeAccount in [false, true]) {
+        var safe = true;
+        final checking = Completer<void>();
+        final available = Completer<bool>();
+        service = create(
+          available: () {
+            checking.complete();
+            return available.future;
+          },
+        );
+        final pending = service.requestAfterCelebration(
+          dismissed: Future<void>.value(),
+          isSafe: () => safe,
+        );
+        await checking.future;
+        if (changeAccount) {
+          owner = 'another';
+        } else {
+          safe = false;
+        }
+        available.complete(true);
+        await pending;
+        expect(requests, 0);
       }
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 0);
-      now = now.add(const Duration(days: 1));
-      await complete('four');
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
     },
   );
 
-  test(
-    'Partial cues persist across restarts but do not count until completed',
-    () async {
-      await complete('one');
-      await complete('two');
-      await complete('three', cues: {'b'});
-      service = create();
-      now = now.add(const Duration(days: 1));
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 0);
-      await complete('three', cues: {'a'});
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
-    },
-  );
-
-  test(
-    'Cooldown survives restarts and requires another completed lesson',
-    () async {
-      await eligible();
-      await service.requestIfEligible(isSafe: () => true);
-      service = create();
-      now = now.add(const Duration(days: 89));
-      await complete('four');
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
-      service = create();
-      now = now.add(const Duration(days: 1));
-      await complete(
-        'three',
-        cues: {'a'},
-      ); // Replaying one old cue is insufficient.
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
-      await complete('five');
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 2);
-    },
-  );
-
-  test(
-    'Account histories and pending prompts do not leak between users',
-    () async {
-      await eligible();
-      owner = 'learner-b';
-      await service.requestIfEligible(isSafe: () => true);
-      await complete('b-one');
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 0);
-    },
-  );
-
-  test(
-    'Busy route, recording, call or background state can defer the prompt',
-    () async {
-      await eligible();
-      await service.requestIfEligible(isSafe: () => false);
-      expect(requests, 0);
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
-    },
-  );
-
-  test(
-    'Rechecks safety and account after native availability returns',
-    () async {
-      final available = Completer<bool>();
-      final checking = Completer<void>();
-      service = create(
-        available: () {
-          checking.complete();
-          return available.future;
-        },
-      );
-      await eligible();
-      var safe = true;
-      final requesting = service.requestIfEligible(isSafe: () => safe);
-      await checking.future;
-      safe = false;
-      owner = 'learner-b';
-      available.complete(true);
-      await requesting;
-      expect(requests, 0);
-      expect(
-        (jsonDecode(await file.readAsString()) as Map)['lastRequestAt'],
-        isNull,
-      );
-    },
-  );
-
-  test('Android does not record activity or call the review plugin', () async {
+  test('Android stays disabled and signed-out users are skipped', () async {
     service = create(
       enabled: false,
       available: () => throw StateError('Android'),
     );
-    await eligible();
-    await service.requestIfEligible(isSafe: () => true);
+    await dismissed();
     expect(requests, 0);
-    expect(file.existsSync(), isFalse);
+    service = create();
+    owner = null;
+    await dismissed();
+    expect(requests, 0);
+  });
+
+  test('concurrent requests do not overlap', () async {
+    final checking = Completer<void>();
+    final available = Completer<bool>();
+    service = create(
+      available: () {
+        checking.complete();
+        return available.future;
+      },
+    );
+    final first = dismissed();
+    await checking.future;
+    await dismissed();
+    available.complete(true);
+    await first;
+    expect(requests, 1);
   });
 
   test(
-    'Leaving the safe screen during persistence does not consume cooldown',
-    () async {
-      await eligible();
-      var checks = 0;
-      await service.requestIfEligible(isSafe: () => ++checks < 3);
-      expect(requests, 0);
-      await service.requestIfEligible(isSafe: () => true);
-      expect(requests, 1);
-    },
-  );
-
-  test(
-    'Unavailable native review and duplicate requests do not cause prompts',
+    'unavailable and failing native reviews do not interrupt the app',
     () async {
       service = create(available: () async => false);
-      await eligible();
-      await Future.wait([
-        service.requestIfEligible(isSafe: () => true),
-        service.requestIfEligible(isSafe: () => true),
-      ]);
+      await dismissed();
       expect(requests, 0);
+      service = create(
+        request: () async => throw StateError('StoreKit unavailable'),
+      );
+      await expectLater(dismissed(), completes);
+      service = create();
+      await dismissed();
+      expect(requests, 1);
     },
   );
 }

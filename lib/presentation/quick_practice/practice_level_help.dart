@@ -59,12 +59,15 @@ class PracticeLevelHelp extends StatelessWidget {
                 l.quickLevelsIntro,
                 style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
               ),
+              const SizedBox(height: 12),
+              Text(l.quickA0Description, style: theme.textTheme.bodyMedium),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final level in const [
+                    'A0',
                     'A1',
                     'A2',
                     'B1',

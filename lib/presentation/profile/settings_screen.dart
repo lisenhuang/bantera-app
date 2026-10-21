@@ -17,11 +17,14 @@ import '../../l10n/app_localizations.dart';
 import '../dev/dev_screen.dart';
 import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
+import 'profile_language_settings.dart';
 import 'permissions_screen.dart';
 import 'paid_key_settings.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.focusLanguages = false});
+
+  final bool focusLanguages;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -33,6 +36,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     path: 'contact@bantera.app',
   );
 
+  final _languagesKey = GlobalKey();
+
   int _titleTapCount = 0;
   bool _checkingUpdate = false;
   String? _currentVersion;
@@ -41,6 +46,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadCurrentVersion();
+    if (widget.focusLanguages) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final target = _languagesKey.currentContext;
+        if (target != null) Scrollable.ensureVisible(target);
+      });
+    }
   }
 
   Future<void> _loadCurrentVersion() async {
@@ -290,345 +302,364 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, _) {
           final auth = AuthSessionNotifier.instance;
 
-          return ListView(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            children: [
-              if (auth.session case final session?)
-                PaidKeySettings(
-                  key: ValueKey(session.cacheKey),
-                  owner: session.cacheKey,
-                ),
-              _buildSectionHeader(context, l10n.sectionAppearance),
-              ListenableBuilder(
-                listenable: SettingsNotifier.instance,
-                builder: (context, _) {
-                  final settings = SettingsNotifier.instance;
-                  return Card(
-                    margin: EdgeInsets.zero,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.brightness_6_outlined,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                l10n.themeLabel,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SegmentedButton<ThemeMode>(
-                            style: SegmentedButton.styleFrom(
-                              side: BorderSide(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outlineVariant,
-                              ),
-                            ),
-                            segments: [
-                              ButtonSegment<ThemeMode>(
-                                value: ThemeMode.light,
-                                label: Text(l10n.themeLight),
-                                icon: const Icon(Icons.light_mode_outlined),
-                              ),
-                              ButtonSegment<ThemeMode>(
-                                value: ThemeMode.dark,
-                                label: Text(l10n.themeDark),
-                                icon: const Icon(Icons.dark_mode_outlined),
-                              ),
-                              ButtonSegment<ThemeMode>(
-                                value: ThemeMode.system,
-                                label: Text(l10n.themeSystem),
-                                icon: const Icon(
-                                  Icons.brightness_auto_outlined,
-                                ),
-                              ),
-                            ],
-                            selected: {settings.themeMode},
-                            onSelectionChanged: (Set<ThemeMode> next) {
-                              if (next.isEmpty) {
-                                return;
-                              }
-                              SettingsNotifier.instance.setThemeMode(
-                                next.first,
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionLanguage),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Icon(
-                          Icons.language_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (auth.session case final session?)
+                  PaidKeySettings(
+                    key: ValueKey(session.cacheKey),
+                    owner: session.cacheKey,
+                  ),
+                _buildSectionHeader(context, l10n.sectionAppearance),
+                ListenableBuilder(
+                  listenable: SettingsNotifier.instance,
+                  builder: (context, _) {
+                    final settings = SettingsNotifier.instance;
+                    return Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              l10n.languageSectionSubtitle,
-                              style: Theme.of(context).textTheme.bodySmall,
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.brightness_6_outlined,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  l10n.themeLabel,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 12),
-                            ListenableBuilder(
-                              listenable: SettingsNotifier.instance,
-                              builder: (context, _) {
-                                final settings = SettingsNotifier.instance;
-                                return DropdownButton<AppLocalePreference>(
-                                  isExpanded: true,
-                                  value: settings.appLocalePreference,
-                                  borderRadius: BorderRadius.circular(12),
-                                  padding: EdgeInsets.zero,
-                                  alignment: AlignmentDirectional.centerStart,
-                                  items: [
-                                    for (final option
-                                        in AppLocalePreference.values)
-                                      DropdownMenuItem(
-                                        value: option,
-                                        child: Text(option.label),
-                                      ),
-                                  ],
-                                  onChanged: (v) {
-                                    if (v != null) {
-                                      SettingsNotifier.instance
-                                          .setAppLocalePreference(v);
-                                    }
-                                  },
+                            SegmentedButton<ThemeMode>(
+                              style: SegmentedButton.styleFrom(
+                                side: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                              segments: [
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.light,
+                                  label: Text(l10n.themeLight),
+                                  icon: const Icon(Icons.light_mode_outlined),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.dark,
+                                  label: Text(l10n.themeDark),
+                                  icon: const Icon(Icons.dark_mode_outlined),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.system,
+                                  label: Text(l10n.themeSystem),
+                                  icon: const Icon(
+                                    Icons.brightness_auto_outlined,
+                                  ),
+                                ),
+                              ],
+                              selected: {settings.themeMode},
+                              onSelectionChanged: (Set<ThemeMode> next) {
+                                if (next.isEmpty) {
+                                  return;
+                                }
+                                SettingsNotifier.instance.setThemeMode(
+                                  next.first,
                                 );
                               },
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                KeyedSubtree(
+                  key: _languagesKey,
+                  child: _buildSectionHeader(
+                    context,
+                    l10n.editProfileLanguagesSection,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionNotifications),
-              ListenableBuilder(
-                listenable: ChatSessionNotifier.instance,
-                builder: (context, _) {
-                  final chat = ChatSessionNotifier.instance;
-                  return Card(
-                    margin: EdgeInsets.zero,
-                    child: SwitchListTile(
-                      secondary: const Icon(Icons.notifications_outlined),
-                      title: Text(l10n.chatNotificationsTitle),
-                      subtitle: Text(l10n.chatNotificationsSubtitle),
-                      value: chat.globalNotificationsEnabled,
-                      onChanged: auth.session == null
-                          ? null
-                          : _toggleNotifications,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionAccount),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.verified_user_outlined),
-                      title: Text(
-                        auth.session?.accountLabel ?? l10n.signedOutLabel,
-                      ),
-                      subtitle: Text(
-                        auth.session == null
-                            ? l10n.noActiveSession
-                            : l10n.signedInWith(auth.session!.providerLabel),
-                      ),
-                    ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.person),
-                      title: Text(l10n.editProfile),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: auth.session == null
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const EditProfileScreen(),
-                                ),
-                              );
-                            },
-                    ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.more_horiz),
-                      title: Text(l10n.more),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: auth.session == null
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (context) =>
-                                      const AccountMoreScreen(),
-                                ),
-                              );
-                            },
-                    ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.logout),
-                      title: Text(l10n.signOut),
-                      onTap: auth.session == null ? null : _confirmSignOut,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionRateAndShare),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.star_rounded),
-                      title: Text(l10n.settingsRateAppButton),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        final review = InAppReview.instance;
-                        if (await review.isAvailable()) {
-                          await review.requestReview();
-                        }
-                      },
-                    ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.ios_share_rounded),
-                      title: Text(l10n.settingsShareButton),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        SharePlus.instance.share(
-                          ShareParams(
-                            uri: Uri.parse('https://bantera.app?from=iOS'),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Icon(
+                            Icons.language_outlined,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.sectionLanguage,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.languageSectionSubtitle,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 12),
+                              ListenableBuilder(
+                                listenable: SettingsNotifier.instance,
+                                builder: (context, _) {
+                                  final settings = SettingsNotifier.instance;
+                                  return DropdownButton<AppLocalePreference>(
+                                    isExpanded: true,
+                                    value: settings.appLocalePreference,
+                                    borderRadius: BorderRadius.circular(12),
+                                    padding: EdgeInsets.zero,
+                                    alignment: AlignmentDirectional.centerStart,
+                                    items: [
+                                      for (final option
+                                          in AppLocalePreference.values)
+                                        DropdownMenuItem(
+                                          value: option,
+                                          child: Text(option.label),
+                                        ),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        SettingsNotifier.instance
+                                            .setAppLocalePreference(v);
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionPermissions),
-              Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: const Icon(Icons.auto_awesome_outlined),
-                  title: Text(l10n.aiConsentSettings),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: auth.session == null
-                      ? null
-                      : () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const AiConsentSettingsScreen(),
-                            ),
-                          );
-                        },
-                ),
-              ),
-              Card(
-                margin: EdgeInsets.zero,
-                child: ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: Text(l10n.appPermissionsTitle),
-                  subtitle: Text(l10n.appPermissionsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const PermissionsScreen(),
+                const SizedBox(height: 24),
+                ProfileLanguageSettings(key: ValueKey(auth.session?.cacheKey)),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionNotifications),
+                ListenableBuilder(
+                  listenable: ChatSessionNotifier.instance,
+                  builder: (context, _) {
+                    final chat = ChatSessionNotifier.instance;
+                    return Card(
+                      margin: EdgeInsets.zero,
+                      child: SwitchListTile(
+                        secondary: const Icon(Icons.notifications_outlined),
+                        title: Text(l10n.chatNotificationsTitle),
+                        subtitle: Text(l10n.chatNotificationsSubtitle),
+                        value: chat.globalNotificationsEnabled,
+                        onChanged: auth.session == null
+                            ? null
+                            : _toggleNotifications,
                       ),
                     );
                   },
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, l10n.sectionSupport),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.mail_outline),
-                      title: Text(l10n.settingsContactButton),
-                      subtitle: const Text('contact@bantera.app'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        await launchUrl(_contactEmailUri);
-                      },
-                    ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.system_update_outlined),
-                      title: Text(l10n.checkForUpdateButton),
-                      subtitle: _currentVersion != null
-                          ? Text('v$_currentVersion')
-                          : null,
-                      trailing: _checkingUpdate
-                          ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.chevron_right),
-                      onTap: _checkingUpdate ? null : _checkForUpdate,
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionAccount),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.verified_user_outlined),
+                        title: Text(
+                          auth.session?.accountLabel ?? l10n.signedOutLabel,
+                        ),
+                        subtitle: Text(
+                          auth.session == null
+                              ? l10n.noActiveSession
+                              : l10n.signedInWith(auth.session!.providerLabel),
+                        ),
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.person),
+                        title: Text(l10n.editProfile),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: auth.session == null
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EditProfileScreen(),
+                                  ),
+                                );
+                              },
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.more_horiz),
+                        title: Text(l10n.more),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: auth.session == null
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (context) =>
+                                        const AccountMoreScreen(),
+                                  ),
+                                );
+                              },
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: Text(l10n.signOut),
+                        onTap: auth.session == null ? null : _confirmSignOut,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionRateAndShare),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.star_rounded),
+                        title: Text(l10n.settingsRateAppButton),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          await InAppReview.instance.openStoreListing(
+                            appStoreId: '6761799720',
+                          );
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.ios_share_rounded),
+                        title: Text(l10n.settingsShareButton),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          SharePlus.instance.share(
+                            ShareParams(
+                              uri: Uri.parse('https://bantera.app?from=iOS'),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionPermissions),
+                Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: const Icon(Icons.auto_awesome_outlined),
+                    title: Text(l10n.aiConsentSettings),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: auth.session == null
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const AiConsentSettingsScreen(),
+                              ),
+                            );
+                          },
+                  ),
+                ),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined),
+                    title: Text(l10n.appPermissionsTitle),
+                    subtitle: Text(l10n.appPermissionsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const PermissionsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionSupport),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.mail_outline),
+                        title: Text(l10n.settingsContactButton),
+                        subtitle: const Text('contact@bantera.app'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          await launchUrl(_contactEmailUri);
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.system_update_outlined),
+                        title: Text(l10n.checkForUpdateButton),
+                        subtitle: _currentVersion != null
+                            ? Text('v$_currentVersion')
+                            : null,
+                        trailing: _checkingUpdate
+                            ? SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.chevron_right),
+                        onTap: _checkingUpdate ? null : _checkForUpdate,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           );
         },
       ),

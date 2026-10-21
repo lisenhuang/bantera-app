@@ -289,6 +289,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get navProfile => 'Профиль';
 
   @override
+  String get navGoal => 'Цель';
+
+  @override
   String get chatsTitle => 'Чаты';
 
   @override
@@ -2242,7 +2245,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get quickStart => 'Начать';
 
   @override
-  String get quickChooseLanguage => 'Выберите изучаемый язык в профиле.';
+  String get quickChooseLanguage => 'Выберите изучаемый язык в настройках.';
 
   @override
   String get quickCallActive => 'Завершите звонок перед практикой.';
@@ -2272,7 +2275,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Каждый язык начинается с A1. Уровень автоматически меняется по мере практики.';
+      'Каждый язык начинается с A0. Уровень автоматически меняется по мере практики.';
 
   @override
   String get quickLevelsWindow =>
@@ -2289,11 +2292,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'В каждом упражнении учитывается только первый чётко распознанный ответ. Неразборчивые записи и пропущенные упражнения не учитываются.\n\nУпражнения с переводом не учитываются при изменении уровня. Результаты без перевода учитываются при переходе к следующему упражнению.';
+      'В каждом упражнении учитывается только первый чётко распознанный ответ. Неразборчивые записи и пропущенные упражнения не учитываются.\n\nA1–C2: Упражнения с переводом не учитываются при изменении уровня. Результаты без перевода учитываются при переходе к следующему упражнению.';
 
   @override
   String get quickLevelsReset =>
-      'После смены уровня отсчёт 12 упражнений начинается заново. A1 — самый низкий уровень, C2 — самый высокий.';
+      'После смены уровня отсчёт 12 упражнений начинается заново. A0 — самый низкий уровень, C2 — самый высокий.';
 
   @override
   String get quickSkipTitle => 'Пропустить это упражнение?';
@@ -2356,4 +2359,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Повторение · Текущий уровень: $level';
   }
+
+  @override
+  String get quickA0Label => 'С нуля';
+
+  @override
+  String get quickA0Description =>
+      'A0 — начальный этап Bantera перед A1, основанный на Pre-A1. Это не официальный уровень CEFR. Начните с отдельных слов и коротких бытовых выражений.';
+
+  @override
+  String get quickA0Hint =>
+      'Послушайте примеры и узнайте их значение, затем ответьте. На A0 доступны подсказки; учитывается первый чётко распознанный ответ.';
 }

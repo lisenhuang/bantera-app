@@ -99,6 +99,10 @@ class WordActivityNotifier extends ChangeNotifier {
 
   String? get accountId => _userId;
 
+  /// Read the current account's saved goal before choosing a setup route.
+  /// This only waits for local storage, so tab navigation also works offline.
+  Future<void> ensureLoaded() => _serial(() => _load(_userId));
+
   Future<bool> setDailyGoal(DailyWordGoal? goal, {String? ownerId}) async {
     final userId = _userId;
     if (userId == null ||

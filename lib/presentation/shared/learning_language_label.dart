@@ -44,3 +44,39 @@ import 'locale_flag.dart';
       (language == null ? '' : flagEmojiForLocale(language));
   return (name: languageName, flag: languageFlag);
 }
+
+/// Goal header label: distinguish accents only when the language has several.
+/// Share cards keep their simpler language-only presentation.
+String goalLearningLanguageLabel(String? identifier) {
+  final language = learningLanguageLabel(identifier);
+  if (language.name.isEmpty) return '';
+  final normalized = normalizeLocaleIdentifierForLookup(
+    normalizeLegacyLearningLanguageIdentifier(identifier!),
+  );
+  final accents = kFallbackLearningLanguages
+      .where(
+        (option) =>
+            _spokenLanguageGroup(option.identifier) ==
+            _spokenLanguageGroup(normalized),
+      )
+      .map((option) => normalizeLocaleIdentifierForLookup(option.identifier))
+      .toSet();
+  // A country flag consists of two regional indicator symbols. Catalog globes
+  // (for example Latin America) and other placeholders do not belong here.
+  final runes = language.flag.runes.toList();
+  final countryFlag =
+      runes.length == 2 &&
+          runes.every((rune) => rune >= 0x1F1E6 && rune <= 0x1F1FF)
+      ? language.flag
+      : '';
+  final flagSuffix = countryFlag.isEmpty ? '' : ' $countryFlag';
+  return accents.length > 1
+      ? '${language.name}($normalized$flagSuffix)'
+      : '${language.name}$flagSuffix';
+}
+
+String _spokenLanguageGroup(String identifier) =>
+    switch (audioLanguageGroupCode(identifier)) {
+      'zh-cn' || 'zh-tw' => 'zh',
+      final group => group,
+    };

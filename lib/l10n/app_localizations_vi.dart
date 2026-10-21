@@ -289,6 +289,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navProfile => 'Hồ sơ';
 
   @override
+  String get navGoal => 'Mục tiêu';
+
+  @override
   String get chatsTitle => 'Trò chuyện';
 
   @override
@@ -2173,7 +2176,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get quickStart => 'Bắt đầu luyện tập';
 
   @override
-  String get quickChooseLanguage => 'Chọn ngôn ngữ học trong hồ sơ.';
+  String get quickChooseLanguage => 'Chọn ngôn ngữ học trong Cài đặt.';
 
   @override
   String get quickCallActive => 'Kết thúc cuộc gọi trước khi luyện tập.';
@@ -2203,7 +2206,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Mỗi ngôn ngữ bắt đầu từ A1. Cấp độ tự động điều chỉnh khi bạn luyện tập.';
+      'Mỗi ngôn ngữ bắt đầu từ A0. Cấp độ tự động điều chỉnh khi bạn luyện tập.';
 
   @override
   String get quickLevelsWindow =>
@@ -2220,11 +2223,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Chỉ câu trả lời đầu tiên được nhận dạng rõ ràng trong mỗi bài tập mới được tính. Bản ghi âm không rõ và bài tập bỏ qua không được tính.\n\nBài tập có dùng bản dịch không được tính khi điều chỉnh trình độ. Kết quả không dùng bản dịch được tính khi chuyển sang bài tiếp theo.';
+      'Chỉ câu trả lời đầu tiên được nhận dạng rõ ràng trong mỗi bài tập mới được tính. Bản ghi âm không rõ và bài tập bỏ qua không được tính.\n\nA1–C2: Bài tập có dùng bản dịch không được tính khi điều chỉnh trình độ. Kết quả không dùng bản dịch được tính khi chuyển sang bài tiếp theo.';
 
   @override
   String get quickLevelsReset =>
-      'Sau khi đổi cấp độ, một nhóm 12 bài mới bắt đầu. A1 là cấp thấp nhất và C2 là cấp cao nhất.';
+      'Sau khi đổi cấp độ, một nhóm 12 bài mới bắt đầu. A0 là cấp thấp nhất và C2 là cấp cao nhất.';
 
   @override
   String get quickSkipTitle => 'Bỏ qua bài luyện tập này?';
@@ -2287,4 +2290,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Ôn tập · Cấp độ hiện tại: $level';
   }
+
+  @override
+  String get quickA0Label => 'Bắt đầu từ con số không';
+
+  @override
+  String get quickA0Description =>
+      'A0 là giai đoạn nhập môn của Bantera trước A1, tham khảo Pre-A1. Đây không phải cấp độ CEFR chính thức. Bắt đầu với từ đơn và các cách nói ngắn hằng ngày.';
+
+  @override
+  String get quickA0Hint =>
+      'Nghe ví dụ và xem nghĩa, rồi thử trả lời. A0 có hỗ trợ học tập; câu trả lời đầu tiên được nhận diện rõ sẽ được tính.';
 }

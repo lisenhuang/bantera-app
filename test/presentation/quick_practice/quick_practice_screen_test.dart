@@ -4,10 +4,13 @@ import 'dart:io';
 import 'package:app/core/practice_review_service.dart';
 import 'package:app/core/theme.dart';
 import 'package:app/domain/activity/word_activity.dart';
+import 'package:app/domain/activity/daily_word_goal.dart';
+import 'package:app/presentation/shared/goal_tab_icon.dart';
 import 'package:app/presentation/shared/daily_goal_celebration_dialog.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/quick_practice_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -123,18 +126,33 @@ void main() {
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: 0,
+            unselectedItemColor:
+                (dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme)
+                    .colorScheme
+                    .onSurfaceVariant,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.graphic_eq),
+                icon: SizedBox.square(
+                  dimension: 36,
+                  child: Center(child: Icon(CupertinoIcons.waveform, size: 28)),
+                ),
                 label: 'Practice',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.chat_bubble_outline),
+                icon: SizedBox.square(
+                  dimension: 36,
+                  child: Center(
+                    child: Icon(CupertinoIcons.chat_bubble_text, size: 28),
+                  ),
+                ),
                 label: 'Chats',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                label: 'Profile',
+                icon: GoalTabIcon(
+                  goal: DailyWordGoal(listened: 600, spoken: 400),
+                  today: WordTotals(listened: 300, spoken: 200),
+                ),
+                label: 'Goal',
               ),
             ],
           ),
@@ -145,6 +163,55 @@ void main() {
   }
 
   for (final major in [15, 16, 17]) {
+    testWidgets(
+      'A0 shows meanings before answering and a visible beginner level',
+      (tester) async {
+        await mount(
+          tester,
+          material: {...exercise, 'level': 'A0', 'currentLevel': 'A0'},
+        );
+        expect(find.text('A0'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('practice-translation-cue')),
+          findsOneWidget,
+        );
+        expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('practice-show-translation')),
+          findsNothing,
+        );
+        expect(
+          find.textContaining('A0 includes learning support'),
+          findsOneWidget,
+        );
+        await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+        await tester.pumpAndSettle();
+        expect(find.text('Starting from zero'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'A0 keeps audio practice available without built-in translation',
+      (tester) async {
+        translationCapabilityForTesting = false;
+        await mount(
+          tester,
+          material: {...exercise, 'level': 'A0', 'currentLevel': 'A0'},
+        );
+        expect(find.text('A0'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('practice-translation-cue')),
+          findsNothing,
+        );
+        expect(
+          find.textContaining('A0 includes learning support'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets(
       'iOS $major hides translation including a previously assisted exercise',
       (tester) async {
@@ -354,7 +421,7 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
       await tester.pumpAndSettle();
-      for (final level in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) {
+      for (final level in ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']) {
         expect(
           find.byKey(ValueKey('practice-level-option-$level')),
           findsOneWidget,
@@ -425,14 +492,20 @@ void main() {
     (tester) async {
       await mount(tester, material: {...exercise, 'locale': 'mi-NZ'});
       expect(
-        find.text('Choose a learning language in your profile.'),
+        find.text('Choose a learning language in Settings.'),
         findsOneWidget,
       );
       expect(
         find.byKey(const ValueKey('practice-record-button')),
         findsNothing,
       );
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(QuickPracticeScreen),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsNothing,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -449,7 +522,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(header), position);
-    expect(find.text('Practice'), findsNWidgets(2));
+    expect(find.text('Practice'), findsOneWidget);
+    expect(find.text('Bantera App'), findsOneWidget);
   });
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
     for (final dark in [false, true]) {
@@ -564,7 +638,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.text(
-        'After a level change, a new set of 12 begins. A1 is the lowest level and C2 the highest.',
+        'After a level change, a new set of 12 begins. A0 is the lowest level and C2 the highest.',
       ),
     );
     await tester.pumpAndSettle();
@@ -699,15 +773,10 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
-  testWidgets('goal setup opens settings and returns to the same exercise', (
-    tester,
-  ) async {
+  testWidgets('Practice header has no duplicate goal control', (tester) async {
     await mount(tester);
-    await tester.tap(find.byKey(const ValueKey('practice-set-goal')));
-    await tester.pumpAndSettle();
-    expect(find.text('Daily goal'), findsOneWidget);
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('practice-set-goal')), findsNothing);
+    expect(find.byKey(const ValueKey('practice-goal-ring')), findsNothing);
     expect(find.text('Where is the station?'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

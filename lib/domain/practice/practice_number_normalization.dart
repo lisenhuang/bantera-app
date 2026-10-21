@@ -1,4 +1,4 @@
-/// Conservative Chinese number/currency formatting equivalence for ASR output.
+/// Conservative Chinese number, time and currency equivalence for ASR output.
 /// Keep this aligned with PracticeNumberNormalization.cs and shared fixtures.
 String normalizePracticeNumbers(String text, String locale) {
   final language = locale.toLowerCase().split('-').first;
@@ -55,6 +55,16 @@ String normalizePracticeNumbers(String text, String locale) {
           : '';
       return '$value${fraction.isEmpty ? '' : '点$fraction'}';
     },
+  );
+  // Keep hour/minute boundaries instead of turning 6:30 into the number 630.
+  // Only explicit clock notation and half past are folded; decimals stay numbers.
+  text = text.replaceAllMapped(
+    RegExp(r'(?<![0-9.:])([01]?[0-9]|2[0-3]):([0-5][0-9])(?![0-9.:])'),
+    (m) => '${int.parse(m[1]!)}时${int.parse(m[2]!)}分',
+  );
+  text = text.replaceAllMapped(
+    RegExp(r'(?<![0-9.点點])([01]?[0-9]|2[0-3])[點点]半'),
+    (m) => '${int.parse(m[1]!)}时30分',
   );
   text = text.replaceAllMapped(
     RegExp(r'(?<![0-9,])[0-9]{1,3}(?:,[0-9]{3})+(?![0-9,])'),

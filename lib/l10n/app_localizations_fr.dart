@@ -290,6 +290,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navProfile => 'Profil';
 
   @override
+  String get navGoal => 'Objectif';
+
+  @override
   String get chatsTitle => 'Discussions';
 
   @override
@@ -2240,7 +2243,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Choisissez une langue à apprendre dans votre profil.';
+      'Choisissez une langue à apprendre dans les réglages.';
 
   @override
   String get quickCallActive => 'Terminez votre appel avant de vous entraîner.';
@@ -2271,7 +2274,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickLevelsIntro =>
-      'Chaque langue commence au niveau A1. Ton niveau s’adapte automatiquement au fil des exercices.';
+      'Chaque langue commence au niveau A0. Ton niveau s’adapte automatiquement au fil des exercices.';
 
   @override
   String get quickLevelsWindow =>
@@ -2291,11 +2294,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickLevelsScoring =>
-      'Seule ta première réponse clairement reconnue à chaque exercice compte. Les enregistrements peu clairs et les exercices ignorés ne comptent pas.\n\nLes exercices avec traduction ne comptent pas pour les changements de niveau. Les résultats sans traduction comptent au passage à l’exercice suivant.';
+      'Seule ta première réponse clairement reconnue à chaque exercice compte. Les enregistrements peu clairs et les exercices ignorés ne comptent pas.\n\nA1–C2: Les exercices avec traduction ne comptent pas pour les changements de niveau. Les résultats sans traduction comptent au passage à l’exercice suivant.';
 
   @override
   String get quickLevelsReset =>
-      'Après un changement de niveau, une nouvelle série de 12 commence. A1 est le niveau le plus bas et C2 le plus élevé.';
+      'Après un changement de niveau, une nouvelle série de 12 commence. A0 est le niveau le plus bas et C2 le plus élevé.';
 
   @override
   String get quickSkipTitle => 'Passer cet exercice ?';
@@ -2358,4 +2361,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String quickReviewMode(String level) {
     return 'Révision · Niveau actuel : $level';
   }
+
+  @override
+  String get quickA0Label => 'Partir de zéro';
+
+  @override
+  String get quickA0Description =>
+      'A0 est l’étape de découverte de Bantera avant A1, inspirée du pré-A1. Ce n’est pas un niveau officiel du CECR. Commencez par des mots et de courtes expressions du quotidien.';
+
+  @override
+  String get quickA0Hint =>
+      'Écoutez les exemples et consultez leur sens, puis répondez. A0 inclut une aide à l’apprentissage ; votre première réponse clairement reconnue compte.';
 }

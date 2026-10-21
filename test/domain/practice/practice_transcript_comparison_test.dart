@@ -41,6 +41,18 @@ void main() {
     );
     expect(parts('I am Sam.', result.heard), ['Sam']);
   });
+  test('Cantonese equivalent time is not highlighted as a wrong phrase', () {
+    const text = '得啊我6:30可以';
+    final result = PracticeTranscriptComparison.compare(
+      text,
+      ['得呀，我六點半可以。', '我最鍾意食魚。'],
+      'zh-HK',
+      uncertainWords: ['得啊', '30'],
+    );
+    expect(result.choice, 0);
+    expect(parts(text, result.heard), ['得', '啊', '3', '0']);
+    expect(result.reference, isEmpty);
+  });
   test('does not invent a reference for ties or unrelated speech', () {
     expect(
       PracticeTranscriptComparison.compare('At the', [

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'practice_level_help.dart';
 import '../../l10n/app_localizations.dart';
 
-const practiceLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const practiceLevels = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 /// Locked entries remain actionable so people can learn how to unlock them.
 class PracticeLevelMenu extends StatelessWidget {
@@ -119,6 +119,7 @@ class PracticeLevelMenu extends StatelessWidget {
                               : FontWeight.w500,
                         ),
                       ),
+                      subtitle: candidate == 'A0' ? Text(l.quickA0Label) : null,
                       trailing:
                           practiceLevels.indexOf(candidate) >
                               practiceLevels.indexOf(currentLevel)

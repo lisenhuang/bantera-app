@@ -95,7 +95,17 @@ class PracticeAnswerMatcher {
         scores[best] - scores[1 - best] >= .20 &&
         2 * _overlap(right[0], right[1]) / (right[0].length + right[1].length) <
             .70 &&
-        _overlap(_reliableUnits(heard, uncertain, locale), right[best]) >= 2) {
+        // Expanded clock labels are formatting, not extra speech confidence.
+        _overlap(
+              _reliableUnits(heard, [
+                ...uncertain,
+                ...RegExp(
+                  r'[0-9]+时[0-9]+分',
+                ).allMatches(heard).map((m) => m[0]!),
+              ], locale),
+              right[best],
+            ) >=
+            2) {
       return best;
     }
 
@@ -216,7 +226,10 @@ class PracticeAnswerMatcher {
     ).allMatches(text).map((x) => x.group(0)!).toList();
     if (['zh', 'yue'].contains(locale.toLowerCase().split('-').first)) {
       result.addAll(
-        RegExp('美元|港元|台币|欧元|英镑|元|负').allMatches(text).map((m) => m[0]!),
+        // Protect the complete clock too: 6:12 must not equal 12:06.
+        RegExp(
+          r'[0-9]+时[0-9]+分|美元|港元|台币|欧元|英镑|元|负',
+        ).allMatches(text).map((m) => m[0]!),
       );
     }
     if (locale.toLowerCase().startsWith('en')) {
@@ -278,7 +291,14 @@ class PracticeAnswerMatcher {
         .replaceAll(RegExp(r'[^\p{L}\p{M}\p{N}]+', unicode: true), ' ')
         .trim();
     if (locale.toLowerCase().startsWith('en')) text = _englishNumbers(text);
-    return _compact(locale) ? text.replaceAll(' ', '') : text;
+    if (_compact(locale)) text = text.replaceAll(' ', '');
+    // Cantonese ASR uses either character for this affirmative reply particle.
+    // Keep the equivalence scoped to the opening 得啊/得呀, not all 啊/呀.
+    if (locale.toLowerCase().split('-').first == 'yue' ||
+        locale.toLowerCase() == 'zh-hk') {
+      text = text.replaceFirst(RegExp(r'^得啊'), '得呀');
+    }
+    return text;
   }
 
   static String _englishNumbers(String text) {
