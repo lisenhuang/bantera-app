@@ -2213,4 +2213,23 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get quickA0Hint =>
       '예시를 듣고 뜻을 확인한 뒤 답해 보세요. A0에서는 학습 도움을 받을 수 있으며, 처음 명확하게 인식된 답변이 평가에 반영됩니다.';
+
+  @override
+  String get quickSave => '연습 저장';
+
+  @override
+  String get quickUnsave => '저장 목록에서 삭제';
+
+  @override
+  String get quickSaved => '저장한 연습';
+
+  @override
+  String get quickSavedEmpty => '저장한 연습이 없습니다. 연습 중 … 메뉴에서 “연습 저장”을 선택하세요.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      '이 기기에 계정별로 저장됩니다. 질문과 답변을 다시 들어 보세요. 오디오를 재생하려면 인터넷 연결이 필요합니다.';
+
+  @override
+  String get quickSavedError => '저장한 연습을 업데이트하지 못했습니다. 다시 시도해 주세요.';
 }

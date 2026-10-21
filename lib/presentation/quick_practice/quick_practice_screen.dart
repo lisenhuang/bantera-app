@@ -3,6 +3,8 @@ import '../discover/discover_screen.dart';
 import '../../infrastructure/learning_language_catalog.dart';
 import 'practice_transcript_feedback.dart';
 import 'practice_header.dart';
+import 'saved_practice_screen.dart';
+import '../../infrastructure/saved_practice_store.dart';
 import 'practice_level_menu.dart';
 import 'practice_word_flight.dart';
 import 'practice_translation_controller.dart';
@@ -79,6 +81,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool _confirmingNext = false;
   bool _translationRevealed = false;
   String? _currentLevel, _practiceLevel;
+  Set<String> _savedIds = {};
+  bool _saving = false, _savedLoaded = false;
+  int _savedGeneration = 0;
   @override
   void setState(VoidCallback fn) {
     super.setState(fn);
@@ -236,6 +241,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _currentLevel = null;
       _practiceLevel = null;
       _owner = owner;
+      _savedIds = {};
+      _savedLoaded = false;
       _locale = locale;
       _exercise = null;
       _translationRevealed = false;
@@ -250,6 +257,64 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     });
     unawaited(_checkConsent());
     unawaited(_refreshCompleted());
+    unawaited(_refreshSaved());
+  }
+
+  Future<void> _refreshSaved() async {
+    final owner = _owner;
+    final generation = ++_savedGeneration;
+    if (owner == null) return;
+    try {
+      final entries = await SavedPracticeStore.instance.load(owner);
+      if (!mounted || owner != _owner || generation != _savedGeneration) return;
+      setState(() {
+        _savedIds = entries.map((entry) => entry['id'] as String).toSet();
+        _savedLoaded = true;
+      });
+    } catch (_) {
+      if (mounted && owner == _owner && generation == _savedGeneration) {
+        _notice(l.quickSavedError);
+      }
+    }
+  }
+
+  Future<void> _toggleSaved() async {
+    final owner = _owner, exercise = _exercise;
+    if (owner == null || exercise == null || _saving || !_savedLoaded) return;
+    final id = exercise['id'] as String;
+    final saved = !_savedIds.contains(id);
+    setState(() => _saving = true);
+    try {
+      await SavedPracticeStore.instance.setSaved(
+        owner: owner,
+        exercise: {...exercise, 'locale': _locale},
+        saved: saved,
+      );
+      if (mounted && owner == _owner) {
+        await _refreshSaved();
+        if (mounted && owner == _owner) {
+          _notice(saved ? l.quickSaved : l.quickUnsave);
+        }
+      }
+    } catch (_) {
+      if (mounted && owner == _owner) _notice(l.quickSavedError);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _openSavedPractice() async {
+    final owner = _owner;
+    if (owner == null || _recording || _busy || _confirmingNext) return;
+    await _stopAudio();
+    if (!mounted || owner != _owner) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: '/practice/saved'),
+        builder: (_) => SavedPracticeScreen(owner: owner),
+      ),
+    );
+    if (mounted) await _refreshSaved();
   }
 
   Future<void> _refreshCompleted({String? exerciseId}) async {
@@ -1065,6 +1130,20 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     ].contains(level);
     return Scaffold(
       appBar: PracticeHeader(
+        isSaved: _savedIds.contains(exercise?['id']),
+        onSavePractice:
+            exercise == null ||
+                !_savedLoaded ||
+                _saving ||
+                _recording ||
+                _busy ||
+                _confirmingNext
+            ? null
+            : _toggleSaved,
+        onSavedPractice:
+            _owner == null || _saving || _recording || _busy || _confirmingNext
+            ? null
+            : _openSavedPractice,
         onLongerDialogues: _recording || _busy || _confirmingNext
             ? null
             : _openLongerDialogues,

@@ -2365,4 +2365,25 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Ouça os exemplos e confira o significado antes de responder. A0 inclui apoio à aprendizagem; sua primeira resposta reconhecida com clareza conta.';
+
+  @override
+  String get quickSave => 'Guardar exercício';
+
+  @override
+  String get quickUnsave => 'Remover dos guardados';
+
+  @override
+  String get quickSaved => 'Exercícios guardados';
+
+  @override
+  String get quickSavedEmpty =>
+      'Ainda não há exercícios guardados. Escolhe “Guardar exercício” no menu … enquanto praticas.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Guardados neste dispositivo para a tua conta. Ouve novamente a pergunta e as respostas. O áudio requer uma ligação à Internet.';
+
+  @override
+  String get quickSavedError =>
+      'Não foi possível atualizar os exercícios guardados. Tenta novamente.';
 }

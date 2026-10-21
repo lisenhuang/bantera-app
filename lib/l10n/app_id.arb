@@ -685,5 +685,11 @@
   "quickReviewMode": "Ulasan · Tingkat saat ini: {level}",
   "quickA0Label": "Mulai dari nol",
   "quickA0Description": "A0 adalah tahap awal Bantera sebelum A1, terinspirasi oleh Pre-A1. Ini bukan tingkat resmi CEFR. Mulailah dengan kata tunggal dan ungkapan sehari-hari yang pendek.",
-  "quickA0Hint": "Dengarkan contoh dan pelajari artinya, lalu coba menjawab. A0 menyediakan bantuan belajar; jawaban pertama yang dikenali dengan jelas akan dihitung."
+  "quickA0Hint": "Dengarkan contoh dan pelajari artinya, lalu coba menjawab. A0 menyediakan bantuan belajar; jawaban pertama yang dikenali dengan jelas akan dihitung.",
+  "quickSave": "Simpan latihan",
+  "quickUnsave": "Hapus dari tersimpan",
+  "quickSaved": "Latihan tersimpan",
+  "quickSavedEmpty": "Belum ada latihan tersimpan. Pilih “Simpan latihan” dari menu … saat berlatih.",
+  "quickSavedDeviceNote": "Disimpan di perangkat ini untuk akunmu. Dengarkan kembali pertanyaan dan jawabannya. Audio memerlukan koneksi internet.",
+  "quickSavedError": "Tidak dapat memperbarui latihan tersimpan. Silakan coba lagi."
 }

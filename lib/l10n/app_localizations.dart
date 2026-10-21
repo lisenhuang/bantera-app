@@ -4189,6 +4189,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts.'**
   String get quickA0Hint;
+
+  /// No description provided for @quickSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save practice'**
+  String get quickSave;
+
+  /// No description provided for @quickUnsave.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get quickUnsave;
+
+  /// No description provided for @quickSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved practice'**
+  String get quickSaved;
+
+  /// No description provided for @quickSavedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved practice yet. Choose “Save practice” from the … menu during practice.'**
+  String get quickSavedEmpty;
+
+  /// No description provided for @quickSavedDeviceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device for your account. Listen to the question and replies again. Audio requires an internet connection.'**
+  String get quickSavedDeviceNote;
+
+  /// No description provided for @quickSavedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update saved practice. Please try again.'**
+  String get quickSavedError;
 }
 
 class _AppLocalizationsDelegate

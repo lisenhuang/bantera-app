@@ -2368,4 +2368,25 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Escucha los ejemplos y consulta su significado antes de responder. A0 incluye apoyo para aprender; cuenta tu primera respuesta reconocida con claridad.';
+
+  @override
+  String get quickSave => 'Guardar práctica';
+
+  @override
+  String get quickUnsave => 'Quitar de guardados';
+
+  @override
+  String get quickSaved => 'Prácticas guardadas';
+
+  @override
+  String get quickSavedEmpty =>
+      'Aún no hay prácticas guardadas. Elige «Guardar práctica» en el menú … mientras practicas.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Guardadas en este dispositivo para tu cuenta. Vuelve a escuchar la pregunta y las respuestas. El audio requiere conexión a internet.';
+
+  @override
+  String get quickSavedError =>
+      'No se pudieron actualizar las prácticas guardadas. Inténtalo de nuevo.';
 }

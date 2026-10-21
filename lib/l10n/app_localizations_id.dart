@@ -2305,4 +2305,25 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Dengarkan contoh dan pelajari artinya, lalu coba menjawab. A0 menyediakan bantuan belajar; jawaban pertama yang dikenali dengan jelas akan dihitung.';
+
+  @override
+  String get quickSave => 'Simpan latihan';
+
+  @override
+  String get quickUnsave => 'Hapus dari tersimpan';
+
+  @override
+  String get quickSaved => 'Latihan tersimpan';
+
+  @override
+  String get quickSavedEmpty =>
+      'Belum ada latihan tersimpan. Pilih “Simpan latihan” dari menu … saat berlatih.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Disimpan di perangkat ini untuk akunmu. Dengarkan kembali pertanyaan dan jawabannya. Audio memerlukan koneksi internet.';
+
+  @override
+  String get quickSavedError =>
+      'Tidak dapat memperbarui latihan tersimpan. Silakan coba lagi.';
 }

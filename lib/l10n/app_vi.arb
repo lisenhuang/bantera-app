@@ -685,5 +685,11 @@
   "quickReviewMode": "Ôn tập · Cấp độ hiện tại: {level}",
   "quickA0Label": "Bắt đầu từ con số không",
   "quickA0Description": "A0 là giai đoạn nhập môn của Bantera trước A1, tham khảo Pre-A1. Đây không phải cấp độ CEFR chính thức. Bắt đầu với từ đơn và các cách nói ngắn hằng ngày.",
-  "quickA0Hint": "Nghe ví dụ và xem nghĩa, rồi thử trả lời. A0 có hỗ trợ học tập; câu trả lời đầu tiên được nhận diện rõ sẽ được tính."
+  "quickA0Hint": "Nghe ví dụ và xem nghĩa, rồi thử trả lời. A0 có hỗ trợ học tập; câu trả lời đầu tiên được nhận diện rõ sẽ được tính.",
+  "quickSave": "Lưu bài luyện tập",
+  "quickUnsave": "Xóa khỏi mục đã lưu",
+  "quickSaved": "Bài luyện tập đã lưu",
+  "quickSavedEmpty": "Chưa có bài luyện tập đã lưu. Chọn “Lưu bài luyện tập” trong menu … khi luyện tập.",
+  "quickSavedDeviceNote": "Được lưu trên thiết bị này cho tài khoản của bạn. Nghe lại câu hỏi và các câu trả lời. Âm thanh cần kết nối internet.",
+  "quickSavedError": "Không thể cập nhật bài luyện tập đã lưu. Vui lòng thử lại."
 }

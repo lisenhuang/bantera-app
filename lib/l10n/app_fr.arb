@@ -685,5 +685,11 @@
   "quickReviewMode": "Révision · Niveau actuel : {level}",
   "quickA0Label": "Partir de zéro",
   "quickA0Description": "A0 est l’étape de découverte de Bantera avant A1, inspirée du pré-A1. Ce n’est pas un niveau officiel du CECR. Commencez par des mots et de courtes expressions du quotidien.",
-  "quickA0Hint": "Écoutez les exemples et consultez leur sens, puis répondez. A0 inclut une aide à l’apprentissage ; votre première réponse clairement reconnue compte."
+  "quickA0Hint": "Écoutez les exemples et consultez leur sens, puis répondez. A0 inclut une aide à l’apprentissage ; votre première réponse clairement reconnue compte.",
+  "quickSave": "Enregistrer l’exercice",
+  "quickUnsave": "Retirer des favoris",
+  "quickSaved": "Exercices enregistrés",
+  "quickSavedEmpty": "Aucun exercice enregistré. Choisis « Enregistrer l’exercice » dans le menu … pendant la pratique.",
+  "quickSavedDeviceNote": "Enregistrés sur cet appareil pour ton compte. Réécoute la question et les réponses. Une connexion Internet est nécessaire pour l’audio.",
+  "quickSavedError": "Impossible de mettre à jour les exercices enregistrés. Réessaie."
 }

@@ -2300,4 +2300,25 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Örnekleri dinleyip anlamlarını öğrenin, ardından yanıt verin. A0 öğrenme desteği içerir; ilk net algılanan yanıtınız değerlendirilir.';
+
+  @override
+  String get quickSave => 'Alıştırmayı kaydet';
+
+  @override
+  String get quickUnsave => 'Kaydedilenlerden kaldır';
+
+  @override
+  String get quickSaved => 'Kaydedilen alıştırmalar';
+
+  @override
+  String get quickSavedEmpty =>
+      'Henüz kaydedilmiş alıştırma yok. Alıştırma sırasında … menüsünden “Alıştırmayı kaydet” seçeneğini seç.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Hesabın için bu cihaza kaydedilir. Soruyu ve yanıtları tekrar dinle. Ses için internet bağlantısı gerekir.';
+
+  @override
+  String get quickSavedError =>
+      'Kaydedilen alıştırmalar güncellenemedi. Lütfen tekrar dene.';
 }

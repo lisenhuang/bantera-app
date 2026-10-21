@@ -685,5 +685,11 @@
   "quickReviewMode": "Tekrar · Mevcut düzey: {level}",
   "quickA0Label": "Sıfırdan başla",
   "quickA0Description": "A0, Pre-A1’den esinlenen, Bantera’nın A1 öncesi başlangıç aşamasıdır. Resmî bir CEFR seviyesi değildir. Tek kelimeler ve kısa günlük ifadelerle başlayın.",
-  "quickA0Hint": "Örnekleri dinleyip anlamlarını öğrenin, ardından yanıt verin. A0 öğrenme desteği içerir; ilk net algılanan yanıtınız değerlendirilir."
+  "quickA0Hint": "Örnekleri dinleyip anlamlarını öğrenin, ardından yanıt verin. A0 öğrenme desteği içerir; ilk net algılanan yanıtınız değerlendirilir.",
+  "quickSave": "Alıştırmayı kaydet",
+  "quickUnsave": "Kaydedilenlerden kaldır",
+  "quickSaved": "Kaydedilen alıştırmalar",
+  "quickSavedEmpty": "Henüz kaydedilmiş alıştırma yok. Alıştırma sırasında … menüsünden “Alıştırmayı kaydet” seçeneğini seç.",
+  "quickSavedDeviceNote": "Hesabın için bu cihaza kaydedilir. Soruyu ve yanıtları tekrar dinle. Ses için internet bağlantısı gerekir.",
+  "quickSavedError": "Kaydedilen alıştırmalar güncellenemedi. Lütfen tekrar dene."
 }

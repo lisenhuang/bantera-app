@@ -984,5 +984,11 @@
   },
   "quickA0Label": "Starting from zero",
   "quickA0Description": "A0 is Bantera’s beginner stage before A1, inspired by Pre-A1. It is not an official CEFR level. Start with single words and short everyday expressions.",
-  "quickA0Hint": "Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts."
+  "quickA0Hint": "Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts.",
+  "quickSave": "Save practice",
+  "quickUnsave": "Remove from saved",
+  "quickSaved": "Saved practice",
+  "quickSavedEmpty": "No saved practice yet. Choose “Save practice” from the … menu during practice.",
+  "quickSavedDeviceNote": "Saved on this device for your account. Listen to the question and replies again. Audio requires an internet connection.",
+  "quickSavedError": "Could not update saved practice. Please try again."
 }

@@ -2199,6 +2199,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickA0Hint => '先听示范、理解意思，再尝试回答。A0 提供学习辅助，第一次清晰的回答计入等级评估。';
+
+  @override
+  String get quickSave => '保存练习';
+
+  @override
+  String get quickUnsave => '取消保存';
+
+  @override
+  String get quickSaved => '已保存的练习';
+
+  @override
+  String get quickSavedEmpty => '还没有保存的练习。练习时，从 … 菜单中选择“保存练习”。';
+
+  @override
+  String get quickSavedDeviceNote => '按账号保存在此设备上，可再次聆听问题和回复。播放音频需要连接互联网。';
+
+  @override
+  String get quickSavedError => '无法更新已保存的练习，请重试。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4400,4 +4418,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickA0Hint => '先聽示範、理解意思，再嘗試回答。A0 提供學習輔助，第一次清晰的回答計入等級評估。';
+
+  @override
+  String get quickSave => '儲存練習';
+
+  @override
+  String get quickUnsave => '取消儲存';
+
+  @override
+  String get quickSaved => '已儲存的練習';
+
+  @override
+  String get quickSavedEmpty => '還沒有儲存的練習。練習時，從 … 選單中選擇「儲存練習」。';
+
+  @override
+  String get quickSavedDeviceNote => '按帳號儲存在此裝置上，可再次聆聽問題和回覆。播放音訊需要連接網路。';
+
+  @override
+  String get quickSavedError => '無法更新已儲存的練習，請重試。';
 }

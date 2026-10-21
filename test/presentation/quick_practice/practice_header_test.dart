@@ -46,7 +46,11 @@ void main() {
           child: child!,
         ),
         home: Scaffold(
-          appBar: PracticeHeader(onLongerDialogues: onDialogues ?? () {}),
+          appBar: PracticeHeader(
+            onLongerDialogues: onDialogues ?? () {},
+            onSavePractice: () {},
+            onSavedPractice: () {},
+          ),
         ),
       ),
     );
@@ -118,10 +122,18 @@ void main() {
         await tester.tap(menu);
         await tester.pumpAndSettle();
         final item = find.byType(PopupMenuItem<String>);
-        expect(item, findsOneWidget);
+        expect(item, findsNWidgets(3));
         expect(
           find.descendant(of: item, matching: find.byType(Icon)),
-          findsNothing,
+          findsNWidgets(3),
+        );
+        expect(find.text('Save practice'), findsOneWidget);
+        expect(find.text('Saved practice'), findsOneWidget);
+        expect(
+          tester
+              .widgetList<PopupMenuItem<String>>(item)
+              .map((item) => item.value),
+          ['save', 'saved', 'dialogues'],
         );
         expect(find.text('Longer dialogues'), findsOneWidget);
         expect(tester.takeException(), isNull);

@@ -2301,4 +2301,25 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Nghe ví dụ và xem nghĩa, rồi thử trả lời. A0 có hỗ trợ học tập; câu trả lời đầu tiên được nhận diện rõ sẽ được tính.';
+
+  @override
+  String get quickSave => 'Lưu bài luyện tập';
+
+  @override
+  String get quickUnsave => 'Xóa khỏi mục đã lưu';
+
+  @override
+  String get quickSaved => 'Bài luyện tập đã lưu';
+
+  @override
+  String get quickSavedEmpty =>
+      'Chưa có bài luyện tập đã lưu. Chọn “Lưu bài luyện tập” trong menu … khi luyện tập.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Được lưu trên thiết bị này cho tài khoản của bạn. Nghe lại câu hỏi và các câu trả lời. Âm thanh cần kết nối internet.';
+
+  @override
+  String get quickSavedError =>
+      'Không thể cập nhật bài luyện tập đã lưu. Vui lòng thử lại.';
 }

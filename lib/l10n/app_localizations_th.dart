@@ -2281,4 +2281,25 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'ฟังตัวอย่างและดูความหมายก่อนลองตอบ A0 มีตัวช่วยในการเรียน โดยจะนับคำตอบแรกที่ระบบได้ยินชัดเจน';
+
+  @override
+  String get quickSave => 'บันทึกแบบฝึกหัด';
+
+  @override
+  String get quickUnsave => 'นำออกจากรายการที่บันทึก';
+
+  @override
+  String get quickSaved => 'แบบฝึกหัดที่บันทึกไว้';
+
+  @override
+  String get quickSavedEmpty =>
+      'ยังไม่มีแบบฝึกหัดที่บันทึกไว้ เลือก “บันทึกแบบฝึกหัด” จากเมนู … ขณะฝึก';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'บันทึกไว้ในอุปกรณ์นี้สำหรับบัญชีของคุณ ฟังคำถามและคำตอบอีกครั้ง การเล่นเสียงต้องเชื่อมต่ออินเทอร์เน็ต';
+
+  @override
+  String get quickSavedError =>
+      'อัปเดตแบบฝึกหัดที่บันทึกไว้ไม่ได้ โปรดลองอีกครั้ง';
 }

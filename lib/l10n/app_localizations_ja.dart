@@ -2198,4 +2198,23 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get quickA0Hint =>
       '音声と意味を確認してから答えてみましょう。A0 では学習サポートを利用でき、最初にはっきり認識された回答が評価に反映されます。';
+
+  @override
+  String get quickSave => '練習を保存';
+
+  @override
+  String get quickUnsave => '保存済みから削除';
+
+  @override
+  String get quickSaved => '保存した練習';
+
+  @override
+  String get quickSavedEmpty => '保存した練習はまだありません。練習中に … メニューから「練習を保存」を選んでください。';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'この端末にアカウント別に保存されます。質問と返答をもう一度聞くことができます。音声の再生にはインターネット接続が必要です。';
+
+  @override
+  String get quickSavedError => '保存した練習を更新できませんでした。もう一度お試しください。';
 }

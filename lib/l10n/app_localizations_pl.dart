@@ -2379,4 +2379,25 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Posłuchaj przykładów i sprawdź ich znaczenie, a potem odpowiedz. A0 zapewnia pomoc w nauce; liczy się pierwsza wyraźnie rozpoznana odpowiedź.';
+
+  @override
+  String get quickSave => 'Zapisz ćwiczenie';
+
+  @override
+  String get quickUnsave => 'Usuń z zapisanych';
+
+  @override
+  String get quickSaved => 'Zapisane ćwiczenia';
+
+  @override
+  String get quickSavedEmpty =>
+      'Nie masz jeszcze zapisanych ćwiczeń. Podczas ćwiczenia wybierz „Zapisz ćwiczenie” z menu ….';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Zapisane na tym urządzeniu dla Twojego konta. Posłuchaj ponownie pytania i odpowiedzi. Dźwięk wymaga połączenia z internetem.';
+
+  @override
+  String get quickSavedError =>
+      'Nie udało się zaktualizować zapisanych ćwiczeń. Spróbuj ponownie.';
 }

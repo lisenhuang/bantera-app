@@ -685,5 +685,11 @@
   "quickReviewMode": "複習 · 目前等級：{level}",
   "quickA0Label": "從零開始",
   "quickA0Description": "A0 是 Bantera 在 A1 之前的入門階段，參考 Pre-A1，並非 CEFR 官方等級。從單字和簡短日常用語開始。",
-  "quickA0Hint": "先聽示範、理解意思，再嘗試回答。A0 提供學習輔助，第一次清晰的回答計入等級評估。"
+  "quickA0Hint": "先聽示範、理解意思，再嘗試回答。A0 提供學習輔助，第一次清晰的回答計入等級評估。",
+  "quickSave": "儲存練習",
+  "quickUnsave": "取消儲存",
+  "quickSaved": "已儲存的練習",
+  "quickSavedEmpty": "還沒有儲存的練習。練習時，從 … 選單中選擇「儲存練習」。",
+  "quickSavedDeviceNote": "按帳號儲存在此裝置上，可再次聆聽問題和回覆。播放音訊需要連接網路。",
+  "quickSavedError": "無法更新已儲存的練習，請重試。"
 }

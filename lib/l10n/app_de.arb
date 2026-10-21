@@ -685,5 +685,11 @@
   "quickReviewMode": "Wiederholung · Aktuelles Niveau: {level}",
   "quickA0Label": "Ganz von vorn",
   "quickA0Description": "A0 ist Banteras Einstiegsstufe vor A1, angelehnt an Pre-A1. Sie ist keine offizielle GER-Stufe. Beginne mit einzelnen Wörtern und kurzen Alltagsausdrücken.",
-  "quickA0Hint": "Höre die Beispiele an, prüfe ihre Bedeutung und antworte dann. A0 bietet Lernhilfen; deine erste klar erkannte Antwort zählt."
+  "quickA0Hint": "Höre die Beispiele an, prüfe ihre Bedeutung und antworte dann. A0 bietet Lernhilfen; deine erste klar erkannte Antwort zählt.",
+  "quickSave": "Übung speichern",
+  "quickUnsave": "Aus Gespeicherten entfernen",
+  "quickSaved": "Gespeicherte Übungen",
+  "quickSavedEmpty": "Noch keine gespeicherten Übungen. Wähle beim Üben „Übung speichern“ im …-Menü.",
+  "quickSavedDeviceNote": "Für dein Konto auf diesem Gerät gespeichert. Höre dir die Frage und Antworten erneut an. Für Audio ist eine Internetverbindung erforderlich.",
+  "quickSavedError": "Gespeicherte Übungen konnten nicht aktualisiert werden. Bitte versuche es erneut."
 }

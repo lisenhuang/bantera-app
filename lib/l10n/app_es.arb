@@ -685,5 +685,11 @@
   "quickReviewMode": "Repaso · Nivel actual: {level}",
   "quickA0Label": "Desde cero",
   "quickA0Description": "A0 es la etapa inicial de Bantera anterior a A1, inspirada en Pre-A1. No es un nivel oficial del MCER. Empieza con palabras sueltas y expresiones cotidianas breves.",
-  "quickA0Hint": "Escucha los ejemplos y consulta su significado antes de responder. A0 incluye apoyo para aprender; cuenta tu primera respuesta reconocida con claridad."
+  "quickA0Hint": "Escucha los ejemplos y consulta su significado antes de responder. A0 incluye apoyo para aprender; cuenta tu primera respuesta reconocida con claridad.",
+  "quickSave": "Guardar práctica",
+  "quickUnsave": "Quitar de guardados",
+  "quickSaved": "Prácticas guardadas",
+  "quickSavedEmpty": "Aún no hay prácticas guardadas. Elige «Guardar práctica» en el menú … mientras practicas.",
+  "quickSavedDeviceNote": "Guardadas en este dispositivo para tu cuenta. Vuelve a escuchar la pregunta y las respuestas. El audio requiere conexión a internet.",
+  "quickSavedError": "No se pudieron actualizar las prácticas guardadas. Inténtalo de nuevo."
 }

@@ -2366,4 +2366,25 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Höre die Beispiele an, prüfe ihre Bedeutung und antworte dann. A0 bietet Lernhilfen; deine erste klar erkannte Antwort zählt.';
+
+  @override
+  String get quickSave => 'Übung speichern';
+
+  @override
+  String get quickUnsave => 'Aus Gespeicherten entfernen';
+
+  @override
+  String get quickSaved => 'Gespeicherte Übungen';
+
+  @override
+  String get quickSavedEmpty =>
+      'Noch keine gespeicherten Übungen. Wähle beim Üben „Übung speichern“ im …-Menü.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Für dein Konto auf diesem Gerät gespeichert. Höre dir die Frage und Antworten erneut an. Für Audio ist eine Internetverbindung erforderlich.';
+
+  @override
+  String get quickSavedError =>
+      'Gespeicherte Übungen konnten nicht aktualisiert werden. Bitte versuche es erneut.';
 }

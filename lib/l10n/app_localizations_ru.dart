@@ -2370,4 +2370,25 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Послушайте примеры и узнайте их значение, затем ответьте. На A0 доступны подсказки; учитывается первый чётко распознанный ответ.';
+
+  @override
+  String get quickSave => 'Сохранить упражнение';
+
+  @override
+  String get quickUnsave => 'Удалить из сохранённых';
+
+  @override
+  String get quickSaved => 'Сохранённые упражнения';
+
+  @override
+  String get quickSavedEmpty =>
+      'Сохранённых упражнений пока нет. Во время практики выберите «Сохранить упражнение» в меню ….';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Сохранено на этом устройстве для вашего аккаунта. Послушайте вопрос и ответы ещё раз. Для аудио требуется подключение к интернету.';
+
+  @override
+  String get quickSavedError =>
+      'Не удалось обновить сохранённые упражнения. Попробуйте ещё раз.';
 }

@@ -720,5 +720,11 @@
   "quickReviewMode": "复习 · 当前等级：{level}",
   "quickA0Label": "从零开始",
   "quickA0Description": "A0 是 Bantera 在 A1 之前的入门阶段，参考 Pre-A1，并非 CEFR 官方等级。从单词和简短日常用语开始。",
-  "quickA0Hint": "先听示范、理解意思，再尝试回答。A0 提供学习辅助，第一次清晰的回答计入等级评估。"
+  "quickA0Hint": "先听示范、理解意思，再尝试回答。A0 提供学习辅助，第一次清晰的回答计入等级评估。",
+  "quickSave": "保存练习",
+  "quickUnsave": "取消保存",
+  "quickSaved": "已保存的练习",
+  "quickSavedEmpty": "还没有保存的练习。练习时，从 … 菜单中选择“保存练习”。",
+  "quickSavedDeviceNote": "按账号保存在此设备上，可再次聆听问题和回复。播放音频需要连接互联网。",
+  "quickSavedError": "无法更新已保存的练习，请重试。"
 }

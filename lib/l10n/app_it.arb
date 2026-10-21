@@ -685,5 +685,11 @@
   "quickReviewMode": "Ripasso · Livello attuale: {level}",
   "quickA0Label": "Da zero",
   "quickA0Description": "A0 è la fase iniziale di Bantera prima di A1, ispirata al Pre-A1. Non è un livello ufficiale del QCER. Inizia con singole parole e brevi espressioni quotidiane.",
-  "quickA0Hint": "Ascolta gli esempi e controlla il significato, poi rispondi. A0 include un aiuto per imparare; conta la prima risposta riconosciuta chiaramente."
+  "quickA0Hint": "Ascolta gli esempi e controlla il significato, poi rispondi. A0 include un aiuto per imparare; conta la prima risposta riconosciuta chiaramente.",
+  "quickSave": "Salva esercizio",
+  "quickUnsave": "Rimuovi dai salvati",
+  "quickSaved": "Esercizi salvati",
+  "quickSavedEmpty": "Nessun esercizio salvato. Scegli “Salva esercizio” dal menu … durante la pratica.",
+  "quickSavedDeviceNote": "Salvati su questo dispositivo per il tuo account. Riascolta la domanda e le risposte. L’audio richiede una connessione a Internet.",
+  "quickSavedError": "Impossibile aggiornare gli esercizi salvati. Riprova."
 }

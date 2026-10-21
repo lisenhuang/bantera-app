@@ -2369,4 +2369,25 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Ascolta gli esempi e controlla il significato, poi rispondi. A0 include un aiuto per imparare; conta la prima risposta riconosciuta chiaramente.';
+
+  @override
+  String get quickSave => 'Salva esercizio';
+
+  @override
+  String get quickUnsave => 'Rimuovi dai salvati';
+
+  @override
+  String get quickSaved => 'Esercizi salvati';
+
+  @override
+  String get quickSavedEmpty =>
+      'Nessun esercizio salvato. Scegli “Salva esercizio” dal menu … durante la pratica.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Salvati su questo dispositivo per il tuo account. Riascolta la domanda e le risposte. L’audio richiede una connessione a Internet.';
+
+  @override
+  String get quickSavedError =>
+      'Impossibile aggiornare gli esercizi salvati. Riprova.';
 }

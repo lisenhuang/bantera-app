@@ -685,5 +685,11 @@
   "quickReviewMode": "Powtórka · Obecny poziom: {level}",
   "quickA0Label": "Od zera",
   "quickA0Description": "A0 to etap początkowy Bantera przed A1, inspirowany Pre-A1. Nie jest oficjalnym poziomem CEFR. Zacznij od pojedynczych słów i krótkich codziennych zwrotów.",
-  "quickA0Hint": "Posłuchaj przykładów i sprawdź ich znaczenie, a potem odpowiedz. A0 zapewnia pomoc w nauce; liczy się pierwsza wyraźnie rozpoznana odpowiedź."
+  "quickA0Hint": "Posłuchaj przykładów i sprawdź ich znaczenie, a potem odpowiedz. A0 zapewnia pomoc w nauce; liczy się pierwsza wyraźnie rozpoznana odpowiedź.",
+  "quickSave": "Zapisz ćwiczenie",
+  "quickUnsave": "Usuń z zapisanych",
+  "quickSaved": "Zapisane ćwiczenia",
+  "quickSavedEmpty": "Nie masz jeszcze zapisanych ćwiczeń. Podczas ćwiczenia wybierz „Zapisz ćwiczenie” z menu ….",
+  "quickSavedDeviceNote": "Zapisane na tym urządzeniu dla Twojego konta. Posłuchaj ponownie pytania i odpowiedzi. Dźwięk wymaga połączenia z internetem.",
+  "quickSavedError": "Nie udało się zaktualizować zapisanych ćwiczeń. Spróbuj ponownie."
 }

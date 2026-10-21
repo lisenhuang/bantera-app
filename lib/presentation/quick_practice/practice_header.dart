@@ -3,8 +3,17 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 
 class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
-  const PracticeHeader({super.key, this.onLongerDialogues});
+  const PracticeHeader({
+    super.key,
+    this.onLongerDialogues,
+    this.onSavePractice,
+    this.onSavedPractice,
+    this.isSaved = false,
+  });
   final VoidCallback? onLongerDialogues;
+  final VoidCallback? onSavePractice;
+  final VoidCallback? onSavedPractice;
+  final bool isSaved;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -42,18 +51,46 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                 height: buttonSize,
                 child: PopupMenuButton<String>(
                   key: const ValueKey('practice-more-menu'),
-                  enabled: onLongerDialogues != null,
+                  enabled: onLongerDialogues != null || onSavedPractice != null,
                   tooltip: l.more,
                   icon: const Icon(Icons.more_horiz),
                   position: PopupMenuPosition.under,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  onSelected: (_) => onLongerDialogues?.call(),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'save':
+                        onSavePractice?.call();
+                      case 'saved':
+                        onSavedPractice?.call();
+                      case 'dialogues':
+                        onLongerDialogues?.call();
+                    }
+                  },
                   itemBuilder: (_) => [
                     PopupMenuItem(
+                      value: 'save',
+                      enabled: onSavePractice != null,
+                      child: _menuLabel(
+                        isSaved
+                            ? Icons.bookmark_remove_outlined
+                            : Icons.bookmark_add_outlined,
+                        isSaved ? l.quickUnsave : l.quickSave,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'saved',
+                      enabled: onSavedPractice != null,
+                      child: _menuLabel(Icons.bookmarks_outlined, l.quickSaved),
+                    ),
+                    PopupMenuItem(
                       value: 'dialogues',
-                      child: Text(l.longerDialogues),
+                      enabled: onLongerDialogues != null,
+                      child: _menuLabel(
+                        Icons.forum_outlined,
+                        l.longerDialogues,
+                      ),
                     ),
                   ],
                 ),
@@ -63,5 +100,13 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
         );
       },
     ),
+  );
+
+  Widget _menuLabel(IconData icon, String label) => Row(
+    children: [
+      Icon(icon, size: 22),
+      const SizedBox(width: 12),
+      Flexible(child: Text(label)),
+    ],
   );
 }

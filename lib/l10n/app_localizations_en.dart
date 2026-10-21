@@ -2363,4 +2363,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quickA0Hint =>
       'Listen to the examples and their meanings, then try a reply. A0 includes learning support; your first clear answer counts.';
+
+  @override
+  String get quickSave => 'Save practice';
+
+  @override
+  String get quickUnsave => 'Remove from saved';
+
+  @override
+  String get quickSaved => 'Saved practice';
+
+  @override
+  String get quickSavedEmpty =>
+      'No saved practice yet. Choose “Save practice” from the … menu during practice.';
+
+  @override
+  String get quickSavedDeviceNote =>
+      'Saved on this device for your account. Listen to the question and replies again. Audio requires an internet connection.';
+
+  @override
+  String get quickSavedError =>
+      'Could not update saved practice. Please try again.';
 }
