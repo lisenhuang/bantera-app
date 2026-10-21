@@ -691,5 +691,22 @@
   "quickSaved": "Bài luyện tập đã lưu",
   "quickSavedEmpty": "Chưa có bài luyện tập đã lưu. Chọn “Lưu bài luyện tập” trong menu … khi luyện tập.",
   "quickSavedDeviceNote": "Được lưu trên thiết bị này cho tài khoản của bạn. Nghe lại câu hỏi và các câu trả lời. Âm thanh cần kết nối internet.",
-  "quickSavedError": "Không thể cập nhật bài luyện tập đã lưu. Vui lòng thử lại."
+  "quickSavedError": "Không thể cập nhật bài luyện tập đã lưu. Vui lòng thử lại.",
+  "leaderboardTitle": "Bảng xếp hạng nói",
+  "leaderboardScope": "7 ngày qua",
+  "leaderboardYourPosition": "Vị trí của bạn",
+  "leaderboardSpokenWords": "từ đã nói",
+  "leaderboardOpen": "Xem bảng xếp hạng",
+  "leaderboardError": "Không thể cập nhật. Vui lòng thử lại.",
+  "leaderboardLearner": "Người học",
+  "leaderboardYou": "Bạn",
+  "leaderboardRefresh": "Làm mới",
+  "leaderboardLoading": "Đang tải bảng xếp hạng",
+  "leaderboardEncouragement": "Mọi cuộc trò chuyện đều có ý nghĩa. Tiến bộ theo nhịp của bạn.",
+  "leaderboardUpdate": "Có bảng xếp hạng mới. Làm mới khi bạn sẵn sàng.",
+  "leaderboardEmpty": "Chưa có hoạt động nói. Hãy bắt đầu trò chuyện.",
+  "leaderboardNoActivity": "Nói trong Luyện tập hoặc Trò chuyện để có thứ hạng.",
+  "leaderboardFootnote": "Tổng bằng nhau có cùng hạng. Hôm nay và sáu ngày trước theo UTC. Từ ngoại tuyến xuất hiện sau đồng bộ.",
+  "leaderboardLegacy": "Hoạt động cũ giữ ngày ghi ban đầu. Hoạt động mới dùng UTC.",
+  "leaderboardLoadMore": "Tải thêm"
 }

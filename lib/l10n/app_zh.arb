@@ -726,5 +726,22 @@
   "quickSaved": "已保存的练习",
   "quickSavedEmpty": "还没有保存的练习。练习时，从 … 菜单中选择“保存练习”。",
   "quickSavedDeviceNote": "按账号保存在此设备上，可再次聆听问题和回复。播放音频需要连接互联网。",
-  "quickSavedError": "无法更新已保存的练习，请重试。"
+  "quickSavedError": "无法更新已保存的练习，请重试。",
+  "leaderboardTitle": "口语排行榜",
+  "leaderboardScope": "最近7天",
+  "leaderboardYourPosition": "你的位置",
+  "leaderboardSpokenWords": "口语单词",
+  "leaderboardOpen": "查看排行榜",
+  "leaderboardError": "无法刷新排行榜，请重试。",
+  "leaderboardLearner": "学习者",
+  "leaderboardYou": "你",
+  "leaderboardRefresh": "刷新",
+  "leaderboardLoading": "正在加载排行榜",
+  "leaderboardEncouragement": "每次对话都算数，按自己的节奏进步。",
+  "leaderboardUpdate": "新排名已准备好，方便时点击刷新。",
+  "leaderboardEmpty": "还没有口语活动，从一次对话开始吧。",
+  "leaderboardNoActivity": "在练习或聊天中开口说话，即可获得排名。",
+  "leaderboardFootnote": "总数相同则并列。按UTC计算今天及之前六天。离线数据同步后计入。",
+  "leaderboardLegacy": "较早的活动保留原始记录日期，新活动使用UTC。",
+  "leaderboardLoadMore": "加载更多"
 }

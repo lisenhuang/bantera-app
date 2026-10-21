@@ -2326,4 +2326,61 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Tidak dapat memperbarui latihan tersimpan. Silakan coba lagi.';
+
+  @override
+  String get leaderboardTitle => 'Peringkat berbicara';
+
+  @override
+  String get leaderboardScope => '7 hari terakhir';
+
+  @override
+  String get leaderboardYourPosition => 'Posisimu';
+
+  @override
+  String get leaderboardSpokenWords => 'kata diucapkan';
+
+  @override
+  String get leaderboardOpen => 'Lihat peringkat';
+
+  @override
+  String get leaderboardError => 'Tidak dapat memperbarui. Coba lagi.';
+
+  @override
+  String get leaderboardLearner => 'Pelajar';
+
+  @override
+  String get leaderboardYou => 'Kamu';
+
+  @override
+  String get leaderboardRefresh => 'Perbarui';
+
+  @override
+  String get leaderboardLoading => 'Memuat peringkat';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Setiap percakapan berarti. Berkembanglah dengan ritmemu.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Peringkat baru tersedia. Perbarui saat kamu siap.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Belum ada aktivitas berbicara. Mulailah percakapan.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Bicaralah di Latihan atau Chat untuk mendapatkan posisi.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Jumlah sama berbagi peringkat. Hari ini dan enam hari sebelumnya dalam UTC. Kata offline muncul setelah sinkronisasi.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Aktivitas lama mempertahankan tanggal aslinya. Aktivitas baru memakai UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Muat lagi';
 }

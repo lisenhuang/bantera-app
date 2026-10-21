@@ -1408,6 +1408,43 @@ class AuthApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> speakingLeaderboard({
+    required String accessToken,
+    int offset = 0,
+  }) => _sendJsonRequest(
+    method: 'GET',
+    path: '/api/speaking-leaderboard?offset=$offset',
+    accessToken: accessToken,
+    expectedUserId: _wordActivityTokenSubject(accessToken),
+  ).timeout(const Duration(seconds: 15));
+
+  Future<void> syncSpeakingActivity({
+    required String accessToken,
+    required String deviceId,
+    required Map<String, WordTotals> days,
+    String? legacyThrough,
+  }) async {
+    await _sendJsonRequest(
+      method: 'POST',
+      path: '/api/me/speaking-activity',
+      accessToken: accessToken,
+      expectedUserId: _wordActivityTokenSubject(accessToken),
+      payload: {
+        'deviceId': deviceId,
+        'legacyThroughDate': legacyThrough,
+        'days': [
+          for (final entry in days.entries)
+            {
+              'date': wordActivityBucketDate(entry.key),
+              'language': wordActivityBucketLanguage(entry.key),
+              'spokenWords': entry.value.spoken,
+              'listenedWords': 0,
+            },
+        ],
+      },
+    ).timeout(const Duration(seconds: 15));
+  }
+
   Future<Map<String, WordTotals>> fetchWordActivity({
     required String accessToken,
   }) async {
@@ -1563,7 +1600,9 @@ class AuthApiClient {
   }) async {
     await _requireAiConsent(accessToken);
     return _sendJsonRequest(
-      method: 'POST', path: '/api/me/practice/$path', payload: payload,
+      method: 'POST',
+      path: '/api/me/practice/$path',
+      payload: payload,
       accessToken: accessToken,
       expectedUserId: _wordActivityTokenSubject(accessToken),
     ).timeout(const Duration(seconds: 100));

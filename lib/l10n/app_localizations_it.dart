@@ -2390,4 +2390,61 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Impossibile aggiornare gli esercizi salvati. Riprova.';
+
+  @override
+  String get leaderboardTitle => 'Classifica di conversazione';
+
+  @override
+  String get leaderboardScope => 'Ultimi 7 giorni';
+
+  @override
+  String get leaderboardYourPosition => 'La tua posizione';
+
+  @override
+  String get leaderboardSpokenWords => 'parole pronunciate';
+
+  @override
+  String get leaderboardOpen => 'Vedi classifica';
+
+  @override
+  String get leaderboardError => 'Impossibile aggiornare. Riprova.';
+
+  @override
+  String get leaderboardLearner => 'Studente';
+
+  @override
+  String get leaderboardYou => 'Tu';
+
+  @override
+  String get leaderboardRefresh => 'Aggiorna';
+
+  @override
+  String get leaderboardLoading => 'Caricamento classifica';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Ogni conversazione conta. Cresci al tuo ritmo.';
+
+  @override
+  String get leaderboardUpdate =>
+      'La classifica è aggiornata. Aggiorna quando vuoi.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Ancora nessuna attività orale. Inizia con una conversazione.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Parla in Pratica o Chat per ottenere una posizione.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Totali uguali condividono la posizione. Oggi e i sei giorni precedenti in UTC. Le parole offline appaiono dopo la sincronizzazione.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Le attività precedenti mantengono la data originale. Le nuove usano UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Carica altro';
 }

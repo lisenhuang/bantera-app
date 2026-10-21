@@ -691,5 +691,22 @@
   "quickSaved": "Exercices enregistrés",
   "quickSavedEmpty": "Aucun exercice enregistré. Choisis « Enregistrer l’exercice » dans le menu … pendant la pratique.",
   "quickSavedDeviceNote": "Enregistrés sur cet appareil pour ton compte. Réécoute la question et les réponses. Une connexion Internet est nécessaire pour l’audio.",
-  "quickSavedError": "Impossible de mettre à jour les exercices enregistrés. Réessaie."
+  "quickSavedError": "Impossible de mettre à jour les exercices enregistrés. Réessaie.",
+  "leaderboardTitle": "Classement à l’oral",
+  "leaderboardScope": "7 derniers jours",
+  "leaderboardYourPosition": "Ta position",
+  "leaderboardSpokenWords": "mots prononcés",
+  "leaderboardOpen": "Voir le classement",
+  "leaderboardError": "Impossible d’actualiser. Réessaie.",
+  "leaderboardLearner": "Apprenant",
+  "leaderboardYou": "Toi",
+  "leaderboardRefresh": "Actualiser",
+  "leaderboardLoading": "Chargement du classement",
+  "leaderboardEncouragement": "Chaque conversation compte. Avance à ton rythme.",
+  "leaderboardUpdate": "Un classement actualisé est disponible. Actualise quand tu veux.",
+  "leaderboardEmpty": "Pas encore d’activité orale. Commence par une conversation.",
+  "leaderboardNoActivity": "Parle dans Pratique ou Chats pour obtenir une place.",
+  "leaderboardFootnote": "Les totaux égaux partagent le même rang. Aujourd’hui et les six jours précédents en UTC. Les mots hors ligne sont ajoutés après synchronisation.",
+  "leaderboardLegacy": "L’activité passée conserve sa date d’origine. La nouvelle utilise UTC.",
+  "leaderboardLoadMore": "Charger plus"
 }

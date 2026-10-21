@@ -54,6 +54,15 @@ void main() {
     requestReached = null;
     releaseRequest = null;
     server.listen((request) async {
+      if (request.uri.path == '/api/me/speaking-activity') {
+        final payload =
+            jsonDecode(await utf8.decoder.bind(request).join()) as Map;
+        expect(payload['days'], isA<List>());
+        request.response.statusCode = offline ? 503 : 200;
+        request.response.write(jsonEncode({'saved': !offline}));
+        await request.response.close();
+        return;
+      }
       requests++;
       expect(request.uri.path, '/api/v2/me/word-stats');
       final requestOwner = request.headers.value(

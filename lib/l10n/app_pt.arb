@@ -691,5 +691,22 @@
   "quickSaved": "Exercícios guardados",
   "quickSavedEmpty": "Ainda não há exercícios guardados. Escolhe “Guardar exercício” no menu … enquanto praticas.",
   "quickSavedDeviceNote": "Guardados neste dispositivo para a tua conta. Ouve novamente a pergunta e as respostas. O áudio requer uma ligação à Internet.",
-  "quickSavedError": "Não foi possível atualizar os exercícios guardados. Tenta novamente."
+  "quickSavedError": "Não foi possível atualizar os exercícios guardados. Tenta novamente.",
+  "leaderboardTitle": "Classificação de conversação",
+  "leaderboardScope": "Últimos 7 dias",
+  "leaderboardYourPosition": "A tua posição",
+  "leaderboardSpokenWords": "palavras faladas",
+  "leaderboardOpen": "Ver classificação",
+  "leaderboardError": "Não foi possível atualizar. Tenta novamente.",
+  "leaderboardLearner": "Estudante",
+  "leaderboardYou": "Tu",
+  "leaderboardRefresh": "Atualizar",
+  "leaderboardLoading": "A carregar classificação",
+  "leaderboardEncouragement": "Cada conversa conta. Aprende ao teu ritmo.",
+  "leaderboardUpdate": "Há uma classificação atualizada. Atualiza quando quiseres.",
+  "leaderboardEmpty": "Ainda não há atividade oral. Começa com uma conversa.",
+  "leaderboardNoActivity": "Fala na Prática ou nas Conversas para obter uma posição.",
+  "leaderboardFootnote": "Totais iguais partilham a posição. Hoje e os seis dias anteriores em UTC. Palavras offline aparecem após sincronizar.",
+  "leaderboardLegacy": "A atividade anterior mantém a data original. A nova usa UTC.",
+  "leaderboardLoadMore": "Carregar mais"
 }

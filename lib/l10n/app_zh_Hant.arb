@@ -691,5 +691,22 @@
   "quickSaved": "已儲存的練習",
   "quickSavedEmpty": "還沒有儲存的練習。練習時，從 … 選單中選擇「儲存練習」。",
   "quickSavedDeviceNote": "按帳號儲存在此裝置上，可再次聆聽問題和回覆。播放音訊需要連接網路。",
-  "quickSavedError": "無法更新已儲存的練習，請重試。"
+  "quickSavedError": "無法更新已儲存的練習，請重試。",
+  "leaderboardTitle": "口語排行榜",
+  "leaderboardScope": "最近7天",
+  "leaderboardYourPosition": "你的位置",
+  "leaderboardSpokenWords": "口語單字",
+  "leaderboardOpen": "查看排行榜",
+  "leaderboardError": "無法重新整理排行榜，請重試。",
+  "leaderboardLearner": "學習者",
+  "leaderboardYou": "你",
+  "leaderboardRefresh": "重新整理",
+  "leaderboardLoading": "正在載入排行榜",
+  "leaderboardEncouragement": "每次對話都算數，按自己的步調進步。",
+  "leaderboardUpdate": "新排名已準備好，方便時點選重新整理。",
+  "leaderboardEmpty": "還沒有口語活動，從一次對話開始吧。",
+  "leaderboardNoActivity": "在練習或聊天中開口說話，即可獲得排名。",
+  "leaderboardFootnote": "總數相同則並列。按UTC計算今天及之前六天。離線資料同步後計入。",
+  "leaderboardLegacy": "較早的活動保留原始記錄日期，新活動使用UTC。",
+  "leaderboardLoadMore": "載入更多"
 }

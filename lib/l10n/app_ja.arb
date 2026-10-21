@@ -726,5 +726,22 @@
   "quickSaved": "保存した練習",
   "quickSavedEmpty": "保存した練習はまだありません。練習中に … メニューから「練習を保存」を選んでください。",
   "quickSavedDeviceNote": "この端末にアカウント別に保存されます。質問と返答をもう一度聞くことができます。音声の再生にはインターネット接続が必要です。",
-  "quickSavedError": "保存した練習を更新できませんでした。もう一度お試しください。"
+  "quickSavedError": "保存した練習を更新できませんでした。もう一度お試しください。",
+  "leaderboardTitle": "スピーキングランキング",
+  "leaderboardScope": "過去7日間",
+  "leaderboardYourPosition": "あなたの順位",
+  "leaderboardSpokenWords": "話した単語",
+  "leaderboardOpen": "ランキングを見る",
+  "leaderboardError": "ランキングを更新できません。もう一度お試しください。",
+  "leaderboardLearner": "学習者",
+  "leaderboardYou": "あなた",
+  "leaderboardRefresh": "更新",
+  "leaderboardLoading": "ランキングを読み込み中",
+  "leaderboardEncouragement": "どの会話も一歩前進。自分のペースで続けましょう。",
+  "leaderboardUpdate": "新しいランキングがあります。準備ができたら更新してください。",
+  "leaderboardEmpty": "まだ会話の記録がありません。会話から始めましょう。",
+  "leaderboardNoActivity": "練習やチャットで話すと順位がつきます。",
+  "leaderboardFootnote": "同じ合計は同順位。UTCの今日と過去6日間。オフライン分は同期後に反映。",
+  "leaderboardLegacy": "過去の記録は元の日付を保持し、新しい記録はUTCを使います。",
+  "leaderboardLoadMore": "さらに読み込む"
 }

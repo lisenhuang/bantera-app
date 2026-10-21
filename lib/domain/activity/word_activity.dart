@@ -62,10 +62,21 @@ class WordActivityLedger {
   Map<String, WordTotals> local = {};
   Map<String, WordTotals> acknowledged = {};
   Map<String, WordTotals> remote = {};
+  Map<String, WordTotals> speakingUtc = {};
+  String? speakingLegacyThrough;
 
   void record(DateTime date, WordTotals words, {String? language}) {
     final day = wordActivityBucketKey(wordActivityDateKey(date), language);
     local[day] = (local[day] ?? const WordTotals()) + words;
+    final utcDay = wordActivityBucketKey(
+      wordActivityDateKey(date.toUtc()),
+      language,
+    );
+    if (words.spoken > 0) {
+      speakingUtc[utcDay] =
+          (speakingUtc[utcDay] ?? const WordTotals()) +
+          WordTotals(spoken: words.spoken);
+    }
   }
 
   Map<String, WordTotals> get pendingSnapshots => {
@@ -145,6 +156,10 @@ class WordActivityLedger {
       (key, value) => MapEntry(key, value.toJson()),
     ),
     'remote': remote.map((key, value) => MapEntry(key, value.toJson())),
+    'speakingUtc': speakingUtc.map(
+      (key, value) => MapEntry(key, value.toJson()),
+    ),
+    'speakingLegacyThrough': speakingLegacyThrough,
   };
 
   factory WordActivityLedger.fromJson(Map<String, dynamic> json) {
@@ -161,6 +176,16 @@ class WordActivityLedger {
           .toSet()
       ..local = read('local')
       ..acknowledged = read('acknowledged')
-      ..remote = read('remote');
+      ..remote = read('remote')
+      // Older releases stored calendar dates, not timestamps. Preserve those
+      // buckets once; all newly recorded speech uses its actual UTC date.
+      ..speakingUtc = json.containsKey('speakingUtc')
+          ? read('speakingUtc')
+          : read('local')
+      ..speakingLegacyThrough = json.containsKey('speakingUtc')
+          ? json['speakingLegacyThrough'] as String?
+          : wordActivityDateKey(
+              DateTime.now().toUtc().add(const Duration(days: 1)),
+            );
   }
 }

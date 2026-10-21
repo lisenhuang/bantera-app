@@ -2302,4 +2302,59 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get quickSavedError =>
       'อัปเดตแบบฝึกหัดที่บันทึกไว้ไม่ได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get leaderboardTitle => 'อันดับการพูด';
+
+  @override
+  String get leaderboardScope => '7 วันที่ผ่านมา';
+
+  @override
+  String get leaderboardYourPosition => 'อันดับของคุณ';
+
+  @override
+  String get leaderboardSpokenWords => 'คำที่พูด';
+
+  @override
+  String get leaderboardOpen => 'ดูอันดับ';
+
+  @override
+  String get leaderboardError => 'อัปเดตไม่ได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get leaderboardLearner => 'ผู้เรียน';
+
+  @override
+  String get leaderboardYou => 'คุณ';
+
+  @override
+  String get leaderboardRefresh => 'รีเฟรช';
+
+  @override
+  String get leaderboardLoading => 'กำลังโหลดอันดับ';
+
+  @override
+  String get leaderboardEncouragement =>
+      'ทุกบทสนทนามีค่า พัฒนาไปตามจังหวะของคุณ';
+
+  @override
+  String get leaderboardUpdate => 'มีอันดับใหม่แล้ว รีเฟรชเมื่อคุณพร้อม';
+
+  @override
+  String get leaderboardEmpty =>
+      'ยังไม่มีกิจกรรมการพูด เริ่มด้วยการสนทนาได้เลย';
+
+  @override
+  String get leaderboardNoActivity => 'พูดในแบบฝึกหัดหรือแชทเพื่อรับอันดับ';
+
+  @override
+  String get leaderboardFootnote =>
+      'จำนวนเท่ากันได้อันดับเดียวกัน วันนี้และหกวันก่อนหน้าตาม UTC คำออฟไลน์จะปรากฏหลังซิงค์';
+
+  @override
+  String get leaderboardLegacy =>
+      'กิจกรรมเก่าเก็บวันที่เดิม กิจกรรมใหม่ใช้ UTC';
+
+  @override
+  String get leaderboardLoadMore => 'โหลดเพิ่มเติม';
 }

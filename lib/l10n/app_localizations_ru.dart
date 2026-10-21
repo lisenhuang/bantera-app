@@ -2391,4 +2391,61 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Не удалось обновить сохранённые упражнения. Попробуйте ещё раз.';
+
+  @override
+  String get leaderboardTitle => 'Рейтинг разговорной практики';
+
+  @override
+  String get leaderboardScope => 'Последние 7 дней';
+
+  @override
+  String get leaderboardYourPosition => 'Ваша позиция';
+
+  @override
+  String get leaderboardSpokenWords => 'произнесённых слов';
+
+  @override
+  String get leaderboardOpen => 'Открыть рейтинг';
+
+  @override
+  String get leaderboardError => 'Не удалось обновить. Попробуйте ещё раз.';
+
+  @override
+  String get leaderboardLearner => 'Ученик';
+
+  @override
+  String get leaderboardYou => 'Вы';
+
+  @override
+  String get leaderboardRefresh => 'Обновить';
+
+  @override
+  String get leaderboardLoading => 'Загрузка рейтинга';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Каждый разговор важен. Развивайтесь в своём темпе.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Доступен новый рейтинг. Обновите, когда будете готовы.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Пока нет разговорной активности. Начните с беседы.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Говорите в Практике или Чатах, чтобы получить позицию.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Равные результаты делят место. Сегодня и шесть предыдущих дней по UTC. Офлайн-слова появятся после синхронизации.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Старая активность сохраняет исходную дату. Новая использует UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Загрузить ещё';
 }

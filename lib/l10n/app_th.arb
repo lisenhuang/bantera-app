@@ -691,5 +691,22 @@
   "quickSaved": "แบบฝึกหัดที่บันทึกไว้",
   "quickSavedEmpty": "ยังไม่มีแบบฝึกหัดที่บันทึกไว้ เลือก “บันทึกแบบฝึกหัด” จากเมนู … ขณะฝึก",
   "quickSavedDeviceNote": "บันทึกไว้ในอุปกรณ์นี้สำหรับบัญชีของคุณ ฟังคำถามและคำตอบอีกครั้ง การเล่นเสียงต้องเชื่อมต่ออินเทอร์เน็ต",
-  "quickSavedError": "อัปเดตแบบฝึกหัดที่บันทึกไว้ไม่ได้ โปรดลองอีกครั้ง"
+  "quickSavedError": "อัปเดตแบบฝึกหัดที่บันทึกไว้ไม่ได้ โปรดลองอีกครั้ง",
+  "leaderboardTitle": "อันดับการพูด",
+  "leaderboardScope": "7 วันที่ผ่านมา",
+  "leaderboardYourPosition": "อันดับของคุณ",
+  "leaderboardSpokenWords": "คำที่พูด",
+  "leaderboardOpen": "ดูอันดับ",
+  "leaderboardError": "อัปเดตไม่ได้ โปรดลองอีกครั้ง",
+  "leaderboardLearner": "ผู้เรียน",
+  "leaderboardYou": "คุณ",
+  "leaderboardRefresh": "รีเฟรช",
+  "leaderboardLoading": "กำลังโหลดอันดับ",
+  "leaderboardEncouragement": "ทุกบทสนทนามีค่า พัฒนาไปตามจังหวะของคุณ",
+  "leaderboardUpdate": "มีอันดับใหม่แล้ว รีเฟรชเมื่อคุณพร้อม",
+  "leaderboardEmpty": "ยังไม่มีกิจกรรมการพูด เริ่มด้วยการสนทนาได้เลย",
+  "leaderboardNoActivity": "พูดในแบบฝึกหัดหรือแชทเพื่อรับอันดับ",
+  "leaderboardFootnote": "จำนวนเท่ากันได้อันดับเดียวกัน วันนี้และหกวันก่อนหน้าตาม UTC คำออฟไลน์จะปรากฏหลังซิงค์",
+  "leaderboardLegacy": "กิจกรรมเก่าเก็บวันที่เดิม กิจกรรมใหม่ใช้ UTC",
+  "leaderboardLoadMore": "โหลดเพิ่มเติม"
 }

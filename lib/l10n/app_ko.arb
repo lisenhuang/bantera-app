@@ -726,5 +726,22 @@
   "quickSaved": "저장한 연습",
   "quickSavedEmpty": "저장한 연습이 없습니다. 연습 중 … 메뉴에서 “연습 저장”을 선택하세요.",
   "quickSavedDeviceNote": "이 기기에 계정별로 저장됩니다. 질문과 답변을 다시 들어 보세요. 오디오를 재생하려면 인터넷 연결이 필요합니다.",
-  "quickSavedError": "저장한 연습을 업데이트하지 못했습니다. 다시 시도해 주세요."
+  "quickSavedError": "저장한 연습을 업데이트하지 못했습니다. 다시 시도해 주세요.",
+  "leaderboardTitle": "말하기 순위",
+  "leaderboardScope": "최근 7일",
+  "leaderboardYourPosition": "내 순위",
+  "leaderboardSpokenWords": "말한 단어",
+  "leaderboardOpen": "순위 보기",
+  "leaderboardError": "순위를 새로고침할 수 없습니다. 다시 시도하세요.",
+  "leaderboardLearner": "학습자",
+  "leaderboardYou": "나",
+  "leaderboardRefresh": "새로고침",
+  "leaderboardLoading": "순위 불러오는 중",
+  "leaderboardEncouragement": "모든 대화가 쌓입니다. 자신의 속도로 성장하세요.",
+  "leaderboardUpdate": "새 순위가 준비되었습니다. 원할 때 새로고침하세요.",
+  "leaderboardEmpty": "아직 말하기 기록이 없습니다. 대화로 시작해 보세요.",
+  "leaderboardNoActivity": "연습이나 채팅에서 말하면 순위에 참여합니다.",
+  "leaderboardFootnote": "같은 수는 공동 순위. UTC 기준 오늘과 이전 6일. 오프라인 기록은 동기화 후 반영됩니다.",
+  "leaderboardLegacy": "이전 활동은 원래 날짜를 유지하며 새 활동은 UTC를 사용합니다.",
+  "leaderboardLoadMore": "더 불러오기"
 }

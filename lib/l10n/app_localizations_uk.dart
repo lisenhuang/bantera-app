@@ -2390,4 +2390,61 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Не вдалося оновити збережені вправи. Спробуйте ще раз.';
+
+  @override
+  String get leaderboardTitle => 'Рейтинг розмовної практики';
+
+  @override
+  String get leaderboardScope => 'Останні 7 днів';
+
+  @override
+  String get leaderboardYourPosition => 'Ваша позиція';
+
+  @override
+  String get leaderboardSpokenWords => 'вимовлених слів';
+
+  @override
+  String get leaderboardOpen => 'Відкрити рейтинг';
+
+  @override
+  String get leaderboardError => 'Не вдалося оновити. Спробуйте ще раз.';
+
+  @override
+  String get leaderboardLearner => 'Учень';
+
+  @override
+  String get leaderboardYou => 'Ви';
+
+  @override
+  String get leaderboardRefresh => 'Оновити';
+
+  @override
+  String get leaderboardLoading => 'Завантаження рейтингу';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Кожна розмова важлива. Розвивайтеся у своєму темпі.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Доступний новий рейтинг. Оновіть, коли будете готові.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Ще немає розмовної активності. Почніть із бесіди.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Говоріть у Практиці або Чатах, щоб отримати позицію.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Однакові результати ділять місце. Сьогодні та шість попередніх днів за UTC. Офлайн-слова з’являться після синхронізації.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Попередня активність зберігає початкову дату. Нова використовує UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Завантажити ще';
 }

@@ -4225,6 +4225,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not update saved practice. Please try again.'**
   String get quickSavedError;
+
+  /// No description provided for @leaderboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking leaderboard'**
+  String get leaderboardTitle;
+
+  /// No description provided for @leaderboardScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get leaderboardScope;
+
+  /// No description provided for @leaderboardYourPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Your position'**
+  String get leaderboardYourPosition;
+
+  /// No description provided for @leaderboardSpokenWords.
+  ///
+  /// In en, this message translates to:
+  /// **'spoken words'**
+  String get leaderboardSpokenWords;
+
+  /// No description provided for @leaderboardOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'View leaderboard'**
+  String get leaderboardOpen;
+
+  /// No description provided for @leaderboardError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh rankings. Try again.'**
+  String get leaderboardError;
+
+  /// No description provided for @leaderboardLearner.
+  ///
+  /// In en, this message translates to:
+  /// **'Learner'**
+  String get leaderboardLearner;
+
+  /// No description provided for @leaderboardYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get leaderboardYou;
+
+  /// No description provided for @leaderboardRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get leaderboardRefresh;
+
+  /// No description provided for @leaderboardLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading rankings'**
+  String get leaderboardLoading;
+
+  /// No description provided for @leaderboardEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Every conversation counts. Keep growing at your own pace.'**
+  String get leaderboardEncouragement;
+
+  /// No description provided for @leaderboardUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated rankings are ready. Refresh when you’re ready.'**
+  String get leaderboardUpdate;
+
+  /// No description provided for @leaderboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No speaking activity yet. A conversation is a great place to start.'**
+  String get leaderboardEmpty;
+
+  /// No description provided for @leaderboardNoActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak in Practice or Chats to earn a position.'**
+  String get leaderboardNoActivity;
+
+  /// No description provided for @leaderboardFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Equal totals share a rank. Today and the previous six days, in UTC. Offline words appear after syncing.'**
+  String get leaderboardFootnote;
+
+  /// No description provided for @leaderboardLegacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier activity keeps its originally recorded calendar date. New activity uses UTC.'**
+  String get leaderboardLegacy;
+
+  /// No description provided for @leaderboardLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get leaderboardLoadMore;
 }
 
 class _AppLocalizationsDelegate

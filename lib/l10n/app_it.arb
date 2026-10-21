@@ -691,5 +691,22 @@
   "quickSaved": "Esercizi salvati",
   "quickSavedEmpty": "Nessun esercizio salvato. Scegli “Salva esercizio” dal menu … durante la pratica.",
   "quickSavedDeviceNote": "Salvati su questo dispositivo per il tuo account. Riascolta la domanda e le risposte. L’audio richiede una connessione a Internet.",
-  "quickSavedError": "Impossibile aggiornare gli esercizi salvati. Riprova."
+  "quickSavedError": "Impossibile aggiornare gli esercizi salvati. Riprova.",
+  "leaderboardTitle": "Classifica di conversazione",
+  "leaderboardScope": "Ultimi 7 giorni",
+  "leaderboardYourPosition": "La tua posizione",
+  "leaderboardSpokenWords": "parole pronunciate",
+  "leaderboardOpen": "Vedi classifica",
+  "leaderboardError": "Impossibile aggiornare. Riprova.",
+  "leaderboardLearner": "Studente",
+  "leaderboardYou": "Tu",
+  "leaderboardRefresh": "Aggiorna",
+  "leaderboardLoading": "Caricamento classifica",
+  "leaderboardEncouragement": "Ogni conversazione conta. Cresci al tuo ritmo.",
+  "leaderboardUpdate": "La classifica è aggiornata. Aggiorna quando vuoi.",
+  "leaderboardEmpty": "Ancora nessuna attività orale. Inizia con una conversazione.",
+  "leaderboardNoActivity": "Parla in Pratica o Chat per ottenere una posizione.",
+  "leaderboardFootnote": "Totali uguali condividono la posizione. Oggi e i sei giorni precedenti in UTC. Le parole offline appaiono dopo la sincronizzazione.",
+  "leaderboardLegacy": "Le attività precedenti mantengono la data originale. Le nuove usano UTC.",
+  "leaderboardLoadMore": "Carica altro"
 }

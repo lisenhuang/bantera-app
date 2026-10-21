@@ -691,5 +691,22 @@
   "quickSaved": "Kaydedilen alıştırmalar",
   "quickSavedEmpty": "Henüz kaydedilmiş alıştırma yok. Alıştırma sırasında … menüsünden “Alıştırmayı kaydet” seçeneğini seç.",
   "quickSavedDeviceNote": "Hesabın için bu cihaza kaydedilir. Soruyu ve yanıtları tekrar dinle. Ses için internet bağlantısı gerekir.",
-  "quickSavedError": "Kaydedilen alıştırmalar güncellenemedi. Lütfen tekrar dene."
+  "quickSavedError": "Kaydedilen alıştırmalar güncellenemedi. Lütfen tekrar dene.",
+  "leaderboardTitle": "Konuşma sıralaması",
+  "leaderboardScope": "Son 7 gün",
+  "leaderboardYourPosition": "Konumun",
+  "leaderboardSpokenWords": "konuşulan kelime",
+  "leaderboardOpen": "Sıralamayı gör",
+  "leaderboardError": "Yenilenemedi. Tekrar dene.",
+  "leaderboardLearner": "Öğrenci",
+  "leaderboardYou": "Sen",
+  "leaderboardRefresh": "Yenile",
+  "leaderboardLoading": "Sıralama yükleniyor",
+  "leaderboardEncouragement": "Her konuşma önemlidir. Kendi hızında geliş.",
+  "leaderboardUpdate": "Yeni sıralama hazır. Hazır olduğunda yenile.",
+  "leaderboardEmpty": "Henüz konuşma etkinliği yok. Bir sohbetle başla.",
+  "leaderboardNoActivity": "Sıralamaya girmek için Alıştırma veya Sohbetlerde konuş.",
+  "leaderboardFootnote": "Eşit toplamlar aynı sırayı paylaşır. UTC ile bugün ve önceki altı gün. Çevrimdışı kelimeler eşitlemeden sonra görünür.",
+  "leaderboardLegacy": "Önceki etkinlik özgün tarihini korur. Yeni etkinlik UTC kullanır.",
+  "leaderboardLoadMore": "Daha fazla yükle"
 }

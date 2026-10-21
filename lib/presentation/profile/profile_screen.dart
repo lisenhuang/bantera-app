@@ -10,6 +10,7 @@ import '../shared/learning_language_label.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
+import '../leaderboard/speaking_leaderboard.dart';
 import 'word_activity_section.dart';
 import 'daily_word_goal_section.dart';
 import 'word_activity_share_screen.dart';
@@ -161,6 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 24),
                 WordActivitySection(
+                  afterTotals: const SpeakingLeaderboardCard(),
                   history: WordActivityNotifier.instance.historyFor(
                     profile.learningLanguage,
                   ),

@@ -2232,4 +2232,56 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get quickSavedError => '저장한 연습을 업데이트하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get leaderboardTitle => '말하기 순위';
+
+  @override
+  String get leaderboardScope => '최근 7일';
+
+  @override
+  String get leaderboardYourPosition => '내 순위';
+
+  @override
+  String get leaderboardSpokenWords => '말한 단어';
+
+  @override
+  String get leaderboardOpen => '순위 보기';
+
+  @override
+  String get leaderboardError => '순위를 새로고침할 수 없습니다. 다시 시도하세요.';
+
+  @override
+  String get leaderboardLearner => '학습자';
+
+  @override
+  String get leaderboardYou => '나';
+
+  @override
+  String get leaderboardRefresh => '새로고침';
+
+  @override
+  String get leaderboardLoading => '순위 불러오는 중';
+
+  @override
+  String get leaderboardEncouragement => '모든 대화가 쌓입니다. 자신의 속도로 성장하세요.';
+
+  @override
+  String get leaderboardUpdate => '새 순위가 준비되었습니다. 원할 때 새로고침하세요.';
+
+  @override
+  String get leaderboardEmpty => '아직 말하기 기록이 없습니다. 대화로 시작해 보세요.';
+
+  @override
+  String get leaderboardNoActivity => '연습이나 채팅에서 말하면 순위에 참여합니다.';
+
+  @override
+  String get leaderboardFootnote =>
+      '같은 수는 공동 순위. UTC 기준 오늘과 이전 6일. 오프라인 기록은 동기화 후 반영됩니다.';
+
+  @override
+  String get leaderboardLegacy => '이전 활동은 원래 날짜를 유지하며 새 활동은 UTC를 사용합니다.';
+
+  @override
+  String get leaderboardLoadMore => '더 불러오기';
 }

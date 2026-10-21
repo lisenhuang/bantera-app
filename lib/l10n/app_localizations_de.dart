@@ -2387,4 +2387,62 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Gespeicherte Übungen konnten nicht aktualisiert werden. Bitte versuche es erneut.';
+
+  @override
+  String get leaderboardTitle => 'Sprech-Rangliste';
+
+  @override
+  String get leaderboardScope => 'Letzte 7 Tage';
+
+  @override
+  String get leaderboardYourPosition => 'Dein Platz';
+
+  @override
+  String get leaderboardSpokenWords => 'gesprochene Wörter';
+
+  @override
+  String get leaderboardOpen => 'Rangliste ansehen';
+
+  @override
+  String get leaderboardError =>
+      'Rangliste konnte nicht aktualisiert werden. Versuche es erneut.';
+
+  @override
+  String get leaderboardLearner => 'Lernende Person';
+
+  @override
+  String get leaderboardYou => 'Du';
+
+  @override
+  String get leaderboardRefresh => 'Aktualisieren';
+
+  @override
+  String get leaderboardLoading => 'Rangliste wird geladen';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Jedes Gespräch zählt. Wachse in deinem Tempo.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Neue Rangliste verfügbar. Aktualisiere, wenn du bereit bist.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Noch keine Sprechaktivität. Beginne mit einem Gespräch.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Sprich in Übungen oder Chats, um einen Platz zu erhalten.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Gleiche Zahlen teilen einen Rang. Heute und sechs Vortage in UTC. Offline-Wörter zählen nach der Synchronisierung.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Ältere Aktivitäten behalten ihr ursprüngliches Datum. Neue Aktivitäten verwenden UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Mehr laden';
 }

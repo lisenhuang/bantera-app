@@ -691,5 +691,22 @@
   "quickSaved": "Latihan tersimpan",
   "quickSavedEmpty": "Belum ada latihan tersimpan. Pilih “Simpan latihan” dari menu … saat berlatih.",
   "quickSavedDeviceNote": "Disimpan di perangkat ini untuk akunmu. Dengarkan kembali pertanyaan dan jawabannya. Audio memerlukan koneksi internet.",
-  "quickSavedError": "Tidak dapat memperbarui latihan tersimpan. Silakan coba lagi."
+  "quickSavedError": "Tidak dapat memperbarui latihan tersimpan. Silakan coba lagi.",
+  "leaderboardTitle": "Peringkat berbicara",
+  "leaderboardScope": "7 hari terakhir",
+  "leaderboardYourPosition": "Posisimu",
+  "leaderboardSpokenWords": "kata diucapkan",
+  "leaderboardOpen": "Lihat peringkat",
+  "leaderboardError": "Tidak dapat memperbarui. Coba lagi.",
+  "leaderboardLearner": "Pelajar",
+  "leaderboardYou": "Kamu",
+  "leaderboardRefresh": "Perbarui",
+  "leaderboardLoading": "Memuat peringkat",
+  "leaderboardEncouragement": "Setiap percakapan berarti. Berkembanglah dengan ritmemu.",
+  "leaderboardUpdate": "Peringkat baru tersedia. Perbarui saat kamu siap.",
+  "leaderboardEmpty": "Belum ada aktivitas berbicara. Mulailah percakapan.",
+  "leaderboardNoActivity": "Bicaralah di Latihan atau Chat untuk mendapatkan posisi.",
+  "leaderboardFootnote": "Jumlah sama berbagi peringkat. Hari ini dan enam hari sebelumnya dalam UTC. Kata offline muncul setelah sinkronisasi.",
+  "leaderboardLegacy": "Aktivitas lama mempertahankan tanggal aslinya. Aktivitas baru memakai UTC.",
+  "leaderboardLoadMore": "Muat lagi"
 }

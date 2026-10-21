@@ -282,6 +282,28 @@ class WordActivityNotifier extends ChangeNotifier {
         return;
       }
       final pending = ledger.pendingSnapshots;
+      // Parallel UTC snapshots never replace the personal local-day ledger.
+      // Send the complete bounded window atomically, including first-upgrade
+      // historical buckets, before the server switches this device's source.
+      {
+        try {
+          final oldest = wordActivityDateKey(
+            DateTime.now().toUtc().subtract(const Duration(days: 8)),
+          );
+          await _apiClient.syncSpeakingActivity(
+            accessToken: session!.accessToken,
+            deviceId: ledger.deviceId,
+            days: {
+              for (final e in ledger.speakingUtc.entries)
+                if (wordActivityBucketDate(e.key).compareTo(oldest) >= 0)
+                  e.key: e.value,
+            },
+            legacyThrough: ledger.speakingLegacyThrough,
+          );
+        } catch (_) {
+          /* Existing personal progress sync remains available. */
+        }
+      }
       if (!fetchIfClean && pending.isEmpty) return;
       // Bounded batches, cumulative values safe to retry in any order.
       final entries = pending.entries.toList();

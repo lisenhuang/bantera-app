@@ -990,5 +990,22 @@
   "quickSaved": "Saved practice",
   "quickSavedEmpty": "No saved practice yet. Choose “Save practice” from the … menu during practice.",
   "quickSavedDeviceNote": "Saved on this device for your account. Listen to the question and replies again. Audio requires an internet connection.",
-  "quickSavedError": "Could not update saved practice. Please try again."
+  "quickSavedError": "Could not update saved practice. Please try again.",
+  "leaderboardTitle": "Speaking leaderboard",
+  "leaderboardScope": "Last 7 days",
+  "leaderboardYourPosition": "Your position",
+  "leaderboardSpokenWords": "spoken words",
+  "leaderboardOpen": "View leaderboard",
+  "leaderboardError": "Could not refresh rankings. Try again.",
+  "leaderboardLearner": "Learner",
+  "leaderboardYou": "You",
+  "leaderboardRefresh": "Refresh",
+  "leaderboardLoading": "Loading rankings",
+  "leaderboardEncouragement": "Every conversation counts. Keep growing at your own pace.",
+  "leaderboardUpdate": "Updated rankings are ready. Refresh when you’re ready.",
+  "leaderboardEmpty": "No speaking activity yet. A conversation is a great place to start.",
+  "leaderboardNoActivity": "Speak in Practice or Chats to earn a position.",
+  "leaderboardFootnote": "Equal totals share a rank. Today and the previous six days, in UTC. Offline words appear after syncing.",
+  "leaderboardLegacy": "Earlier activity keeps its originally recorded calendar date. New activity uses UTC.",
+  "leaderboardLoadMore": "Load more"
 }

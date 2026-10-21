@@ -2217,4 +2217,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickSavedError => '保存した練習を更新できませんでした。もう一度お試しください。';
+
+  @override
+  String get leaderboardTitle => 'スピーキングランキング';
+
+  @override
+  String get leaderboardScope => '過去7日間';
+
+  @override
+  String get leaderboardYourPosition => 'あなたの順位';
+
+  @override
+  String get leaderboardSpokenWords => '話した単語';
+
+  @override
+  String get leaderboardOpen => 'ランキングを見る';
+
+  @override
+  String get leaderboardError => 'ランキングを更新できません。もう一度お試しください。';
+
+  @override
+  String get leaderboardLearner => '学習者';
+
+  @override
+  String get leaderboardYou => 'あなた';
+
+  @override
+  String get leaderboardRefresh => '更新';
+
+  @override
+  String get leaderboardLoading => 'ランキングを読み込み中';
+
+  @override
+  String get leaderboardEncouragement => 'どの会話も一歩前進。自分のペースで続けましょう。';
+
+  @override
+  String get leaderboardUpdate => '新しいランキングがあります。準備ができたら更新してください。';
+
+  @override
+  String get leaderboardEmpty => 'まだ会話の記録がありません。会話から始めましょう。';
+
+  @override
+  String get leaderboardNoActivity => '練習やチャットで話すと順位がつきます。';
+
+  @override
+  String get leaderboardFootnote => '同じ合計は同順位。UTCの今日と過去6日間。オフライン分は同期後に反映。';
+
+  @override
+  String get leaderboardLegacy => '過去の記録は元の日付を保持し、新しい記録はUTCを使います。';
+
+  @override
+  String get leaderboardLoadMore => 'さらに読み込む';
 }

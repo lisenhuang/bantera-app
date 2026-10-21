@@ -2389,4 +2389,61 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get quickSavedError =>
       'No se pudieron actualizar las prácticas guardadas. Inténtalo de nuevo.';
+
+  @override
+  String get leaderboardTitle => 'Clasificación de expresión oral';
+
+  @override
+  String get leaderboardScope => 'Últimos 7 días';
+
+  @override
+  String get leaderboardYourPosition => 'Tu posición';
+
+  @override
+  String get leaderboardSpokenWords => 'palabras habladas';
+
+  @override
+  String get leaderboardOpen => 'Ver clasificación';
+
+  @override
+  String get leaderboardError => 'No se pudo actualizar. Inténtalo de nuevo.';
+
+  @override
+  String get leaderboardLearner => 'Estudiante';
+
+  @override
+  String get leaderboardYou => 'Tú';
+
+  @override
+  String get leaderboardRefresh => 'Actualizar';
+
+  @override
+  String get leaderboardLoading => 'Cargando clasificación';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Cada conversación cuenta. Avanza a tu ritmo.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Hay una clasificación actualizada. Actualiza cuando quieras.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Aún no hay actividad oral. Empieza con una conversación.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Habla en Práctica o Chats para obtener una posición.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Los totales iguales comparten posición. Hoy y los seis días anteriores en UTC. La actividad sin conexión se añade al sincronizar.';
+
+  @override
+  String get leaderboardLegacy =>
+      'La actividad anterior conserva su fecha original. La nueva usa UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Cargar más';
 }

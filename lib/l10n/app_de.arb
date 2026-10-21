@@ -691,5 +691,22 @@
   "quickSaved": "Gespeicherte Übungen",
   "quickSavedEmpty": "Noch keine gespeicherten Übungen. Wähle beim Üben „Übung speichern“ im …-Menü.",
   "quickSavedDeviceNote": "Für dein Konto auf diesem Gerät gespeichert. Höre dir die Frage und Antworten erneut an. Für Audio ist eine Internetverbindung erforderlich.",
-  "quickSavedError": "Gespeicherte Übungen konnten nicht aktualisiert werden. Bitte versuche es erneut."
+  "quickSavedError": "Gespeicherte Übungen konnten nicht aktualisiert werden. Bitte versuche es erneut.",
+  "leaderboardTitle": "Sprech-Rangliste",
+  "leaderboardScope": "Letzte 7 Tage",
+  "leaderboardYourPosition": "Dein Platz",
+  "leaderboardSpokenWords": "gesprochene Wörter",
+  "leaderboardOpen": "Rangliste ansehen",
+  "leaderboardError": "Rangliste konnte nicht aktualisiert werden. Versuche es erneut.",
+  "leaderboardLearner": "Lernende Person",
+  "leaderboardYou": "Du",
+  "leaderboardRefresh": "Aktualisieren",
+  "leaderboardLoading": "Rangliste wird geladen",
+  "leaderboardEncouragement": "Jedes Gespräch zählt. Wachse in deinem Tempo.",
+  "leaderboardUpdate": "Neue Rangliste verfügbar. Aktualisiere, wenn du bereit bist.",
+  "leaderboardEmpty": "Noch keine Sprechaktivität. Beginne mit einem Gespräch.",
+  "leaderboardNoActivity": "Sprich in Übungen oder Chats, um einen Platz zu erhalten.",
+  "leaderboardFootnote": "Gleiche Zahlen teilen einen Rang. Heute und sechs Vortage in UTC. Offline-Wörter zählen nach der Synchronisierung.",
+  "leaderboardLegacy": "Ältere Aktivitäten behalten ihr ursprüngliches Datum. Neue Aktivitäten verwenden UTC.",
+  "leaderboardLoadMore": "Mehr laden"
 }

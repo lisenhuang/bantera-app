@@ -1,0 +1,72 @@
+<en-US>
+See your spoken-word ranking for the last 7 days in the new Speaking leaderboard on the Goal tab.
+Save practices and revisit them from the Practice menu.
+</en-US>
+<de-DE>
+Sieh dir deine Rangliste gesprochener Wörter der letzten 7 Tage in der neuen Sprech-Rangliste im Tab „Ziel“ an.
+Speichere Übungen und rufe sie über das Übungsmenü erneut auf.
+</de-DE>
+<en-CA>
+See your spoken-word ranking for the last 7 days in the new Speaking leaderboard on the Goal tab.
+Save practices and revisit them from the Practice menu.
+</en-CA>
+<es-419>
+Consulta tu posición por palabras habladas en los últimos 7 días en la nueva clasificación de la pestaña Objetivo.
+Guarda prácticas y vuelve a ellas desde el menú de Práctica.
+</es-419>
+<fr-FR>
+Découvrez votre classement selon les mots prononcés au cours des 7 derniers jours dans le nouvel espace Classement de l’onglet Objectif.
+Enregistrez des exercices et retrouvez-les dans le menu Pratique.
+</fr-FR>
+<id>
+Lihat peringkat jumlah kata yang kamu ucapkan dalam 7 hari terakhir di papan peringkat baru pada tab Target.
+Simpan latihan dan buka kembali melalui menu Latihan.
+</id>
+<it-IT>
+Scopri la tua posizione per le parole pronunciate negli ultimi 7 giorni nella nuova classifica della scheda Obiettivo.
+Salva gli esercizi e ritrovali nel menu Pratica.
+</it-IT>
+<ja-JP>
+目標タブにスピーキングランキングが登場。過去7日間に話した単語数で自分の順位を確認できます。
+練習を保存して、練習メニューからもう一度取り組めるようになりました。
+</ja-JP>
+<ko-KR>
+목표 탭의 새로운 말하기 순위에서 최근 7일 동안 말한 단어 수에 따른 순위를 확인하세요.
+연습을 저장하고 연습 메뉴에서 다시 찾아보세요.
+</ko-KR>
+<pl-PL>
+Sprawdź swoją pozycję według liczby wypowiedzianych słów z ostatnich 7 dni w nowym rankingu w zakładce Cel.
+Zapisuj ćwiczenia i wracaj do nich z menu Ćwiczenia.
+</pl-PL>
+<pt-BR>
+Veja sua posição pelo número de palavras faladas nos últimos 7 dias no novo ranking da aba Meta.
+Salve exercícios e volte a eles pelo menu Prática.
+</pt-BR>
+<ru-RU>
+Посмотрите своё место по числу произнесённых слов за последние 7 дней в новом рейтинге на вкладке «Цель».
+Сохраняйте упражнения и возвращайтесь к ним через меню практики.
+</ru-RU>
+<th>
+ดูอันดับตามจำนวนคำที่คุณพูดในช่วง 7 วันที่ผ่านมาได้ในกระดานอันดับการพูดใหม่บนแท็บเป้าหมาย
+บันทึกแบบฝึกและกลับมาฝึกซ้ำได้จากเมนูฝึกฝน
+</th>
+<tr-TR>
+Hedef sekmesindeki yeni konuşma sıralamasında son 7 günde söylediğin kelime sayısına göre yerini gör.
+Alıştırmaları kaydet ve Alıştırma menüsünden tekrar aç.
+</tr-TR>
+<uk>
+Перегляньте своє місце за кількістю вимовлених слів за останні 7 днів у новому рейтингу на вкладці «Ціль».
+Зберігайте вправи й повертайтеся до них через меню практики.
+</uk>
+<vi>
+Xem thứ hạng theo số từ bạn đã nói trong 7 ngày qua trên bảng xếp hạng luyện nói mới ở thẻ Mục tiêu.
+Lưu bài luyện tập và mở lại từ menu Luyện tập.
+</vi>
+<zh-CN>
+目标页面新增口语排行榜，可查看过去7天按口语单词数计算的排名。
+支持保存练习，并从练习菜单中再次打开。
+</zh-CN>
+<zh-TW>
+目標頁面新增口說排行榜，可查看過去7天按口說單字數計算的排名。
+支援儲存練習，並從練習選單中再次開啟。
+</zh-TW>

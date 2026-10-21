@@ -15,6 +15,7 @@ class WordActivitySection extends StatelessWidget {
     this.history = const {},
     this.now,
     this.onShare,
+    this.afterTotals,
   });
   final WordTotals today;
   final WordTotals week;
@@ -22,6 +23,7 @@ class WordActivitySection extends StatelessWidget {
   final Map<String, WordTotals> history;
   final DateTime? now;
   final VoidCallback? onShare;
+  final Widget? afterTotals;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +240,10 @@ class WordActivitySection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          if (afterTotals != null) ...[
+            afterTotals!,
+            const SizedBox(height: 20),
+          ],
           WordActivityTrend(history: history, now: now ?? DateTime.now()),
           const SizedBox(height: 12),
           Text(l10n.wordActivityHint, style: theme.textTheme.bodySmall),

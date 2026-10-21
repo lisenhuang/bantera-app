@@ -691,5 +691,22 @@
   "quickSaved": "Zapisane ćwiczenia",
   "quickSavedEmpty": "Nie masz jeszcze zapisanych ćwiczeń. Podczas ćwiczenia wybierz „Zapisz ćwiczenie” z menu ….",
   "quickSavedDeviceNote": "Zapisane na tym urządzeniu dla Twojego konta. Posłuchaj ponownie pytania i odpowiedzi. Dźwięk wymaga połączenia z internetem.",
-  "quickSavedError": "Nie udało się zaktualizować zapisanych ćwiczeń. Spróbuj ponownie."
+  "quickSavedError": "Nie udało się zaktualizować zapisanych ćwiczeń. Spróbuj ponownie.",
+  "leaderboardTitle": "Ranking mówienia",
+  "leaderboardScope": "Ostatnie 7 dni",
+  "leaderboardYourPosition": "Twoja pozycja",
+  "leaderboardSpokenWords": "wypowiedziane słowa",
+  "leaderboardOpen": "Zobacz ranking",
+  "leaderboardError": "Nie udało się odświeżyć. Spróbuj ponownie.",
+  "leaderboardLearner": "Uczeń",
+  "leaderboardYou": "Ty",
+  "leaderboardRefresh": "Odśwież",
+  "leaderboardLoading": "Ładowanie rankingu",
+  "leaderboardEncouragement": "Każda rozmowa się liczy. Rozwijaj się we własnym tempie.",
+  "leaderboardUpdate": "Nowy ranking jest gotowy. Odśwież, gdy zechcesz.",
+  "leaderboardEmpty": "Brak aktywności w mówieniu. Zacznij od rozmowy.",
+  "leaderboardNoActivity": "Mów w Ćwiczeniach lub Czatach, aby zdobyć pozycję.",
+  "leaderboardFootnote": "Równe wyniki mają tę samą pozycję. Dziś i sześć poprzednich dni w UTC. Słowa offline pojawią się po synchronizacji.",
+  "leaderboardLegacy": "Starsza aktywność zachowuje pierwotną datę. Nowa używa UTC.",
+  "leaderboardLoadMore": "Wczytaj więcej"
 }

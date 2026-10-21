@@ -2393,4 +2393,61 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Impossible de mettre à jour les exercices enregistrés. Réessaie.';
+
+  @override
+  String get leaderboardTitle => 'Classement à l’oral';
+
+  @override
+  String get leaderboardScope => '7 derniers jours';
+
+  @override
+  String get leaderboardYourPosition => 'Ta position';
+
+  @override
+  String get leaderboardSpokenWords => 'mots prononcés';
+
+  @override
+  String get leaderboardOpen => 'Voir le classement';
+
+  @override
+  String get leaderboardError => 'Impossible d’actualiser. Réessaie.';
+
+  @override
+  String get leaderboardLearner => 'Apprenant';
+
+  @override
+  String get leaderboardYou => 'Toi';
+
+  @override
+  String get leaderboardRefresh => 'Actualiser';
+
+  @override
+  String get leaderboardLoading => 'Chargement du classement';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Chaque conversation compte. Avance à ton rythme.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Un classement actualisé est disponible. Actualise quand tu veux.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Pas encore d’activité orale. Commence par une conversation.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Parle dans Pratique ou Chats pour obtenir une place.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Les totaux égaux partagent le même rang. Aujourd’hui et les six jours précédents en UTC. Les mots hors ligne sont ajoutés après synchronisation.';
+
+  @override
+  String get leaderboardLegacy =>
+      'L’activité passée conserve sa date d’origine. La nouvelle utilise UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Charger plus';
 }

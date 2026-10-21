@@ -2321,4 +2321,61 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Kaydedilen alıştırmalar güncellenemedi. Lütfen tekrar dene.';
+
+  @override
+  String get leaderboardTitle => 'Konuşma sıralaması';
+
+  @override
+  String get leaderboardScope => 'Son 7 gün';
+
+  @override
+  String get leaderboardYourPosition => 'Konumun';
+
+  @override
+  String get leaderboardSpokenWords => 'konuşulan kelime';
+
+  @override
+  String get leaderboardOpen => 'Sıralamayı gör';
+
+  @override
+  String get leaderboardError => 'Yenilenemedi. Tekrar dene.';
+
+  @override
+  String get leaderboardLearner => 'Öğrenci';
+
+  @override
+  String get leaderboardYou => 'Sen';
+
+  @override
+  String get leaderboardRefresh => 'Yenile';
+
+  @override
+  String get leaderboardLoading => 'Sıralama yükleniyor';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Her konuşma önemlidir. Kendi hızında geliş.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Yeni sıralama hazır. Hazır olduğunda yenile.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Henüz konuşma etkinliği yok. Bir sohbetle başla.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Sıralamaya girmek için Alıştırma veya Sohbetlerde konuş.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Eşit toplamlar aynı sırayı paylaşır. UTC ile bugün ve önceki altı gün. Çevrimdışı kelimeler eşitlemeden sonra görünür.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Önceki etkinlik özgün tarihini korur. Yeni etkinlik UTC kullanır.';
+
+  @override
+  String get leaderboardLoadMore => 'Daha fazla yükle';
 }

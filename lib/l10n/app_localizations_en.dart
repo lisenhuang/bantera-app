@@ -2384,4 +2384,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Could not update saved practice. Please try again.';
+
+  @override
+  String get leaderboardTitle => 'Speaking leaderboard';
+
+  @override
+  String get leaderboardScope => 'Last 7 days';
+
+  @override
+  String get leaderboardYourPosition => 'Your position';
+
+  @override
+  String get leaderboardSpokenWords => 'spoken words';
+
+  @override
+  String get leaderboardOpen => 'View leaderboard';
+
+  @override
+  String get leaderboardError => 'Could not refresh rankings. Try again.';
+
+  @override
+  String get leaderboardLearner => 'Learner';
+
+  @override
+  String get leaderboardYou => 'You';
+
+  @override
+  String get leaderboardRefresh => 'Refresh';
+
+  @override
+  String get leaderboardLoading => 'Loading rankings';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Every conversation counts. Keep growing at your own pace.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Updated rankings are ready. Refresh when you’re ready.';
+
+  @override
+  String get leaderboardEmpty =>
+      'No speaking activity yet. A conversation is a great place to start.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Speak in Practice or Chats to earn a position.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Equal totals share a rank. Today and the previous six days, in UTC. Offline words appear after syncing.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Earlier activity keeps its originally recorded calendar date. New activity uses UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Load more';
 }

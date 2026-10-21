@@ -2400,4 +2400,61 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Nie udało się zaktualizować zapisanych ćwiczeń. Spróbuj ponownie.';
+
+  @override
+  String get leaderboardTitle => 'Ranking mówienia';
+
+  @override
+  String get leaderboardScope => 'Ostatnie 7 dni';
+
+  @override
+  String get leaderboardYourPosition => 'Twoja pozycja';
+
+  @override
+  String get leaderboardSpokenWords => 'wypowiedziane słowa';
+
+  @override
+  String get leaderboardOpen => 'Zobacz ranking';
+
+  @override
+  String get leaderboardError => 'Nie udało się odświeżyć. Spróbuj ponownie.';
+
+  @override
+  String get leaderboardLearner => 'Uczeń';
+
+  @override
+  String get leaderboardYou => 'Ty';
+
+  @override
+  String get leaderboardRefresh => 'Odśwież';
+
+  @override
+  String get leaderboardLoading => 'Ładowanie rankingu';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Każda rozmowa się liczy. Rozwijaj się we własnym tempie.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Nowy ranking jest gotowy. Odśwież, gdy zechcesz.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Brak aktywności w mówieniu. Zacznij od rozmowy.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Mów w Ćwiczeniach lub Czatach, aby zdobyć pozycję.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Równe wyniki mają tę samą pozycję. Dziś i sześć poprzednich dni w UTC. Słowa offline pojawią się po synchronizacji.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Starsza aktywność zachowuje pierwotną datę. Nowa używa UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Wczytaj więcej';
 }

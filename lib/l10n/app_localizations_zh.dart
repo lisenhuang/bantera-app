@@ -2217,6 +2217,57 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickSavedError => '无法更新已保存的练习，请重试。';
+
+  @override
+  String get leaderboardTitle => '口语排行榜';
+
+  @override
+  String get leaderboardScope => '最近7天';
+
+  @override
+  String get leaderboardYourPosition => '你的位置';
+
+  @override
+  String get leaderboardSpokenWords => '口语单词';
+
+  @override
+  String get leaderboardOpen => '查看排行榜';
+
+  @override
+  String get leaderboardError => '无法刷新排行榜，请重试。';
+
+  @override
+  String get leaderboardLearner => '学习者';
+
+  @override
+  String get leaderboardYou => '你';
+
+  @override
+  String get leaderboardRefresh => '刷新';
+
+  @override
+  String get leaderboardLoading => '正在加载排行榜';
+
+  @override
+  String get leaderboardEncouragement => '每次对话都算数，按自己的节奏进步。';
+
+  @override
+  String get leaderboardUpdate => '新排名已准备好，方便时点击刷新。';
+
+  @override
+  String get leaderboardEmpty => '还没有口语活动，从一次对话开始吧。';
+
+  @override
+  String get leaderboardNoActivity => '在练习或聊天中开口说话，即可获得排名。';
+
+  @override
+  String get leaderboardFootnote => '总数相同则并列。按UTC计算今天及之前六天。离线数据同步后计入。';
+
+  @override
+  String get leaderboardLegacy => '较早的活动保留原始记录日期，新活动使用UTC。';
+
+  @override
+  String get leaderboardLoadMore => '加载更多';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4436,4 +4487,55 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickSavedError => '無法更新已儲存的練習，請重試。';
+
+  @override
+  String get leaderboardTitle => '口語排行榜';
+
+  @override
+  String get leaderboardScope => '最近7天';
+
+  @override
+  String get leaderboardYourPosition => '你的位置';
+
+  @override
+  String get leaderboardSpokenWords => '口語單字';
+
+  @override
+  String get leaderboardOpen => '查看排行榜';
+
+  @override
+  String get leaderboardError => '無法重新整理排行榜，請重試。';
+
+  @override
+  String get leaderboardLearner => '學習者';
+
+  @override
+  String get leaderboardYou => '你';
+
+  @override
+  String get leaderboardRefresh => '重新整理';
+
+  @override
+  String get leaderboardLoading => '正在載入排行榜';
+
+  @override
+  String get leaderboardEncouragement => '每次對話都算數，按自己的步調進步。';
+
+  @override
+  String get leaderboardUpdate => '新排名已準備好，方便時點選重新整理。';
+
+  @override
+  String get leaderboardEmpty => '還沒有口語活動，從一次對話開始吧。';
+
+  @override
+  String get leaderboardNoActivity => '在練習或聊天中開口說話，即可獲得排名。';
+
+  @override
+  String get leaderboardFootnote => '總數相同則並列。按UTC計算今天及之前六天。離線資料同步後計入。';
+
+  @override
+  String get leaderboardLegacy => '較早的活動保留原始記錄日期，新活動使用UTC。';
+
+  @override
+  String get leaderboardLoadMore => '載入更多';
 }

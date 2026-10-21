@@ -691,5 +691,22 @@
   "quickSaved": "Prácticas guardadas",
   "quickSavedEmpty": "Aún no hay prácticas guardadas. Elige «Guardar práctica» en el menú … mientras practicas.",
   "quickSavedDeviceNote": "Guardadas en este dispositivo para tu cuenta. Vuelve a escuchar la pregunta y las respuestas. El audio requiere conexión a internet.",
-  "quickSavedError": "No se pudieron actualizar las prácticas guardadas. Inténtalo de nuevo."
+  "quickSavedError": "No se pudieron actualizar las prácticas guardadas. Inténtalo de nuevo.",
+  "leaderboardTitle": "Clasificación de expresión oral",
+  "leaderboardScope": "Últimos 7 días",
+  "leaderboardYourPosition": "Tu posición",
+  "leaderboardSpokenWords": "palabras habladas",
+  "leaderboardOpen": "Ver clasificación",
+  "leaderboardError": "No se pudo actualizar. Inténtalo de nuevo.",
+  "leaderboardLearner": "Estudiante",
+  "leaderboardYou": "Tú",
+  "leaderboardRefresh": "Actualizar",
+  "leaderboardLoading": "Cargando clasificación",
+  "leaderboardEncouragement": "Cada conversación cuenta. Avanza a tu ritmo.",
+  "leaderboardUpdate": "Hay una clasificación actualizada. Actualiza cuando quieras.",
+  "leaderboardEmpty": "Aún no hay actividad oral. Empieza con una conversación.",
+  "leaderboardNoActivity": "Habla en Práctica o Chats para obtener una posición.",
+  "leaderboardFootnote": "Los totales iguales comparten posición. Hoy y los seis días anteriores en UTC. La actividad sin conexión se añade al sincronizar.",
+  "leaderboardLegacy": "La actividad anterior conserva su fecha original. La nueva usa UTC.",
+  "leaderboardLoadMore": "Cargar más"
 }

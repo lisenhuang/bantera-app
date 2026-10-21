@@ -2322,4 +2322,61 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get quickSavedError =>
       'Không thể cập nhật bài luyện tập đã lưu. Vui lòng thử lại.';
+
+  @override
+  String get leaderboardTitle => 'Bảng xếp hạng nói';
+
+  @override
+  String get leaderboardScope => '7 ngày qua';
+
+  @override
+  String get leaderboardYourPosition => 'Vị trí của bạn';
+
+  @override
+  String get leaderboardSpokenWords => 'từ đã nói';
+
+  @override
+  String get leaderboardOpen => 'Xem bảng xếp hạng';
+
+  @override
+  String get leaderboardError => 'Không thể cập nhật. Vui lòng thử lại.';
+
+  @override
+  String get leaderboardLearner => 'Người học';
+
+  @override
+  String get leaderboardYou => 'Bạn';
+
+  @override
+  String get leaderboardRefresh => 'Làm mới';
+
+  @override
+  String get leaderboardLoading => 'Đang tải bảng xếp hạng';
+
+  @override
+  String get leaderboardEncouragement =>
+      'Mọi cuộc trò chuyện đều có ý nghĩa. Tiến bộ theo nhịp của bạn.';
+
+  @override
+  String get leaderboardUpdate =>
+      'Có bảng xếp hạng mới. Làm mới khi bạn sẵn sàng.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Chưa có hoạt động nói. Hãy bắt đầu trò chuyện.';
+
+  @override
+  String get leaderboardNoActivity =>
+      'Nói trong Luyện tập hoặc Trò chuyện để có thứ hạng.';
+
+  @override
+  String get leaderboardFootnote =>
+      'Tổng bằng nhau có cùng hạng. Hôm nay và sáu ngày trước theo UTC. Từ ngoại tuyến xuất hiện sau đồng bộ.';
+
+  @override
+  String get leaderboardLegacy =>
+      'Hoạt động cũ giữ ngày ghi ban đầu. Hoạt động mới dùng UTC.';
+
+  @override
+  String get leaderboardLoadMore => 'Tải thêm';
 }
