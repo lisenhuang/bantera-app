@@ -1,0 +1,162 @@
+<en-US>
+• Tap a word to underline it, then tap again to ask Bantera AI for an explanation.
+• Play Practice audio at 0.5×–1.5× and resume after pausing.
+• Improved translations with remembered language choices and clearer downloads.
+• Find videos and play supported YouTube videos in chat.
+• Speaking rankings now cover 30 days.
+• Refreshed Goal animations and layouts.
+• Bantera AI introduces its features and can submit bug reports with your permission.
+</en-US>
+<de-DE>
+• Ein Wort antippen zum Unterstreichen, erneut tippen für eine KI-Erklärung.
+• Übungsaudio mit 0,5×–1,5× abspielen und nach Pausen fortsetzen.
+• Bessere Übersetzungen mit gespeicherter Sprachauswahl und klareren Downloads.
+• Videos finden und unterstützte YouTube-Videos im Chat abspielen.
+• Sprech-Rangliste für die letzten 30 Tage.
+• Neue Zielanimationen und bessere Layouts.
+• Bantera AI erklärt seine Funktionen und sendet Fehlerberichte mit deiner Zustimmung.
+</de-DE>
+<es-419>
+• Toca una palabra para subrayarla y tócala otra vez para pedir una explicación a Bantera AI.
+• Audio de práctica a 0.5×–1.5× y reanudación tras pausar.
+• Mejores traducciones con idiomas recordados y descargas más claras.
+• Busca videos y reproduce YouTube compatible en el chat.
+• Clasificación oral de los últimos 30 días.
+• Animaciones de Meta y diseños renovados.
+• Bantera AI presenta sus funciones y envía reportes de errores con tu permiso.
+</es-419>
+<fr-FR>
+• Touchez un mot pour le souligner, puis à nouveau pour demander une explication à Bantera AI.
+• Lecture des exercices de 0,5× à 1,5× et reprise après pause.
+• Traductions améliorées, langues mémorisées et téléchargements plus clairs.
+• Recherche de vidéos et lecture YouTube compatible dans le chat.
+• Classement oral sur 30 jours.
+• Nouvelles animations d’objectif et mises en page améliorées.
+• Bantera AI présente ses fonctions et transmet des bugs avec votre accord.
+</fr-FR>
+<id>
+• Ketuk kata untuk menggarisbawahinya, lalu ketuk lagi untuk meminta penjelasan Bantera AI.
+• Putar audio latihan pada 0,5×–1,5× dan lanjutkan setelah jeda.
+• Terjemahan lebih baik, pilihan bahasa diingat, dan unduhan lebih jelas.
+• Cari video dan putar YouTube yang didukung dalam chat.
+• Peringkat berbicara selama 30 hari terakhir.
+• Animasi Target dan tata letak diperbarui.
+• Bantera AI memperkenalkan fiturnya dan mengirim laporan bug dengan izinmu.
+</id>
+<it-IT>
+• Tocca una parola per sottolinearla, poi toccala di nuovo per chiedere una spiegazione a Bantera AI.
+• Audio degli esercizi a 0,5×–1,5× e ripresa dopo la pausa.
+• Traduzioni migliorate, lingue memorizzate e download più chiari.
+• Cerca video e riproduci YouTube compatibile nella chat.
+• Classifica di conversazione degli ultimi 30 giorni.
+• Animazioni dell’obiettivo e layout rinnovati.
+• Bantera AI presenta le sue funzioni e invia segnalazioni di bug con il tuo consenso.
+</it-IT>
+<ja-JP>
+• 単語をタップして下線を付け、もう一度タップするとBantera AIに説明を依頼できます。
+• 練習音声の速度を0.5×〜1.5×から選び、一時停止した位置から再開できます。
+• 翻訳を改善。選択した言語を記憶し、ダウンロード案内も分かりやすくしました。
+• 動画検索と対応するYouTube動画のチャット内再生。
+• スピーキングランキングが過去30日間に対応。
+• 目標アニメーションとレイアウトを改善。
+• Bantera AIが機能を紹介し、同意を得て不具合レポートを送信できます。
+</ja-JP>
+<ko-KR>
+• 단어를 탭해 밑줄을 표시하고, 다시 탭해 Bantera AI에게 설명을 요청하세요.
+• 연습 음성을 0.5×~1.5×로 재생하고 일시 정지한 지점에서 이어 들으세요.
+• 번역 개선, 언어 선택 기억 및 더 명확한 다운로드 안내.
+• 동영상 검색과 지원되는 YouTube 영상의 채팅 내 재생.
+• 최근 30일간의 말하기 순위.
+• 목표 애니메이션과 레이아웃 개선.
+• Bantera AI가 기능을 소개하고 동의를 받아 버그 보고서를 제출합니다.
+</ko-KR>
+<pl-PL>
+• Dotknij słowa, aby je podkreślić, i dotknij ponownie, aby poprosić Bantera AI o wyjaśnienie.
+• Odtwarzaj ćwiczenia z prędkością 0,5×–1,5× i wznawiaj po pauzie.
+• Lepsze tłumaczenia, zapamiętane języki i czytelniejsze pobieranie.
+• Szukaj filmów i odtwarzaj obsługiwane materiały YouTube w czacie.
+• Ranking mówienia z ostatnich 30 dni.
+• Nowe animacje celu i lepsze układy.
+• Bantera AI przedstawia funkcje i wysyła zgłoszenia błędów za Twoją zgodą.
+</pl-PL>
+<pt-BR>
+• Toque numa palavra para sublinhá-la e toque de novo para pedir uma explicação ao Bantera AI.
+• Áudio dos exercícios a 0,5×–1,5× e retomada após pausar.
+• Traduções melhores, idiomas lembrados e downloads mais claros.
+• Busque vídeos e reproduza YouTube compatível no chat.
+• Classificação de fala dos últimos 30 dias.
+• Animações da Meta e layouts renovados.
+• Bantera AI apresenta seus recursos e envia relatos de bugs com sua permissão.
+</pt-BR>
+<ru-RU>
+• Нажмите на слово, чтобы подчеркнуть его, и ещё раз, чтобы запросить объяснение Bantera AI.
+• Скорость аудио 0,5×–1,5× и продолжение с места паузы.
+• Улучшенные переводы, запоминание языков и понятные подсказки загрузки.
+• Поиск видео и просмотр поддерживаемых роликов YouTube в чате.
+• Разговорный рейтинг за 30 дней.
+• Обновлены анимации цели и макеты.
+• Bantera AI рассказывает о функциях и отправляет сообщения об ошибках с вашего согласия.
+</ru-RU>
+<zh-CN>
+• 首次点按单词添加下划线，再次点按即可请求 Bantera AI 讲解。
+• 练习音频支持 0.5× 至 1.5× 播放速度，暂停后可从原位置继续。
+• 改善翻译体验，记住语言选择，并提供更清晰的下载提示。
+• 查找视频，并在聊天中播放支持的 YouTube 视频。
+• 口语排行榜现涵盖最近 30 天。
+• 更新目标进度动画并优化布局。
+• Bantera AI 会介绍功能，并可在征得你同意后提交问题报告。
+</zh-CN>
+<zh-TW>
+• 首次點按單字加上底線，再次點按即可請求 Bantera AI 講解。
+• 練習音訊支援 0.5× 至 1.5× 播放速度，暫停後可從原位置繼續。
+• 改善翻譯體驗，記住語言選擇，並提供更清楚的下載提示。
+• 尋找影片，並在聊天中播放支援的 YouTube 影片。
+• 口說排行榜現涵蓋最近 30 天。
+• 更新目標進度動畫並改善版面配置。
+• Bantera AI 會介紹功能，並可在取得你的同意後提交問題回報。
+</zh-TW>
+<th>
+• แตะคำเพื่อขีดเส้นใต้ แล้วแตะอีกครั้งเพื่อขอคำอธิบายจาก Bantera AI
+• เล่นเสียงฝึกที่ 0.5×–1.5× และเล่นต่อจากจุดที่หยุด
+• ปรับปรุงการแปล จดจำภาษาที่เลือก และแจ้งการดาวน์โหลดชัดเจนขึ้น
+• ค้นหาวิดีโอและเล่น YouTube ที่รองรับในแชต
+• อันดับการฝึกพูดย้อนหลัง 30 วัน
+• ปรับปรุงแอนิเมชันเป้าหมายและการจัดวาง
+• Bantera AI แนะนำความสามารถและส่งรายงานข้อบกพร่องเมื่อคุณอนุญาต
+</th>
+<tr-TR>
+• Altını çizmek için sözcüğe, Bantera AI’dan açıklama istemek için tekrar dokunun.
+• Alıştırma sesini 0,5×–1,5× hızında oynatın ve durakladığınız yerden sürdürün.
+• Daha iyi çeviriler, hatırlanan diller ve daha açık indirme bilgileri.
+• Video arayın, desteklenen YouTube videolarını sohbette oynatın.
+• Son 30 günün konuşma sıralaması.
+• Yeni Hedef animasyonları ve daha iyi düzenler.
+• Bantera AI özelliklerini tanıtır ve izninizle hata raporları gönderir.
+</tr-TR>
+<uk>
+• Торкніться слова, щоб підкреслити його, і ще раз, щоб попросити пояснення Bantera AI.
+• Швидкість аудіо 0,5×–1,5× і продовження з місця паузи.
+• Кращі переклади, запам’ятовування мов і зрозумілі підказки завантаження.
+• Пошук відео й перегляд підтримуваних роликів YouTube у чаті.
+• Рейтинг розмовної практики за 30 днів.
+• Оновлено анімації цілі й макети.
+• Bantera AI розповідає про можливості й надсилає звіти про помилки за вашою згодою.
+</uk>
+<vi>
+• Chạm từ để gạch chân, rồi chạm lần nữa để nhờ Bantera AI giải thích.
+• Phát bài luyện ở tốc độ 0,5×–1,5× và tiếp tục từ chỗ tạm dừng.
+• Cải thiện dịch, ghi nhớ ngôn ngữ và hướng dẫn tải rõ ràng hơn.
+• Tìm video và phát YouTube được hỗ trợ trong trò chuyện.
+• Bảng xếp hạng luyện nói trong 30 ngày qua.
+• Làm mới hiệu ứng Mục tiêu và bố cục.
+• Bantera AI giới thiệu tính năng và gửi báo cáo lỗi khi bạn đồng ý.
+</vi>
+<en-CA>
+• Tap a word to underline it, then tap again to ask Bantera AI for an explanation.
+• Play Practice audio at 0.5×–1.5× and resume after pausing.
+• Improved translations with remembered language choices and clearer downloads.
+• Find videos and play supported YouTube videos in chat.
+• Speaking rankings now cover 30 days.
+• Refreshed Goal animations and layouts.
+• Bantera AI introduces its features and can submit bug reports with your permission.
+</en-CA>

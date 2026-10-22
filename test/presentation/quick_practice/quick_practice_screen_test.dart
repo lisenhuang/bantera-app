@@ -345,62 +345,79 @@ void main() {
     },
   );
 
-  testWidgets('word taps offer explanations without submitting an answer', (
-    tester,
-  ) async {
-    await mount(tester);
-    expect(find.text('Where is the station?'), findsOneWidget);
-    expect(
-      find.text(
-        'Showing translation excludes this exercise from level changes.',
-      ),
-      findsNothing,
-    );
-    expect(find.text('¿Dónde está la estación?'), findsNothing);
-    expect(find.text('Está al lado del banco.'), findsNothing);
-    expect(find.text('Abre a las nueve.'), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('practice-show-translation')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('¿Dónde está la estación?'), findsNothing);
-    expect(find.byType(AlertDialog), findsOneWidget);
-    expect(
-      find.text(
-        'Showing translation excludes this exercise from level changes.',
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(find.text('¿Dónde está la estación?'), findsNothing);
-    expect(
-      find.text('Translation used · This exercise won’t change your level.'),
-      findsNothing,
-    );
-    await tester.tap(find.byKey(const ValueKey('practice-show-translation')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(
-      find.byKey(const ValueKey('practice-confirm-translation')),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('¿Dónde está la estación?'), findsOneWidget);
-    expect(find.text('Está al lado del banco.'), findsOneWidget);
-    expect(find.text('Abre a las nueve.'), findsOneWidget);
-    await tester.tapOnText(find.textRange.ofSubstring('next'));
-    await tester.pumpAndSettle();
-    expect(find.text('Explain “next” with Bantera AI?'), findsOneWidget);
-    expect(find.textContaining('“next”'), findsOneWidget);
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Tap the microphone and say one of the replies aloud.'),
-      findsOneWidget,
-    );
-    expect(find.text('That reply fits. Nicely done.'), findsNothing);
-    expect(tester.takeException(), isNull);
-    await tester.pumpAndSettle(const Duration(seconds: 4));
-  });
+  testWidgets(
+    'word selection underlines first and opens explanation on the second tap',
+    (tester) async {
+      await mount(tester);
+      expect(find.text('Where is the station?'), findsOneWidget);
+      expect(
+        find.text(
+          'Showing translation excludes this exercise from level changes.',
+        ),
+        findsNothing,
+      );
+      expect(find.text('¿Dónde está la estación?'), findsNothing);
+      expect(find.text('Está al lado del banco.'), findsNothing);
+      expect(find.text('Abre a las nueve.'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('practice-show-translation')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('¿Dónde está la estación?'), findsNothing);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.text(
+          'Showing translation excludes this exercise from level changes.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Dónde está la estación?'), findsNothing);
+      expect(
+        find.text('Translation used · This exercise won’t change your level.'),
+        findsNothing,
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-show-translation')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(
+        find.byKey(const ValueKey('practice-confirm-translation')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+      expect(find.text('Está al lado del banco.'), findsOneWidget);
+      expect(find.text('Abre a las nueve.'), findsOneWidget);
+      await tester.tapOnText(find.textRange.ofSubstring('station'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      await tester.tapOnText(find.textRange.ofSubstring('next'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      final selected = tester
+          .widgetList<Text>(find.byType(Text))
+          .expand((text) {
+            final span = text.textSpan;
+            return span is TextSpan
+                ? (span.children ?? []).whereType<TextSpan>()
+                : <TextSpan>[];
+          })
+          .where((span) => span.style?.decoration == TextDecoration.underline);
+      expect(selected.map((span) => span.text), ['next']);
+      await tester.tapOnText(find.textRange.ofSubstring('next'));
+      await tester.pumpAndSettle();
+      expect(find.text('Explain “next” with Bantera AI?'), findsOneWidget);
+      expect(find.textContaining('“next”'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Tap the microphone and say one of the replies aloud.'),
+        findsOneWidget,
+      );
+      expect(find.text('That reply fits. Nicely done.'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpAndSettle(const Duration(seconds: 4));
+    },
+  );
   testWidgets(
     'resumed assisted exercise keeps translations without inline explanation',
     (tester) async {

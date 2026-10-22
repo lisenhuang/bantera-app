@@ -14,14 +14,32 @@ void main() {
       tester,
     ) async {
       SubtitleWordToken? tapped;
+      SubtitleWordToken? selected;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PracticeWordText(sample.$1, onWord: (word) => tapped = word),
+            body: StatefulBuilder(
+              builder: (context, setState) => PracticeWordText(
+                sample.$1,
+                selectedWord: selected,
+                onSelect: (word) => setState(() => selected = word),
+                onWord: (word) => tapped = word,
+              ),
+            ),
           ),
         ),
       );
       expect(find.text(sample.$1), findsOneWidget);
+      await tester.tapOnText(find.textRange.ofSubstring(sample.$2));
+      await tester.pump();
+      expect(tapped, isNull);
+      expect(selected?.text, sample.$2);
+      final rich =
+          tester.widget<Text>(find.text(sample.$1)).textSpan! as TextSpan;
+      final underlined = rich.children!.cast<TextSpan>().where(
+        (span) => span.style?.decoration == TextDecoration.underline,
+      );
+      expect(underlined.single.text, sample.$2);
       await tester.tapOnText(find.textRange.ofSubstring(sample.$2));
       expect(tapped?.text, sample.$2);
       expect(tapped?.start, sample.$3);

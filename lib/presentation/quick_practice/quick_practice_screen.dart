@@ -133,6 +133,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   String? _owner, _locale, _error, _recordPath, _replayPath, _playing;
   String _requestId = const Uuid().v4();
   String? _previousId;
+  ({Object exercise, String part, SubtitleWordToken token})? _selectedWord;
   bool _loading = false, _recording = false, _busy = false, _allowed = false;
   int _epoch = 0;
   DateTime? _waitingSince;
@@ -266,6 +267,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _savedLoaded = false;
       _locale = locale;
       _exercise = null;
+      _selectedWord = null;
       _translationRevealed = false;
       _feedback = null;
       _requestId = const Uuid().v4();
@@ -472,6 +474,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         }
         setState(() {
           _exercise = response;
+          _selectedWord = null;
           _translationRevealed =
               (response['level'] == 'A0' ||
               response['translationUsed'] == true);
@@ -1194,6 +1197,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _requestId = const Uuid().v4();
       if (autoplay) _autoplay.next(_requestId);
       _exercise = null;
+      _selectedWord = null;
       _translationRevealed = false;
       _feedback = null;
       _waitingSince = null;
@@ -1444,11 +1448,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                             ],
                           ),
                           const SizedBox(height: 18),
-                          PracticeWordText(
+                          _wordText(
+                            'cue',
                             exercise['cue'] as String,
-                            onWord: (token) =>
-                                _explainWord(token, exercise['cue'] as String),
-                            textDirection: _textDirection,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               height: 1.35,
@@ -1683,6 +1685,33 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 size: 20,
               ),
       );
+  PracticeWordText _wordText(String part, String sentence, {TextStyle? style}) {
+    final selection = _selectedWord;
+    return PracticeWordText(
+      sentence,
+      style: style,
+      textDirection: _textDirection,
+      selectedWord:
+          selection?.part == part && identical(selection?.exercise, _exercise)
+          ? selection?.token
+          : null,
+      onSelect: (token) {
+        final exercise = _exercise;
+        if (exercise == null ||
+            _busy ||
+            _recording ||
+            _confirmingNext ||
+            _callActive) {
+          return;
+        }
+        setState(
+          () => _selectedWord = (exercise: exercise, part: part, token: token),
+        );
+      },
+      onWord: (token) => _explainWord(token, sentence),
+    );
+  }
+
   bool _explainingWord = false;
   Future<void> _explainWord(SubtitleWordToken token, String sentence) async {
     if (_explainingWord ||
@@ -1788,11 +1817,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  PracticeWordText(
+                  _wordText(
+                    'option$index',
                     choice['text'] as String,
-                    onWord: (token) =>
-                        _explainWord(token, choice['text'] as String),
-                    textDirection: _textDirection,
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium?.copyWith(height: 1.4),

@@ -4,6 +4,17 @@ Released locally to the requested iPhone on 22 October 2026: app **3.7.0 (431)**
 
 ## Behavior
 
+App 3.8.2 (436) changes word selection to two taps. The first tap underlines
+that exact word or CJK character; tapping the same underlined selection again
+opens the existing explanation confirmation. Selecting another word moves the
+single underline across Q1 and both Q2 choices without opening a dialog. New
+exercises clear selection. Cancelling the dialog retains the underline, and no
+AI request is sent until the user confirms. Speaker buttons remain independent.
+The 74-test selection/Practice/callback/audio regression run passed; changed-file
+analysis was clean. Unsigned debug and signed release iOS builds passed.
+Version 3.8.2 (436) was installed without launching or testing the physical app.
+
+
 The 3.7.1 (432) dialog refinement puts the selected word or character in the localized title, such as “Explain ‘broad’ with Bantera AI?”. The body contains only the original sentence, with the exact selected occurrence highlighted using the theme's container colors and bold text. Long content scrolls. The AI request and optional-image behavior remain unchanged.
 
 The 3.7.2 (433) prompt refinement explicitly refers to the current saved Practice level already supplied by the backend, including easier review selection. The request now directs image search for concrete objects (for example, a passport), animals, places, and visually demonstrable actions in the sentence. Abstract, grammatical, and figurative meanings can still skip images. The transient search capability note recognizes this explicit conditional request without allowing automatic searches for unrelated ordinary questions. This changes the app prompt only; no backend or website release is needed.

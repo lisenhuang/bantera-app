@@ -11,11 +11,15 @@ class PracticeWordText extends StatefulWidget {
     this.style,
     this.textDirection,
     required this.onWord,
+    required this.onSelect,
+    this.selectedWord,
   });
   final String text;
   final TextStyle? style;
   final TextDirection? textDirection;
   final void Function(SubtitleWordToken token) onWord;
+  final void Function(SubtitleWordToken token) onSelect;
+  final SubtitleWordToken? selectedWord;
   @override
   State<PracticeWordText> createState() => _PracticeWordTextState();
 }
@@ -32,7 +36,10 @@ class _PracticeWordTextState extends State<PracticeWordText> {
   @override
   void didUpdateWidget(PracticeWordText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.text != widget.text) _update();
+    if (oldWidget.text != widget.text ||
+        oldWidget.selectedWord != widget.selectedWord) {
+      _update();
+    }
   }
 
   void _update() {
@@ -46,12 +53,24 @@ class _PracticeWordTextState extends State<PracticeWordText> {
       if (token.start > offset) {
         _spans.add(TextSpan(text: widget.text.substring(offset, token.start)));
       }
+      final selected = widget.selectedWord;
+      final isSelected =
+          selected?.start == token.start &&
+          selected?.end == token.end &&
+          selected?.text == token.text;
       final recognizer = TapGestureRecognizer()
-        ..onTap = () => widget.onWord(token);
+        ..onTap = () =>
+            isSelected ? widget.onWord(token) : widget.onSelect(token);
       _recognizers.add(recognizer);
       _spans.add(
         TextSpan(
           text: token.text,
+          style: isSelected
+              ? const TextStyle(
+                  decoration: TextDecoration.underline,
+                  decorationThickness: 2,
+                )
+              : null,
           recognizer: recognizer,
           mouseCursor: SystemMouseCursors.click,
         ),
