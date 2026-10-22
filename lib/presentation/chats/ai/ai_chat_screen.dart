@@ -4,6 +4,7 @@ import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
 import 'ai_vocabulary_screen.dart';
 import 'ai_image_cards.dart';
+import 'ai_video_cards.dart';
 import 'ai_message_markdown.dart';
 import 'ai_search_sources.dart';
 import 'dart:async';
@@ -22,6 +23,7 @@ import '../voice_message_composer.dart';
 import '../../../core/auth_session_notifier.dart';
 import '../../../core/ai_callback_notifier.dart';
 import 'ai_chat_navigation.dart';
+import '../../../infrastructure/ai/ai_word_explanation.dart';
 
 final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
 final _aiNavigation = AiChatNavigation();
@@ -32,6 +34,25 @@ void openAiChat([BuildContext? context]) async {
   if (navigator == null) return;
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
   if (!await AiConsent.instance.request() || !navigator.mounted) return;
+  _openAiNavigator(navigator);
+}
+
+Future<void> openAiWordExplanation(
+  BuildContext context,
+  AiWordExplanation request,
+) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  if (AuthSessionNotifier.instance.session?.cacheKey != request.owner ||
+      !await AiConsent.instance.request() ||
+      !navigator.mounted ||
+      AuthSessionNotifier.instance.session?.cacheKey != request.owner) {
+    return;
+  }
+  pendingAiWordExplanation.value = request;
+  _openAiNavigator(navigator);
+}
+
+void _openAiNavigator(NavigatorState navigator) {
   unawaited(
     _aiNavigation.open(navigator, (_) {
       final callback = AiCallbackNotifier.instance;
@@ -100,7 +121,9 @@ class _AiChatScreenState extends State<AiChatScreen>
     WidgetsBinding.instance.addObserver(this);
     _count = _chat.messages.length;
     _historyLoaded = _chat.loaded;
+    _scroll.addListener(_pauseVideo);
     _chat.addListener(_changed);
+    pendingAiWordExplanation.addListener(_wordRequested);
     _completion = _player.onPlayerComplete.listen((_) {
       final message = _chat.messages.where((m) => m.id == _playing).firstOrNull;
       final duration =
@@ -163,6 +186,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     unawaited(
       _chat.initialize().then((_) async {
         if (mounted && widget.startWithCall) await _call();
+        _wordRequested();
       }),
     );
   }
@@ -171,7 +195,32 @@ class _AiChatScreenState extends State<AiChatScreen>
     if (status == AnimationStatus.completed) _initializeWhenVisible();
   }
 
+  void _pauseVideo() => activeAiVideo.value = null;
+
+  void _wordRequested() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+      final request = pendingAiWordExplanation.value;
+      if (request == null) return;
+      if (request.owner != _chat.owner) {
+        pendingAiWordExplanation.value = null;
+        return;
+      }
+      if (!_chat.canSendText) return;
+      pendingAiWordExplanation.value = null;
+      unawaited(_player.stop());
+      unawaited(
+        _chat.explainWord(
+          text: request.displayText,
+          prompt: request.prompt,
+          language: request.language,
+        ),
+      );
+    });
+  }
+
   void _changed() {
+    if (pendingAiWordExplanation.value != null) _wordRequested();
     if (!mounted) return;
     final reply = _chat.takePlaybackRequest();
     if (reply != null &&
@@ -225,6 +274,10 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
+    pendingAiWordExplanation.removeListener(_wordRequested);
+    if (pendingAiWordExplanation.value?.owner == _chat.owner) {
+      pendingAiWordExplanation.value = null;
+    }
     _openingAnimation?.removeStatusListener(_openingChanged);
     WidgetsBinding.instance.removeObserver(this);
     _chat.removeListener(_changed);
@@ -354,6 +407,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   }
 
   Future<void> _play(AiMessage m) async {
+    _pauseVideo();
     if (_chat.calling ||
         AiCallbackNotifier.instance.aiActive ||
         _chat.recording ||
@@ -992,7 +1046,9 @@ class _AiChatScreenState extends State<AiChatScreen>
                     ),
                   ),
                 ),
-              if (m.failed && user && m.audio != null)
+              if (m.failed &&
+                  user &&
+                  (m.audio != null || m.textRequest != null))
                 TextButton.icon(
                   onPressed: _chat.busy || _chat.calling
                       ? null
@@ -1004,6 +1060,21 @@ class _AiChatScreenState extends State<AiChatScreen>
                 AiSearchSources(message: m),
               if (m.imageSearchStatus != null || m.images.isNotEmpty)
                 AiImageCards(message: m, path: _chat.store.path),
+              if (m.videoSearchStatus != null || m.videos.isNotEmpty)
+                AiVideoCards(
+                  message: m,
+                  enabled: _chat.canRecord && !_chat.busy && !_startingRecord,
+                  beforePlay: () async {
+                    await _player.stop();
+                    _listening = null;
+                    if (mounted) {
+                      setState(() {
+                        _playing = null;
+                        _position = Duration.zero;
+                      });
+                    }
+                  },
+                ),
               ChatMessageTimestamp(sentAt: m.createdAt),
             ],
           ),

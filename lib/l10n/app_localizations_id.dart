@@ -2331,7 +2331,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get leaderboardTitle => 'Peringkat berbicara';
 
   @override
-  String get leaderboardScope => '7 hari terakhir';
+  String get leaderboardScope => '30 hari terakhir';
 
   @override
   String get leaderboardYourPosition => 'Posisimu';
@@ -2375,7 +2375,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Jumlah sama berbagi peringkat. Hari ini dan enam hari sebelumnya dalam UTC. Kata offline muncul setelah sinkronisasi.';
+      'Jumlah sama berbagi peringkat. Hari ini dan 29 hari sebelumnya dalam UTC. Kata offline muncul setelah sinkronisasi.';
 
   @override
   String get leaderboardLegacy =>
@@ -2383,4 +2383,66 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Muat lagi';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'Terjemahan dari bahasa yang dipelajari ini ke bahasa ibu Anda tidak tersedia. Pilih bahasa lain. Pilihan Anda akan disimpan untuk bahasa yang dipelajari ini di perangkat ini.';
+
+  @override
+  String get quickTranslationDownloadTitle => 'Unduh bahasa terjemahan?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Ponsel Anda memerlukan berkas bahasa untuk menerjemahkan. Koneksi internet diperlukan untuk mengunduhnya.';
+
+  @override
+  String get quickTranslationPreparing => 'Menyiapkan bahasa terjemahan…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'Pilih bahasa terjemahan untuk melanjutkan.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Unduh bahasa terjemahan untuk melanjutkan.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Jelaskan “$word” dengan Bantera AI?';
+  }
+
+  @override
+  String get practiceExplainAction => 'Tanya AI';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Jelaskan “$word” dalam kalimat ini: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'Mencari video…';
+
+  @override
+  String get aiVideosUnavailable => 'Video tidak ditemukan. Coba lagi nanti.';
+
+  @override
+  String get aiPlayVideo => 'Putar video';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Video ini tidak dapat diputar di sini. Buka di browser.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Buka di browser';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Kecepatan pemutaran: $speed×. Ketuk untuk mengubah.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Jeda audio';
+
+  @override
+  String get quickResumeAudio => 'Lanjutkan audio';
 }

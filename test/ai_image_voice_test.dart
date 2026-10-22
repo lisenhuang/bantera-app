@@ -19,6 +19,7 @@ class ImageApi extends AiApiClient {
     String requestId, {
     required bool hasMetBanteraAi,
     List<Map<String, String>> images = const [],
+    bool textOnly = false,
   }) async {
     uploads.add(images);
     return WebSocket.connect('ws://127.0.0.1:$port');

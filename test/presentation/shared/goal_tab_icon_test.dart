@@ -1,4 +1,6 @@
 import 'package:app/core/theme.dart';
+import 'package:app/core/app_resume_notifier.dart';
+import 'package:app/core/practice_review_service.dart';
 import 'package:app/domain/activity/daily_word_goal.dart';
 import 'package:app/domain/activity/word_activity.dart';
 import 'package:app/l10n/app_localizations.dart';
@@ -19,19 +21,24 @@ void main() {
     Locale locale = const Locale('en'),
     double scale = 1,
     ValueChanged<int>? onTap,
+    bool settle = true,
+    bool reduceMotion = false,
+    int replayTick = 0,
   }) async {
     await tester.binding.setSurfaceSize(const Size(320, 600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
+        navigatorObservers: [practiceReviewRouteObserver],
         theme: dark ? BanteraTheme.darkTheme : BanteraTheme.lightTheme,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(scale),
+            disableAnimations: reduceMotion,
+          ),
           child: child!,
         ),
         home: Builder(
@@ -64,7 +71,11 @@ void main() {
                     label: l10n.chatsTitle,
                   ),
                   BottomNavigationBarItem(
-                    icon: GoalTabIcon(goal: target, today: today),
+                    icon: GoalTabIcon(
+                      goal: target,
+                      today: today,
+                      replayTick: replayTick,
+                    ),
                     label: l10n.navGoal,
                   ),
                 ],
@@ -74,8 +85,101 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) await tester.pumpAndSettle();
   }
+
+  double ringValue(WidgetTester tester) => tester
+      .widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator))
+      .value!;
+
+  testWidgets('animates from zero on first appearance and app resume', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      today: const WordTotals(listened: 600, spoken: 400),
+      settle: false,
+    );
+    expect(find.text('0%'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(ringValue(tester), inExclusiveRange(0, 1));
+    await tester.pumpAndSettle();
+    expect(find.text('100%'), findsOneWidget);
+    AppResumeNotifier.instance.notifyResumed();
+    await tester.pump();
+    expect(find.text('0%'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('100%'), findsOneWidget);
+  });
+
+  testWidgets('replays when returning from a pushed screen', (tester) async {
+    await mount(tester, today: const WordTotals(listened: 500));
+    final navigator = Navigator.of(tester.element(find.byType(GoalTabIcon)));
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => const Scaffold(body: Text('Details')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    AppResumeNotifier.instance.notifyResumed();
+    await tester.pump();
+    navigator.pop();
+    await tester.pump();
+    expect(find.text('0%'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('50.0%'), findsOneWidget);
+  });
+
+  testWidgets('normal word updates continue from the displayed value', (
+    tester,
+  ) async {
+    await mount(tester, today: const WordTotals(listened: 500));
+    await mount(
+      tester,
+      today: const WordTotals(listened: 600, spoken: 400),
+      settle: false,
+    );
+    expect(ringValue(tester), .5);
+    await tester.pumpAndSettle();
+    expect(find.text('100%'), findsOneWidget);
+  });
+
+  testWidgets('Goal reselection restarts even during the previous animation', (
+    tester,
+  ) async {
+    const today = WordTotals(listened: 600, spoken: 400);
+    await mount(tester, today: today, selected: 2);
+    for (var tap = 1; tap <= 3; tap++) {
+      await mount(
+        tester,
+        today: today,
+        selected: 2,
+        replayTick: tap,
+        settle: false,
+      );
+      expect(ringValue(tester), 0);
+      expect(find.text('0%'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(ringValue(tester), inExclusiveRange(0, 1));
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('100%'), findsOneWidget);
+  });
+
+  testWidgets('reduced motion shows the current percentage immediately', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      today: const WordTotals(listened: 600, spoken: 400),
+      reduceMotion: true,
+      settle: false,
+    );
+    expect(find.text('100%'), findsOneWidget);
+    AppResumeNotifier.instance.notifyResumed();
+    await tester.pump();
+    expect(find.text('100%'), findsOneWidget);
+  });
 
   testWidgets('updates without selecting tab and caps each target separately', (
     tester,

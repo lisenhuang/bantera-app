@@ -12,6 +12,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
     this.onReplay,
     this.replayEnabled = true,
     this.replaying = false,
+    this.replayPaused = false,
     this.replayLoading = false,
     this.uncertainWords = const [],
   });
@@ -19,7 +20,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
   final List<String> choices, uncertainWords;
   final int? choice;
   final VoidCallback? onReplay;
-  final bool replayEnabled, replaying, replayLoading;
+  final bool replayEnabled, replaying, replayPaused, replayLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +78,9 @@ class PracticeTranscriptFeedback extends StatelessWidget {
                 IconButton.filledTonal(
                   key: const ValueKey('practice-replay-recording'),
                   tooltip: replaying
-                      ? l.practiceStopRecording
+                      ? l.quickPauseAudio
+                      : replayPaused
+                      ? l.quickResumeAudio
                       : l.comparePlayAttempt,
                   onPressed: replayEnabled ? onReplay : null,
                   icon: replayLoading
@@ -88,7 +91,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
                         )
                       : Icon(
                           replaying
-                              ? Icons.stop_rounded
+                              ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
                         ),
                   constraints: const BoxConstraints(

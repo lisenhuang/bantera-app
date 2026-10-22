@@ -2237,7 +2237,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get leaderboardTitle => '말하기 순위';
 
   @override
-  String get leaderboardScope => '최근 7일';
+  String get leaderboardScope => '최근 30일';
 
   @override
   String get leaderboardYourPosition => '내 순위';
@@ -2277,11 +2277,70 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      '같은 수는 공동 순위. UTC 기준 오늘과 이전 6일. 오프라인 기록은 동기화 후 반영됩니다.';
+      '같은 수는 공동 순위. UTC 기준 오늘과 이전 29일. 오프라인 기록은 동기화 후 반영됩니다.';
 
   @override
   String get leaderboardLegacy => '이전 활동은 원래 날짜를 유지하며 새 활동은 UTC를 사용합니다.';
 
   @override
   String get leaderboardLoadMore => '더 불러오기';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      '이 학습 언어에서 모국어로 번역할 수 없습니다. 다른 언어를 선택하세요. 이 기기에서 학습 언어별로 선택을 기억합니다.';
+
+  @override
+  String get quickTranslationDownloadTitle => '번역 언어를 다운로드할까요?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      '휴대폰에 번역 언어 파일이 필요합니다. 다운로드하려면 인터넷에 연결해야 합니다.';
+
+  @override
+  String get quickTranslationPreparing => '번역 언어 준비 중…';
+
+  @override
+  String get quickTranslationChoosePrompt => '계속하려면 번역 언어를 선택하세요.';
+
+  @override
+  String get quickTranslationDownloadNeeded => '계속하려면 번역 언어를 다운로드하세요.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Bantera AI에게 “$word”의 설명을 요청할까요?';
+  }
+
+  @override
+  String get practiceExplainAction => 'AI에게 묻기';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return '이 문장의 “$word”를 설명해 주세요: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => '동영상 검색 중…';
+
+  @override
+  String get aiVideosUnavailable => '동영상을 찾지 못했어요. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get aiPlayVideo => '동영상 재생';
+
+  @override
+  String get aiVideoEmbedUnavailable => '여기에서는 재생할 수 없어요. 브라우저에서 열어 주세요.';
+
+  @override
+  String get aiOpenVideoBrowser => '브라우저에서 열기';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return '재생 속도: $speed배. 탭하여 변경하세요.';
+  }
+
+  @override
+  String get quickPauseAudio => '오디오 일시 정지';
+
+  @override
+  String get quickResumeAudio => '오디오 다시 재생';
 }

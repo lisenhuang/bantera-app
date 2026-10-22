@@ -48,8 +48,8 @@ class TranslationService {
   }
 
   /// Ensures on-device translation language packs are downloaded for the pair.
-  /// On iOS 26+, may present the system download UI (SwiftUI `translationTask`).
-  /// No-op when the target is already installed.
+  /// On iOS 18+, may present the system download UI (SwiftUI `translationTask`).
+  /// No-op when both languages are already installed.
   Future<void> prepareTranslationAssets({
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,

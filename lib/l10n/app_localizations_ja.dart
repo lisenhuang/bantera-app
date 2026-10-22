@@ -2222,7 +2222,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get leaderboardTitle => 'スピーキングランキング';
 
   @override
-  String get leaderboardScope => '過去7日間';
+  String get leaderboardScope => '過去30日間';
 
   @override
   String get leaderboardYourPosition => 'あなたの順位';
@@ -2261,11 +2261,70 @@ class AppLocalizationsJa extends AppLocalizations {
   String get leaderboardNoActivity => '練習やチャットで話すと順位がつきます。';
 
   @override
-  String get leaderboardFootnote => '同じ合計は同順位。UTCの今日と過去6日間。オフライン分は同期後に反映。';
+  String get leaderboardFootnote => '同じ合計は同順位。UTCの今日と過去29日間。オフライン分は同期後に反映。';
 
   @override
   String get leaderboardLegacy => '過去の記録は元の日付を保持し、新しい記録はUTCを使います。';
 
   @override
   String get leaderboardLoadMore => 'さらに読み込む';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'この学習言語から母語への翻訳は利用できません。別の言語を選んでください。この端末で学習言語ごとに選択を保存します。';
+
+  @override
+  String get quickTranslationDownloadTitle => '翻訳言語をダウンロードしますか？';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      '翻訳用の言語ファイルが必要です。ダウンロードにはインターネット接続が必要です。';
+
+  @override
+  String get quickTranslationPreparing => '翻訳言語を準備中…';
+
+  @override
+  String get quickTranslationChoosePrompt => '続けるには翻訳言語を選んでください。';
+
+  @override
+  String get quickTranslationDownloadNeeded => '続けるには翻訳言語をダウンロードしてください。';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Bantera AIに「$word」を説明してもらいますか？';
+  }
+
+  @override
+  String get practiceExplainAction => 'AIに聞く';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'この文の「$word」を説明してください：$sentence';
+  }
+
+  @override
+  String get aiVideosSearching => '動画を検索中…';
+
+  @override
+  String get aiVideosUnavailable => '動画が見つかりません。後でもう一度お試しください。';
+
+  @override
+  String get aiPlayVideo => '動画を再生';
+
+  @override
+  String get aiVideoEmbedUnavailable => 'ここでは再生できません。ブラウザで開いてください。';
+
+  @override
+  String get aiOpenVideoBrowser => 'ブラウザで開く';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return '再生速度：$speed倍。タップして変更。';
+  }
+
+  @override
+  String get quickPauseAudio => '音声を一時停止';
+
+  @override
+  String get quickResumeAudio => '音声を再開';
 }

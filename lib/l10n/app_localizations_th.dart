@@ -2307,7 +2307,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get leaderboardTitle => 'อันดับการพูด';
 
   @override
-  String get leaderboardScope => '7 วันที่ผ่านมา';
+  String get leaderboardScope => '30 วันที่ผ่านมา';
 
   @override
   String get leaderboardYourPosition => 'อันดับของคุณ';
@@ -2349,7 +2349,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'จำนวนเท่ากันได้อันดับเดียวกัน วันนี้และหกวันก่อนหน้าตาม UTC คำออฟไลน์จะปรากฏหลังซิงค์';
+      'จำนวนเท่ากันได้อันดับเดียวกัน วันนี้และ 29 วันก่อนหน้าตาม UTC คำออฟไลน์จะปรากฏหลังซิงค์';
 
   @override
   String get leaderboardLegacy =>
@@ -2357,4 +2357,66 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'โหลดเพิ่มเติม';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'ไม่สามารถแปลจากภาษาที่เรียนนี้เป็นภาษาแม่ของคุณได้ โปรดเลือกภาษาอื่น เราจะจดจำตัวเลือกสำหรับภาษาที่เรียนนี้บนอุปกรณ์นี้';
+
+  @override
+  String get quickTranslationDownloadTitle => 'ดาวน์โหลดภาษาสำหรับแปลหรือไม่?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'โทรศัพท์ต้องใช้ไฟล์ภาษาสำหรับแปล และต้องเชื่อมต่ออินเทอร์เน็ตเพื่อดาวน์โหลด';
+
+  @override
+  String get quickTranslationPreparing => 'กำลังเตรียมภาษาสำหรับแปล…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'เลือกภาษาสำหรับแปลเพื่อดำเนินการต่อ';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'ดาวน์โหลดภาษาสำหรับแปลเพื่อดำเนินการต่อ';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'ให้ Bantera AI อธิบาย “$word” ไหม';
+  }
+
+  @override
+  String get practiceExplainAction => 'ถาม AI';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'ช่วยอธิบาย “$word” ในประโยคนี้: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'กำลังค้นหาวิดีโอ…';
+
+  @override
+  String get aiVideosUnavailable => 'ไม่พบวิดีโอ โปรดลองอีกครั้งภายหลัง';
+
+  @override
+  String get aiPlayVideo => 'เล่นวิดีโอ';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'ไม่สามารถเล่นวิดีโอนี้ที่นี่ได้ โปรดเปิดในเบราว์เซอร์';
+
+  @override
+  String get aiOpenVideoBrowser => 'เปิดในเบราว์เซอร์';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'ความเร็วในการเล่น: $speed× แตะเพื่อเปลี่ยน';
+  }
+
+  @override
+  String get quickPauseAudio => 'หยุดเสียงชั่วคราว';
+
+  @override
+  String get quickResumeAudio => 'เล่นเสียงต่อ';
 }

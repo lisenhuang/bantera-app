@@ -1,4 +1,5 @@
 import 'ai_image_search.dart';
+import 'ai_video_search.dart';
 import 'ai_public_transcript.dart';
 import 'ai_web_search.dart';
 import 'dart:convert';
@@ -13,6 +14,7 @@ class AiMessage {
     required this.role,
     String text = '',
     this.translation = '',
+    this.textRequest,
     this.audio,
     this.language = '',
     this.translationLanguage = '',
@@ -27,6 +29,8 @@ class AiMessage {
     List<AiWebSource>? sources,
     this.imageSearchStatus,
     List<AiImageAttachment>? images,
+    List<AiVideoAttachment>? videos,
+    this.videoSearchStatus,
     List<String>? emojis,
   }) : _rawText = text,
        _needsTimeZone = createdAt == null && timeZone == null,
@@ -35,6 +39,7 @@ class AiMessage {
            (createdAt == null ? DateTime.now().timeZoneOffset.inMinutes : null),
        emojis = emojis ?? [],
        images = images ?? [],
+       videos = videos ?? [],
        sources = sources ?? [],
        id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now();
@@ -49,17 +54,23 @@ class AiMessage {
   void appendTranscript(String value) => _rawText += value;
   String translation, language, translationLanguage;
   String? audio;
+
+  /// Explicit text input, distinct from a microphone transcript.
+  final String? textRequest;
   int? durationMs;
   bool failed;
   String? webSearchQuery, webSearchStatus;
   final List<AiWebSource> sources;
   String? imageSearchStatus;
   final List<AiImageAttachment> images;
+  final List<AiVideoAttachment> videos;
+  String? videoSearchStatus;
   final List<String> emojis;
   Map<String, dynamic> toJson() => {
     'id': id,
     'role': role,
     'text': text,
+    if (textRequest != null) 'textRequest': textRequest,
     'translation': translation,
     'audio': audio,
     'durationMs': durationMs,
@@ -77,6 +88,10 @@ class AiMessage {
         ? 'unavailable'
         : imageSearchStatus,
     'images': images.map((i) => i.toJson()).toList(),
+    'videos': videos.map((v) => v.toJson()).toList(),
+    'videoSearchStatus': videoSearchStatus == 'searching'
+        ? 'unavailable'
+        : videoSearchStatus,
     'emojis': emojis,
     'sources': sources.map((s) => s.toJson()).toList(),
   };
@@ -84,6 +99,7 @@ class AiMessage {
     id: j['id'],
     role: j['role'],
     text: j['text'] ?? '',
+    textRequest: j['textRequest'] as String?,
     translation: j['translation'] ?? '',
     audio: j['audio'],
     durationMs: j['durationMs'] is int && j['durationMs'] >= 0
@@ -98,6 +114,12 @@ class AiMessage {
     webSearchQuery: j['webSearchQuery'] as String?,
     webSearchStatus: j['webSearchStatus'] as String?,
     imageSearchStatus: j['imageSearchStatus'] as String?,
+    videoSearchStatus: j['videoSearchStatus'] as String?,
+    videos: (j['videos'] as List? ?? [])
+        .map(AiVideoAttachment.fromJson)
+        .whereType<AiVideoAttachment>()
+        .take(4)
+        .toList(),
     emojis: (j['emojis'] as List? ?? []).whereType<String>().take(12).toList(),
     images: (j['images'] as List? ?? [])
         .map(AiImageAttachment.fromJson)
@@ -146,6 +168,7 @@ class AiHistoryStore {
         (m.text.trim().isNotEmpty ||
             m.audio != null ||
             m.images.isNotEmpty ||
+            m.videos.isNotEmpty ||
             m.emojis.isNotEmpty),
   );
   bool privacyNoticeDismissed = false;
@@ -404,6 +427,7 @@ class AiHistoryStore {
               !m.failed &&
               (m.text.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
+                  m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
         )
         .toList();
@@ -438,6 +462,7 @@ class AiHistoryStore {
               !m.failed &&
               (m.text.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
+                  m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
         )
         .toList();
@@ -446,6 +471,8 @@ class AiHistoryStore {
       final content = [
         m.text,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
+        for (final video in m.videos)
+          '[Shared video link: ${video.title}; source: ${video.url}; contents not watched]',
         for (final image in m.images)
           image.userAttached
               ? '[User attached an image to this historical message; image pixels are not included in this history.]'
@@ -550,6 +577,7 @@ class AiHistoryStore {
               !m.failed &&
               (m.text.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
+                  m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
         )
         .toList();
@@ -564,6 +592,8 @@ class AiHistoryStore {
       final content = [
         m.text,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
+        for (final video in m.videos)
+          '[Shared video link: ${video.title}; source: ${video.url}; contents not watched]',
         for (final image in m.images)
           image.userAttached
               ? '[User attached an image to this historical message; image pixels are not included in this history.]'

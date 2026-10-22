@@ -910,16 +910,12 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    let payload = BanteraLegacyTranslationCoordinator.supportedLocalesPayload(
-      excluding: sourceLocaleIdentifier
-    )
-    print("[Translation framework, iOS 18+] Supported translation locales from '\(sourceLocaleIdentifier)' (\(payload.count)):")
-    for locale in payload {
-      let id = locale["identifier"] as? String ?? "?"
-      let name = locale["displayName"] as? String ?? "?"
-      print("[Translation framework, iOS 18+]   \(id) — \(name)")
+    Task { @MainActor in
+      let payload = await BanteraLegacyTranslationCoordinator.supportedLocalesPayload(
+        excluding: sourceLocaleIdentifier
+      )
+      result(payload)
     }
-    result(payload)
   }
 
   private func handleGetAllSupportedTranslationLocales(result: @escaping FlutterResult) {
@@ -986,8 +982,21 @@ private final class BanteraTranslationBridge {
       return
     }
 
-    // Translation framework (iOS 18+) manages model downloads automatically — no preparation needed.
-    result(nil)
+    BanteraLegacyTranslationCoordinator.translate(
+      cues: [],
+      sourceLocaleIdentifier: sourceLocaleIdentifier,
+      targetLocaleIdentifier: targetLocaleIdentifier,
+      prepareOnly: true
+    ) { outcome in
+      DispatchQueue.main.async {
+        switch outcome {
+        case .success: result(nil)
+        case .failure(let error):
+          result((error as? BanteraTranslationError)?.flutterError
+            ?? FlutterError(code: "translation_failed", message: "Translation could not be prepared.", details: nil))
+        }
+      }
+    }
   }
 
   private func handleTranslateTranscriptCues(

@@ -2391,7 +2391,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get leaderboardTitle => 'Classificação de conversação';
 
   @override
-  String get leaderboardScope => 'Últimos 7 dias';
+  String get leaderboardScope => 'Últimos 30 dias';
 
   @override
   String get leaderboardYourPosition => 'A tua posição';
@@ -2435,7 +2435,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Totais iguais partilham a posição. Hoje e os seis dias anteriores em UTC. Palavras offline aparecem após sincronizar.';
+      'Totais iguais partilham a posição. Hoje e os 29 dias anteriores em UTC. Palavras offline aparecem após sincronizar.';
 
   @override
   String get leaderboardLegacy =>
@@ -2443,4 +2443,67 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Carregar mais';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'A tradução deste idioma de estudo para seu idioma nativo não está disponível. Escolha outro idioma. Lembraremos sua escolha para este idioma de estudo neste dispositivo.';
+
+  @override
+  String get quickTranslationDownloadTitle => 'Baixar idiomas de tradução?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Seu celular precisa dos arquivos de idiomas para traduzir. É necessária uma conexão com a internet para baixá-los.';
+
+  @override
+  String get quickTranslationPreparing => 'Preparando idiomas de tradução…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'Escolha um idioma de tradução para continuar.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Baixe os idiomas de tradução para continuar.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Pedir à Bantera AI para explicar “$word”?';
+  }
+
+  @override
+  String get practiceExplainAction => 'Perguntar à IA';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Explica “$word” nesta frase: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'A procurar vídeos…';
+
+  @override
+  String get aiVideosUnavailable =>
+      'Nenhum vídeo encontrado. Tenta novamente mais tarde.';
+
+  @override
+  String get aiPlayVideo => 'Reproduzir vídeo';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Este vídeo não pode ser reproduzido aqui. Abre-o no navegador.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Abrir no navegador';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Velocidade: $speed×. Toque para alterar.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Pausar áudio';
+
+  @override
+  String get quickResumeAudio => 'Retomar áudio';
 }

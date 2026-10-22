@@ -2222,7 +2222,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get leaderboardTitle => '口语排行榜';
 
   @override
-  String get leaderboardScope => '最近7天';
+  String get leaderboardScope => '最近30天';
 
   @override
   String get leaderboardYourPosition => '你的位置';
@@ -2261,13 +2261,71 @@ class AppLocalizationsZh extends AppLocalizations {
   String get leaderboardNoActivity => '在练习或聊天中开口说话，即可获得排名。';
 
   @override
-  String get leaderboardFootnote => '总数相同则并列。按UTC计算今天及之前六天。离线数据同步后计入。';
+  String get leaderboardFootnote => '总数相同则并列。按UTC计算今天及之前29天。离线数据同步后计入。';
 
   @override
   String get leaderboardLegacy => '较早的活动保留原始记录日期，新活动使用UTC。';
 
   @override
   String get leaderboardLoadMore => '加载更多';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      '此学习语言暂不支持翻译成你的母语。请选择其他语言。我们会在此设备上为该学习语言记住你的选择。';
+
+  @override
+  String get quickTranslationDownloadTitle => '下载翻译语言？';
+
+  @override
+  String get quickTranslationDownloadBody => '手机需要翻译语言文件，下载时需要连接互联网。';
+
+  @override
+  String get quickTranslationPreparing => '正在准备翻译语言…';
+
+  @override
+  String get quickTranslationChoosePrompt => '请选择翻译语言以继续。';
+
+  @override
+  String get quickTranslationDownloadNeeded => '请下载翻译语言以继续。';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return '让 Bantera AI 解释“$word”？';
+  }
+
+  @override
+  String get practiceExplainAction => '询问 AI';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return '请解释这句话中的“$word”：$sentence';
+  }
+
+  @override
+  String get aiVideosSearching => '正在查找视频…';
+
+  @override
+  String get aiVideosUnavailable => '未找到视频，请稍后重试。';
+
+  @override
+  String get aiPlayVideo => '播放视频';
+
+  @override
+  String get aiVideoEmbedUnavailable => '此视频无法在此播放，请在浏览器中打开。';
+
+  @override
+  String get aiOpenVideoBrowser => '在浏览器中打开';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return '播放速度：$speed倍。点按切换。';
+  }
+
+  @override
+  String get quickPauseAudio => '暂停音频';
+
+  @override
+  String get quickResumeAudio => '继续播放';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4492,7 +4550,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get leaderboardTitle => '口語排行榜';
 
   @override
-  String get leaderboardScope => '最近7天';
+  String get leaderboardScope => '最近30天';
 
   @override
   String get leaderboardYourPosition => '你的位置';
@@ -4531,11 +4589,69 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get leaderboardNoActivity => '在練習或聊天中開口說話，即可獲得排名。';
 
   @override
-  String get leaderboardFootnote => '總數相同則並列。按UTC計算今天及之前六天。離線資料同步後計入。';
+  String get leaderboardFootnote => '總數相同則並列。按UTC計算今天及之前29天。離線資料同步後計入。';
 
   @override
   String get leaderboardLegacy => '較早的活動保留原始記錄日期，新活動使用UTC。';
 
   @override
   String get leaderboardLoadMore => '載入更多';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      '此學習語言暫不支援翻譯成你的母語。請選擇其他語言。我們會在此裝置上為該學習語言記住你的選擇。';
+
+  @override
+  String get quickTranslationDownloadTitle => '下載翻譯語言？';
+
+  @override
+  String get quickTranslationDownloadBody => '手機需要翻譯語言檔案，下載時需要連接互聯網。';
+
+  @override
+  String get quickTranslationPreparing => '正在準備翻譯語言…';
+
+  @override
+  String get quickTranslationChoosePrompt => '請選擇翻譯語言以繼續。';
+
+  @override
+  String get quickTranslationDownloadNeeded => '請下載翻譯語言以繼續。';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return '讓 Bantera AI 解釋「$word」？';
+  }
+
+  @override
+  String get practiceExplainAction => '詢問 AI';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return '請解釋這句話中的「$word」：$sentence';
+  }
+
+  @override
+  String get aiVideosSearching => '正在尋找影片…';
+
+  @override
+  String get aiVideosUnavailable => '找不到影片，請稍後再試。';
+
+  @override
+  String get aiPlayVideo => '播放影片';
+
+  @override
+  String get aiVideoEmbedUnavailable => '此影片無法在此播放，請在瀏覽器中開啟。';
+
+  @override
+  String get aiOpenVideoBrowser => '在瀏覽器中開啟';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return '播放速度：$speed倍。點按切換。';
+  }
+
+  @override
+  String get quickPauseAudio => '暫停音訊';
+
+  @override
+  String get quickResumeAudio => '繼續播放';
 }

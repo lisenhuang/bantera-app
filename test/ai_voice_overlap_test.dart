@@ -43,6 +43,7 @@ class Api extends AiApiClient {
     String requestId, {
     required bool hasMetBanteraAi,
     List<Map<String, String>> images = const [],
+    bool textOnly = false,
   }) {
     contexts.add(history);
     return WebSocket.connect('ws://127.0.0.1:$port');

@@ -6,6 +6,7 @@ import 'package:app/core/theme.dart';
 import 'package:app/domain/activity/word_activity.dart';
 import 'package:app/domain/activity/daily_word_goal.dart';
 import 'package:app/presentation/shared/goal_tab_icon.dart';
+import 'package:app/presentation/shared/app_viewport.dart';
 import 'package:app/presentation/shared/daily_goal_celebration_dialog.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/quick_practice_screen.dart';
@@ -98,6 +99,7 @@ void main() {
     double width = 393,
     double scale = 1,
     double height = 852,
+    EdgeInsets sideInsets = EdgeInsets.zero,
     Locale locale = const Locale('en'),
     TargetPlatform platform = TargetPlatform.iOS,
     Map<String, dynamic>? feedback,
@@ -116,8 +118,8 @@ void main() {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(
             context,
-          ).copyWith(textScaler: TextScaler.linear(scale)),
-          child: child!,
+          ).copyWith(textScaler: TextScaler.linear(scale), padding: sideInsets),
+          child: AppViewport(child: child!),
         ),
         home: Scaffold(
           body: QuickPracticeScreen.preview(
@@ -161,6 +163,36 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('practice survives Duo folding, rotation and narrow windows', (
+    tester,
+  ) async {
+    for (final size in [
+      const Size(402, 874),
+      const Size(744, 1133),
+      const Size(1133, 744),
+      const Size(320, 600),
+    ]) {
+      await mount(
+        tester,
+        width: size.width,
+        height: size.height,
+        sideInsets: const EdgeInsets.only(right: 64),
+        feedback: {
+          'outcome': 'correct',
+          'transcript': 'It’s next to the bank.',
+        },
+      );
+      expect(tester.takeException(), isNull);
+      final next = find.byKey(const ValueKey('practice-pinned-next'));
+      expect(next, findsOneWidget);
+      final rect = tester.getRect(next);
+      expect(rect.right, lessThanOrEqualTo(size.width - 64));
+      expect(rect.left, greaterThanOrEqualTo(0));
+      expect(find.text('Bantera App'), findsOneWidget);
+      expect(find.byType(GoalTabIcon), findsOneWidget);
+    }
+  });
 
   for (final major in [15, 16, 17]) {
     testWidgets(
@@ -279,7 +311,7 @@ void main() {
       expect(find.text('¿Dónde está la estación?'), findsOneWidget);
       expect(
         find.text('Translation used · This exercise won’t change your level.'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const ValueKey('practice-pinned-next')),
@@ -313,11 +345,17 @@ void main() {
     },
   );
 
-  testWidgets('choices prompt speech instead of accepting a tapped answer', (
+  testWidgets('word taps offer explanations without submitting an answer', (
     tester,
   ) async {
     await mount(tester);
     expect(find.text('Where is the station?'), findsOneWidget);
+    expect(
+      find.text(
+        'Showing translation excludes this exercise from level changes.',
+      ),
+      findsNothing,
+    );
     expect(find.text('¿Dónde está la estación?'), findsNothing);
     expect(find.text('Está al lado del banco.'), findsNothing);
     expect(find.text('Abre a las nueve.'), findsNothing);
@@ -326,6 +364,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('¿Dónde está la estación?'), findsNothing);
     expect(find.byType(AlertDialog), findsOneWidget);
+    expect(
+      find.text(
+        'Showing translation excludes this exercise from level changes.',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.text('¿Dónde está la estación?'), findsNothing);
@@ -343,24 +387,28 @@ void main() {
     expect(find.text('¿Dónde está la estación?'), findsOneWidget);
     expect(find.text('Está al lado del banco.'), findsOneWidget);
     expect(find.text('Abre a las nueve.'), findsOneWidget);
-    await tester.tap(find.text('It’s next to the bank.'));
-    await tester.pump();
+    await tester.tapOnText(find.textRange.ofSubstring('next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Explain “next” with Bantera AI?'), findsOneWidget);
+    expect(find.textContaining('“next”'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
     expect(
       find.text('Tap the microphone and say one of the replies aloud.'),
-      findsNWidgets(2),
+      findsOneWidget,
     );
     expect(find.text('That reply fits. Nicely done.'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpAndSettle(const Duration(seconds: 4));
   });
   testWidgets(
-    'resumed assisted exercise keeps translations and exclusion notice',
+    'resumed assisted exercise keeps translations without inline explanation',
     (tester) async {
       await mount(tester, material: {...exercise, 'translationUsed': true});
       expect(find.text('¿Dónde está la estación?'), findsOneWidget);
       expect(
         find.text('Translation used · This exercise won’t change your level.'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const ValueKey('practice-show-translation')),

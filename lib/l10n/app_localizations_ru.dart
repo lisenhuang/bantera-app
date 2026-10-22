@@ -2396,7 +2396,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get leaderboardTitle => 'Рейтинг разговорной практики';
 
   @override
-  String get leaderboardScope => 'Последние 7 дней';
+  String get leaderboardScope => 'Последние 30 дней';
 
   @override
   String get leaderboardYourPosition => 'Ваша позиция';
@@ -2440,7 +2440,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Равные результаты делят место. Сегодня и шесть предыдущих дней по UTC. Офлайн-слова появятся после синхронизации.';
+      'Равные результаты делят место. Сегодня и 29 предыдущих дней по UTC. Офлайн-слова появятся после синхронизации.';
 
   @override
   String get leaderboardLegacy =>
@@ -2448,4 +2448,66 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Загрузить ещё';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'Перевод с этого изучаемого языка на ваш родной язык недоступен. Выберите другой язык. Мы запомним выбор для этого изучаемого языка на этом устройстве.';
+
+  @override
+  String get quickTranslationDownloadTitle => 'Скачать языки для перевода?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Телефону нужны языковые файлы для перевода. Для их скачивания требуется интернет.';
+
+  @override
+  String get quickTranslationPreparing => 'Подготовка языков для перевода…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'Выберите язык перевода, чтобы продолжить.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Скачайте языки для перевода, чтобы продолжить.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Попросить Bantera AI объяснить «$word»?';
+  }
+
+  @override
+  String get practiceExplainAction => 'Спросить ИИ';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Объясни «$word» в этом предложении: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'Поиск видео…';
+
+  @override
+  String get aiVideosUnavailable => 'Видео не найдены. Попробуйте позже.';
+
+  @override
+  String get aiPlayVideo => 'Смотреть видео';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Это видео нельзя воспроизвести здесь. Откройте его в браузере.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Открыть в браузере';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Скорость воспроизведения: $speed×. Нажмите, чтобы изменить.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Приостановить аудио';
+
+  @override
+  String get quickResumeAudio => 'Продолжить аудио';
 }

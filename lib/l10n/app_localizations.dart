@@ -4235,7 +4235,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaderboardScope.
   ///
   /// In en, this message translates to:
-  /// **'Last 7 days'**
+  /// **'Last 30 days'**
   String get leaderboardScope;
 
   /// No description provided for @leaderboardYourPosition.
@@ -4313,7 +4313,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaderboardFootnote.
   ///
   /// In en, this message translates to:
-  /// **'Equal totals share a rank. Today and the previous six days, in UTC. Offline words appear after syncing.'**
+  /// **'Equal totals share a rank. Today and the previous 29 days, in UTC. Offline words appear after syncing.'**
   String get leaderboardFootnote;
 
   /// No description provided for @leaderboardLegacy.
@@ -4327,6 +4327,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load more'**
   String get leaderboardLoadMore;
+
+  /// No description provided for @quickTranslationFallbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation into your native language is unavailable for this learning language. Choose another language. We’ll remember it for this learning language on this device.'**
+  String get quickTranslationFallbackBody;
+
+  /// No description provided for @quickTranslationDownloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download translation languages?'**
+  String get quickTranslationDownloadTitle;
+
+  /// No description provided for @quickTranslationDownloadBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone needs translation language files. An internet connection is required to download them.'**
+  String get quickTranslationDownloadBody;
+
+  /// No description provided for @quickTranslationPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing translation languages…'**
+  String get quickTranslationPreparing;
+
+  /// No description provided for @quickTranslationChoosePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a translation language to continue.'**
+  String get quickTranslationChoosePrompt;
+
+  /// No description provided for @quickTranslationDownloadNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Download translation languages to continue.'**
+  String get quickTranslationDownloadNeeded;
+
+  /// Confirmation title containing the tapped word or character.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain “{word}” with Bantera AI?'**
+  String practiceExplainTitle(String word);
+
+  /// No description provided for @practiceExplainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI'**
+  String get practiceExplainAction;
+
+  /// No description provided for @practiceExplainMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain “{word}” in this sentence: {sentence}'**
+  String practiceExplainMessage(String word, String sentence);
+
+  /// No description provided for @aiVideosSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding videos…'**
+  String get aiVideosSearching;
+
+  /// No description provided for @aiVideosUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No videos found. Try again later.'**
+  String get aiVideosUnavailable;
+
+  /// No description provided for @aiPlayVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Play video'**
+  String get aiPlayVideo;
+
+  /// No description provided for @aiVideoEmbedUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This video cannot play here. Open it in the browser.'**
+  String get aiVideoEmbedUnavailable;
+
+  /// No description provided for @aiOpenVideoBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get aiOpenVideoBrowser;
+
+  /// No description provided for @quickPlaybackSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback speed: {speed}×. Tap to change.'**
+  String quickPlaybackSpeed(String speed);
+
+  /// No description provided for @quickPauseAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause audio'**
+  String get quickPauseAudio;
+
+  /// No description provided for @quickResumeAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume audio'**
+  String get quickResumeAudio;
 }
 
 class _AppLocalizationsDelegate

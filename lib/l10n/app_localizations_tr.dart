@@ -2326,7 +2326,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get leaderboardTitle => 'Konuşma sıralaması';
 
   @override
-  String get leaderboardScope => 'Son 7 gün';
+  String get leaderboardScope => 'Son 30 gün';
 
   @override
   String get leaderboardYourPosition => 'Konumun';
@@ -2370,7 +2370,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Eşit toplamlar aynı sırayı paylaşır. UTC ile bugün ve önceki altı gün. Çevrimdışı kelimeler eşitlemeden sonra görünür.';
+      'Eşit toplamlar aynı sırayı paylaşır. UTC ile bugün ve önceki 29 gün. Çevrimdışı kelimeler eşitlemeden sonra görünür.';
 
   @override
   String get leaderboardLegacy =>
@@ -2378,4 +2378,67 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Daha fazla yükle';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'Bu öğrenme dilinden ana dilinize çeviri kullanılamıyor. Başka bir dil seçin. Seçiminizi bu cihazda bu öğrenme dili için hatırlayacağız.';
+
+  @override
+  String get quickTranslationDownloadTitle => 'Çeviri dilleri indirilsin mi?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Telefonunuzun çeviri için dil dosyalarına ihtiyacı var. İndirmek için internet bağlantısı gerekir.';
+
+  @override
+  String get quickTranslationPreparing => 'Çeviri dilleri hazırlanıyor…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'Devam etmek için bir çeviri dili seçin.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Devam etmek için çeviri dillerini indirin.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Bantera AI “$word” ifadesini açıklasın mı?';
+  }
+
+  @override
+  String get practiceExplainAction => 'AI’a sor';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Bu cümledeki “$word” ifadesini açıkla: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'Videolar aranıyor…';
+
+  @override
+  String get aiVideosUnavailable =>
+      'Video bulunamadı. Daha sonra tekrar deneyin.';
+
+  @override
+  String get aiPlayVideo => 'Videoyu oynat';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Bu video burada oynatılamıyor. Tarayıcıda açın.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Tarayıcıda aç';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Oynatma hızı: $speed×. Değiştirmek için dokunun.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Sesi duraklat';
+
+  @override
+  String get quickResumeAudio => 'Sesi sürdür';
 }

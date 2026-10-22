@@ -47,6 +47,7 @@ void main() {
         ),
         home: Scaffold(
           appBar: PracticeHeader(
+            onCycleSpeed: () {},
             onLongerDialogues: onDialogues ?? () {},
             onSavePractice: () {},
             onSavedPractice: () {},
@@ -66,6 +67,15 @@ void main() {
       );
       expect(title.dx, closeTo(393 / 2, .1));
       expect(find.text('Bantera App'), findsOneWidget);
+      final speed = find.byKey(const ValueKey('practice-playback-speed'));
+      expect(tester.getSize(speed), const Size(48, 48));
+      expect(tester.getCenter(speed).dx, greaterThan(title.dx));
+      expect(
+        tester.getCenter(speed).dx,
+        lessThan(
+          tester.getCenter(find.byKey(const ValueKey('practice-more-menu'))).dx,
+        ),
+      );
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.byKey(const ValueKey('practice-set-goal')), findsNothing);
       expect(find.byKey(const ValueKey('practice-goal-percent')), findsNothing);

@@ -9,11 +9,15 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onSavePractice,
     this.onSavedPractice,
     this.isSaved = false,
+    this.playbackSpeed = 1.0,
+    this.onCycleSpeed,
   });
   final VoidCallback? onLongerDialogues;
   final VoidCallback? onSavePractice;
   final VoidCallback? onSavedPractice;
   final bool isSaved;
+  final double playbackSpeed;
+  final VoidCallback? onCycleSpeed;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -27,6 +31,9 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
       builder: (context, constraints) {
         final l = AppLocalizations.of(context)!;
         final theme = Theme.of(context);
+        final speedLabel = playbackSpeed == playbackSpeed.roundToDouble()
+            ? playbackSpeed.toInt().toString()
+            : playbackSpeed.toString();
         const buttonSize = 48.0;
         final titleStyle =
             theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge;
@@ -40,10 +47,45 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
           height: buttonSize,
           child: Row(
             children: [
-              const SizedBox(width: buttonSize),
+              const SizedBox(width: buttonSize * 2),
               Expanded(
                 child: Center(
                   child: FittedBox(fit: BoxFit.scaleDown, child: title),
+                ),
+              ),
+              SizedBox.square(
+                dimension: buttonSize,
+                child: TextButton(
+                  key: const ValueKey('practice-playback-speed'),
+                  onPressed: onCycleSpeed,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(48, 48),
+                  ),
+                  child: Tooltip(
+                    message: l.quickPlaybackSpeed(speedLabel),
+                    child: Container(
+                      width: 48,
+                      height: 30,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: .06),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: .35,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('$speedLabel×'),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(

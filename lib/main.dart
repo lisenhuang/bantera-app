@@ -25,6 +25,7 @@ import 'infrastructure/video_processing_service.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
+import 'presentation/shared/app_viewport.dart';
 import 'presentation/chats/dm_call_overlay_host.dart';
 import 'presentation/onboarding/learning_language_setup_screen.dart';
 
@@ -110,12 +111,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           navigatorKey: aiReminderNavigatorKey,
           navigatorObservers: [practiceReviewRouteObserver],
           builder: (context, child) {
-            return Stack(
-              children: [
-                child ?? const SizedBox.shrink(),
-                const DmCallOverlayHost(),
-                const AiCallbackHost(),
-              ],
+            return AppViewport(
+              child: Stack(
+                children: [
+                  child ?? const SizedBox.shrink(),
+                  const DmCallOverlayHost(),
+                  const AiCallbackHost(),
+                ],
+              ),
             );
           },
           locale: locale,

@@ -1,3 +1,4 @@
+import 'package:app/infrastructure/ai/ai_word_explanation.dart';
 import 'package:app/core/ai_callback_notifier.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
 import 'package:app/infrastructure/callkit_service.dart';
@@ -20,6 +21,16 @@ class _AppCallKit extends CallKitService {
 class _OpeningController extends AiChatController {
   _OpeningController() : super.forTesting(AiHistoryStore('test'));
   int loads = 0;
+  final explanations = <String>[];
+  @override
+  Future<void> explainWord({
+    required String text,
+    required String prompt,
+    required String language,
+  }) async {
+    explanations.add(prompt);
+  }
+
   @override
   Future<void> initialize() async {
     loads++;
@@ -71,6 +82,68 @@ void main() {
     );
   });
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets(
+    'confirmed word request waits for chat and sends once without starting a call',
+    (tester) async {
+      final chat = _OpeningController();
+      pendingAiWordExplanation.value = const AiWordExplanation(
+        owner: 'test',
+        selection: '行',
+        sentence: '銀行在哪裡？',
+        start: 1,
+        end: 2,
+        language: 'zh-HK',
+        displayText: 'Explain 行',
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AiChatScreen.ownedControllerForTesting(
+            createController: () => chat,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(chat.explanations, hasLength(1));
+      expect(chat.explanations.single, contains('銀行在哪裡？'));
+      expect(pendingAiWordExplanation.value, isNull);
+      expect(chat.calling, false);
+      chat.changed();
+      await tester.pumpAndSettle();
+      expect(chat.explanations, hasLength(1));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('request from another account is discarded without sending', (
+    tester,
+  ) async {
+    final chat = _OpeningController();
+    pendingAiWordExplanation.value = const AiWordExplanation(
+      owner: 'old-account',
+      selection: 'bank',
+      sentence: 'At the bank.',
+      start: 7,
+      end: 11,
+      language: 'en-NZ',
+      displayText: 'Explain bank',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: AiChatScreen.ownedControllerForTesting(
+          createController: () => chat,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(chat.explanations, isEmpty);
+    expect(pendingAiWordExplanation.value, isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets(
     'history waits for completed entrance and cancelled opens never load',

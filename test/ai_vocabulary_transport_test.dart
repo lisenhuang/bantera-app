@@ -19,6 +19,7 @@ class _Api extends AiApiClient {
     String requestId, {
     required bool hasMetBanteraAi,
     List<Map<String, String>> images = const [],
+    bool textOnly = false,
   }) => WebSocket.connect('ws://127.0.0.1:$port');
   @override
   Future<WebSocket> call(

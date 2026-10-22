@@ -1413,7 +1413,7 @@ class AuthApiClient {
     int offset = 0,
   }) => _sendJsonRequest(
     method: 'GET',
-    path: '/api/speaking-leaderboard?offset=$offset',
+    path: '/api/speaking-leaderboard?offset=$offset&days=30',
     accessToken: accessToken,
     expectedUserId: _wordActivityTokenSubject(accessToken),
   ).timeout(const Duration(seconds: 15));

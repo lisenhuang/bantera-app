@@ -44,6 +44,7 @@ enum BanteraLegacyTranslationCoordinator {
     cues: [CueInput],
     sourceLocaleIdentifier: String,
     targetLocaleIdentifier: String,
+    prepareOnly: Bool = false,
     completion: @escaping (Result<[CueOutput], Error>) -> Void
   ) {
     let normalizedSource = normalizeIdentifier(sourceLocaleIdentifier)
@@ -52,6 +53,16 @@ enum BanteraLegacyTranslationCoordinator {
     let targetLanguage = Locale.Language(identifier: normalizedTarget)
 
     Task { @MainActor in
+      let status = await LanguageAvailability().status(from: sourceLanguage, to: targetLanguage)
+      guard status == .installed || status == .supported else {
+        completion(.failure(BanteraTranslationError.unsupportedLanguagePair(
+          source: normalizedSource, target: normalizedTarget)))
+        return
+      }
+      if prepareOnly && status == .installed {
+        completion(.success([]))
+        return
+      }
       let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
       let scene =
         scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first
@@ -75,9 +86,9 @@ enum BanteraLegacyTranslationCoordinator {
         source: sourceLanguage,
         target: targetLanguage,
         cues: cues,
+        prepareOnly: prepareOnly,
         onComplete: { result in
-          box.dismiss()
-          completion(result)
+          box.finish { completion(result) }
         }
       )
       let host = UIHostingController(rootView: rootView)
@@ -88,10 +99,10 @@ enum BanteraLegacyTranslationCoordinator {
     }
   }
 
-  // MARK: - Language list (hardcoded — Translation framework has no public API to enumerate supported languages)
+  // MARK: - Language lists
 
-  /// Returns all supported translation locales as a Flutter-ready payload.
-  /// All languages are marked `isInstalled: true` since the Translation framework manages downloads automatically.
+  /// Existing profile picker catalog, not a pair availability or installation check.
+  /// Translation flows must query `supportedLocalesPayload` before using a pair.
   static func allLocalesPayload() -> [[String: Any]] {
     let displayLocale = Locale.current
     return cloudSupportedLanguageIdentifiers
@@ -106,26 +117,27 @@ enum BanteraLegacyTranslationCoordinator {
       }
   }
 
-  /// Returns supported target locales excluding the source language.
-  static func supportedLocalesPayload(excluding sourceIdentifier: String) -> [[String: Any]] {
-    let normalizedSource = normalizeIdentifier(sourceIdentifier)
-    let sourceLang = normalizedSource.components(separatedBy: "-").first ?? normalizedSource
+  /// Query actual source/target pair support and model installation on this device.
+  static func supportedLocalesPayload(excluding sourceIdentifier: String) async -> [[String: Any]] {
+    let source = Locale.Language(identifier: normalizeIdentifier(sourceIdentifier))
+    let availability = LanguageAvailability()
+    let languages = await availability.supportedLanguages
     let displayLocale = Locale.current
-
-    return cloudSupportedLanguageIdentifiers
-      .filter { id in
-        let langPart = id.components(separatedBy: "-").first ?? id
-        return langPart != sourceLang
-      }
-      .map { id -> [String: Any] in
-        let name = displayLocale.localizedString(forIdentifier: id) ?? id
-        return ["identifier": id, "displayName": name, "isInstalled": true]
-      }
-      .sorted {
-        let l = ($0["displayName"] as? String) ?? ""
-        let r = ($1["displayName"] as? String) ?? ""
-        return l.localizedCaseInsensitiveCompare(r) == .orderedAscending
-      }
+    var payload: [[String: Any]] = []
+    for target in languages {
+      let status = await availability.status(from: source, to: target)
+      guard status == .installed || status == .supported else { continue }
+      let id = target.minimalIdentifier
+      payload.append([
+        "identifier": id,
+        "displayName": displayLocale.localizedString(forIdentifier: id) ?? id,
+        "isInstalled": status == .installed,
+      ])
+    }
+    return payload.sorted {
+      ($0["displayName"] as? String ?? "").localizedCaseInsensitiveCompare(
+        $1["displayName"] as? String ?? "") == .orderedAscending
+    }
   }
 
   // MARK: - Helpers
@@ -138,13 +150,14 @@ enum BanteraLegacyTranslationCoordinator {
   }
 
   static func normalizeIdentifier(_ identifier: String) -> String {
-    identifier
+    let normalized = identifier
       .trimmingCharacters(in: .whitespacesAndNewlines)
       .replacingOccurrences(of: "_", with: "-")
+    if ["zh-hk", "zh-hant-hk"].contains(normalized.lowercased()) { return "yue-HK" }
+    return normalized
   }
 
-  /// Languages supported by Apple's Translation framework.
-  /// Apple does not expose a public API to enumerate these, so the list is hardcoded.
+  /// Existing profile-language catalog. Pair pickers use device availability above.
   private static let cloudSupportedLanguageIdentifiers: [String] = [
     "ar", "zh", "nl", "en", "fr", "de", "id", "it", "ja", "ko",
     "pl", "pt", "ru", "es", "th", "tr", "uk", "vi",
@@ -157,8 +170,12 @@ enum BanteraLegacyTranslationCoordinator {
 private final class LegacyDismissBox {
   weak var controller: UIViewController?
 
-  func dismiss() {
-    controller?.dismiss(animated: true)
+  private var finished = false
+  func finish(_ completion: @escaping () -> Void) {
+    guard !finished else { return }
+    finished = true
+    guard let controller else { completion(); return }
+    controller.dismiss(animated: false, completion: completion)
   }
 }
 
@@ -167,6 +184,7 @@ private struct LegacyTranslationView: View {
   let source: Locale.Language
   let target: Locale.Language
   let cues: [BanteraLegacyTranslationCoordinator.CueInput]
+  let prepareOnly: Bool
   let onComplete: (Result<[BanteraLegacyTranslationCoordinator.CueOutput], Error>) -> Void
 
   @State private var configuration: TranslationSession.Configuration?
@@ -176,6 +194,11 @@ private struct LegacyTranslationView: View {
       .frame(width: 1, height: 1)
       .translationTask(configuration) { session in
         do {
+          if prepareOnly {
+            try await session.prepareTranslation()
+            await MainActor.run { onComplete(.success([])) }
+            return
+          }
           let requests = cues.map {
             TranslationSession.Request(sourceText: $0.text, clientIdentifier: $0.id)
           }
@@ -194,17 +217,17 @@ private struct LegacyTranslationView: View {
           }
         } catch {
           let banteraError: BanteraTranslationError
-          let nsError = error as NSError
-          // Apple's Translation framework uses a "Translation"-prefixed error domain when
-          // language models are not downloaded or the user cancels the download prompt.
-          // Remapping to translationAssetsNotInstalled lets Flutter re-trigger the sheet.
-          if nsError.domain.hasPrefix("Translation") {
+          if TranslationError.unsupportedSourceLanguage ~= error
+              || TranslationError.unsupportedTargetLanguage ~= error
+              || TranslationError.unsupportedLanguagePairing ~= error {
+            banteraError = .unsupportedLanguagePair(
+              source: source.minimalIdentifier, target: target.minimalIdentifier)
+          } else if #available(iOS 26.0, *), TranslationError.notInstalled ~= error {
             banteraError = .translationAssetsNotInstalled(
-              source: source.minimalIdentifier,
-              target: target.minimalIdentifier
-            )
+              source: source.minimalIdentifier, target: target.minimalIdentifier)
           } else {
-            banteraError = .translationFailed(error.localizedDescription)
+            // Cancellation or a translation failure must not reopen a download sheet.
+            banteraError = .translationFailed("Translation could not be completed. Please try again.")
           }
           await MainActor.run {
             onComplete(.failure(banteraError))

@@ -1,22 +1,29 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../shared/goal_tab_icon.dart';
 
 /// Decorative credit transfer. Never captures touches or owns audio resources.
 class PracticeWordFlight {
   OverlayEntry? _entry;
   Completer<void>? _completion;
   Timer? _timeout;
+  int _generation = 0;
 
   Future<void> show(
     BuildContext context,
     GlobalKey source,
     GlobalKey target, {
     required String? outcome,
-  }) {
+    Future<void> Function()? onParticlesArrived,
+  }) async {
     cancel();
-    if (outcome != 'correct') return Future.value();
-    if (MediaQuery.disableAnimationsOf(context)) return Future.value();
+    final generation = _generation;
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    if (outcome != 'correct' || reduced) {
+      await onParticlesArrived?.call();
+      return;
+    }
     final overlay = Overlay.of(context, rootOverlay: true);
     final overlayBox = overlay.context.findRenderObject();
     final from = source.currentContext?.findRenderObject();
@@ -26,7 +33,8 @@ class PracticeWordFlight {
         to is! RenderBox ||
         !from.hasSize ||
         !to.hasSize) {
-      return Future.value();
+      await onParticlesArrived?.call();
+      return;
     }
     final start = overlayBox.globalToLocal(
       from.localToGlobal(from.size.center(Offset.zero)),
@@ -34,18 +42,66 @@ class PracticeWordFlight {
     final end = overlayBox.globalToLocal(
       to.localToGlobal(to.size.center(Offset.zero)),
     );
-    if (!(Offset.zero & overlayBox.size).contains(start)) return Future.value();
-    final completion = _completion = Completer<void>();
+    if (!(Offset.zero & overlayBox.size).contains(start)) {
+      await onParticlesArrived?.call();
+      return;
+    }
     final color = Theme.of(context).colorScheme.primary;
+    await _animate(
+      overlay,
+      start,
+      end,
+      color,
+      0,
+      1600 / 3000,
+      const Duration(milliseconds: 1600),
+    );
+    // Credit must still be saved if the view disappears during particle flight.
+    await onParticlesArrived?.call();
+    if (generation != _generation || !context.mounted) return;
+    // Give the updated totals a frame to reach the ring, then let its tween
+    // finish before creating the rocket. Cancellation also releases this wait.
+    final frame = _completion = Completer<void>();
+    _timeout = Timer(const Duration(seconds: 1), cancel);
+    WidgetsBinding.instance.endOfFrame.then((_) {
+      if (identical(_completion, frame)) _finishStage();
+    });
+    await frame.future;
+    if (generation != _generation || !context.mounted) return;
+    final settled = _completion = Completer<void>();
+    _timeout = Timer(goalProgressAnimationDuration, _finishStage);
+    await settled.future;
+    if (generation != _generation || !context.mounted) return;
+    await _animate(
+      overlay,
+      start,
+      end,
+      color,
+      1600 / 3000,
+      1,
+      const Duration(milliseconds: 1400),
+    );
+  }
+
+  Future<void> _animate(
+    OverlayState overlay,
+    Offset start,
+    Offset end,
+    Color color,
+    double begin,
+    double finish,
+    Duration duration,
+  ) {
+    final completion = _completion = Completer<void>();
     _entry = OverlayEntry(
       builder: (_) => Positioned.fill(
         child: IgnorePointer(
           child: ExcludeSemantics(
             child: RepaintBoundary(
               child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 3000),
-                onEnd: cancel,
+                tween: Tween(begin: begin, end: finish),
+                duration: duration,
+                onEnd: _finishStage,
                 builder: (_, value, _) => CustomPaint(
                   key: const ValueKey('practice-word-flight'),
                   painter: WordFlightPainter(start, end, value, color),
@@ -57,22 +113,25 @@ class PracticeWordFlight {
       ),
     );
     overlay.insert(_entry!);
-    // Tickers can be suppressed by route/lifecycle changes. Never delay credit
-    // indefinitely; callers also cancel immediately when Practice becomes hidden.
-    _timeout = Timer(const Duration(milliseconds: 3200), cancel);
+    // A suppressed ticker must not hold earned credit indefinitely.
+    _timeout = Timer(duration + const Duration(milliseconds: 200), cancel);
     return completion.future;
   }
 
-  void cancel() {
+  void _finishStage() {
     _timeout?.cancel();
     _timeout = null;
     _entry?.remove();
     _entry?.dispose();
     _entry = null;
-    if (_completion != null && !_completion!.isCompleted) {
-      _completion!.complete();
-    }
+    final completion = _completion;
     _completion = null;
+    if (completion != null && !completion.isCompleted) completion.complete();
+  }
+
+  void cancel() {
+    _generation++;
+    _finishStage();
   }
 }
 

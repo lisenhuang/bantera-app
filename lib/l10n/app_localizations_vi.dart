@@ -2327,7 +2327,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get leaderboardTitle => 'Bảng xếp hạng nói';
 
   @override
-  String get leaderboardScope => '7 ngày qua';
+  String get leaderboardScope => '30 ngày qua';
 
   @override
   String get leaderboardYourPosition => 'Vị trí của bạn';
@@ -2371,7 +2371,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Tổng bằng nhau có cùng hạng. Hôm nay và sáu ngày trước theo UTC. Từ ngoại tuyến xuất hiện sau đồng bộ.';
+      'Tổng bằng nhau có cùng hạng. Hôm nay và 29 ngày trước theo UTC. Từ ngoại tuyến xuất hiện sau đồng bộ.';
 
   @override
   String get leaderboardLegacy =>
@@ -2379,4 +2379,66 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Tải thêm';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'Không hỗ trợ dịch từ ngôn ngữ đang học này sang tiếng mẹ đẻ của bạn. Hãy chọn ngôn ngữ khác. Chúng tôi sẽ ghi nhớ lựa chọn cho ngôn ngữ đang học này trên thiết bị này.';
+
+  @override
+  String get quickTranslationDownloadTitle => 'Tải ngôn ngữ dịch xuống?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Điện thoại cần các tệp ngôn ngữ để dịch. Cần kết nối internet để tải xuống.';
+
+  @override
+  String get quickTranslationPreparing => 'Đang chuẩn bị ngôn ngữ dịch…';
+
+  @override
+  String get quickTranslationChoosePrompt => 'Chọn ngôn ngữ dịch để tiếp tục.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Tải ngôn ngữ dịch xuống để tiếp tục.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Nhờ Bantera AI giải thích “$word”?';
+  }
+
+  @override
+  String get practiceExplainAction => 'Hỏi AI';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Hãy giải thích “$word” trong câu này: $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'Đang tìm video…';
+
+  @override
+  String get aiVideosUnavailable =>
+      'Không tìm thấy video. Vui lòng thử lại sau.';
+
+  @override
+  String get aiPlayVideo => 'Phát video';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Không thể phát video này tại đây. Hãy mở trong trình duyệt.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Mở trong trình duyệt';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Tốc độ phát: $speed×. Nhấn để thay đổi.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Tạm dừng âm thanh';
+
+  @override
+  String get quickResumeAudio => 'Tiếp tục phát';
 }

@@ -246,6 +246,7 @@ class AiApiClient {
     String requestId, {
     required bool hasMetBanteraAi,
     List<Map<String, String>> images = const [],
+    bool textOnly = false,
   }) async {
     await AiConsent.instance.require(owner);
     final token = await _token(owner);
@@ -276,6 +277,7 @@ class AiApiClient {
         'requestId': requestId,
         'streamTranscripts': true,
         'acceptNoSpeech': true,
+        if (textOnly) 'inputMode': 'text',
         if (images.isNotEmpty) 'images': images,
         'history': AiSearchCapabilities.withContext(history),
         'deviceData': deviceData,

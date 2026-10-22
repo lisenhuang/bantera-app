@@ -35,12 +35,13 @@ class AiVoiceStream {
     this.onTranscript,
     this.onToolCall,
     this.requiresImages = false,
+    this.requiresText = false,
   }) {
     _ready.future.ignore();
     _reply.future.ignore();
     unawaited(_open(connect));
   }
-  final bool requiresImages;
+  final bool requiresImages, requiresText;
   final Future<void> Function(Uint8List) onAudio;
   final Future<void> Function() onReset;
   final void Function(String role, String text)? onTranscript;
@@ -98,7 +99,8 @@ class AiVoiceStream {
 
   void add(Uint8List pcm) {
     if (_closed || _failed || committed) return;
-    if (pcm.isEmpty ||
+    if (requiresText ||
+        pcm.isEmpty ||
         pcm.length.isOdd ||
         _bytes + pcm.length > 16000 * 2 * 180) {
       _fail('invalid_frame');
@@ -137,6 +139,9 @@ class AiVoiceStream {
     final json = jsonDecode(event as String) as Map<String, dynamic>;
     switch (json['type']) {
       case 'ready':
+        if (requiresText && json['acceptText'] != true) {
+          throw const AiVoiceFailure('text_unavailable');
+        }
         if (requiresImages && json['acceptImages'] != true) {
           throw const AiVoiceFailure('images_unavailable');
         }
@@ -201,7 +206,15 @@ class AiVoiceStream {
     }
   }
 
-  Future<Map<String, dynamic>> send(Map<String, dynamic> metadata) async {
+  Future<Map<String, dynamic>> send(
+    Map<String, dynamic> metadata, {
+    String? text,
+  }) async {
+    if (requiresText
+        ? text == null || text.trim().isEmpty || text.length > 8000
+        : text != null) {
+      throw const AiVoiceFailure('invalid_text');
+    }
     await _ready.future.timeout(
       const Duration(seconds: 25),
       onTimeout: () => throw const AiVoiceFailure('ready_timeout'),
@@ -211,7 +224,13 @@ class AiVoiceStream {
     }
     committed = true;
     try {
-      _socket!.add(jsonEncode({'type': 'commit', 'metadata': metadata}));
+      _socket!.add(
+        jsonEncode({
+          'type': 'commit',
+          'metadata': metadata,
+          'text': ?text,
+        }),
+      );
     } catch (_) {
       throw const AiVoiceFailure('send_failed');
     }

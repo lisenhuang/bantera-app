@@ -38,6 +38,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   Timer? _reviewTimer;
   int _currentIndex = 0;
   int _tabSelection = 0;
+  int _goalTabReplay = 0;
   bool _goalSetupOpen = false;
   bool _covered = false;
   bool _checkingUpdate = false;
@@ -94,7 +95,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
 
   void _selectTab(int index) {
     final selection = ++_tabSelection;
-    setState(() => _currentIndex = index);
+    setState(() {
+      _currentIndex = index;
+      if (index == 2) _goalTabReplay++;
+    });
     _schedulePracticeReview();
     if (index == 2) unawaited(_openGoalSetupIfNeeded(selection));
   }
@@ -338,7 +342,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
             label: l10n.chatsTitle,
           ),
           BottomNavigationBarItem(
-            icon: LiveGoalTabIcon(key: _goalTabAnchor),
+            icon: LiveGoalTabIcon(
+              key: _goalTabAnchor,
+              replayTick: _goalTabReplay,
+            ),
             label: l10n.navGoal,
           ),
         ],

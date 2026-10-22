@@ -992,7 +992,7 @@
   "quickSavedDeviceNote": "Saved on this device for your account. Listen to the question and replies again. Audio requires an internet connection.",
   "quickSavedError": "Could not update saved practice. Please try again.",
   "leaderboardTitle": "Speaking leaderboard",
-  "leaderboardScope": "Last 7 days",
+  "leaderboardScope": "Last 30 days",
   "leaderboardYourPosition": "Your position",
   "leaderboardSpokenWords": "spoken words",
   "leaderboardOpen": "View leaderboard",
@@ -1005,7 +1005,49 @@
   "leaderboardUpdate": "Updated rankings are ready. Refresh when you’re ready.",
   "leaderboardEmpty": "No speaking activity yet. A conversation is a great place to start.",
   "leaderboardNoActivity": "Speak in Practice or Chats to earn a position.",
-  "leaderboardFootnote": "Equal totals share a rank. Today and the previous six days, in UTC. Offline words appear after syncing.",
+  "leaderboardFootnote": "Equal totals share a rank. Today and the previous 29 days, in UTC. Offline words appear after syncing.",
   "leaderboardLegacy": "Earlier activity keeps its originally recorded calendar date. New activity uses UTC.",
-  "leaderboardLoadMore": "Load more"
+  "leaderboardLoadMore": "Load more",
+  "quickTranslationFallbackBody": "Translation into your native language is unavailable for this learning language. Choose another language. We’ll remember it for this learning language on this device.",
+  "quickTranslationDownloadTitle": "Download translation languages?",
+  "quickTranslationDownloadBody": "Your phone needs translation language files. An internet connection is required to download them.",
+  "quickTranslationPreparing": "Preparing translation languages…",
+  "quickTranslationChoosePrompt": "Choose a translation language to continue.",
+  "quickTranslationDownloadNeeded": "Download translation languages to continue.",
+  "practiceExplainTitle": "Explain “{word}” with Bantera AI?",
+  "practiceExplainAction": "Ask AI",
+  "practiceExplainMessage": "Explain “{word}” in this sentence: {sentence}",
+  "aiVideosSearching": "Finding videos…",
+  "aiVideosUnavailable": "No videos found. Try again later.",
+  "aiPlayVideo": "Play video",
+  "aiVideoEmbedUnavailable": "This video cannot play here. Open it in the browser.",
+  "aiOpenVideoBrowser": "Open in browser",
+  "@practiceExplainMessage": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      },
+      "sentence": {
+        "type": "String"
+      }
+    }
+  },
+  "@practiceExplainTitle": {
+    "description": "Confirmation title containing the tapped word or character.",
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "quickPlaybackSpeed": "Playback speed: {speed}×. Tap to change.",
+  "quickPauseAudio": "Pause audio",
+  "quickResumeAudio": "Resume audio",
+  "@quickPlaybackSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  }
 }

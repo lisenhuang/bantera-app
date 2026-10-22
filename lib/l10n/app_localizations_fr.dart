@@ -2398,7 +2398,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get leaderboardTitle => 'Classement à l’oral';
 
   @override
-  String get leaderboardScope => '7 derniers jours';
+  String get leaderboardScope => '30 derniers jours';
 
   @override
   String get leaderboardYourPosition => 'Ta position';
@@ -2442,7 +2442,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get leaderboardFootnote =>
-      'Les totaux égaux partagent le même rang. Aujourd’hui et les six jours précédents en UTC. Les mots hors ligne sont ajoutés après synchronisation.';
+      'Les totaux égaux partagent le même rang. Aujourd’hui et les 29 jours précédents en UTC. Les mots hors ligne sont ajoutés après synchronisation.';
 
   @override
   String get leaderboardLegacy =>
@@ -2450,4 +2450,69 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get leaderboardLoadMore => 'Charger plus';
+
+  @override
+  String get quickTranslationFallbackBody =>
+      'La traduction de cette langue d’apprentissage vers votre langue maternelle est indisponible. Choisissez une autre langue. Ce choix sera mémorisé pour cette langue d’apprentissage sur cet appareil.';
+
+  @override
+  String get quickTranslationDownloadTitle =>
+      'Télécharger les langues de traduction ?';
+
+  @override
+  String get quickTranslationDownloadBody =>
+      'Votre téléphone a besoin de fichiers de langue pour traduire. Leur téléchargement nécessite une connexion Internet.';
+
+  @override
+  String get quickTranslationPreparing =>
+      'Préparation des langues de traduction…';
+
+  @override
+  String get quickTranslationChoosePrompt =>
+      'Choisissez une langue de traduction pour continuer.';
+
+  @override
+  String get quickTranslationDownloadNeeded =>
+      'Téléchargez les langues de traduction pour continuer.';
+
+  @override
+  String practiceExplainTitle(String word) {
+    return 'Faire expliquer « $word » par Bantera AI ?';
+  }
+
+  @override
+  String get practiceExplainAction => 'Demander à l’IA';
+
+  @override
+  String practiceExplainMessage(String word, String sentence) {
+    return 'Explique « $word » dans cette phrase : $sentence';
+  }
+
+  @override
+  String get aiVideosSearching => 'Recherche de vidéos…';
+
+  @override
+  String get aiVideosUnavailable =>
+      'Aucune vidéo trouvée. Réessayez plus tard.';
+
+  @override
+  String get aiPlayVideo => 'Lire la vidéo';
+
+  @override
+  String get aiVideoEmbedUnavailable =>
+      'Cette vidéo ne peut pas être lue ici. Ouvrez-la dans le navigateur.';
+
+  @override
+  String get aiOpenVideoBrowser => 'Ouvrir dans le navigateur';
+
+  @override
+  String quickPlaybackSpeed(String speed) {
+    return 'Vitesse de lecture : $speed×. Touchez pour changer.';
+  }
+
+  @override
+  String get quickPauseAudio => 'Mettre en pause';
+
+  @override
+  String get quickResumeAudio => 'Reprendre la lecture';
 }

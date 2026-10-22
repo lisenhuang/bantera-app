@@ -6,6 +6,7 @@ import '../../../infrastructure/ai/ai_emoji_tool.dart';
 import '../../../infrastructure/ai/ai_search_capabilities.dart';
 import '../../../infrastructure/ai/ai_image_search.dart';
 import '../../../infrastructure/ai/ai_web_search.dart';
+import '../../../infrastructure/ai/ai_video_search.dart';
 import 'dart:async';
 import '../chat_recording_countdown.dart';
 import 'ai_voice_reply_state.dart';
@@ -544,12 +545,14 @@ class AiChatController extends ChangeNotifier {
     late final AiVoiceStream stream;
     stream = AiVoiceStream(
       requiresImages: message.images.isNotEmpty,
+      requiresText: message.textRequest != null,
       connect: () async => _api.voice(
         owner,
         store.context(excluding: message.id),
         message.id,
         hasMetBanteraAi: await store.hasMetBefore(),
         images: await _imagePayload(message),
+        textOnly: message.textRequest != null,
       ),
       onToolCall: (call) async {
         if (!available || epoch != _epoch || !busy) {
@@ -559,6 +562,18 @@ class AiChatController extends ChangeNotifier {
           return _emojis(call['args'], voiceReply.ensure(message.language));
         }
         if (call['name'] == AiVocabulary.toolName) {
+          // A word-explanation confirmation is not permission to save a word.
+          if (message.textRequest != null &&
+              ![
+                'stats',
+                'latest',
+                'quiz',
+              ].contains((call['args'] as Map?)?['action'])) {
+            return {
+              'confirmationRequired': true,
+              'instruction': 'Ask the learner first. Do not save yet.',
+            };
+          }
           return vocabulary.execute(
             Map<String, dynamic>.from(call['args'] as Map),
           );
@@ -606,7 +621,7 @@ class AiChatController extends ChangeNotifier {
       onTranscript: (role, text) {
         if (!available || epoch != _epoch || !busy) return;
         if (role == 'user') {
-          message.text += text;
+          if (message.textRequest == null) message.text += text;
         } else {
           voiceReply.addTranscript(text, message.language);
         }
@@ -614,7 +629,7 @@ class AiChatController extends ChangeNotifier {
       },
       onReset: () async {
         voiceReply.resetAttempt();
-        message.text = '';
+        if (message.textRequest == null) message.text = '';
         changed();
         if (_replyAudioStarted && !_replyPlaybackUnavailable) {
           try {
@@ -890,6 +905,36 @@ class AiChatController extends ChangeNotifier {
     );
   }
 
+  bool get canSendText => canRecord && !busy;
+
+  Future<void> explainWord({
+    required String text,
+    required String prompt,
+    required String language,
+  }) async {
+    if (!canSendText || prompt.trim().isEmpty || prompt.length > 8000) return;
+    final message = AiMessage(
+      role: 'user',
+      text: text,
+      textRequest: prompt,
+      language: language,
+    );
+    // Reserve before any await so duplicate taps cannot submit twice.
+    busy = true;
+    try {
+      store.messages.add(message);
+      await store.save();
+    } catch (_) {
+      message.failed = true;
+      failed = true;
+      return;
+    } finally {
+      busy = false;
+      changed();
+    }
+    if (available) await retry(message);
+  }
+
   Future<void> retry(AiMessage message) async {
     if (_deletingMessage ||
         busy ||
@@ -898,13 +943,14 @@ class AiChatController extends ChangeNotifier {
         _waitingToSend ||
         calling ||
         !available ||
-        message.audio == null ||
+        (message.audio == null && message.textRequest == null) ||
         message.role != 'user') {
       return;
     }
     busy = true;
     _replyFinished = Completer<void>();
     _replyPlaybackUnavailable = false;
+    _replyPlayedFrames = 0;
     final epoch = _epoch;
     failed = false;
     changed();
@@ -922,33 +968,39 @@ class AiChatController extends ChangeNotifier {
   }
 
   Future<void> _reply(AiMessage message) async {
-    if (message.audio == null) return;
+    if (message.audio == null && message.textRequest == null) return;
     final epoch = _epoch;
     final elapsed = Stopwatch()..start();
     var phase = 'reply';
     var saved = false;
+    var heardText = '';
     AiVoiceStream? retryStream;
     try {
       // Replays need the same device tools as first attempts. The legacy HTTP
       // upload cannot execute vocabulary/search tools and silently loses them.
       Map<String, dynamic> reply;
-      final wave = await File(store.path(message.audio!)).readAsBytes();
-      if (wave.length < 44 ||
-          String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
-        throw const FormatException('Invalid recording');
+      Uint8List? wave;
+      if (message.textRequest == null) {
+        wave = await File(store.path(message.audio!)).readAsBytes();
+        if (wave.length < 44 ||
+            String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
+          throw const FormatException('Invalid recording');
+        }
       }
       retryStream = _openVoiceStream(message, epoch);
       _receivingStream = retryStream;
-      retryStream.add(Uint8List.sublistView(wave, 44));
+      if (wave != null) retryStream.add(Uint8List.sublistView(wave, 44));
       reply = await retryStream.send(
         await (_voiceMetadata?.call() ??
             AiApiClient.metadata(hasMetBanteraAi: await store.hasMetBefore())),
+        text: message.textRequest,
       );
       if (!available || epoch != _epoch) return;
       if (reply['noSpeech'] == true) {
         await _discardSilentMessage(message);
         return;
       }
+      heardText = reply['outputText'] as String? ?? '';
       phase = 'save';
       await _saveReply(message, reply, epoch, autoplay: false);
       saved = true;
@@ -970,6 +1022,7 @@ class AiChatController extends ChangeNotifier {
         await retryStream?.close();
         final partial = saved ? null : voiceReply.interrupted(null);
         final audio = retryStream?.partialAudio;
+        heardText = partial?.text ?? heardText;
         final hasPartial =
             partial != null && (partial.text.isNotEmpty || audio != null);
         message.failed = !saved && !hasPartial;
@@ -983,6 +1036,29 @@ class AiChatController extends ChangeNotifier {
         );
       }
     } finally {
+      // Text explanations are new listening activity, but never spoken input.
+      // Credit only frames rendered by the native player, including interruption.
+      if (message.textRequest != null &&
+          available &&
+          epoch == _epoch &&
+          retryStream != null &&
+          retryStream.outputBytes > 0) {
+        try {
+          final played = _replyAudioStarted
+              ? await _replyAudioCommand<int>('playedFrames') ?? 0
+              : _replyPlayedFrames;
+          final fraction = (played / (retryStream.outputBytes ~/ 2)).clamp(
+            0.0,
+            1.0,
+          );
+          await recordListened(
+            (activityWordCount(heardText) * fraction).floor(),
+            message.language,
+          );
+        } catch (_) {
+          /* Activity cannot turn a completed reply into an error. */
+        }
+      }
       await retryStream?.close();
       if (identical(_receivingStream, retryStream)) _receivingStream = null;
       if (retryStream != null) await _stopReplyPlayback();
@@ -1019,7 +1095,9 @@ class AiChatController extends ChangeNotifier {
     if (!available || epoch != _epoch) return;
     message.failed = false;
     final inputText = reply['inputText'] as String?;
-    if (inputText != null && inputText.trim().isNotEmpty) {
+    if (message.textRequest == null &&
+        inputText != null &&
+        inputText.trim().isNotEmpty) {
       message.text = inputText;
     }
     // Credit the completed input independently of storing/playing the reply.
@@ -1046,6 +1124,7 @@ class AiChatController extends ChangeNotifier {
     // A completed utterance still counts if the call ends or this screen closes
     // while on-device language detection is finishing. Account changes do not.
     if (_testing ||
+        message.textRequest != null ||
         AuthSessionNotifier.instance.session?.cacheKey != owner ||
         message.role != 'user') {
       return;
@@ -1511,6 +1590,8 @@ class AiChatController extends ChangeNotifier {
     final args = call['args'];
     final query = args is Map ? args['query'] : null;
     if (query is! String || query.length > 240) return {'unavailable': true};
+    final videoQuery = AiSearchCapabilities.videoQuery(query);
+    if (videoQuery != null) return _findVideos(videoQuery, message, active);
     final imageQuery = AiSearchCapabilities.imageQuery(query);
     if (imageQuery != null) return _findImages(imageQuery, message, active);
     message.webSearchQuery = query;
@@ -1532,6 +1613,50 @@ class AiChatController extends ChangeNotifier {
     changed();
     if (store.messages.contains(message)) await store.save();
     return result;
+  }
+
+  Future<Map<String, dynamic>> _findVideos(
+    String query,
+    AiMessage message,
+    bool Function() active,
+  ) async {
+    if (query.isEmpty || query.length > 232 || message.videos.length >= 4) {
+      return {'unavailable': true};
+    }
+    message.videoSearchStatus = 'searching';
+    changed();
+    final delivered = <AiVideoAttachment>[];
+    try {
+      final result = await _webSearch.search('$query video');
+      if (!active()) return {'unavailable': true};
+      for (final row in result['results'] as List? ?? []) {
+        final video = AiVideoAttachment.fromJson(row);
+        if (video == null || message.videos.any((v) => v.url == video.url)) {
+          continue;
+        }
+        message.videos.add(video);
+        delivered.add(video);
+        if (delivered.length >= 2 || message.videos.length >= 4) break;
+      }
+      return {
+        'provider': result['provider'],
+        'untrusted': true,
+        'metadataOnly': true,
+        'delivered': delivered.isNotEmpty,
+        'unavailable': delivered.isEmpty,
+        'videos': delivered.map((v) => v.toJson()).toList(),
+      };
+    } catch (_) {
+      return {'unavailable': true};
+    } finally {
+      message.videoSearchStatus = delivered.isEmpty
+          ? 'unavailable'
+          : 'complete';
+      if (active()) {
+        changed();
+        if (store.messages.contains(message)) await store.save();
+      }
+    }
   }
 
   Future<Map<String, dynamic>> _findImages(

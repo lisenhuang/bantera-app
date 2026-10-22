@@ -612,6 +612,10 @@ private object TranslationBridge {
 
     fun supportedLocales(sourceRaw: String?, result: MethodChannel.Result) {
         val sourceCode = code(sourceRaw)
+        if (sourceRaw != null && sourceCode == null) {
+            result.success(emptyList<Map<String, Any?>>())
+            return
+        }
         Thread {
             try {
                 val downloaded = Tasks.await(
@@ -623,7 +627,7 @@ private object TranslationBridge {
                         mapOf(
                             "identifier" to lang,
                             "displayName" to Locale.forLanguageTag(lang).getDisplayLanguage(Locale.getDefault()),
-                            "isInstalled" to downloaded.contains(lang),
+                            "isInstalled" to (downloaded.contains(lang) && (sourceCode == null || downloaded.contains(sourceCode))),
                         )
                     }
                 main.post { result.success(items) }

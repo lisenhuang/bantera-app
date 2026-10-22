@@ -28,7 +28,7 @@ Map<String, dynamic> entry(int i, {bool mine = false, bool hidden = false}) => {
 };
 SpeakingReport sample({int me = 42, bool hidden = false, bool empty = false}) =>
     SpeakingReport({
-      'fromDate': '2026-10-15',
+      'fromDate': '2026-09-22',
       'throughDate': '2026-10-21',
       'timeZone': 'UTC',
       'asOf': '2026-10-21T10:00:00Z',
@@ -144,7 +144,7 @@ void main() {
         );
         expect(find.text('Learning Japanese 🇯🇵'), findsWidgets);
         expect(find.text('Language breakdown'), findsNothing);
-        expect(find.text('Last 7 days'), findsOneWidget);
+        expect(find.text('Last 30 days'), findsOneWidget);
         expect(find.textContaining('All languages'), findsNothing);
       },
     );
