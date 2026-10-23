@@ -2547,6 +2547,8 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
           if self.readiness.ready { result(nil) }
           else { self.startResult = result }
         case "startPlayback": try self.startPlayback(); result(nil)
+        case "pausePlayback": try self.setPlaybackPaused(true); result(nil)
+        case "resumePlayback": try self.setPlaybackPaused(false); result(nil)
         case "feed":
           if let bytes = call.arguments as? FlutterStandardTypedData { try self.feed(bytes.data) }
           result(nil)
@@ -2579,6 +2581,12 @@ final class BanteraAiAudioBridge: NSObject, FlutterStreamHandler {
     if !callKitManaged { stop() }
     return nil
   }
+  func setPlaybackPaused(_ paused: Bool) throws {
+    guard !callKitManaged && phoneAudio == nil else { throw NSError(domain: "Audio", code: 6) }
+    // AVAudioPlayerNode keeps its scheduled buffers and playback position.
+    if paused { player?.pause() } else { player?.play() }
+  }
+  var isVoicePlaybackPaused: Bool { engine != nil && player?.isPlaying == false }
   func startPlayback() throws {
     guard !callKitManaged && phoneAudio == nil else { throw NSError(domain: "Audio", code: 6) }
     stop()

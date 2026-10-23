@@ -12,6 +12,20 @@ import 'package:app/core/theme.dart';
 
 class _TranslationController extends AiChatController {
   _TranslationController(super.store) : super.forTesting();
+  AiMessage? automaticReply;
+  bool automaticPaused = false;
+  @override
+  bool isAutomaticReply(AiMessage message) =>
+      identical(message, automaticReply);
+  @override
+  bool isAutomaticReplyPaused(AiMessage message) =>
+      isAutomaticReply(message) && automaticPaused;
+  @override
+  Future<void> toggleReplyPlayback(AiMessage message) async {
+    automaticPaused = !automaticPaused;
+    changed();
+  }
+
   final translationRequests = <bool>[];
   Future<void>? deletion;
   @override
@@ -166,6 +180,43 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('I live in Auckland.'), findsOneWidget);
       expect(find.text('1:06'), findsOneWidget);
+      final formattedReply = AiMessage(
+        role: 'model',
+        text: '## Try these\n\n1. **Listen** carefully.\n2. Speak slowly.',
+      );
+      formattedReply.audio = 'reply.wav';
+      controller.automaticReply = formattedReply;
+      store.messages.add(formattedReply);
+      controller.changed();
+      await tester.pumpAndSettle();
+      final responseFinder = find.byKey(
+        ValueKey('ai-message-content-${formattedReply.id}'),
+      );
+      final response = tester.widget<Container>(responseFinder);
+      expect(response.decoration, isNull);
+      expect(tester.getSize(responseFinder).width, closeTo(390 - 32, 1));
+      final userContainer = tester.widget<Container>(
+        find.byKey(ValueKey('ai-message-content-${store.messages.first.id}')),
+      );
+      expect(userContainer.decoration, isNotNull);
+      expect(tester.takeException(), isNull);
+      // A received response has a usable pause button even while the overall
+      // reply operation is still waiting for playback to finish.
+      controller.busy = true;
+      controller.changed();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.byTooltip('Pause audio'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(controller.automaticPaused, true);
+      await tester.tap(find.byTooltip('Resume audio'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(controller.automaticPaused, false);
+      controller.busy = false;
+      controller.automaticReply = null;
+      store.messages.remove(formattedReply);
+      controller.changed();
+      await tester.pumpAndSettle();
+
       expect(playbackCalls.where((c) => c.method == 'resume'), isEmpty);
       final playRect = tester.getRect(find.byIcon(Icons.play_arrow_rounded));
       final durationRect = tester.getRect(find.text('1:06'));
@@ -208,6 +259,21 @@ void main() {
       expect(find.byIcon(Icons.graphic_eq), findsOneWidget);
       expect(controller.messages.length, 2);
       expect(store.messages.length, 1);
+      // Playback can be controlled before the server's final complete frame,
+      // even though this provisional message has no saved audio file yet.
+      controller.automaticReply = controller.voiceReply.message;
+      controller.changed();
+      await tester.pump();
+      expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
+      await tester.tap(find.byTooltip('Pause audio'));
+      await tester.pump();
+      expect(controller.automaticPaused, true);
+      expect(find.byTooltip('Resume audio'), findsOneWidget);
+      expect(controller.isReceiving(controller.automaticReply!), true);
+      await tester.tap(find.byTooltip('Resume audio'));
+      await tester.pump();
+      expect(controller.automaticPaused, false);
+      controller.automaticReply = null;
       controller.voiceReply.addTranscript('A streamed reply', 'en-NZ');
       controller.voiceReply.message!.emojis.addAll(['🇮🇪', '🇮🇳']);
       controller.changed();

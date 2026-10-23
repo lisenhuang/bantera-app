@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../infrastructure/ai/ai_web_search.dart';
 
-/// Non-scrolling Markdown that grows with streamed text inside a chat bubble.
+/// Non-scrolling Markdown that grows with streamed text in the conversation.
 class AiMessageMarkdown extends StatelessWidget {
   const AiMessageMarkdown({
     super.key,
@@ -33,13 +33,30 @@ class AiMessageMarkdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final body = theme.textTheme.bodyLarge!.copyWith(color: colors.onSurface);
+    final body = theme.textTheme.bodyLarge!.copyWith(
+      color: colors.onSurface,
+      height: 1.5,
+    );
     return MarkdownBody(
       data: text,
       selectable: selectable,
       fitContent: false,
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: body,
+        blockSpacing: 12,
+        tableHead: body.copyWith(fontWeight: FontWeight.w600),
+        tableBody: body,
+        tableColumnWidth: FixedColumnWidth(
+          MediaQuery.textScalerOf(context).scale(160).clamp(160, 280),
+        ),
+        tableBorder: TableBorder.all(color: colors.outlineVariant),
+        tableCellsPadding: const EdgeInsets.all(12),
+        tableHeadCellsPadding: const EdgeInsets.all(12),
+        tableHeadCellsDecoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+        ),
+        tablePadding: const EdgeInsets.only(bottom: 8),
+        tableScrollbarThumbVisibility: true,
         listBullet: body,
         blockquote: body,
         h1: body.copyWith(fontSize: 22, fontWeight: FontWeight.bold),

@@ -9,7 +9,7 @@ import 'ai_voice_overlap_test.dart' show Recorder, Api, Peer, until;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
-    'leaving mid reply retains both captions and received audio on immediate reopen',
+    'leaving stops playback but keeps receiving on the same conversation and saves the full reply',
     () async {
       final dir = Directory.systemTemp.createTempSync('ai-leave');
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -23,7 +23,9 @@ void main() {
         const MethodChannel('com.llfbandit.record/messages'),
         (_) async => null,
       );
+      final calls = <String>[];
       messenger.setMockMethodCallHandler(AiChatController.audio, (call) async {
+        calls.add(call.method);
         if (call.method == 'storagePath') return dir.path;
         if (call.method == 'playedFrames') return 1200;
         return null;
@@ -55,26 +57,33 @@ void main() {
         () => chat.voiceReply.message?.text == 'The visible AI reply',
       );
       final responseId = chat.voiceReply.message!.id;
-      chat.dispose();
-      // Do not await the old send task: reopening must wait for pending disk writes.
+      await chat.detachChat();
+      expect(chat.available, true);
+      final feeds = calls.where((m) => m == 'feed').length;
+      peers.first.audio(' continues after leaving.');
+      await until(() => chat.messages.any((m) => m.text.endsWith('leaving.')));
+      expect(calls.where((m) => m == 'feed').length, feeds);
+      chat.attachChat();
+      expect(
+        chat.messages.singleWhere((m) => m.id == responseId).text,
+        'The visible AI reply continues after leaving.',
+      );
+      peers.first.audio(' And after returning.');
+      peers.first.complete(
+        'The visible AI reply continues after leaving. And after returning.',
+      );
+      await sending;
+      // Reopening does not unexpectedly restart the interrupted automatic audio.
+      expect(calls.where((m) => m == 'feed').length, feeds);
       final reopened = AiHistoryStore('leave-account');
       await reopened.load();
       expect(reopened.messages.map((m) => m.role), ['user', 'model']);
-      expect(reopened.messages.first.text, 'My visible transcript');
       final reply = reopened.messages.last;
       expect(reply.id, responseId);
-      expect(reply.text, 'The visible AI reply');
+      expect(reply.text, endsWith('And after returning.'));
       expect(reply.failed, false);
-      expect(reply.durationMs, 100);
-      expect(File(reopened.path(reply.audio!)).lengthSync(), 4844);
-      await sending;
-      final again = AiHistoryStore('leave-account');
-      await again.load();
-      expect(
-        again.messages.length,
-        2,
-      ); // Late cancellation cannot remove or duplicate.
-      expect(again.messages.first.text, 'My visible transcript');
+      expect(File(reopened.path(reply.audio!)).lengthSync(), 44 + 14400);
+      chat.dispose();
       api.close();
       for (final peer in peers) {
         await peer.socket.close();

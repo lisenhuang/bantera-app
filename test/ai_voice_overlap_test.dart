@@ -89,125 +89,152 @@ Future<void> until(bool Function() done) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final action in ['send', 'cancel', 'keep recording']) {
-    test(
-      'record during AI reply: $action preserves its full download',
-      () async {
-        final dir = Directory.systemTemp.createTempSync('ai-overlap');
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-        final peers = <Peer>[];
-        server.listen(
-          (r) async => peers.add(Peer(await WebSocketTransformer.upgrade(r))),
+  for (final action in [
+    'send',
+    'overlap completions',
+    'cancel',
+    'keep recording',
+  ]) {
+    test('record during AI reply: $action preserves its full download', () async {
+      final dir = Directory.systemTemp.createTempSync('ai-overlap');
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final peers = <Peer>[];
+      server.listen(
+        (r) async => peers.add(Peer(await WebSocketTransformer.upgrade(r))),
+      );
+      final calls = <String>[];
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('com.llfbandit.record/messages'),
+        (_) async => null,
+      );
+      messenger.setMockMethodCallHandler(AiChatController.audio, (call) async {
+        calls.add(call.method);
+        if (call.method == 'storagePath') return dir.path;
+        if (call.method == 'playedFrames') return 1200;
+        return null;
+      });
+      final recorder = Recorder();
+      final api = Api(server.port);
+      final store = AiHistoryStore('overlap-$action');
+      final chat = AiChatController.forTesting(
+        store,
+        recorder: recorder,
+        api: api,
+        voiceMetadata: () async => {
+          'clock': {'timeZone': 'Pacific/Auckland'},
+        },
+      );
+      try {
+        await chat.initialize();
+        await chat.record();
+        recorder.speak();
+        final first = chat.sendRecording();
+        await until(() => peers.length == 1);
+        await peers.first.committed.future;
+        peers.first.audio('First ');
+        await until(
+          () =>
+              calls.contains('feed') &&
+              chat.voiceReply.message?.text == 'First',
         );
-        final calls = <String>[];
-        final messenger =
-            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-        messenger.setMockMethodCallHandler(
-          const MethodChannel('com.llfbandit.record/messages'),
-          (_) async => null,
+        expect(chat.canRecord, true);
+        final firstId = chat.voiceReply.message!.id;
+        await chat.record();
+        expect(calls.last, 'stop');
+        expect(chat.recording, true);
+        recorder.speak();
+        final feedsBefore = calls.where((m) => m == 'feed').length;
+        Future<void>? second;
+        if (action == 'send' || action == 'overlap completions') {
+          second = chat.sendRecording();
+        }
+        if (action == 'cancel') await chat.cancelRecording();
+        peers.first.audio('reply.');
+        await until(
+          () => chat.messages.any(
+            (m) => m.id == firstId && m.text == 'First reply.',
+          ),
         );
-        messenger.setMockMethodCallHandler(AiChatController.audio, (
-          call,
-        ) async {
-          calls.add(call.method);
-          if (call.method == 'storagePath') return dir.path;
-          if (call.method == 'playedFrames') return 1200;
-          return null;
-        });
-        final recorder = Recorder();
-        final api = Api(server.port);
-        final store = AiHistoryStore('overlap-$action');
-        final chat = AiChatController.forTesting(
-          store,
-          recorder: recorder,
-          api: api,
-          voiceMetadata: () async => {
-            'clock': {'timeZone': 'Pacific/Auckland'},
-          },
-        );
-        try {
-          await chat.initialize();
-          await chat.record();
-          recorder.speak();
-          final first = chat.sendRecording();
-          await until(() => peers.length == 1);
-          await peers.first.committed.future;
-          peers.first.audio('First ');
-          await until(
-            () =>
-                calls.contains('feed') &&
-                chat.voiceReply.message?.text == 'First',
-          );
-          expect(chat.canRecord, true);
-          final firstId = chat.voiceReply.message!.id;
-          await chat.record();
-          expect(calls.last, 'stop');
-          expect(chat.recording, true);
-          recorder.speak();
-          final feedsBefore = calls.where((m) => m == 'feed').length;
-          Future<void>? second;
-          if (action == 'send') second = chat.sendRecording();
-          if (action == 'cancel') await chat.cancelRecording();
-          peers.first.audio('reply.');
-          await until(() => chat.voiceReply.message?.text == 'First reply.');
-          expect(calls.where((m) => m == 'feed').length, feedsBefore);
-          expect(peers.length, 1); // The first committed socket remains open.
-          peers.first.complete('First reply.');
-          await first;
-          expect(peers.first.bytes, 3520);
-          expect(
-            File(store.path(store.messages.first.audio!)).lengthSync(),
-            44 + 3520,
-          );
-          final saved = store.messages.singleWhere((m) => m.role == 'model');
-          expect(saved.id, firstId);
-          expect(saved.text, 'First reply.');
-          expect(File(store.path(saved.audio!)).lengthSync(), 44 + 9600);
-          expect(saved.failed, false);
-          expect(chat.failed, false);
-          if (action == 'keep recording') {
-            expect(chat.recording, true);
-            await until(() => peers.length == 2 && peers.last.bytes == 3200);
-            recorder.speak();
-            second = chat.sendRecording();
-          }
-          if (second != null) {
-            await until(() => peers.length == 2);
-            await peers.last.committed.future;
-            expect(
-              api.contexts.last.any((m) => m['text'] == 'First reply.'),
-              true,
-            );
-            expect(peers.last.bytes, action == 'keep recording' ? 6720 : 3520);
-            peers.last.audio('Second reply.');
+        expect(calls.where((m) => m == 'feed').length, feedsBefore);
+        await until(() => peers.length == 2);
+        if (action == 'send' || action == 'overlap completions') {
+          // A second reply completes before the first has finished downloading.
+          await peers.last.committed.future;
+          expect(peers.last.bytes, 3520);
+          peers.last.audio('Second reply.');
+          if (action == 'send') {
             peers.last.complete('Second reply.');
             await second;
-            expect(store.messages.map((m) => m.role), [
-              'user',
-              'model',
-              'user',
-              'model',
-            ]);
-            expect(store.messages.last.text, 'Second reply.');
-            expect(calls.where((m) => m == 'feed').length, feedsBefore + 1);
+          } else {
+            await until(() => chat.voiceReply.message?.text == 'Second reply.');
           }
-          final reloaded = AiHistoryStore('overlap-$action');
-          await reloaded.load();
-          expect(
-            reloaded.messages.where((m) => m.role == 'model').first.text,
-            'First reply.',
-          );
-        } finally {
-          await chat.cancelRecording();
-          chat.dispose();
-          api.close();
-          for (final peer in peers) {
-            await peer.socket.close();
-          }
-          await server.close(force: true);
-          await dir.delete(recursive: true);
+          expect(chat.busy, true); // The first reply is still receiving.
+          expect(chat.messages.any((m) => m.text == 'Second reply.'), true);
         }
-      },
-    );
+        peers.first.complete('First reply.');
+        await first;
+        expect(peers.first.bytes, 3520);
+        expect(
+          File(store.path(store.messages.first.audio!)).lengthSync(),
+          44 + 3520,
+        );
+        final saved = store.messages.singleWhere((m) => m.id == firstId);
+        expect(saved.text, 'First reply.');
+        expect(File(store.path(saved.audio!)).lengthSync(), 44 + 9600);
+        expect(saved.failed, false);
+        expect(chat.failed, false);
+        if (action == 'overlap completions') {
+          expect(chat.busy, true);
+          expect(chat.voiceReply.message?.text, 'Second reply.');
+          peers.last.audio(' Still receiving.');
+          peers.last.complete('Second reply.');
+          await second;
+        }
+        // The new request uses context available at recording time and never
+        // waits for an earlier answer's final caption.
+        expect(api.contexts.last.any((m) => m['text'] == 'First'), true);
+        if (action == 'keep recording') {
+          expect(chat.recording, true);
+          await until(() => peers.last.bytes == 3200);
+          recorder.speak();
+          second = chat.sendRecording();
+          await peers.last.committed.future;
+          expect(peers.last.bytes, 6720);
+          peers.last.audio('Second reply.');
+          peers.last.complete('Second reply.');
+          await second;
+        }
+        if (second != null) {
+          expect(store.messages.map((m) => m.role), [
+            'user',
+            'model',
+            'user',
+            'model',
+          ]);
+          expect(store.messages.last.text, 'Second reply.');
+          expect(
+            calls.where((m) => m == 'feed').length,
+            feedsBefore + (action == 'overlap completions' ? 2 : 1),
+          );
+        }
+        final reloaded = AiHistoryStore('overlap-$action');
+        await reloaded.load();
+        expect(
+          reloaded.messages.where((m) => m.role == 'model').first.text,
+          'First reply.',
+        );
+      } finally {
+        await chat.cancelRecording();
+        chat.dispose();
+        api.close();
+        for (final peer in peers) {
+          await peer.socket.close();
+        }
+        await server.close(force: true);
+        await dir.delete(recursive: true);
+      }
+    });
   }
 }

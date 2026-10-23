@@ -127,9 +127,28 @@ class RunnerTests: XCTestCase {
     audio.reserveCallKitAudio()
     defer { audio.stopCallKitAudio() }
     XCTAssertThrowsError(try audio.startPlayback())
+    XCTAssertThrowsError(try audio.setPlaybackPaused(true))
+    XCTAssertThrowsError(try audio.setPlaybackPaused(false))
     _ = audio.onListen(withArguments: nil) { _ in }
     _ = audio.onCancel(withArguments: nil)
     XCTAssertThrowsError(try audio.startPlayback())
+  }
+
+  @MainActor
+  func testVoiceMessagePlaybackCanPauseAndResumeWithoutRestarting() throws {
+    let app = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)
+    let audio = try XCTUnwrap(app.aiAudioBridge)
+    try audio.startPlayback()
+    defer { audio.stop() }
+    XCTAssertFalse(audio.isVoicePlaybackPaused)
+    try audio.feed(Data(repeating: 0, count: 12000))
+    try audio.setPlaybackPaused(true)
+    XCTAssertTrue(audio.isVoicePlaybackPaused)
+    // Incoming buffers must queue without turning playback back on.
+    try audio.feed(Data(repeating: 0, count: 12000))
+    XCTAssertTrue(audio.isVoicePlaybackPaused)
+    try audio.setPlaybackPaused(false)
+    XCTAssertFalse(audio.isVoicePlaybackPaused)
   }
 
   func testAiCallKitIsAudioOnlyAndHumanCallsRetainVideo() {

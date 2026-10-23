@@ -43,6 +43,44 @@ void main() {
     await tester.pump();
     expect(calls.length, 1);
   });
+  testWidgets('wide tables scroll on small screens with large text', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: Center(
+                child: SizedBox(
+                  width: 288,
+                  child: AiMessageMarkdown(
+                    text:
+                        '## Compare\n\n| Word | Meaning | Example |\n'
+                        '| --- | --- | --- |\n'
+                        '| Depart | Leave a place | We depart at noon. |\n'
+                        '| Arrive | Reach a place | We arrive tonight. |',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(Table), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final horizontal = find.byWidgetPredicate(
+      (w) => w is SingleChildScrollView && w.scrollDirection == Axis.horizontal,
+    );
+    expect(horizontal, findsOneWidget);
+    final before = tester.getTopLeft(find.byType(Table));
+    await tester.drag(horizontal, const Offset(-220, 0));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.byType(Table)).dx, lessThan(before.dx));
+    expect(tester.takeException(), isNull);
+  });
   for (final brightness in Brightness.values) {
     testWidgets('Markdown formats narrow $brightness bubbles and long code', (
       tester,

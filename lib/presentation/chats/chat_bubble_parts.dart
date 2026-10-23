@@ -34,7 +34,7 @@ class ChatAudioHeader extends StatelessWidget {
           tooltip: playTooltip,
           onPressed: onPlay,
           icon: Icon(
-            receiving
+            receiving && onPlay == null
                 ? Icons.graphic_eq
                 : playing
                 ? Icons.pause_rounded

@@ -34,7 +34,49 @@ import '../../../infrastructure/ai/ai_device_data.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../infrastructure/translation_service.dart';
 
+class _VoiceReplyJob {
+  _VoiceReplyJob(this.input, this.epoch);
+  final AiMessage input;
+  final int epoch;
+  final state = AiVoiceReplyState();
+  final finished = Completer<void>();
+  AiVoiceStream? stream;
+  bool playbackAllowed = true;
+  int playedFrames = 0;
+  AiMessage? savedMessage;
+  bool paused = false;
+}
+
 class AiChatController extends ChangeNotifier {
+  static AiChatController? _chatSession;
+  static AiChatController forChat() {
+    final current = _chatSession;
+    if (current != null &&
+        current.available &&
+        (current._viewAttached || current.busy || current._waitingToSend)) {
+      return current;
+    }
+    current?.dispose();
+    return _chatSession = AiChatController();
+  }
+
+  bool _viewAttached = true;
+  void attachChat() {
+    _viewAttached = true;
+  }
+
+  Future<void> detachChat() async {
+    _viewAttached = false;
+    _playbackRequest = null;
+    _replyPlaybackUnavailable = true;
+    for (final job in _replies) {
+      job.playbackAllowed = false;
+    }
+    await _stopReplyPlayback();
+    await cancelRecording();
+    await endCall();
+  }
+
   AiChatController({this.callKitManaged = false, this.callbackId})
     : owner = AuthSessionNotifier.instance.session!.cacheKey,
       store = AiHistoryStore(AuthSessionNotifier.instance.session!.cacheKey) {
@@ -159,11 +201,11 @@ class AiChatController extends ChangeNotifier {
       _disposed = false;
   int remaining = 540, _epoch = 0;
   String draftUser = '', draftModel = '';
-  AiVoiceStream? _voiceStream, _receivingStream;
-  Completer<void>? _replyFinished;
+  AiVoiceStream? _voiceStream;
+  _VoiceReplyJob? _recordJob, _foregroundReply;
+  final _replies = <_VoiceReplyJob>[];
   bool _recordStarting = false, _waitingToSend = false;
   Future<void> _replyAudioWork = Future.value();
-  int _replyPlayedFrames = 0;
   bool _deletingMessage = false;
   bool _consentStopping = false;
   bool get canRecord =>
@@ -175,6 +217,7 @@ class AiChatController extends ChangeNotifier {
       !recording &&
       !_recordStarting &&
       !_waitingToSend &&
+      _replies.length < 3 &&
       !calling &&
       (_testing ||
           (!DmCallNotifier.instance.isActive &&
@@ -183,11 +226,17 @@ class AiChatController extends ChangeNotifier {
   StreamSubscription<Uint8List>? _recordEvents;
   final BytesBuilder _recordPcm = BytesBuilder(copy: false);
   bool _replyAudioStarted = false, _replyPlaybackUnavailable = false;
-  final voiceReply = AiVoiceReplyState();
+  final _idleVoiceReply = AiVoiceReplyState();
+  AiVoiceReplyState get voiceReply =>
+      _foregroundReply?.state ?? _idleVoiceReply;
   AiMessage? _liveModelMessage;
-  bool get sendingVoice => busy && !voiceReply.received;
+  bool get sendingVoice =>
+      _waitingToSend ||
+      _replies.any((j) => !j.state.received) ||
+      (busy && _replies.isEmpty && !_idleVoiceReply.received);
   bool isReceiving(AiMessage message) =>
-      identical(voiceReply.message, message) ||
+      _replies.any((j) => identical(j.state.message, message)) ||
+      identical(_idleVoiceReply.message, message) ||
       identical(_liveModelMessage, message);
   final BytesBuilder _input = BytesBuilder(copy: false),
       _output = BytesBuilder(copy: false);
@@ -200,6 +249,63 @@ class AiChatController extends ChangeNotifier {
     final message = _playbackRequest;
     _playbackRequest = null;
     return message;
+  }
+
+  bool isAutomaticReply(AiMessage message) {
+    final job = _foregroundReply;
+    // Playback controls belong to the native player, not the completed file.
+    // The server may keep sending audio/captions while that player is paused.
+    return job != null &&
+        _replyAudioStarted &&
+        _canPlay(job) &&
+        (identical(job.state.message, message) ||
+            identical(job.savedMessage, message));
+  }
+
+  bool isAutomaticReplyPaused(AiMessage message) =>
+      isAutomaticReply(message) && _foregroundReply!.paused;
+  bool _togglingReplyPlayback = false;
+  Future<void> toggleReplyPlayback(AiMessage message) async {
+    final job = _foregroundReply;
+    if (_togglingReplyPlayback ||
+        job == null ||
+        !isAutomaticReply(message) ||
+        !_canPlay(job)) {
+      return;
+    }
+    _togglingReplyPlayback = true;
+    try {
+      final pause = !job.paused;
+      await _replyAudioCommand<void>(
+        pause ? 'pausePlayback' : 'resumePlayback',
+      );
+      if (identical(_foregroundReply, job)) job.paused = pause;
+    } finally {
+      _togglingReplyPlayback = false;
+      changed();
+    }
+  }
+
+  Future<void> stopAutomaticReplyPlayback() async {
+    _replyPlaybackUnavailable = true;
+    _foregroundReply?.playbackAllowed = false;
+    await _stopReplyPlayback();
+  }
+
+  Future<void> _drainReplyPlayback(_VoiceReplyJob job) async {
+    final timeout = Completer<void>();
+    var playingSeconds = 0;
+    // Pausing must not turn a fully downloaded reply into a playback timeout.
+    final timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!job.paused && ++playingSeconds >= 95 && !timeout.isCompleted) {
+        timeout.completeError(TimeoutException('Playback did not finish'));
+      }
+    });
+    try {
+      await Future.any([_replyAudioCommand<void>('drain'), timeout.future]);
+    } finally {
+      timer.cancel();
+    }
   }
 
   void requestReplyPlayback(AiMessage message) {
@@ -231,11 +337,46 @@ class AiChatController extends ChangeNotifier {
   bool get available =>
       !_disposed &&
       (_testing || AuthSessionNotifier.instance.session?.cacheKey == owner);
-  List<AiMessage> get messages => [
-    ...store.messages,
-    ?voiceReply.message,
-    ?_liveModelMessage,
-  ];
+  List<AiMessage> get messages {
+    final result = [...store.messages];
+    for (final job in _replies) {
+      final reply = job.state.message;
+      if (reply == null || result.contains(reply)) continue;
+      final input = result.indexOf(job.input);
+      result.insert(input < 0 ? result.length : input + 1, reply);
+    }
+    if (_idleVoiceReply.message != null) result.add(_idleVoiceReply.message!);
+    if (_liveModelMessage != null) result.add(_liveModelMessage!);
+    return result;
+  }
+
+  void _insertReply(_VoiceReplyJob job, AiMessage answer) {
+    if (store.messages.contains(answer)) return;
+    final index = store.messages.indexOf(job.input);
+    store.messages.insert(
+      index < 0 ? store.messages.length : index + 1,
+      answer,
+    );
+  }
+
+  Future<void> _closeReplies() async {
+    await Future.wait([
+      for (final job in _replies.toList())
+        if (job.stream != null) job.stream!.close(),
+    ]);
+  }
+
+  bool _jobActive(_VoiceReplyJob job) =>
+      available && job.epoch == _epoch && _replies.contains(job);
+  bool _canPlay(_VoiceReplyJob job) =>
+      _jobActive(job) &&
+      identical(_foregroundReply, job) &&
+      job.playbackAllowed &&
+      _viewAttached &&
+      !_replyPlaybackUnavailable &&
+      !recording &&
+      !_recordStarting;
+
   void changed() {
     if (available) notifyListeners();
   }
@@ -339,7 +480,7 @@ class AiChatController extends ChangeNotifier {
       _webSearch.cancel();
       _imageSearch.cancel();
       _api.close();
-      unawaited(_receivingStream?.close());
+      unawaited(_closeReplies());
       unawaited(_stopReplyPlayback());
       unawaited(endCall());
       unawaited(cancelRecording());
@@ -360,7 +501,7 @@ class AiChatController extends ChangeNotifier {
     // wait for playback, storage or another socket to finish closing first.
     unawaited(_socket?.close());
     unawaited(_voiceStream?.close());
-    unawaited(_receivingStream?.close());
+    unawaited(_closeReplies());
     unawaited(
       Future.wait([cancelRecording(), endCall()])
           .whenComplete(() {
@@ -473,9 +614,10 @@ class AiChatController extends ChangeNotifier {
       message.images.addAll(_draftImages);
       _recordMessage = message;
       _recordPcm.clear();
-      // While the previous answer downloads, buffer the next recording locally.
-      // Its new session is opened after that reply, with complete chat context.
-      if (!busy) _voiceStream = _openVoiceStream(message, epoch);
+      // Each recording has an independent transport; older replies keep arriving.
+      final job = _VoiceReplyJob(message, epoch);
+      _recordJob = job;
+      _voiceStream = _openVoiceStream(job);
       try {
         final stream = await _recorder.startStream(
           const RecordConfig(
@@ -529,7 +671,8 @@ class AiChatController extends ChangeNotifier {
     final work = _replyAudioWork.then((_) async {
       if (!_replyAudioStarted) return;
       try {
-        _replyPlayedFrames = await _replyAudioCommand<int>('playedFrames') ?? 0;
+        final played = await _replyAudioCommand<int>('playedFrames') ?? 0;
+        _foregroundReply?.playedFrames = played;
       } catch (_) {}
       try {
         await _replyAudioCommand<void>('stop');
@@ -541,25 +684,37 @@ class AiChatController extends ChangeNotifier {
     return work;
   }
 
-  AiVoiceStream _openVoiceStream(AiMessage message, int epoch) {
+  AiVoiceStream _openVoiceStream(_VoiceReplyJob job) {
+    final message = job.input;
     late final AiVoiceStream stream;
     stream = AiVoiceStream(
       requiresImages: message.images.isNotEmpty,
       requiresText: message.textRequest != null,
       connect: () async => _api.voice(
         owner,
-        store.context(excluding: message.id),
+        [
+          ...store.context(excluding: message.id),
+          for (final prior in _replies)
+            if (prior != job && (prior.state.message?.text.isNotEmpty ?? false))
+              {
+                'role': 'model',
+                'text': prior.state.message!.text.substring(
+                  0,
+                  prior.state.message!.text.length.clamp(0, 4000),
+                ),
+              },
+        ],
         message.id,
         hasMetBanteraAi: await store.hasMetBefore(),
         images: await _imagePayload(message),
         textOnly: message.textRequest != null,
       ),
       onToolCall: (call) async {
-        if (!available || epoch != _epoch || !busy) {
+        if (!_jobActive(job)) {
           return {'unavailable': true};
         }
         if (call['name'] == AiEmojiTool.name) {
-          return _emojis(call['args'], voiceReply.ensure(message.language));
+          return _emojis(call['args'], job.state.ensure(message.language));
         }
         if (call['name'] == AiVocabulary.toolName) {
           // A word-explanation confirmation is not permission to save a word.
@@ -580,28 +735,29 @@ class AiChatController extends ChangeNotifier {
         }
         return _search(
           call,
-          voiceReply.ensure(message.language),
-          () => available && epoch == _epoch && busy,
+          job.state.ensure(message.language),
+          () => _jobActive(job),
         );
       },
       onAudio: (bytes) async {
-        if (!available || epoch != _epoch || !busy) return;
-        voiceReply.addAudio(bytes.length, message.language);
+        if (!_jobActive(job)) return;
+        job.state.addAudio(bytes.length, message.language);
         changed();
         _replyAudioWork = _replyAudioWork.then((_) async {
-          if (!_replyPlaybackUnavailable) {
+          if (_canPlay(job)) {
             try {
               if (!_replyAudioStarted) {
                 await _replyAudioCommand<void>('startPlayback');
                 _replyAudioStarted = true;
+                changed();
               }
-              if (!_replyPlaybackUnavailable) {
+              if (_canPlay(job)) {
                 await _replyAudioCommand<void>('feed', bytes);
               }
             } catch (error) {
               // Playback is optional; receiving and saving the reply is not.
               // A system interruption must not destroy streamed audio/captions.
-              _replyPlaybackUnavailable = true;
+              job.playbackAllowed = false;
               _reportVoiceFailure(
                 message,
                 stream,
@@ -619,27 +775,32 @@ class AiChatController extends ChangeNotifier {
         }
       },
       onTranscript: (role, text) {
-        if (!available || epoch != _epoch || !busy) return;
+        if (!_jobActive(job)) return;
         if (role == 'user') {
           if (message.textRequest == null) message.text += text;
         } else {
-          voiceReply.addTranscript(text, message.language);
+          job.state.addTranscript(text, message.language);
         }
         changed();
       },
       onReset: () async {
-        voiceReply.resetAttempt();
+        if (!_jobActive(job)) return;
+        job.state.resetAttempt();
         if (message.textRequest == null) message.text = '';
         changed();
-        if (_replyAudioStarted && !_replyPlaybackUnavailable) {
+        if (_replyAudioStarted && _canPlay(job)) {
           try {
             await _replyAudioCommand<void>('clear');
+            if (job.paused) {
+              await _replyAudioCommand<void>('pausePlayback');
+            }
           } catch (_) {
-            _replyPlaybackUnavailable = true;
+            job.playbackAllowed = false;
           }
         }
       },
     );
+    job.stream = stream;
     return stream;
   }
 
@@ -650,6 +811,7 @@ class AiChatController extends ChangeNotifier {
     final stream = _voiceStream;
     _voiceStream = null;
     _recordMessage = null;
+    _recordJob = null;
     await _recorder.cancel();
     await _recordEvents?.cancel();
     _recordEvents = null;
@@ -660,15 +822,11 @@ class AiChatController extends ChangeNotifier {
 
   Future<void> sendRecording() async {
     if (!recording) return;
-    final epoch = _epoch;
-    var stream = _voiceStream;
-    final message = _recordMessage;
+    final job = _recordJob;
+    final stream = _voiceStream;
+    var preparing = true;
+    _recordJob = null;
     _recordMessage = null;
-    final previousReply = _replyFinished?.future;
-    final elapsed = Stopwatch()..start();
-    var phase = 'save';
-    var savedReply = false;
-    var ownsReply = false;
     _recordTimer.cancel();
     recording = false;
     _waitingToSend = true;
@@ -677,203 +835,163 @@ class AiChatController extends ChangeNotifier {
       await _recorder.stop();
       await _recordEvents?.cancel();
       _recordEvents = null;
-      // Keep uploading the recorder's final flush until stop has completed.
       if (identical(_voiceStream, stream)) _voiceStream = null;
-      if (message == null || !available || epoch != _epoch) return;
       final pcm = _recordPcm.takeBytes();
-      if (pcm.length < 320) return;
-      await previousReply;
-      if (!available || epoch != _epoch) return;
-      busy = true;
-      ownsReply = true;
-      _replyFinished = Completer<void>();
-      _replyPlaybackUnavailable = false;
-      _replyPlayedFrames = 0;
-      voiceReply.clear();
-      if (stream == null) {
-        stream = _openVoiceStream(message, epoch);
-        stream.add(pcm);
-      }
-      _receivingStream = stream;
-      _waitingToSend = false;
-      changed();
-      message.audio = await store.saveAudio(aiWave(pcm, 16000));
-      if (!available || epoch != _epoch) return;
-      store.messages.add(message);
-      await store.save();
-      _draftImages.removeWhere((image) => message.images.contains(image));
-      changed();
-      phase = 'reply';
-      Map<String, dynamic>? reply;
-      {
-        try {
-          reply = await stream.send(
-            await (_voiceMetadata?.call() ??
-                AiApiClient.metadata(
-                  hasMetBanteraAi: await store.hasMetBefore(),
-                )),
-          );
-        } catch (error) {
-          if (stream.committed) rethrow;
-          _reportVoiceFailure(
-            message,
-            stream,
-            error is AiVoiceFailure ? error.code : 'connect_failed',
-            'send',
-            elapsed.elapsedMilliseconds,
-          );
-        }
-      }
-      if (!available || epoch != _epoch) return;
-      if (reply == null) {
-        // Retry pre-send connection failures with the same device-tool transport.
-        // Never resubmit automatically once a stream was committed.
-        await stream.close();
-        await _reply(message);
-      } else {
-        if (reply['noSpeech'] == true) {
-          await _discardSilentMessage(message);
-          return;
-        }
-        phase = 'save';
-        await _saveReply(message, reply, epoch, autoplay: false);
-        savedReply = true;
-        phase = 'playback';
-        if (stream.outputBytes > 0) {
-          if (_replyAudioStarted && !_replyPlaybackUnavailable) {
-            try {
-              await _replyAudioCommand<void>(
-                'drain',
-              ).timeout(const Duration(seconds: 95));
-            } catch (error) {
-              _replyPlaybackUnavailable = true;
-              _reportVoiceFailure(
-                message,
-                stream,
-                'playback_drain_failed',
-                'playback',
-                elapsed.elapsedMilliseconds,
-                error: error,
-              );
-            }
-          }
-          if (available && epoch == _epoch) {
-            // Count only the audio actually rendered, including an interruption.
-            try {
-              final played = _replyAudioStarted
-                  ? await _replyAudioCommand<int>('playedFrames') ?? 0
-                  : _replyPlayedFrames;
-              final total = stream.outputBytes ~/ 2;
-              if (total > 0) {
-                await recordListened(
-                  (activityWordCount(reply['outputText'] as String? ?? '') *
-                          (played / total).clamp(0.0, 1.0))
-                      .floor(),
-                  message.language,
-                );
-              }
-            } catch (_) {
-              /* A playback statistic must not fail a saved reply. */
-            }
-          }
-        }
-      }
-    } catch (error) {
-      // Freeze the stream before snapshotting partial audio or writing history.
-      try {
+      if (job == null ||
+          !available ||
+          job.epoch != _epoch ||
+          pcm.length < 320) {
         await stream?.close();
-      } catch (_) {}
-      if (message != null) {
+        return;
+      }
+      job.input.audio = await store.saveAudio(aiWave(pcm, 16000));
+      if (!available || job.epoch != _epoch) {
+        await stream?.close();
+        return;
+      }
+      store.messages.add(job.input);
+      await store.save();
+      _draftImages.removeWhere((image) => job.input.images.contains(image));
+      _activateReply(job);
+      _waitingToSend = false;
+      preparing = false;
+      changed();
+      await _receiveReply(job);
+    } catch (error) {
+      await stream?.close();
+      if (job != null && available && job.epoch == _epoch) {
+        job.input.failed = true;
+        failed = true;
         _reportVoiceFailure(
-          message,
+          job.input,
           stream,
-          error is AiVoiceFailure
-              ? error.code
-              : phase == 'playback'
-              ? 'playback_drain_failed'
-              : phase == 'save'
-              ? 'save_failed'
-              : 'send_failed',
-          phase,
-          elapsed.elapsedMilliseconds,
+          'save_failed',
+          'save',
+          0,
           error: error,
         );
-      }
-      if (ownsReply && available && epoch == _epoch) {
-        final partialReply = voiceReply.message;
-        final hasPartialReply =
-            partialReply != null &&
-            (partialReply.text.isNotEmpty ||
-                partialReply.images.isNotEmpty ||
-                partialReply.emojis.isNotEmpty ||
-                (stream?.outputBytes ?? 0) > 0);
-        failed = !savedReply && !hasPartialReply;
-        if (message != null && store.messages.contains(message)) {
-          message.failed = !savedReply && !hasPartialReply;
-          // Keep the portion already heard. Failed model messages are excluded
-          // from future model context and never offered as input for Retry.
-          if (!savedReply && voiceReply.message != null) {
-            String? audioName;
-            try {
-              final partial = stream?.partialAudio;
-              if (partial != null) audioName = await store.saveAudio(partial);
-            } catch (_) {
-              /* Still retain the partial caption in memory. */
-            }
-            if (available && epoch == _epoch) {
-              final partial = voiceReply.interrupted(audioName);
-              if (partial != null) store.messages.add(partial);
-            }
-          }
-          try {
-            await store.save();
-          } catch (_) {
-            /* Retain visible messages. */
-          }
-        }
+        try {
+          await store.save();
+        } catch (_) {}
       }
     } finally {
-      try {
-        await stream?.close();
-      } catch (_) {
-        if (message != null) {
-          _reportVoiceFailure(
-            message,
-            stream,
-            'cleanup_failed',
-            'cleanup',
-            elapsed.elapsedMilliseconds,
-          );
-        }
-      }
-      if (identical(_voiceStream, stream)) _voiceStream = null;
-      if (ownsReply) {
-        _receivingStream = null;
-        try {
-          await _stopReplyPlayback();
-        } catch (_) {}
-        voiceReply.clear();
-        busy = false;
-        final finished = _replyFinished;
-        _replyFinished = null;
-        finished?.complete();
-        _streamPendingRecording(epoch);
-      } else {
-        _waitingToSend = false;
-      }
+      if (preparing) _waitingToSend = false;
       changed();
     }
   }
 
-  void _streamPendingRecording(int epoch) {
-    final message = _recordMessage;
-    if (available &&
-        epoch == _epoch &&
-        recording &&
-        message != null &&
-        _voiceStream == null) {
-      _voiceStream = _openVoiceStream(message, epoch);
-      _voiceStream!.add(_recordPcm.toBytes());
+  void _activateReply(_VoiceReplyJob job) {
+    _replies.add(job);
+    _foregroundReply = job;
+    _replyPlaybackUnavailable = !_viewAttached;
+    busy = true;
+    failed = false;
+  }
+
+  Future<void> _receiveReply(_VoiceReplyJob job) async {
+    final message = job.input;
+    var stream = job.stream;
+    final elapsed = Stopwatch()..start();
+    var phase = 'reply';
+    var saved = false;
+    var heardText = '';
+    try {
+      stream ??= _openVoiceStream(job);
+      Future<Map<String, dynamic>> send() async => stream!.send(
+        await (_voiceMetadata?.call() ??
+            AiApiClient.metadata(hasMetBanteraAi: await store.hasMetBefore())),
+        text: message.textRequest,
+      );
+      Map<String, dynamic> reply;
+      try {
+        reply = await send();
+      } catch (_) {
+        if (stream.committed || !_jobActive(job)) rethrow;
+        await stream.close();
+        stream = _openVoiceStream(job);
+        if (message.audio != null) {
+          final wave = await File(store.path(message.audio!)).readAsBytes();
+          stream.add(Uint8List.sublistView(wave, 44));
+        }
+        reply = await send();
+      }
+      if (!_jobActive(job)) return;
+      if (reply['noSpeech'] == true) {
+        await _discardSilentMessage(message, job);
+        return;
+      }
+      heardText = reply['outputText'] as String? ?? '';
+      phase = 'save';
+      await _saveReply(message, reply, job.epoch, job: job, autoplay: false);
+      saved = true;
+      phase = 'playback';
+      if (_replyAudioStarted && _canPlay(job)) {
+        await _drainReplyPlayback(job);
+      }
+    } catch (error) {
+      try {
+        await stream?.close();
+      } catch (_) {}
+      _reportVoiceFailure(
+        message,
+        stream,
+        error is AiVoiceFailure ? error.code : '${phase}_failed',
+        phase,
+        elapsed.elapsedMilliseconds,
+        error: error,
+      );
+      if (_jobActive(job)) {
+        final partial = saved ? null : job.state.interrupted(null);
+        final audioBytes = stream?.partialAudio;
+        heardText = partial?.text ?? heardText;
+        final hasPartial =
+            partial != null &&
+            (partial.text.isNotEmpty ||
+                partial.images.isNotEmpty ||
+                partial.emojis.isNotEmpty ||
+                audioBytes != null);
+        message.failed = !saved && !hasPartial;
+        if (identical(_foregroundReply, job)) failed = message.failed;
+        if (hasPartial) _insertReply(job, partial);
+        try {
+          await store.save(
+            audioMessage: hasPartial ? partial : null,
+            audioBytes: hasPartial ? audioBytes : null,
+          );
+        } catch (_) {
+          /* Keep the visible partial answer. */
+        }
+      }
+    } finally {
+      if (_jobActive(job) && stream != null && stream.outputBytes > 0) {
+        try {
+          final played = identical(_foregroundReply, job) && _replyAudioStarted
+              ? await _replyAudioCommand<int>('playedFrames') ?? 0
+              : job.playedFrames;
+          await recordListened(
+            (activityWordCount(heardText) *
+                    (played / (stream.outputBytes ~/ 2)).clamp(0.0, 1.0))
+                .floor(),
+            message.language,
+          );
+        } catch (_) {
+          /* Activity cannot fail a saved reply. */
+        }
+      }
+      try {
+        await stream?.close();
+      } catch (_) {}
+      if (identical(_foregroundReply, job)) {
+        try {
+          await _stopReplyPlayback();
+        } catch (_) {}
+        if (identical(_foregroundReply, job)) _foregroundReply = null;
+      }
+      job.state.clear();
+      _replies.remove(job);
+      busy = _replies.isNotEmpty;
+      if (!job.finished.isCompleted) job.finished.complete();
+      changed();
     }
   }
 
@@ -947,133 +1065,47 @@ class AiChatController extends ChangeNotifier {
         message.role != 'user') {
       return;
     }
-    busy = true;
-    _replyFinished = Completer<void>();
-    _replyPlaybackUnavailable = false;
-    _replyPlayedFrames = 0;
-    final epoch = _epoch;
-    failed = false;
+    final job = _VoiceReplyJob(message, _epoch);
+    _replyPlaybackUnavailable = true;
+    await _stopReplyPlayback();
+    if (!available || job.epoch != _epoch) return;
+    _activateReply(job);
     changed();
     try {
-      await _reply(message);
-    } finally {
-      voiceReply.clear();
-      busy = false;
-      final finished = _replyFinished;
-      _replyFinished = null;
-      finished?.complete();
-      _streamPendingRecording(epoch);
-      changed();
-    }
-  }
-
-  Future<void> _reply(AiMessage message) async {
-    if (message.audio == null && message.textRequest == null) return;
-    final epoch = _epoch;
-    final elapsed = Stopwatch()..start();
-    var phase = 'reply';
-    var saved = false;
-    var heardText = '';
-    AiVoiceStream? retryStream;
-    try {
-      // Replays need the same device tools as first attempts. The legacy HTTP
-      // upload cannot execute vocabulary/search tools and silently loses them.
-      Map<String, dynamic> reply;
-      Uint8List? wave;
-      if (message.textRequest == null) {
-        wave = await File(store.path(message.audio!)).readAsBytes();
+      final stream = _openVoiceStream(job);
+      if (message.audio != null && message.textRequest == null) {
+        final wave = await File(store.path(message.audio!)).readAsBytes();
         if (wave.length < 44 ||
             String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
           throw const FormatException('Invalid recording');
         }
+        stream.add(Uint8List.sublistView(wave, 44));
       }
-      retryStream = _openVoiceStream(message, epoch);
-      _receivingStream = retryStream;
-      if (wave != null) retryStream.add(Uint8List.sublistView(wave, 44));
-      reply = await retryStream.send(
-        await (_voiceMetadata?.call() ??
-            AiApiClient.metadata(hasMetBanteraAi: await store.hasMetBefore())),
-        text: message.textRequest,
-      );
-      if (!available || epoch != _epoch) return;
-      if (reply['noSpeech'] == true) {
-        await _discardSilentMessage(message);
-        return;
-      }
-      heardText = reply['outputText'] as String? ?? '';
-      phase = 'save';
-      await _saveReply(message, reply, epoch, autoplay: false);
-      saved = true;
-      if (_replyAudioStarted && !_replyPlaybackUnavailable) {
-        await _replyAudioCommand<void>(
-          'drain',
-        ).timeout(const Duration(seconds: 95));
-      }
-    } catch (error) {
-      _reportVoiceFailure(
-        message,
-        null,
-        phase == 'save' ? 'save_failed' : 'send_failed',
-        phase,
-        elapsed.elapsedMilliseconds,
-        error: error,
-      );
-      if (available && epoch == _epoch) {
-        await retryStream?.close();
-        final partial = saved ? null : voiceReply.interrupted(null);
-        final audio = retryStream?.partialAudio;
-        heardText = partial?.text ?? heardText;
-        final hasPartial =
-            partial != null && (partial.text.isNotEmpty || audio != null);
-        message.failed = !saved && !hasPartial;
-        failed = message.failed;
-        if (hasPartial && !store.messages.contains(partial)) {
-          store.messages.add(partial);
-        }
-        await store.save(
-          audioMessage: hasPartial ? partial : null,
-          audioBytes: hasPartial ? audio : null,
-        );
-      }
-    } finally {
-      // Text explanations are new listening activity, but never spoken input.
-      // Credit only frames rendered by the native player, including interruption.
-      if (message.textRequest != null &&
-          available &&
-          epoch == _epoch &&
-          retryStream != null &&
-          retryStream.outputBytes > 0) {
-        try {
-          final played = _replyAudioStarted
-              ? await _replyAudioCommand<int>('playedFrames') ?? 0
-              : _replyPlayedFrames;
-          final fraction = (played / (retryStream.outputBytes ~/ 2)).clamp(
-            0.0,
-            1.0,
-          );
-          await recordListened(
-            (activityWordCount(heardText) * fraction).floor(),
-            message.language,
-          );
-        } catch (_) {
-          /* Activity cannot turn a completed reply into an error. */
-        }
-      }
-      await retryStream?.close();
-      if (identical(_receivingStream, retryStream)) _receivingStream = null;
-      if (retryStream != null) await _stopReplyPlayback();
+      await _receiveReply(job);
+    } catch (_) {
+      await job.stream?.close();
+      message.failed = true;
+      failed = true;
+      _replies.remove(job);
+      if (identical(_foregroundReply, job)) _foregroundReply = null;
+      busy = _replies.isNotEmpty;
+      if (!job.finished.isCompleted) job.finished.complete();
+      await store.save();
+      changed();
     }
-    changed();
   }
 
-  Future<void> _discardSilentMessage(AiMessage message) async {
+  Future<void> _discardSilentMessage(
+    AiMessage message,
+    _VoiceReplyJob job,
+  ) async {
     // Silence is a cancelled recording, not a failed conversation turn. Do not
     // retain hallucinated captions or credit activity for it.
     store.messages.removeWhere((item) => item.id == message.id);
     if (_draftImages.isEmpty && !recording && !_recordStarting) {
       _draftImages.addAll(message.images);
     }
-    voiceReply.clear();
+    job.state.clear();
     failed = false;
     await store.save();
     if (message.audio != null) {
@@ -1090,6 +1122,7 @@ class AiChatController extends ChangeNotifier {
     AiMessage message,
     Map<String, dynamic> reply,
     int epoch, {
+    required _VoiceReplyJob job,
     bool autoplay = true,
   }) async {
     if (!available || epoch != _epoch) return;
@@ -1104,17 +1137,15 @@ class AiChatController extends ChangeNotifier {
     unawaited(_countSpeech(message));
     final name = await store.saveAudio(base64Decode(reply['audio'] as String));
     if (!available || epoch != _epoch) return;
-    final answer = voiceReply.complete(
+    final answer = job.state.complete(
       reply['outputText'] as String? ?? '',
       name,
       message.language,
     );
-    store.messages.add(answer);
+    _insertReply(job, answer);
+    job.savedMessage = answer;
     await store.save();
-    if (autoplay &&
-        !_replyPlaybackUnavailable &&
-        !recording &&
-        !_recordStarting) {
+    if (autoplay && _canPlay(job) && !recording && !_recordStarting) {
       requestReplyPlayback(answer);
     }
     changed();
@@ -1937,8 +1968,9 @@ class AiChatController extends ChangeNotifier {
     _imageSearch.cancel();
     _api.close();
     _api = AiApiClient()..conversationId = () => store.conversationId;
-    await _receivingStream?.close();
-    await _replyFinished?.future;
+    final replies = _replies.toList();
+    await _closeReplies();
+    await Future.wait(replies.map((job) => job.finished.future));
     await cancelRecording();
     await endCall();
     await _events.catchError((Object _) {});
@@ -1972,28 +2004,24 @@ class AiChatController extends ChangeNotifier {
 
   @override
   void dispose() {
+    if (_disposed) return;
+    if (identical(_chatSession, this)) _chatSession = null;
     _clearDraftImages();
     _replyPlaybackUnavailable = true;
-    if (loaded && busy) {
-      // Leaving is not a failed send. Keep captions already shown, and the
-      // received audio, before invalidating callbacks or closing the socket.
-      final partial = voiceReply.interrupted(null, failed: false);
-      final bytes = _receivingStream?.partialAudio;
-      if (partial != null &&
-          (partial.text.isNotEmpty ||
-              partial.images.isNotEmpty ||
-              partial.emojis.isNotEmpty ||
-              bytes != null)) {
-        if (!store.messages.contains(partial)) store.messages.add(partial);
+    for (final job in _replies) {
+      final partial = job.state.interrupted(null, failed: false);
+      final bytes = job.stream?.partialAudio;
+      if (partial != null) _insertReply(job, partial);
+      if (loaded) {
+        unawaited(
+          store
+              .save(audioMessage: partial, audioBytes: bytes)
+              .catchError((Object _) {}),
+        );
       }
-      unawaited(
-        store
-            .save(audioMessage: partial, audioBytes: bytes)
-            .catchError((Object _) {}),
-      );
     }
     if (_testing) {
-      unawaited(_receivingStream?.close());
+      unawaited(_closeReplies());
       _disposed = true;
       super.dispose();
       return;
@@ -2005,7 +2033,7 @@ class AiChatController extends ChangeNotifier {
     _webSearch.cancel();
     _imageSearch.cancel();
     _api.close();
-    unawaited(_receivingStream?.close());
+    unawaited(_closeReplies());
     unawaited(_stopReplyPlayback());
     _recordTimer.cancel();
     _elapsed.stop();

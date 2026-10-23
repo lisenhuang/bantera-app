@@ -1,4 +1,5 @@
 import '../../../core/apple_system_version.dart';
+import '../../../core/practice_review_service.dart';
 import '../../../core/ai_consent.dart';
 import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
@@ -96,11 +97,11 @@ class AiChatScreen extends StatefulWidget {
 }
 
 class _AiChatScreenState extends State<AiChatScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RouteAware {
   late final AiChatController _chat =
       widget.controller ??
       widget._controllerFactory?.call() ??
-      AiChatController();
+      AiChatController.forChat();
   final _scroll = ScrollController();
   final _player = AudioPlayer();
   String? _playing;
@@ -122,6 +123,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     _count = _chat.messages.length;
     _historyLoaded = _chat.loaded;
     _scroll.addListener(_pauseVideo);
+    _chat.attachChat();
     _chat.addListener(_changed);
     pendingAiWordExplanation.addListener(_wordRequested);
     _completion = _player.onPlayerComplete.listen((_) {
@@ -165,6 +167,31 @@ class _AiChatScreenState extends State<AiChatScreen>
         (_) => _initializeWhenVisible(),
       );
     }
+  }
+
+  ModalRoute<dynamic>? _observedRoute;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (!identical(route, _observedRoute)) {
+      practiceReviewRouteObserver.unsubscribe(this);
+      _observedRoute = route;
+      if (route != null) practiceReviewRouteObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPushNext() {
+    if (_chat.callKitManaged || _chat.calling) return;
+    unawaited(_player.stop());
+    _pauseVideo();
+    unawaited(_chat.detachChat());
+  }
+
+  @override
+  void didPopNext() {
+    _chat.attachChat();
   }
 
   void _initializeWhenVisible() {
@@ -274,6 +301,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
+    practiceReviewRouteObserver.unsubscribe(this);
     pendingAiWordExplanation.removeListener(_wordRequested);
     if (pendingAiWordExplanation.value?.owner == _chat.owner) {
       pendingAiWordExplanation.value = null;
@@ -281,7 +309,9 @@ class _AiChatScreenState extends State<AiChatScreen>
     _openingAnimation?.removeStatusListener(_openingChanged);
     WidgetsBinding.instance.removeObserver(this);
     _chat.removeListener(_changed);
-    if (widget.controller == null) _chat.dispose();
+    if (widget.controller == null) {
+      unawaited(_chat.detachChat());
+    }
     _completion?.cancel();
     _positionEvents?.cancel();
     _durationEvents?.cancel();
@@ -411,10 +441,14 @@ class _AiChatScreenState extends State<AiChatScreen>
     if (_chat.calling ||
         AiCallbackNotifier.instance.aiActive ||
         _chat.recording ||
-        m.audio == null) {
+        (m.audio == null && !_chat.isAutomaticReply(m))) {
       return;
     }
     try {
+      if (_chat.isAutomaticReply(m)) {
+        await _chat.toggleReplyPlayback(m);
+        return;
+      }
       if (_playing == m.id) {
         if (_player.state == PlayerState.playing) {
           await _player.pause();
@@ -425,6 +459,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         if (mounted) setState(() {});
         return;
       }
+      await _chat.stopAutomaticReplyPlayback();
       await _player.setAudioContext(
         AudioContext(
           iOS: AudioContextIOS(category: AVAudioSessionCategory.playback),
@@ -914,6 +949,11 @@ class _AiChatScreenState extends State<AiChatScreen>
     final colors = theme.colorScheme;
     final user = m.role == 'user';
     final receiving = _chat.isReceiving(m);
+    final automatic = _chat.isAutomaticReply(m);
+    final pausedAutomatic = _chat.isAutomaticReplyPaused(m);
+    final playing = automatic
+        ? !pausedAutomatic
+        : _playing == m.id && _player.state == PlayerState.playing;
     final selected = _playing == m.id;
     final duration =
         _durations[m.id] ??
@@ -954,16 +994,20 @@ class _AiChatScreenState extends State<AiChatScreen>
       child: GestureDetector(
         onLongPress: () => _messageActions(m),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 340),
+          key: ValueKey('ai-message-content-${m.id}'),
+          constraints: user ? const BoxConstraints(maxWidth: 340) : null,
+          width: user ? null : double.infinity,
           margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: user
-                ? colors.primary.withValues(alpha: .12)
-                : colors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: colors.outlineVariant),
-          ),
+          padding: user
+              ? const EdgeInsets.all(14)
+              : const EdgeInsets.symmetric(vertical: 8),
+          decoration: user
+              ? BoxDecoration(
+                  color: colors.primary.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: colors.outlineVariant),
+                )
+              : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -974,11 +1018,18 @@ class _AiChatScreenState extends State<AiChatScreen>
                       ? null
                       : () async => _chat.store.path(m.audio!),
                   receiving: receiving,
-                  playing: selected && _player.state == PlayerState.playing,
+                  playing: playing,
                   progress: progress,
                   duration: duration == null ? null : _durationLabel(duration),
-                  playTooltip: l.aiPlayAudio,
-                  onPlay: _chat.calling || _chat.busy || _chat.recording
+                  playTooltip: playing
+                      ? l.quickPauseAudio
+                      : (pausedAutomatic || selected)
+                      ? l.quickResumeAudio
+                      : l.aiPlayAudio,
+                  onPlay:
+                      _chat.calling ||
+                          _chat.recording ||
+                          (!automatic && (receiving || m.audio == null))
                       ? null
                       : () => _play(m),
                   trailing: translationAction,

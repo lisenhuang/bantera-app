@@ -1,5 +1,6 @@
 import '../../core/ai_consent.dart';
 import 'ai_search_capabilities.dart';
+import 'ai_response_formatting.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -162,7 +163,7 @@ class AiApiClient {
       ),
     );
     await _checkRequestConsent(owner, request);
-    field('history', jsonEncode(history));
+    field('history', jsonEncode(AiResponseFormatting.withContext(history)));
     field('deviceData', jsonEncode(deviceData));
     field(
       'metadata',
@@ -259,6 +260,7 @@ class AiApiClient {
           .replace(
             scheme: base.scheme == 'https' ? 'wss' : 'ws',
             path: '/ws/chat/ai/voice',
+            queryParameters: {'overlap': '1'},
           )
           .toString(),
       headers: {'Authorization': 'Bearer $token'},
@@ -279,7 +281,9 @@ class AiApiClient {
         'acceptNoSpeech': true,
         if (textOnly) 'inputMode': 'text',
         if (images.isNotEmpty) 'images': images,
-        'history': AiSearchCapabilities.withContext(history),
+        'history': AiResponseFormatting.withContext(
+          AiSearchCapabilities.withContext(history),
+        ),
         'deviceData': deviceData,
         'metadata': {...meta, 'conversationId': conversationId?.call()},
       }),

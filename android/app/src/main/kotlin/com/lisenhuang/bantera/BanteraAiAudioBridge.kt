@@ -52,6 +52,14 @@ class BanteraAiAudioBridge(private val context: Context, messenger: BinaryMessen
                     "storagePath" -> result.success(File(context.noBackupFilesDir, "bantera_ai").apply { mkdirs() }.absolutePath)
                     "start" -> { start(); result.success(null) }
                     "startPlayback" -> { start(playbackOnly = true); result.success(null) }
+                    "pausePlayback", "resumePlayback" -> {
+                        if (recorder != null) {
+                            result.error("audio_owned_by_call", "Call audio is active.", null)
+                        } else {
+                            if (call.method == "pausePlayback") track?.pause() else track?.play()
+                            result.success(null)
+                        }
+                    }
                     "feed" -> { feed(call.arguments as ByteArray); result.success(null) }
                     "playedFrames" -> result.success(progress.playedFrames(track?.playbackHeadPosition ?: 0))
                     "clear" -> { clear(); result.success(null) }
