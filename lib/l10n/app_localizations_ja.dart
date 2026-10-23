@@ -2327,4 +2327,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickResumeAudio => '音声を再開';
+
+  @override
+  String get quickClearSavedTitle => '保存した練習をすべて削除しますか？';
+
+  @override
+  String get quickClearSavedBody => 'このアカウントで保存したすべての練習を、この端末から削除しますか？';
 }

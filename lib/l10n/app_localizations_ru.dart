@@ -2510,4 +2510,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Продолжить аудио';
+
+  @override
+  String get quickClearSavedTitle => 'Удалить все сохранённые упражнения?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Удалить с этого устройства все упражнения, сохранённые для этой учётной записи?';
 }

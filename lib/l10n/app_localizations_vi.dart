@@ -2441,4 +2441,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Tiếp tục phát';
+
+  @override
+  String get quickClearSavedTitle => 'Xóa tất cả bài luyện tập đã lưu?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Xóa tất cả bài luyện tập đã lưu của tài khoản này khỏi thiết bị này?';
 }

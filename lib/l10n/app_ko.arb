@@ -760,5 +760,7 @@
   "aiOpenVideoBrowser": "브라우저에서 열기",
   "quickPlaybackSpeed": "재생 속도: {speed}배. 탭하여 변경하세요.",
   "quickPauseAudio": "오디오 일시 정지",
-  "quickResumeAudio": "오디오 다시 재생"
+  "quickResumeAudio": "오디오 다시 재생",
+  "quickClearSavedTitle": "저장한 연습을 모두 삭제할까요?",
+  "quickClearSavedBody": "이 계정에 저장된 모든 연습을 이 기기에서 삭제할까요?"
 }

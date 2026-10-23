@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "Tarayıcıda aç",
   "quickPlaybackSpeed": "Oynatma hızı: {speed}×. Değiştirmek için dokunun.",
   "quickPauseAudio": "Sesi duraklat",
-  "quickResumeAudio": "Sesi sürdür"
+  "quickResumeAudio": "Sesi sürdür",
+  "quickClearSavedTitle": "Kaydedilen tüm alıştırmalar kaldırılsın mı?",
+  "quickClearSavedBody": "Bu hesap için kaydedilen tüm alıştırmalar bu cihazdan kaldırılsın mı?"
 }

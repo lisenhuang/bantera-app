@@ -182,7 +182,8 @@ void main() {
       expect(find.text('1:06'), findsOneWidget);
       final formattedReply = AiMessage(
         role: 'model',
-        text: '## Try these\n\n1. **Listen** carefully.\n2. Speak slowly.',
+        text: 'A short spoken introduction.',
+        formattedText: '## Try these\n\n1. **Listen** carefully.\n2. Speak slowly.',
       );
       formattedReply.audio = 'reply.wav';
       controller.automaticReply = formattedReply;
@@ -194,6 +195,8 @@ void main() {
       );
       final response = tester.widget<Container>(responseFinder);
       expect(response.decoration, isNull);
+      expect(find.text('A short spoken introduction.'), findsNothing);
+      expect(find.textContaining('Try these', findRichText: true), findsOneWidget);
       expect(tester.getSize(responseFinder).width, closeTo(390 - 32, 1));
       final userContainer = tester.widget<Container>(
         find.byKey(ValueKey('ai-message-content-${store.messages.first.id}')),

@@ -2441,4 +2441,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Sesi sürdür';
+
+  @override
+  String get quickClearSavedTitle =>
+      'Kaydedilen tüm alıştırmalar kaldırılsın mı?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Bu hesap için kaydedilen tüm alıştırmalar bu cihazdan kaldırılsın mı?';
 }

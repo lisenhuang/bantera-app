@@ -964,7 +964,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     final translationAction =
         supportsBuiltInTranslation &&
             defaultTargetPlatform == TargetPlatform.iOS &&
-            m.text.isNotEmpty &&
+            m.displayText.isNotEmpty &&
             !receiving
         ? IconButton(
             tooltip:
@@ -1044,7 +1044,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(l.aiReplying, style: theme.textTheme.labelMedium),
                 ),
-              if (m.text.isNotEmpty)
+              if (m.displayText.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: user
@@ -1054,7 +1054,10 @@ class _AiChatScreenState extends State<AiChatScreen>
                             color: colors.onSurface,
                           ),
                         )
-                      : AiMessageMarkdown(text: m.text, selectable: false),
+                      : AiMessageMarkdown(
+                          text: m.displayText,
+                          selectable: false,
+                        ),
                 ),
               if (m.emojis.isNotEmpty)
                 Padding(

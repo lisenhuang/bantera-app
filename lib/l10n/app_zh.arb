@@ -760,5 +760,7 @@
   "aiOpenVideoBrowser": "在浏览器中打开",
   "quickPlaybackSpeed": "播放速度：{speed}倍。点按切换。",
   "quickPauseAudio": "暂停音频",
-  "quickResumeAudio": "继续播放"
+  "quickResumeAudio": "继续播放",
+  "quickClearSavedTitle": "清空所有已保存的练习？",
+  "quickClearSavedBody": "要从此设备中移除此账号保存的所有练习吗？"
 }

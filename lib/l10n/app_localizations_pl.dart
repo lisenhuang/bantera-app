@@ -2521,4 +2521,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Wznów dźwięk';
+
+  @override
+  String get quickClearSavedTitle => 'Usunąć wszystkie zapisane ćwiczenia?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Usunąć z tego urządzenia wszystkie ćwiczenia zapisane dla tego konta?';
 }

@@ -111,7 +111,7 @@ void main() {
       await tester.tap(button);
       expect(taps, 1);
       await show(playing: true);
-      expect(find.byIcon(Icons.stop_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
       await tester.tap(button);
       expect(taps, 2);
       await show(enabled: false);

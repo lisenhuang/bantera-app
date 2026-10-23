@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "Mở trong trình duyệt",
   "quickPlaybackSpeed": "Tốc độ phát: {speed}×. Nhấn để thay đổi.",
   "quickPauseAudio": "Tạm dừng âm thanh",
-  "quickResumeAudio": "Tiếp tục phát"
+  "quickResumeAudio": "Tiếp tục phát",
+  "quickClearSavedTitle": "Xóa tất cả bài luyện tập đã lưu?",
+  "quickClearSavedBody": "Xóa tất cả bài luyện tập đã lưu của tài khoản này khỏi thiết bị này?"
 }

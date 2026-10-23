@@ -4,6 +4,7 @@ import '../../infrastructure/learning_language_catalog.dart';
 import 'practice_transcript_feedback.dart';
 import 'practice_header.dart';
 import 'saved_practice_screen.dart';
+import 'saved_practice_confirmation.dart';
 import '../../infrastructure/saved_practice_store.dart';
 import 'practice_level_menu.dart';
 import 'practice_word_flight.dart';
@@ -49,7 +50,9 @@ class QuickPracticeScreen extends StatefulWidget {
     required this.goalTabAnchor,
   }) : previewExercise = null,
        previewFeedback = null,
-       previewPlayer = null;
+       previewPlayer = null,
+       previewSavedStore = null,
+       previewApi = null;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
@@ -57,12 +60,17 @@ class QuickPracticeScreen extends StatefulWidget {
     this.previewFeedback,
     this.active = true,
     this.previewPlayer,
+    this.previewSavedStore,
+    this.previewApi,
   }) : goalTabAnchor = null;
   final bool active;
   final GlobalKey? goalTabAnchor;
   final Map<String, dynamic>? previewExercise;
   final Map<String, dynamic>? previewFeedback;
   final AudioPlayer? previewPlayer;
+  final SavedPracticeStore? previewSavedStore;
+  final Future<Map<String, dynamic>> Function(String, Map<String, dynamic>)?
+  previewApi;
   @override
   State<QuickPracticeScreen> createState() => _QuickPracticeScreenState();
 }
@@ -93,7 +101,25 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool _confirmingNext = false;
   bool _translationRevealed = false;
   String? _currentLevel, _practiceLevel;
+  Map<String, dynamic>? _savedSource;
+  ({
+    Map<String, dynamic>? exercise,
+    Map<String, dynamic>? feedback,
+    String? currentLevel,
+    String? practiceLevel,
+    bool translationRevealed,
+  })?
+  _beforeSaved;
+  String? get _exerciseLocale {
+    final locale = _exercise?['locale'] as String? ?? _locale;
+    return locale != null && supportsAudioDialogueLanguage(locale)
+        ? locale
+        : null;
+  }
+
   Set<String> _savedIds = {};
+  SavedPracticeStore get _savedStore =>
+      widget.previewSavedStore ?? SavedPracticeStore.instance;
   bool _saving = false, _savedLoaded = false;
   int _savedGeneration = 0;
   @override
@@ -170,6 +196,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           ? previewLocale
           : null;
       _allowed = true;
+      if (widget.previewSavedStore != null) {
+        _owner = AuthSessionNotifier.instance.session?.cacheKey;
+        unawaited(_refreshSaved());
+      }
       if (widget.previewPlayer != null) _listenToPlayer();
       return;
     }
@@ -260,6 +290,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     unawaited(_audioCache?.dispose());
     _audioCache = null;
     setState(() {
+      _beforeSaved = null;
+      _savedSource = null;
       _currentLevel = null;
       _practiceLevel = null;
       _owner = owner;
@@ -288,7 +320,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final generation = ++_savedGeneration;
     if (owner == null) return;
     try {
-      final entries = await SavedPracticeStore.instance.load(owner);
+      final entries = await _savedStore.load(owner);
       if (!mounted || owner != _owner || generation != _savedGeneration) return;
       setState(() {
         _savedIds = entries.map((entry) => entry['id'] as String).toSet();
@@ -302,15 +334,25 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _toggleSaved() async {
-    final owner = _owner, exercise = _exercise;
+    final owner = _owner, exercise = _savedSource ?? _exercise;
     if (owner == null || exercise == null || _saving || !_savedLoaded) return;
+    final epoch = _epoch;
     final id = exercise['id'] as String;
     final saved = !_savedIds.contains(id);
     setState(() => _saving = true);
     try {
-      await SavedPracticeStore.instance.setSaved(
+      if (!saved) {
+        final confirmed = await confirmSavedPracticeRemoval(
+          context,
+          cue: exercise['cue'] as String,
+        );
+        if (!confirmed || !mounted || owner != _owner || epoch != _epoch) {
+          return;
+        }
+      }
+      await _savedStore.setSaved(
         owner: owner,
-        exercise: {...exercise, 'locale': _locale},
+        exercise: {...exercise, 'locale': _exerciseLocale},
         saved: saved,
       );
       if (mounted && owner == _owner) {
@@ -331,13 +373,77 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     if (owner == null || _recording || _busy || _confirmingNext) return;
     await _stopAudio();
     if (!mounted || owner != _owner) return;
-    await Navigator.of(context).push<void>(
+    final selected = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
         settings: const RouteSettings(name: '/practice/saved'),
-        builder: (_) => SavedPracticeScreen(owner: owner),
+        builder: (_) => SavedPracticeScreen(owner: owner, store: _savedStore),
       ),
     );
-    if (mounted) await _refreshSaved();
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted || owner != _owner) return;
+    await _refreshSaved();
+    if (selected != null && mounted && owner == _owner && _allowed) {
+      await _reviewSaved(selected);
+    }
+  }
+
+  Future<void> _reviewSaved(Map<String, dynamic> entry) async {
+    final epoch = ++_epoch;
+    _poll?.cancel();
+    _autoplay.cancel();
+    setState(() {
+      _busy = true;
+      _loading = false;
+    });
+    try {
+      final response = await _api('${entry['id']}/review', {});
+      if (!mounted || epoch != _epoch || !_allowed) return;
+      await _stopAudio();
+      await _discardReplay();
+      if (!mounted || epoch != _epoch || !_allowed) return;
+      _beforeSaved ??= (
+        exercise: _exercise,
+        feedback: _feedback,
+        currentLevel: _currentLevel,
+        practiceLevel: _practiceLevel,
+        translationRevealed: _translationRevealed,
+      );
+      _translations.clear();
+      setState(() {
+        _savedSource = entry;
+        _exercise = response;
+        _feedback = null;
+        _selectedWord = null;
+        _currentLevel = response['currentLevel'] as String?;
+        _practiceLevel = response['level'] as String?;
+        _translationRevealed = response['level'] == 'A0';
+        _error = null;
+      });
+      _prepareExerciseAudio();
+      unawaited(_refreshCompleted());
+    } catch (_) {
+      if (mounted && epoch == _epoch) _notice(l.quickSavedError);
+    } finally {
+      if (mounted && epoch == _epoch) {
+        setState(() => _busy = false);
+        _requestTranslations();
+        if (_exercise == null && widget.active) unawaited(_load());
+      }
+    }
+  }
+
+  void _prepareExerciseAudio() {
+    unawaited(_audioCache?.dispose());
+    final cache = _audioCache = QuickPracticeAudioCache();
+    _cueProgress.value = 0;
+    final exercise = _exercise;
+    if (exercise == null) return;
+    for (final url in [
+      exercise['cueAudioUrl'] as String,
+      ...(exercise['choices'] as List).map((c) => c['audioUrl'] as String),
+    ]) {
+      unawaited(cache.prepare(url));
+    }
   }
 
   Future<void> _refreshCompleted({String? exerciseId}) async {
@@ -345,7 +451,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _completionDayTimer?.cancel();
     final generation = ++_completionGeneration, epoch = _epoch;
     final owner = AuthSessionNotifier.instance.session?.userId;
-    final locale = _locale;
+    final locale = _exerciseLocale;
     if (owner == null || locale == null) return;
     try {
       await PracticeCompletionStore.instance.today(
@@ -430,6 +536,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     String path,
     Map<String, dynamic> payload,
   ) async {
+    if (widget.previewApi != null) return widget.previewApi!(path, payload);
     final token = AuthSessionNotifier.instance.session?.accessToken;
     if (token == null) throw const AiConsentRequired();
     return AuthApiClient.instance.quickPractice(
@@ -557,7 +664,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _audioCredited = 0;
       _audioDurationMs = 0;
       _audioOwner = AuthSessionNotifier.instance.session?.userId;
-      _audioLocale = _locale;
+      _audioLocale = _exerciseLocale;
       _playbackEvent = const Uuid().v4();
       if (id == 'cue') _cueProgress.value = 0;
       setState(() {
@@ -792,7 +899,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       // Persist exclusion before revealing any hint. It survives relaunches and
       // excludes answers already given during this unfinished exercise.
       final marked = await PracticeTranslationController.markUsed(() async {
-        if (widget.previewExercise == null) await _api('$id/translation', {});
+        if (widget.previewExercise == null && _savedSource == null) {
+          await _api('$id/translation', {});
+        }
       });
       if (!marked) return;
       if (!mounted || epoch != _epoch || _exercise?['id'] != id) return;
@@ -932,7 +1041,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     String? heard;
     var spoken = 0;
     final creditOwner = AuthSessionNotifier.instance.session?.userId;
-    final creditLocale = _locale;
+    final creditLocale = _exerciseLocale;
     final speechEventId = 'practice-speak:${const Uuid().v4()}';
     var credited = false;
     Future<void> creditSpeech() async {
@@ -959,7 +1068,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       final transcript = await VideoProcessingService.instance
           .transcribeRecordedAudio(
             inputFile: File(path),
-            localeIdentifier: _locale!,
+            localeIdentifier: _exerciseLocale!,
             allowAutoCorrection: false,
           );
       heard = transcript.transcriptText;
@@ -976,7 +1085,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       final selected = PracticeAnswerMatcher.match(
         transcript.transcriptText,
         choices,
-        _locale!,
+        _exerciseLocale!,
         uncertainWords: uncertain,
       );
       if (selected == null) {
@@ -989,7 +1098,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         );
         return;
       }
-      final result = await _api('$exerciseId/answer', {
+      final answerPath = _savedSource == null ? 'answer' : 'review/answer';
+      final result = await _api('$exerciseId/$answerPath', {
         'attemptId': const Uuid().v4(),
         'transcript': transcript.transcriptText,
         'recognition': uncertain.isEmpty
@@ -1018,7 +1128,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       );
       if (result['outcome'] == 'correct') {
         HapticFeedback.mediumImpact();
-        await _refreshCompleted(exerciseId: exerciseId as String);
+        await _refreshCompleted(
+          exerciseId: (_savedSource?['id'] ?? exerciseId) as String,
+        );
       }
     } on AuthApiException catch (error) {
       if (!mounted || epoch != _epoch) return;
@@ -1074,7 +1186,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _selectLevel(String selected) async {
-    if (_recording ||
+    if (_savedSource != null ||
+        _recording ||
         _busy ||
         _confirmingNext ||
         _loading ||
@@ -1146,7 +1259,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _stopAudio();
       if (!mounted || epoch != _epoch) return;
-      if (_feedback?['outcome'] != 'correct') {
+      if (_savedSource == null && _feedback?['outcome'] != 'correct') {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -1192,6 +1305,25 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     await _discardReplay();
     if (!mounted || epoch != _epoch) return;
     _translations.clear();
+    final beforeSaved = _beforeSaved;
+    if (beforeSaved != null) {
+      setState(() {
+        _exercise = beforeSaved.exercise;
+        _feedback = beforeSaved.feedback;
+        _currentLevel = beforeSaved.currentLevel;
+        _practiceLevel = beforeSaved.practiceLevel;
+        _translationRevealed = beforeSaved.translationRevealed;
+        _selectedWord = null;
+        _savedSource = null;
+        _beforeSaved = null;
+        _error = null;
+        _waitingSince = null;
+      });
+      _prepareExerciseAudio();
+      unawaited(_refreshCompleted());
+      if (_exercise == null) await _load();
+      return;
+    }
     setState(() {
       _previousId = _exercise?['id'] as String?;
       _requestId = const Uuid().v4();
@@ -1270,7 +1402,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         onCycleSpeed: _recording || _busy || _audioCommandBusy || _callActive
             ? null
             : _cyclePlaybackSpeed,
-        isSaved: _savedIds.contains(exercise?['id']),
+        isSaved: _savedIds.contains((_savedSource ?? exercise)?['id']),
         onSavePractice:
             exercise == null ||
                 !_savedLoaded ||
@@ -1360,7 +1492,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         level: level as String,
                         currentLevel: _currentLevel ?? level,
                         onSelected:
-                            _recording || _busy || _confirmingNext || _loading
+                            _savedSource != null ||
+                                _recording ||
+                                _busy ||
+                                _confirmingNext ||
+                                _loading
                             ? null
                             : _selectLevel,
                       ),
@@ -1377,14 +1513,14 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                     ),
                   ],
                   const SizedBox(height: 28),
-                  if (!_allowed || _locale == null)
+                  if (!_allowed || _exerciseLocale == null)
                     _empty(
                       icon: CupertinoIcons.waveform,
-                      title: _locale == null
+                      title: _exerciseLocale == null
                           ? l.quickChooseLanguage
                           : l.quickInstruction,
                       detail: l.quickSpeakHint,
-                      action: _locale == null ? null : _start,
+                      action: _exerciseLocale == null ? null : _start,
                       button: l.quickStart,
                     )
                   else if (exercise == null)
@@ -1655,7 +1791,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   TextDirection get _textDirection =>
-      ['ar', 'he', 'fa', 'ur'].contains(_locale?.split('-').first)
+      ['ar', 'he', 'fa', 'ur'].contains(_exerciseLocale?.split('-').first)
       ? TextDirection.rtl
       : TextDirection.ltr;
   Widget _playButton(String id, String url, Color color) =>
@@ -1779,7 +1915,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           sentence: sentence,
           start: token.start,
           end: token.end,
-          language: _locale ?? '',
+          language: _exerciseLocale ?? '',
           displayText: l.practiceExplainMessage(token.text, sentence),
         ),
       );
@@ -1887,7 +2023,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
               choices: (_exercise!['choices'] as List)
                   .map((c) => c['text'] as String)
                   .toList(),
-              locale: _locale ?? 'en',
+              locale: _exerciseLocale ?? 'en',
               choice: _feedback!['choice'] as int?,
               uncertainWords:
                   (_feedback!['uncertainWords'] as List?)?.cast<String>() ?? [],

@@ -51,6 +51,7 @@ class AiApiClient {
     'deviceVocabulary': true,
     'vocabularyVersion': 2,
     'deviceEmojis': true,
+    'deviceFormattedText': true,
     'learningLevel': SettingsNotifier.instance.audioLevel?.name,
     'clock': await clock(),
     'pushToken': (await CallKitService.instance.token())?.token,
@@ -173,6 +174,7 @@ class AiApiClient {
         'deviceVocabulary': false,
         'vocabularyVersion': 0,
         'deviceEmojis': false,
+        'deviceFormattedText': false,
         'conversationId': conversationId?.call(),
       }),
     );

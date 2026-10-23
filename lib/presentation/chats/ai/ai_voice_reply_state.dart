@@ -24,6 +24,7 @@ class AiVoiceReplyState {
   void resetAttempt() {
     _bytes = 0;
     message?.text = '';
+    message?.formattedText = null;
     message?.durationMs = 0;
   }
 

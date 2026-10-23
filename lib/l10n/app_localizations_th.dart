@@ -2419,4 +2419,11 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'เล่นเสียงต่อ';
+
+  @override
+  String get quickClearSavedTitle => 'ลบแบบฝึกที่บันทึกไว้ทั้งหมดหรือไม่?';
+
+  @override
+  String get quickClearSavedBody =>
+      'ลบแบบฝึกทั้งหมดที่บันทึกไว้สำหรับบัญชีนี้ออกจากอุปกรณ์นี้หรือไม่?';
 }

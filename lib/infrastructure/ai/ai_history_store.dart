@@ -9,11 +9,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:uuid/uuid.dart';
 
+String? readFormattedText(dynamic value) =>
+    value is String &&
+        value.trim().isNotEmpty &&
+        value.length <= 8000 &&
+        !RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]').hasMatch(value)
+    ? value.trim()
+    : null;
+
 class AiMessage {
   AiMessage({
     required this.role,
     String text = '',
     this.translation = '',
+    this.formattedText,
     this.textRequest,
     this.audio,
     this.language = '',
@@ -52,6 +61,10 @@ class AiMessage {
   String get text => role == 'model' ? publicAiTranscript(_rawText) : _rawText;
   set text(String value) => _rawText = value;
   void appendTranscript(String value) => _rawText += value;
+  String? formattedText;
+  String get displayText => role == 'model' && formattedText != null
+      ? publicAiTranscript(formattedText!)
+      : text;
   String translation, language, translationLanguage;
   String? audio;
 
@@ -70,6 +83,7 @@ class AiMessage {
     'id': id,
     'role': role,
     'text': text,
+    if (formattedText != null) 'formattedText': formattedText,
     if (textRequest != null) 'textRequest': textRequest,
     'translation': translation,
     'audio': audio,
@@ -99,6 +113,7 @@ class AiMessage {
     id: j['id'],
     role: j['role'],
     text: j['text'] ?? '',
+    formattedText: readFormattedText(j['formattedText']),
     textRequest: j['textRequest'] as String?,
     translation: j['translation'] ?? '',
     audio: j['audio'],
@@ -165,7 +180,7 @@ class AiHistoryStore {
     (m) =>
         m.role == 'model' &&
         !m.failed &&
-        (m.text.trim().isNotEmpty ||
+        (m.displayText.trim().isNotEmpty ||
             m.audio != null ||
             m.images.isNotEmpty ||
             m.videos.isNotEmpty ||
@@ -425,7 +440,7 @@ class AiHistoryStore {
           (m) =>
               m.id != excluding &&
               !m.failed &&
-              (m.text.trim().isNotEmpty ||
+              (m.displayText.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
                   m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
@@ -460,7 +475,7 @@ class AiHistoryStore {
         .where(
           (m) =>
               !m.failed &&
-              (m.text.trim().isNotEmpty ||
+              (m.displayText.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
                   m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
@@ -469,7 +484,7 @@ class AiHistoryStore {
     final result = <Map<String, String>>[];
     for (final m in valid.take((valid.length - 20).clamp(0, valid.length))) {
       final content = [
-        m.text,
+        m.displayText,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final video in m.videos)
           '[Shared video link: ${video.title}; source: ${video.url}; contents not watched]',
@@ -575,7 +590,7 @@ class AiHistoryStore {
         .where(
           (m) =>
               !m.failed &&
-              (m.text.trim().isNotEmpty ||
+              (m.displayText.trim().isNotEmpty ||
                   m.images.isNotEmpty ||
                   m.videos.isNotEmpty ||
                   m.emojis.isNotEmpty),
@@ -590,7 +605,7 @@ class AiHistoryStore {
     // interaction cannot disappear behind long, older messages.
     for (final m in chosen.reversed) {
       final content = [
-        m.text,
+        m.displayText,
         if (m.emojis.isNotEmpty) '[Shared emojis: ${m.emojis.join(' ')}]',
         for (final video in m.videos)
           '[Shared video link: ${video.title}; source: ${video.url}; contents not watched]',

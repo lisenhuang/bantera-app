@@ -2506,4 +2506,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Retomar áudio';
+
+  @override
+  String get quickClearSavedTitle => 'Remover todos os exercícios salvos?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Remover deste dispositivo todos os exercícios salvos desta conta?';
 }

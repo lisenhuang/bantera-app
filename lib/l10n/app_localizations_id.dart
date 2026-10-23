@@ -2445,4 +2445,11 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Lanjutkan audio';
+
+  @override
+  String get quickClearSavedTitle => 'Hapus semua latihan tersimpan?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Hapus semua latihan yang disimpan untuk akun ini dari perangkat ini?';
 }

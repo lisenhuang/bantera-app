@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "เปิดในเบราว์เซอร์",
   "quickPlaybackSpeed": "ความเร็วในการเล่น: {speed}× แตะเพื่อเปลี่ยน",
   "quickPauseAudio": "หยุดเสียงชั่วคราว",
-  "quickResumeAudio": "เล่นเสียงต่อ"
+  "quickResumeAudio": "เล่นเสียงต่อ",
+  "quickClearSavedTitle": "ลบแบบฝึกที่บันทึกไว้ทั้งหมดหรือไม่?",
+  "quickClearSavedBody": "ลบแบบฝึกทั้งหมดที่บันทึกไว้สำหรับบัญชีนี้ออกจากอุปกรณ์นี้หรือไม่?"
 }

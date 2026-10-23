@@ -2515,4 +2515,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Reprendre la lecture';
+
+  @override
+  String get quickClearSavedTitle =>
+      'Supprimer tous les exercices enregistrés ?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Supprimer de cet appareil tous les exercices enregistrés pour ce compte ?';
 }

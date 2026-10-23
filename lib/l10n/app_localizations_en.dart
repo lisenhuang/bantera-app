@@ -2503,4 +2503,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Resume audio';
+
+  @override
+  String get quickClearSavedTitle => 'Clear all saved practice?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Remove all saved practices for this account from this device?';
 }

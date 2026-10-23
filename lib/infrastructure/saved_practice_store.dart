@@ -37,6 +37,19 @@ class SavedPracticeStore {
         .toList();
   });
 
+  Future<void> clear(String owner) => _serial(() async {
+    if (owner.trim().isEmpty) {
+      throw ArgumentError('A saved practice requires an owner');
+    }
+    final target = await file();
+    final data = await _read(target);
+    data.remove(owner);
+    await target.parent.create(recursive: true);
+    final temporary = File('${target.path}.tmp');
+    await temporary.writeAsString(jsonEncode(data), flush: true);
+    await temporary.rename(target.path);
+  });
+
   Future<void> setSaved({
     required String owner,
     required Map<String, dynamic> exercise,

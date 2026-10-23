@@ -5,6 +5,7 @@ import 'package:app/core/auth_session_notifier.dart';
 import 'package:app/infrastructure/saved_practice_store.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/saved_practice_screen.dart';
+import 'package:app/presentation/quick_practice/quick_practice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,9 +18,10 @@ class MemoryStore extends SavedPracticeStore {
       'locale': 'en-US',
       'level': 'A0',
       'cue': 'Hello',
-      'cueAudioUrl': 'https://example.test/cue.wav',
+      'cueAudioUrl': '',
       'choices': [
-        {'text': 'Hi', 'audioUrl': 'https://example.test/reply.wav'},
+        {'text': 'Hi', 'audioUrl': ''},
+        {'text': 'Bye', 'audioUrl': ''},
       ],
     },
     {
@@ -34,6 +36,8 @@ class MemoryStore extends SavedPracticeStore {
   @override
   Future<List<Map<String, dynamic>>> load(String owner) async => [...entries];
   @override
+  Future<void> clear(String owner) async => entries.clear();
+  @override
   Future<void> setSaved({
     required String owner,
     required Map<String, dynamic> exercise,
@@ -45,7 +49,7 @@ class MemoryStore extends SavedPracticeStore {
 
 void main() {
   testWidgets(
-    'saved practice expands, plays, stops for calls/background, removes and clears on sign out',
+    'saved practice opens in Practice, restores the prior exercise, removes and clears on sign out',
     (tester) async {
       final directory = Directory.systemTemp.createTempSync(
         'saved-practice-ui-',
@@ -88,7 +92,6 @@ void main() {
         '${directory.path}/auth_session.json',
       ).writeAsStringSync(jsonEncode(session.toJson()));
       await tester.runAsync(AuthSessionNotifier.instance.initialize);
-      final owner = AuthSessionNotifier.instance.session!.cacheKey;
       final methods = <String>[];
       messenger.setMockMethodCallHandler(
         const MethodChannel('xyz.luan/audioplayers'),
@@ -118,24 +121,76 @@ void main() {
       );
       final store = MemoryStore();
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final requests = <String>[];
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SavedPracticeScreen(owner: owner, store: store),
+          home: QuickPracticeScreen.preview(
+            previewSavedStore: store,
+            previewExercise: const {
+              'id': 'current',
+              'locale': 'en-US',
+              'level': 'A1',
+              'cue': 'Original practice',
+              'cueAudioUrl': '',
+              'choices': [
+                {'text': 'Original answer', 'audioUrl': ''},
+                {'text': 'Other answer', 'audioUrl': ''},
+              ],
+            },
+            previewFeedback: const {'outcome': 'correct'},
+            previewApi: (path, payload) async {
+              requests.add(path);
+              return {
+                ...store.entries.first,
+                'id': 'fresh-review',
+                'currentLevel': 'A1',
+                'reviewMode': true,
+              };
+            },
+          ),
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Saved practice'));
+      await tester.pumpAndSettle();
       expect(find.text('Hello'), findsOneWidget);
-      expect(find.text('こんにちは'), findsOneWidget);
+      expect(find.byIcon(Icons.play_circle_outline), findsNothing);
+      expect(find.text('Delete'), findsNothing);
       await tester.tap(find.text('Hello'));
       await tester.pumpAndSettle();
-      expect(find.text('Hi'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.volume_up_outlined).first);
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(methods, contains('resume'));
-      methods.clear();
+      expect(requests, ['one/review']);
+      expect(find.byType(SavedPracticeScreen), findsNothing);
+      expect(find.byKey(const ValueKey('practice-play-cue')), findsOneWidget);
+      expect(find.text('Hello'), findsOneWidget);
+      expect(find.text('Original practice'), findsNothing);
+      // Removing from the Practice menu also asks first.
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove from saved'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(store.entries.length, 2);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(store.entries.length, 2);
+      // Next leaves review without skipping/completing the original exercise.
+      await tester.ensureVisible(find.text('Next practice').last);
+      await tester.tap(find.text('Next practice').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Original practice'), findsOneWidget);
+      expect(requests, ['one/review']);
+      expect(
+        find.byKey(const ValueKey('practice-pinned-next')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Saved practice'));
+      await tester.pumpAndSettle();
       await AiCallbackNotifier.instance.incoming({
         'callId': 'saved-test',
         'recipientUserId': session.userId,
@@ -146,36 +201,56 @@ void main() {
             1000,
       }, system: true);
       await tester.pump();
-      expect(methods, contains('stop'));
       expect(
-        tester
-            .widget<IconButton>(
-              find.widgetWithIcon(IconButton, Icons.volume_up_outlined).first,
-            )
-            .onPressed,
+        tester.widget<ListTile>(find.widgetWithText(ListTile, 'Hello')).onTap,
         isNull,
       );
       // Avoid sending a cancellation request; this test owns no backend callback.
       AiCallbackNotifier.instance.ringing = false;
       await AiCallbackNotifier.instance.close();
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.volume_up_outlined).first);
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 100));
-      methods.clear();
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      await tester.pump();
-      expect(methods, contains('stop'));
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pump();
-      await tester.tap(find.text('Remove from saved'));
+      await tester.drag(
+        find.byKey(const ValueKey('saved-practice-one')),
+        const Offset(-350, 0),
+      );
+      await tester.pumpAndSettle();
+      // Even a full swipe only reveals the explicit Delete action.
+      expect(store.entries.length, 2);
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      expect(store.entries.length, 2);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(store.entries.length, 2);
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('confirm-remove-saved-practice')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Hello'), findsNothing);
       expect(store.entries.length, 1);
+      await tester.tap(find.byKey(const ValueKey('clear-all-saved-practice')));
+      await tester.pumpAndSettle();
+      expect(find.text('Clear all saved practice?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(store.entries.length, 1);
+      await tester.tap(find.byKey(const ValueKey('clear-all-saved-practice')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('confirm-remove-saved-practice')),
+      );
+      await tester.pumpAndSettle();
+      expect(store.entries, isEmpty);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byKey(const ValueKey('clear-all-saved-practice')),
+            )
+            .onPressed,
+        isNull,
+      );
       await tester.runAsync(AuthSessionNotifier.instance.signOut);
       await tester.pumpAndSettle();
       expect(find.text('こんにちは'), findsNothing);

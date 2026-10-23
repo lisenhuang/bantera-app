@@ -2326,6 +2326,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickResumeAudio => '继续播放';
+
+  @override
+  String get quickClearSavedTitle => '清空所有已保存的练习？';
+
+  @override
+  String get quickClearSavedBody => '要从此设备中移除此账号保存的所有练习吗？';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4654,4 +4660,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickResumeAudio => '繼續播放';
+
+  @override
+  String get quickClearSavedTitle => '清空所有已儲存的練習？';
+
+  @override
+  String get quickClearSavedBody => '要從此裝置移除此帳號儲存的所有練習嗎？';
 }

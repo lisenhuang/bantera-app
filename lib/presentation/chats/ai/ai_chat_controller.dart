@@ -32,6 +32,7 @@ import '../../../domain/models/models.dart';
 import '../../../infrastructure/ai/ai_api_client.dart';
 import '../../../infrastructure/ai/ai_device_data.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
+import '../../../infrastructure/ai/ai_formatted_text_tool.dart';
 import '../../../infrastructure/translation_service.dart';
 
 class _VoiceReplyJob {
@@ -695,12 +696,13 @@ class AiChatController extends ChangeNotifier {
         [
           ...store.context(excluding: message.id),
           for (final prior in _replies)
-            if (prior != job && (prior.state.message?.text.isNotEmpty ?? false))
+            if (prior != job &&
+                (prior.state.message?.displayText.isNotEmpty ?? false))
               {
                 'role': 'model',
-                'text': prior.state.message!.text.substring(
+                'text': prior.state.message!.displayText.substring(
                   0,
-                  prior.state.message!.text.length.clamp(0, 4000),
+                  prior.state.message!.displayText.length.clamp(0, 4000),
                 ),
               },
         ],
@@ -712,6 +714,12 @@ class AiChatController extends ChangeNotifier {
       onToolCall: (call) async {
         if (!_jobActive(job)) {
           return {'unavailable': true};
+        }
+        if (call['name'] == AiFormattedTextTool.name) {
+          return _formattedText(
+            call['args'],
+            job.savedMessage ?? job.state.ensure(message.language),
+          );
         }
         if (call['name'] == AiEmojiTool.name) {
           return _emojis(call['args'], job.state.ensure(message.language));
@@ -946,7 +954,7 @@ class AiChatController extends ChangeNotifier {
         heardText = partial?.text ?? heardText;
         final hasPartial =
             partial != null &&
-            (partial.text.isNotEmpty ||
+            (partial.displayText.isNotEmpty ||
                 partial.images.isNotEmpty ||
                 partial.emojis.isNotEmpty ||
                 audioBytes != null);
@@ -1182,7 +1190,7 @@ class AiChatController extends ChangeNotifier {
   void translate(AiMessage message, {bool force = false}) {
     if (!supportsBuiltInTranslation ||
         !Platform.isIOS ||
-        message.text.trim().isEmpty ||
+        message.displayText.trim().isEmpty ||
         translating.contains(message.id)) {
       return;
     }
@@ -1218,7 +1226,7 @@ class AiChatController extends ChangeNotifier {
                   id: message.id,
                   startTimeMs: 0,
                   endTimeMs: 0,
-                  originalText: message.text,
+                  originalText: message.displayText,
                   translatedText: '',
                 ),
               ],
@@ -1744,6 +1752,16 @@ class AiChatController extends ChangeNotifier {
     };
   }
 
+  Future<Map<String, dynamic>> _formattedText(
+    dynamic args,
+    AiMessage message,
+  ) async {
+    final result = AiFormattedTextTool.deliver(args, message);
+    changed();
+    if (store.messages.contains(message)) await store.save();
+    return result;
+  }
+
   Future<Map<String, dynamic>> _emojis(dynamic args, AiMessage message) async {
     final result = AiEmojiTool.deliver(args, message);
     changed();
@@ -1760,7 +1778,9 @@ class AiChatController extends ChangeNotifier {
         if (!available || epoch != _epoch || !identical(_socket, destination)) {
           return;
         }
-        result = call['name'] == AiEmojiTool.name
+        result = call['name'] == AiFormattedTextTool.name
+            ? await _formattedText(call['args'], _liveBubble())
+            : call['name'] == AiEmojiTool.name
             ? await _emojis(call['args'], _liveBubble())
             : call['name'] == AiVocabulary.toolName
             ? await vocabulary.execute(
@@ -1831,7 +1851,8 @@ class AiChatController extends ChangeNotifier {
         pcm.isNotEmpty ||
         _liveModelMessage?.webSearchQuery != null ||
         _liveModelMessage?.imageSearchStatus != null ||
-        (_liveModelMessage?.emojis.isNotEmpty ?? false)) {
+        (_liveModelMessage?.emojis.isNotEmpty ?? false) ||
+        (_liveModelMessage?.formattedText?.isNotEmpty ?? false)) {
       final message = _liveBubble();
       message.text = text;
       message.durationMs = pcm.length * 1000 ~/ 48000;

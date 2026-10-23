@@ -1049,5 +1049,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "quickClearSavedTitle": "Clear all saved practice?",
+  "quickClearSavedBody": "Remove all saved practices for this account from this device?"
 }

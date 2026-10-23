@@ -64,6 +64,27 @@ void main() {
     },
   );
 
+  test('clear is account-scoped and serialized with later saves', () async {
+    await store.setSaved(
+      owner: 'alice',
+      exercise: exercise('one'),
+      saved: true,
+    );
+    await store.setSaved(owner: 'bob', exercise: exercise('two'), saved: true);
+    await Future.wait([
+      store.clear('alice'),
+      store.setSaved(owner: 'alice', exercise: exercise('three'), saved: true),
+    ]);
+    expect((await store.load('alice')).map((e) => e['id']), ['three']);
+    expect((await store.load('bob')).map((e) => e['id']), ['two']);
+    await store.clear('alice');
+    expect(
+      await SavedPracticeStore(file: () async => file).load('alice'),
+      isEmpty,
+    );
+    expect((await store.load('bob')).length, 1);
+  });
+
   test(
     'failed writes do not poison the queue or overwrite unreadable saves',
     () async {

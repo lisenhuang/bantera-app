@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "Im Browser öffnen",
   "quickPlaybackSpeed": "Wiedergabegeschwindigkeit: {speed}×. Zum Ändern tippen.",
   "quickPauseAudio": "Audio pausieren",
-  "quickResumeAudio": "Audio fortsetzen"
+  "quickResumeAudio": "Audio fortsetzen",
+  "quickClearSavedTitle": "Alle gespeicherten Übungen entfernen?",
+  "quickClearSavedBody": "Alle gespeicherten Übungen dieses Kontos von diesem Gerät entfernen?"
 }

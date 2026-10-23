@@ -2343,4 +2343,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get quickResumeAudio => '오디오 다시 재생';
+
+  @override
+  String get quickClearSavedTitle => '저장한 연습을 모두 삭제할까요?';
+
+  @override
+  String get quickClearSavedBody => '이 계정에 저장된 모든 연습을 이 기기에서 삭제할까요?';
 }

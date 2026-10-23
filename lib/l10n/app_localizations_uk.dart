@@ -2509,4 +2509,11 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get quickResumeAudio => 'Продовжити аудіо';
+
+  @override
+  String get quickClearSavedTitle => 'Видалити всі збережені вправи?';
+
+  @override
+  String get quickClearSavedBody =>
+      'Видалити з цього пристрою всі вправи, збережені для цього облікового запису?';
 }

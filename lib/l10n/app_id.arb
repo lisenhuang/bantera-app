@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "Buka di browser",
   "quickPlaybackSpeed": "Kecepatan pemutaran: {speed}×. Ketuk untuk mengubah.",
   "quickPauseAudio": "Jeda audio",
-  "quickResumeAudio": "Lanjutkan audio"
+  "quickResumeAudio": "Lanjutkan audio",
+  "quickClearSavedTitle": "Hapus semua latihan tersimpan?",
+  "quickClearSavedBody": "Hapus semua latihan yang disimpan untuk akun ini dari perangkat ini?"
 }

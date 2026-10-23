@@ -4429,6 +4429,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resume audio'**
   String get quickResumeAudio;
+
+  /// No description provided for @quickClearSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all saved practice?'**
+  String get quickClearSavedTitle;
+
+  /// No description provided for @quickClearSavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all saved practices for this account from this device?'**
+  String get quickClearSavedBody;
 }
 
 class _AppLocalizationsDelegate

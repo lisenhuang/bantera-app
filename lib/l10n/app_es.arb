@@ -725,5 +725,7 @@
   "aiOpenVideoBrowser": "Abrir en el navegador",
   "quickPlaybackSpeed": "Velocidad: {speed}×. Toca para cambiar.",
   "quickPauseAudio": "Pausar audio",
-  "quickResumeAudio": "Reanudar audio"
+  "quickResumeAudio": "Reanudar audio",
+  "quickClearSavedTitle": "¿Borrar todos los ejercicios guardados?",
+  "quickClearSavedBody": "¿Quitar de este dispositivo todos los ejercicios guardados de esta cuenta?"
 }
