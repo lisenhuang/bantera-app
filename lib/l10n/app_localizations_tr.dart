@@ -2380,6 +2380,22 @@ class AppLocalizationsTr extends AppLocalizations {
   String get leaderboardLoadMore => 'Daha fazla yükle';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return '$level seviyesine ulaştın';
+  }
+
+  @override
+  String get quickLevelUpBody =>
+      'Dinleme ve konuşma pratiğin sonuç veriyor. Her konuşmayla özgüvenini geliştirmeye devam et.';
+
+  @override
+  String get quickTranslationLanguageLabel => 'Çeviri dili';
+
+  @override
+  String get quickTranslationLanguageBody =>
+      'Bu öğrenme dili için çeviri dilini seçin. Seçiminizi bu cihazda hatırlayacağız.';
+
+  @override
   String get quickTranslationFallbackBody =>
       'Bu öğrenme dilinden ana dilinize çeviri kullanılamıyor. Başka bir dil seçin. Seçiminizi bu cihazda bu öğrenme dili için hatırlayacağız.';
 

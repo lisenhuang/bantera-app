@@ -2381,6 +2381,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String get leaderboardLoadMore => 'Tải thêm';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return 'Bạn đã đạt cấp độ $level';
+  }
+
+  @override
+  String get quickLevelUpBody =>
+      'Việc luyện nghe và nói đang mang lại kết quả. Hãy tiếp tục xây dựng sự tự tin qua từng cuộc trò chuyện.';
+
+  @override
+  String get quickTranslationLanguageLabel => 'Ngôn ngữ dịch';
+
+  @override
+  String get quickTranslationLanguageBody =>
+      'Chọn ngôn ngữ dịch cho ngôn ngữ đang học này. Chúng tôi sẽ ghi nhớ lựa chọn trên thiết bị này.';
+
+  @override
   String get quickTranslationFallbackBody =>
       'Không hỗ trợ dịch từ ngôn ngữ đang học này sang tiếng mẹ đẻ của bạn. Hãy chọn ngôn ngữ khác. Chúng tôi sẽ ghi nhớ lựa chọn cho ngôn ngữ đang học này trên thiết bị này.';
 

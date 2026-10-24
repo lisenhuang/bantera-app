@@ -76,6 +76,42 @@ class PracticeTranslationController extends ChangeNotifier {
     return null;
   }
 
+  Future<bool> changeTarget({
+    required String source,
+    required String owner,
+    required bool Function() canStart,
+    required Future<TranslationLocaleOption?> Function(
+      List<TranslationLocaleOption>,
+    )
+    chooseTarget,
+  }) async {
+    final generation = _generation;
+    bool current() => !_disposed && generation == _generation && canStart();
+    if (!supportsBuiltInTranslation || !current()) return false;
+    final options = await _service.fetchSupportedLocales(
+      sourceLocaleIdentifier: locale(source),
+    );
+    if (!current()) return false;
+    if (options.isEmpty) {
+      throw const TranslationException(
+        code: 'no_languages',
+        message: 'No supported translation languages.',
+      );
+    }
+    final choice = await chooseTarget(options);
+    if (!current() || choice == null) return false;
+    final selected = matching(options, choice.identifier);
+    if (selected == null) return false;
+    await _preferences.saveOverride(
+      owner,
+      languageKey(source),
+      selected.identifier,
+    );
+    if (!current()) return false;
+    clear();
+    return true;
+  }
+
   Future<void> load({
     required String source,
     required String target,
@@ -111,7 +147,11 @@ class PracticeTranslationController extends ChangeNotifier {
       if (!current()) return;
       try {
         if (!supportsBuiltInTranslation || !canStart()) return;
-        if (languageKey(source) == languageKey(target)) {
+        final override = owner == null
+            ? null
+            : await _preferences.loadOverride(owner, languageKey(source));
+        if (!current() || !canStart()) return;
+        if (override == null && languageKey(source) == languageKey(target)) {
           targetLocale = target;
           translations = Map.of(texts);
           return;
@@ -122,7 +162,7 @@ class PracticeTranslationController extends ChangeNotifier {
             sourceLocaleIdentifier: source,
           );
           if (!current() || !canStart()) return;
-          selected = matching(options, target);
+          selected = matching(options, override) ?? matching(options, target);
           if (selected == null && owner != null) {
             final saved = await _preferences.load(owner, languageKey(source));
             if (!current() || !canStart()) return;

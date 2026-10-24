@@ -8,6 +8,7 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onLongerDialogues,
     this.onSavePractice,
     this.onSavedPractice,
+    this.onTranslationLanguage,
     this.isSaved = false,
     this.playbackSpeed = 1.0,
     this.onCycleSpeed,
@@ -15,6 +16,7 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onLongerDialogues;
   final VoidCallback? onSavePractice;
   final VoidCallback? onSavedPractice;
+  final VoidCallback? onTranslationLanguage;
   final bool isSaved;
   final double playbackSpeed;
   final VoidCallback? onCycleSpeed;
@@ -93,7 +95,10 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                 height: buttonSize,
                 child: PopupMenuButton<String>(
                   key: const ValueKey('practice-more-menu'),
-                  enabled: onLongerDialogues != null || onSavedPractice != null,
+                  enabled:
+                      onLongerDialogues != null ||
+                      onSavedPractice != null ||
+                      onTranslationLanguage != null,
                   tooltip: l.more,
                   icon: const Icon(Icons.more_horiz),
                   position: PopupMenuPosition.under,
@@ -108,6 +113,8 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                         onSavedPractice?.call();
                       case 'dialogues':
                         onLongerDialogues?.call();
+                      case 'translation':
+                        onTranslationLanguage?.call();
                     }
                   },
                   itemBuilder: (_) => [
@@ -134,6 +141,14 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                         l.longerDialogues,
                       ),
                     ),
+                    if (onTranslationLanguage != null)
+                      PopupMenuItem(
+                        value: 'translation',
+                        child: _menuLabel(
+                          Icons.translate,
+                          l.quickTranslationLanguageLabel,
+                        ),
+                      ),
                   ],
                 ),
               ),

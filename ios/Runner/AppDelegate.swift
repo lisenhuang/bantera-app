@@ -686,11 +686,21 @@ private final class BanteraVideoProcessingBridge {
     Task {
       do {
         let inputURL = URL(fileURLWithPath: inputPath)
-        let response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
-          inputURL: inputURL,
-          localeIdentifier: localeIdentifier,
-          allowAutoCorrection: allowAutoCorrection
-        )
+        let response: [String: Any]
+        if !allowAutoCorrection,
+           BanteraIosVersionRouting.useSpeechTranscriberRoutingPath,
+           #available(iOS 26.0, *),
+           let attempt = try await BanteraVideoPreparationService().transcribeRecordedAttemptIfSupported(
+             inputURL: inputURL, localeIdentifier: localeIdentifier
+           ) {
+          response = attempt
+        } else {
+          response = try await BanteraLegacySpeechRecognitionService().transcribeRecordedAudio(
+            inputURL: inputURL,
+            localeIdentifier: localeIdentifier,
+            allowAutoCorrection: allowAutoCorrection
+          )
+        }
         DispatchQueue.main.async {
           result(response)
         }
@@ -1407,6 +1417,30 @@ private enum BanteraVideoProcessingError: LocalizedError {
   }
 }
 
+/// Only finalized SpeechTranscriber passages are appended. Tentative hypotheses
+/// are revisions, not extra speech; silence never ends the saved audio file.
+@available(iOS 26.0, *)
+struct BanteraFinalSpeechTranscript {
+  private var passages: [String] = []
+  private(set) var segments: [[String: Any]] = []
+
+  mutating func receive(_ attributedText: AttributedString, isFinal: Bool) {
+    guard isFinal else { return }
+    let text = String(attributedText.characters).trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !text.isEmpty else { return }
+    passages.append(text)
+    for run in attributedText.runs {
+      let word = String(attributedText[run.range].characters)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !word.isEmpty else { continue }
+      let confidence = run[AttributeScopes.SpeechAttributes.ConfidenceAttribute.self] ?? 0
+      segments.append(["text": word, "confidence": confidence])
+    }
+  }
+
+  var text: String { passages.joined(separator: " ") }
+}
+
 private final class BanteraLegacySpeechRecognitionService {
   static func logSupportedLocales() {
     let supported = SFSpeechRecognizer.supportedLocales().sorted {
@@ -1565,6 +1599,8 @@ private final class BanteraLegacySpeechRecognitionService {
   ) async throws -> TranscriptionOutcome {
     try await withCheckedThrowingContinuation { continuation in
       let request = SFSpeechURLRecognitionRequest(url: url)
+      // The compatibility engine has no dependable utterance-boundary signal in
+      // partial results. Never concatenate its cumulative/revised hypotheses.
       request.shouldReportPartialResults = false
       request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
 
@@ -1591,24 +1627,16 @@ private final class BanteraLegacySpeechRecognitionService {
         }
 
         guard let result else { return }
-        if result.isFinal {
-          let best = result.bestTranscription
-          let segments = best.segments.map { segment -> [String: Any] in
-            [
-              "text": segment.substring,
-              "confidence": Double(segment.confidence),
-            ]
-          }
-          finish(
-            .success(
-              TranscriptionOutcome(
-                text: best.formattedString,
-                segments: segments,
-                onDevice: requiresOnDeviceRecognition
-              )
-            )
-          )
+        let best = result.bestTranscription
+        let segments = best.segments.map { segment -> [String: Any] in
+          ["text": segment.substring, "confidence": Double(segment.confidence)]
         }
+        let outcome = TranscriptionOutcome(
+          text: best.formattedString,
+          segments: segments,
+          onDevice: requiresOnDeviceRecognition
+        )
+        if result.isFinal { finish(.success(outcome)) }
       }
     }
   }
@@ -1648,17 +1676,26 @@ private final class BanteraLegacySpeechRecognitionService {
 
 @available(iOS 26.0, *)
 private final class BanteraVideoPreparationService {
-  func transcribeRecordedAudio(
+  /// Practice uses final passages from the on-device file analyzer on supported
+  /// devices/locales. Do not silently substitute another dialect or engine after
+  /// transcription starts, or score a partial result after a processing error.
+  func transcribeRecordedAttemptIfSupported(
     inputURL: URL,
     localeIdentifier: String
-  ) async throws -> [String: Any] {
-    let locale = try await resolveLocale(identifier: localeIdentifier)
-    let transcript = try await transcribeAudioFile(at: inputURL, locale: locale)
-
+  ) async throws -> [String: Any]? {
+    guard SpeechTranscriber.isAvailable,
+          let locale = await SpeechTranscriber.supportedLocale(
+            equivalentTo: Locale(identifier: localeIdentifier)
+          ) else { return nil }
+    let transcript = try await transcribeAudioFile(
+      at: inputURL, locale: locale, recordedAttempt: true
+    )
     return [
       "transcriptText": transcript.text,
       "transcriptLanguage": transcript.localeIdentifier,
       "transcriptLanguageCode": transcript.languageCode,
+      "segments": transcript.segments,
+      "recognitionMode": "onDevice",
     ]
   }
 
@@ -1768,6 +1805,7 @@ private final class BanteraVideoPreparationService {
     let localeIdentifier: String
     let languageCode: String
     let cues: [TranscriptCuePayload]
+    var segments: [[String: Any]] = []
   }
 
   private func resolveLocale(identifier: String) async throws -> Locale {
@@ -1795,12 +1833,14 @@ private final class BanteraVideoPreparationService {
     throw BanteraVideoProcessingError.unsupportedLocale(identifier)
   }
 
-  private func ensureTranscriptionAssetsDownloaded(for locale: Locale) async throws -> SpeechTranscriber {
+  private func ensureTranscriptionAssetsDownloaded(
+    for locale: Locale, includeConfidence: Bool = false
+  ) async throws -> SpeechTranscriber {
     let transcriber = SpeechTranscriber(
       locale: locale,
       transcriptionOptions: [],
       reportingOptions: [],
-      attributeOptions: [.audioTimeRange]
+      attributeOptions: includeConfidence ? [.audioTimeRange, .transcriptionConfidence] : [.audioTimeRange]
     )
 
     let installed = await SpeechTranscriber.installedLocales
@@ -1822,13 +1862,16 @@ private final class BanteraVideoPreparationService {
 
   private func transcribeAudioFile(
     at inputURL: URL,
-    locale: Locale
+    locale: Locale,
+    recordedAttempt: Bool = false
   ) async throws -> PreparedTranscript {
     guard SpeechTranscriber.isAvailable else {
       throw BanteraVideoProcessingError.speechUnavailable
     }
 
-    let transcriber = try await ensureTranscriptionAssetsDownloaded(for: locale)
+    let transcriber = try await ensureTranscriptionAssetsDownloaded(
+      for: locale, includeConfidence: recordedAttempt
+    )
 
     let readableInputURL: URL
     var shouldDeleteReadableInput = false
@@ -1845,8 +1888,8 @@ private final class BanteraVideoPreparationService {
         )
       }
     }
-    if shouldDeleteReadableInput {
-      defer { try? FileManager.default.removeItem(at: readableInputURL) }
+    defer {
+      if shouldDeleteReadableInput { try? FileManager.default.removeItem(at: readableInputURL) }
     }
 
     let inputAudioFile: AVAudioFile
@@ -1875,8 +1918,8 @@ private final class BanteraVideoPreparationService {
       audioURL = readableInputURL
     }
 
-    if audioURL != readableInputURL {
-      defer { try? FileManager.default.removeItem(at: audioURL) }
+    defer {
+      if audioURL != readableInputURL { try? FileManager.default.removeItem(at: audioURL) }
     }
 
     let audioFile = try openTranscriptionAudioFile(
@@ -1888,11 +1931,16 @@ private final class BanteraVideoPreparationService {
     try await analyzer.start(inputAudioFile: audioFile, finishAfterFile: true)
 
     var cues: [TranscriptCuePayload] = []
+    var attempt = BanteraFinalSpeechTranscript()
     var processingError: Error?
 
     do {
       var resultIndex = 0
       for try await result in transcriber.results {
+        if recordedAttempt {
+          attempt.receive(result.text, isFinal: result.isFinal)
+          continue
+        }
         let resultText = String(result.text.characters)
         print("[Bantera] result[\(resultIndex)] text='\(resultText)' range=\(result.range.start.seconds)s-\(CMTimeRangeGetEnd(result.range).seconds)s")
         for (runIndex, run) in result.text.runs.enumerated() {
@@ -1934,6 +1982,22 @@ private final class BanteraVideoPreparationService {
       }
     } catch {
       processingError = error
+    }
+
+    if recordedAttempt {
+      if let processingError { throw processingError }
+      guard !attempt.text.isEmpty else {
+        throw BanteraVideoProcessingError.transcriptionFailed(
+          "No transcript could be generated. Check that the audio matches the chosen language."
+        )
+      }
+      return PreparedTranscript(
+        text: attempt.text,
+        localeIdentifier: locale.identifier(.bcp47),
+        languageCode: Self.languageCode(for: locale),
+        cues: [],
+        segments: attempt.segments
+      )
     }
 
     let normalizedCues = Self.normalizeTranscriptCues(cues)

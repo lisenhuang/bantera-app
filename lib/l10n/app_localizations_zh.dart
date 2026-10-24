@@ -2270,6 +2270,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get leaderboardLoadMore => '加载更多';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return '你已达到 $level';
+  }
+
+  @override
+  String get quickLevelUpBody => '你的听力和口语练习正在带来进步。继续通过每一次对话积累信心。';
+
+  @override
+  String get quickTranslationLanguageLabel => '翻译语言';
+
+  @override
+  String get quickTranslationLanguageBody => '选择此学习语言的翻译语言。我们会在此设备上记住你的选择。';
+
+  @override
   String get quickTranslationFallbackBody =>
       '此学习语言暂不支持翻译成你的母语。请选择其他语言。我们会在此设备上为该学习语言记住你的选择。';
 
@@ -4602,6 +4616,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get leaderboardLoadMore => '載入更多';
+
+  @override
+  String quickLevelUpTitle(String level) {
+    return '你已達到 $level';
+  }
+
+  @override
+  String get quickLevelUpBody => '你的聽力和口說練習正在帶來進步。繼續透過每一次對話累積信心。';
+
+  @override
+  String get quickTranslationLanguageLabel => '翻譯語言';
+
+  @override
+  String get quickTranslationLanguageBody => '選擇此學習語言的翻譯語言。我們會在此裝置上記住你的選擇。';
 
   @override
   String get quickTranslationFallbackBody =>

@@ -35,6 +35,12 @@ class PracticeTranslationPreferences {
     return data[jsonEncode([owner, language])] as String?;
   });
 
+  Future<String?> loadOverride(String owner, String language) =>
+      load(owner, 'selected:$language');
+
+  Future<void> saveOverride(String owner, String language, String target) =>
+      save(owner, 'selected:$language', target);
+
   Future<void> save(String owner, String language, String target) =>
       _serial(() async {
         final destination = await file();

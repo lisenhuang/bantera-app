@@ -27,6 +27,7 @@ void main() {
     double scale = 1,
     Locale locale = const Locale('en'),
     VoidCallback? onDialogues,
+    VoidCallback? onTranslation,
     TargetPlatform platform = TargetPlatform.iOS,
   }) async {
     await tester.binding.setSurfaceSize(Size(width, 400));
@@ -51,6 +52,7 @@ void main() {
             onLongerDialogues: onDialogues ?? () {},
             onSavePractice: () {},
             onSavedPractice: () {},
+            onTranslationLanguage: onTranslation,
           ),
         ),
       ),
@@ -58,6 +60,23 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('translation language is last and opens its action', (
+    tester,
+  ) async {
+    var opened = 0;
+    await mount(tester, onTranslation: () => opened++);
+    await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widgetList<PopupMenuItem<String>>(find.byType(PopupMenuItem<String>))
+          .map((x) => x.value),
+      ['save', 'saved', 'dialogues', 'translation'],
+    );
+    await tester.tap(find.text('Translation language'));
+    await tester.pumpAndSettle();
+    expect(opened, 1);
+  });
   testWidgets(
     'title stays centred without a goal control and menu stays right',
     (tester) async {

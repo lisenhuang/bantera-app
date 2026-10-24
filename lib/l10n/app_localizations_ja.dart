@@ -2270,6 +2270,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get leaderboardLoadMore => 'さらに読み込む';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return '$level に到達しました';
+  }
+
+  @override
+  String get quickLevelUpBody =>
+      'リスニングとスピーキングの練習が実を結んでいます。会話を重ねて、少しずつ自信をつけていきましょう。';
+
+  @override
+  String get quickTranslationLanguageLabel => '翻訳言語';
+
+  @override
+  String get quickTranslationLanguageBody =>
+      'この学習言語の翻訳先を選んでください。この端末に選択を保存します。';
+
+  @override
   String get quickTranslationFallbackBody =>
       'この学習言語から母語への翻訳は利用できません。別の言語を選んでください。この端末で学習言語ごとに選択を保存します。';
 

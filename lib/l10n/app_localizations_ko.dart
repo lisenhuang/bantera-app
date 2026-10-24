@@ -2286,6 +2286,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get leaderboardLoadMore => '더 불러오기';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return '$level에 도달했어요';
+  }
+
+  @override
+  String get quickLevelUpBody =>
+      '듣기와 말하기 연습의 성과가 나타나고 있어요. 대화를 하나씩 이어 가며 자신감을 키워 보세요.';
+
+  @override
+  String get quickTranslationLanguageLabel => '번역 언어';
+
+  @override
+  String get quickTranslationLanguageBody =>
+      '이 학습 언어의 번역 언어를 선택하세요. 이 기기에 선택한 언어를 저장합니다.';
+
+  @override
   String get quickTranslationFallbackBody =>
       '이 학습 언어에서 모국어로 번역할 수 없습니다. 다른 언어를 선택하세요. 이 기기에서 학습 언어별로 선택을 기억합니다.';
 

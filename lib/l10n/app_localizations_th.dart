@@ -2359,6 +2359,22 @@ class AppLocalizationsTh extends AppLocalizations {
   String get leaderboardLoadMore => 'โหลดเพิ่มเติม';
 
   @override
+  String quickLevelUpTitle(String level) {
+    return 'คุณถึงระดับ $level แล้ว';
+  }
+
+  @override
+  String get quickLevelUpBody =>
+      'การฝึกฟังและพูดของคุณกำลังเห็นผล สร้างความมั่นใจต่อไปผ่านการสนทนาทีละครั้ง';
+
+  @override
+  String get quickTranslationLanguageLabel => 'ภาษาคำแปล';
+
+  @override
+  String get quickTranslationLanguageBody =>
+      'เลือกภาษาคำแปลสำหรับภาษาที่เรียนนี้ เราจะจดจำตัวเลือกของคุณบนอุปกรณ์นี้';
+
+  @override
   String get quickTranslationFallbackBody =>
       'ไม่สามารถแปลจากภาษาที่เรียนนี้เป็นภาษาแม่ของคุณได้ โปรดเลือกภาษาอื่น เราจะจดจำตัวเลือกสำหรับภาษาที่เรียนนี้บนอุปกรณ์นี้';
 

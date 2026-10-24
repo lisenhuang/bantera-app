@@ -120,6 +120,96 @@ void main() {
       expect(await preferences.load('bob', 'yue'), 'en');
     },
   );
+  test(
+    'manual choice replaces fallback and survives relaunch and available native pair',
+    () async {
+      await load();
+      options.add(option('zh-Hans'));
+      expect(
+        await controller.changeTarget(
+          source: 'zh-HK',
+          owner: 'alice',
+          canStart: () => true,
+          chooseTarget: (available) async =>
+              available.firstWhere((x) => x.identifier == 'ja'),
+        ),
+        isTrue,
+      );
+      expect(await preferences.loadOverride('alice', 'yue'), 'ja');
+      controller.dispose();
+      controller = PracticeTranslationController(preferences: preferences);
+      await load();
+      expect(controller.targetLocale, 'ja');
+      expect(choices, 1);
+      expect(calls.last.arguments['targetLocaleIdentifier'], 'ja');
+      await load(owner: 'bob');
+      expect(controller.targetLocale, 'zh-Hans');
+      await load(source: 'ko');
+      expect(controller.targetLocale, 'zh-Hans');
+    },
+  );
+  test(
+    'manual change cancellation retains translations and previous choice',
+    () async {
+      await load();
+      final translations = Map.of(controller.translations);
+      expect(
+        await controller.changeTarget(
+          source: 'zh-HK',
+          owner: 'alice',
+          canStart: () => true,
+          chooseTarget: (_) async => null,
+        ),
+        isFalse,
+      );
+      expect(controller.translations, translations);
+      expect(await preferences.loadOverride('alice', 'yue'), isNull);
+    },
+  );
+  test(
+    'manual choice only offers supported pairs and downloads on reveal with consent',
+    () async {
+      options = [option('ja', installed: false)];
+      expect(
+        await controller.changeTarget(
+          source: 'zh-HK',
+          owner: 'alice',
+          canStart: () => true,
+          chooseTarget: (available) async => available.single,
+        ),
+        isTrue,
+      );
+      expect(calls.map((x) => x.method), ['getSupportedTranslationLocales']);
+      await load();
+      expect(confirmations, 1);
+      expect(controller.targetLocale, 'ja');
+      expect(calls.map((x) => x.method), contains('prepareTranslationAssets'));
+    },
+  );
+  test('account switch while manual picker is open prevents saving', () async {
+    final picked = Completer<TranslationLocaleOption?>();
+    final opened = Completer<void>();
+    final task = controller.changeTarget(
+      source: 'zh-HK',
+      owner: 'alice',
+      canStart: () => true,
+      chooseTarget: (_) {
+        opened.complete();
+        return picked.future;
+      },
+    );
+    await opened.future;
+    controller.clear();
+    picked.complete(
+      TranslationLocaleOption(
+        identifier: 'ja',
+        displayName: 'Japanese',
+        isInstalled: true,
+      ),
+    );
+    expect(await task, isFalse);
+    expect(await preferences.loadOverride('alice', 'yue'), isNull);
+  });
   test('removed fallback asks again using currently supported pairs', () async {
     await preferences.save('alice', 'yue', 'fr');
     await load();

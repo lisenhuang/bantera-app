@@ -1,3 +1,5 @@
+import '../../core/practice_review_service.dart';
+import 'practice_level_celebration.dart';
 import '../../core/apple_system_version.dart';
 import '../discover/discover_screen.dart';
 import '../../infrastructure/learning_language_catalog.dart';
@@ -101,6 +103,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool _confirmingNext = false;
   bool _translationRevealed = false;
   String? _currentLevel, _practiceLevel;
+  ({String before, String after})? _pendingLevelUp;
+  bool _celebratingLevel = false;
   Map<String, dynamic>? _savedSource;
   ({
     Map<String, dynamic>? exercise,
@@ -132,6 +136,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           (_playing != null && !_paused) ||
           _loadingAudio != null ||
           _confirmingNext ||
+          _celebratingLevel ||
           _translations.loading;
     }
   }
@@ -258,6 +263,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         unawaited(_load());
       }
       _requestTranslations();
+      unawaited(_showPendingLevelUp());
     }
   }
 
@@ -284,6 +290,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _translationTarget = target;
     unawaited(_discardReplay());
     _translations.clear();
+    _pendingLevelUp = null;
     _epoch++;
     _poll?.cancel();
     unawaited(_stopAudio());
@@ -565,8 +572,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         'supportsA0': true,
       });
       if (!mounted || epoch != _epoch) return;
-      _currentLevel =
+      final earnedLevel =
           response['currentLevel'] as String? ?? response['level'] as String?;
+      if (_savedSource == null &&
+          PracticeLevelPromotion.earned(_currentLevel, earnedLevel)) {
+        _pendingLevelUp = (before: _currentLevel!, after: earnedLevel!);
+      }
+      _currentLevel = earnedLevel;
       _practiceLevel =
           response['practiceLevel'] as String? ?? response['level'] as String?;
       if (response['status'] == 'ready') {
@@ -590,7 +602,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _waitingSince = null;
         });
         _requestTranslations();
-        if (_autoplay.take(_requestId) && _canUseAudio) {
+        if (_pendingLevelUp == null &&
+            _autoplay.take(_requestId) &&
+            _canUseAudio) {
           unawaited(_play('cue', response['cueAudioUrl'] as String));
         }
       } else {
@@ -602,6 +616,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _poll = Timer(const Duration(seconds: 4), _load);
         }
       }
+      unawaited(_showPendingLevelUp());
     } catch (_) {
       if (mounted && epoch == _epoch) {
         setState(() {
@@ -711,6 +726,47 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
+  Future<void> _showPendingLevelUp() async {
+    final promotion = _pendingLevelUp;
+    if (promotion == null ||
+        _celebratingLevel ||
+        !_canUseAudio ||
+        _busy ||
+        _recording ||
+        _confirmingNext ||
+        _loading ||
+        _savedSource != null ||
+        ModalRoute.of(context)?.isCurrent != true) {
+      return;
+    }
+    final epoch = _epoch, owner = _owner;
+    final route = ModalRoute.of(context);
+    _pendingLevelUp = null;
+    setState(() => _celebratingLevel = true);
+    await _stopAudio();
+    bool safe() =>
+        mounted &&
+        _canUseAudio &&
+        _epoch == epoch &&
+        _owner == owner &&
+        !_recording &&
+        route?.isCurrent == true;
+    if (!safe()) {
+      if (mounted) setState(() => _celebratingLevel = false);
+      return;
+    }
+    if (!mounted) return;
+    await PracticeReviewService.instance.requestAfterCelebration(
+      dismissed: showPracticeLevelCelebration(
+        context,
+        before: promotion.before,
+        after: promotion.after,
+      ),
+      isSafe: safe,
+    );
+    if (mounted) setState(() => _celebratingLevel = false);
+  }
+
   void _translationsChanged() {
     if (mounted) setState(() {});
   }
@@ -761,6 +817,68 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     );
     await WidgetsBinding.instance.endOfFrame;
     return selected;
+  }
+
+  Future<void> _changeTranslationLanguage() async {
+    final owner = _owner;
+    final source = _exerciseLocale;
+    final epoch = _epoch;
+    // PopupMenuButton completes before MainScaffold rebuilds active=true.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted ||
+        epoch != _epoch ||
+        owner != _owner ||
+        owner == null ||
+        source == null ||
+        !_canUseAudio ||
+        _busy ||
+        _recording ||
+        _confirmingNext ||
+        _translations.loading) {
+      return;
+    }
+    bool current() => _canUseAudio && _owner == owner && _epoch == epoch;
+    setState(() => _busy = true);
+    var changed = false;
+    try {
+      changed = await _translations.changeTarget(
+        source: source,
+        owner: owner,
+        canStart: current,
+        chooseTarget: (options) async {
+          if (!mounted || !current()) return null;
+          final selected = await showModalBottomSheet<TranslationLocaleOption>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            showDragHandle: true,
+            constraints: const BoxConstraints(maxWidth: 560),
+            builder: (_) => PracticeTranslationLanguageSheet(
+              options: options,
+              fallback: false,
+              selectedLocale: _translations.targetLocale,
+            ),
+          );
+          await WidgetsBinding.instance.endOfFrame;
+          return selected;
+        },
+      );
+    } catch (error) {
+      if (mounted && current()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is TranslationException && error.code == 'no_languages'
+                  ? l.practiceNoTranslationLanguagesFound
+                  : l.practiceCouldNotSaveTranslationLanguage,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted && _epoch == epoch) setState(() => _busy = false);
+    }
+    if (changed && current()) _requestTranslations();
   }
 
   Future<bool> _confirmTranslationDownload() async {
@@ -1244,6 +1362,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     } finally {
       if (mounted) {
         setState(() => _confirmingNext = false);
+        unawaited(_showPendingLevelUp());
         _requestTranslations();
         if (_exercise == null && widget.active && epoch == _epoch) {
           unawaited(_load());
@@ -1293,6 +1412,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     } finally {
       if (mounted) {
         setState(() => _confirmingNext = false);
+        unawaited(_showPendingLevelUp());
         _requestTranslations();
       }
     }
@@ -1419,6 +1539,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         onLongerDialogues: _recording || _busy || _confirmingNext
             ? null
             : _openLongerDialogues,
+        onTranslationLanguage:
+            supportsBuiltInTranslation &&
+                _owner != null &&
+                _exerciseLocale != null &&
+                !_callActive &&
+                !_recording &&
+                !_busy &&
+                !_confirmingNext &&
+                !_translations.loading
+            ? _changeTranslationLanguage
+            : null,
       ),
       bottomNavigationBar: hasCorrectAnswer
           ? DecoratedBox(

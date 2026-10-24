@@ -4328,6 +4328,30 @@ abstract class AppLocalizations {
   /// **'Load more'**
   String get leaderboardLoadMore;
 
+  /// No description provided for @quickLevelUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You reached {level}'**
+  String quickLevelUpTitle(String level);
+
+  /// No description provided for @quickLevelUpBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your listening and speaking practice is paying off. Keep building your confidence, one conversation at a time.'**
+  String get quickLevelUpBody;
+
+  /// No description provided for @quickTranslationLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation language'**
+  String get quickTranslationLanguageLabel;
+
+  /// No description provided for @quickTranslationLanguageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the translation language for this learning language. We’ll remember your choice on this device.'**
+  String get quickTranslationLanguageBody;
+
   /// No description provided for @quickTranslationFallbackBody.
   ///
   /// In en, this message translates to:

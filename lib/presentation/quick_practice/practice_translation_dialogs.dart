@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../shared/locale_flag.dart';
 
 class PracticeTranslationLanguageSheet extends StatefulWidget {
-  const PracticeTranslationLanguageSheet({super.key, required this.options});
+  const PracticeTranslationLanguageSheet({
+    super.key,
+    required this.options,
+    this.fallback = true,
+    this.selectedLocale,
+  });
   final List<TranslationLocaleOption> options;
+  final bool fallback;
+  final String? selectedLocale;
   @override
   State<PracticeTranslationLanguageSheet> createState() =>
       _LanguageSheetState();
@@ -52,7 +60,11 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
                       ),
                     ],
                   ),
-                  Text(l.quickTranslationFallbackBody),
+                  Text(
+                    widget.fallback
+                        ? l.quickTranslationFallbackBody
+                        : l.quickTranslationLanguageBody,
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                     decoration: InputDecoration(
@@ -71,8 +83,15 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
               itemBuilder: (context, index) {
                 final option = matches[index];
                 return ListTile(
+                  selected: option.identifier == widget.selectedLocale,
                   key: ValueKey(
                     'practice-translation-language-${option.identifier}',
+                  ),
+                  leading: ExcludeSemantics(
+                    child: Text(
+                      _translationLanguageFlag(option.identifier),
+                      style: const TextStyle(fontSize: 26),
+                    ),
                   ),
                   title: Text(option.displayName),
                   subtitle: Text(
@@ -81,7 +100,9 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
                         : l.practiceTranslationDownload,
                   ),
                   trailing: Icon(
-                    option.isInstalled
+                    option.identifier == widget.selectedLocale
+                        ? Icons.check
+                        : option.isInstalled
                         ? Icons.check_circle_outline
                         : Icons.download_outlined,
                   ),
@@ -94,4 +115,38 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
       ),
     );
   }
+}
+
+// Regional locales can use their own flag. Broad languages such as English,
+// Arabic and Chinese use a globe rather than implying a particular country.
+String _translationLanguageFlag(String identifier) {
+  final parts = identifier.toLowerCase().split(RegExp(r'[-_]'));
+  final hasRegion = parts
+      .skip(1)
+      .any((part) => RegExp(r'^[a-z]{2}$').hasMatch(part));
+  const countryAssociatedLanguages = {
+    'ja',
+    'ko',
+    'it',
+    'pl',
+    'th',
+    'vi',
+    'id',
+    'tr',
+    'uk',
+    'sv',
+    'nb',
+    'da',
+    'fi',
+    'cs',
+    'hu',
+    'he',
+    'sk',
+    'hr',
+    'bg',
+  };
+  if (hasRegion || countryAssociatedLanguages.contains(parts.first)) {
+    return flagEmojiForLocale(identifier);
+  }
+  return '🌐';
 }

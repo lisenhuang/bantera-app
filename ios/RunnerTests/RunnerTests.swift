@@ -4,10 +4,51 @@ import Flutter
 import UIKit
 import XCTest
 import SwiftUI
+import Speech
 import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testFinalSpeechPassagesKeepBothSidesOfSilentPause() throws {
+    guard #available(iOS 26.0, *) else { throw XCTSkip("SpeechTranscriber requires iOS 26") }
+    var transcript = BanteraFinalSpeechTranscript()
+    var first = AttributedString("最好提前联系酒店")
+    first[AttributeScopes.SpeechAttributes.ConfidenceAttribute.self] = 0.85
+    var second = AttributedString("告诉他们大概的到达时间并确认能否保留房间")
+    second[AttributeScopes.SpeechAttributes.ConfidenceAttribute.self] = 0.4
+    transcript.receive(first, isFinal: true)
+    // Silence produces no result; the following finalized passage is new speech.
+    transcript.receive(second, isFinal: true)
+    XCTAssertEqual(transcript.text, "最好提前联系酒店 告诉他们大概的到达时间并确认能否保留房间")
+    XCTAssertEqual(transcript.segments.count, 2)
+    XCTAssertEqual(transcript.segments.last?["confidence"] as? Double, 0.4)
+  }
+
+  func testFinalSpeechIgnoresRevisedHypothesesForChineseSentence() throws {
+    guard #available(iOS 26.0, *) else { throw XCTSkip("SpeechTranscriber requires iOS 26") }
+    let sentence = "最好提前联系酒店告诉他们大概的到达时间并确认能否保留房间"
+    var transcript = BanteraFinalSpeechTranscript()
+    transcript.receive(AttributedString("最好提前联系酒"), isFinal: false)
+    transcript.receive(AttributedString(sentence), isFinal: false)
+    // Finalization may change punctuation/timing, but contributes exactly once.
+    transcript.receive(AttributedString(sentence + "。"), isFinal: true)
+    XCTAssertEqual(transcript.text, sentence + "。")
+    XCTAssertEqual(transcript.segments.count, 1)
+  }
+
+  func testFinalSpeechPreservesGenuineRepetitionsAndNewAttemptIsEmpty() throws {
+    guard #available(iOS 26.0, *) else { throw XCTSkip("SpeechTranscriber requires iOS 26") }
+    var firstAttempt = BanteraFinalSpeechTranscript()
+    firstAttempt.receive(AttributedString("Thank you"), isFinal: true)
+    firstAttempt.receive(AttributedString("Thank you"), isFinal: true)
+    XCTAssertEqual(firstAttempt.text, "Thank you Thank you")
+    var secondAttempt = BanteraFinalSpeechTranscript()
+    XCTAssertTrue(secondAttempt.text.isEmpty)
+    XCTAssertTrue(secondAttempt.segments.isEmpty)
+    secondAttempt.receive(AttributedString("Thank you"), isFinal: true)
+    XCTAssertEqual(secondAttempt.text, "Thank you")
+  }
+
   @MainActor
   func testUnavailableLiveActivitiesKeepCallChannelSafe() throws {
     let messenger = CompatibilityTestMessenger()
