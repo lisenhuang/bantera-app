@@ -9,6 +9,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
     required this.choices,
     required this.locale,
     this.choice,
+    this.textEquivalent = false,
     this.onReplay,
     this.replayEnabled = true,
     this.replaying = false,
@@ -19,6 +20,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
   final String transcript, locale;
   final List<String> choices, uncertainWords;
   final int? choice;
+  final bool textEquivalent;
   final VoidCallback? onReplay;
   final bool replayEnabled, replaying, replayPaused, replayLoading;
 
@@ -32,6 +34,7 @@ class PracticeTranscriptFeedback extends StatelessWidget {
       choices,
       locale,
       matchedChoice: choice,
+      textEquivalent: textEquivalent,
       uncertainWords: uncertainWords,
     );
     final highlighted = diff.heard.isNotEmpty || diff.reference.isNotEmpty;

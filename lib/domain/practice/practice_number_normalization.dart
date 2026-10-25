@@ -1,13 +1,16 @@
 /// Conservative number, time and currency equivalence for ASR output.
-/// Keep this aligned with PracticeNumberNormalization.cs and shared fixtures.
+/// Local display fallback for older servers. The authoritative backend also
+/// handles locale-aware spellout and returns exact text-equivalence metadata.
 String normalizePracticeNumbers(String text, String locale) {
   final language = locale.toLowerCase().split('-').first;
   if (language == 'en') return _englishCurrency(text);
   if (language == 'ja') {
-    // ASR can write 三時 as 3時. Only explicit clock counters qualify;
-    // leave kanji inside names and ordinary words unchanged.
+    // ASR can write 二十歳 as 20歳, or 三時 as 3時. Require an
+    // explicit numeric counter rather than rewriting kanji in ordinary words.
     return text.replaceAllMapped(
-      RegExp(r'[〇零一二三四五六七八九十百千万億兆]+(?=[時分秒])'),
+      RegExp(
+        r'[〇零一二三四五六七八九十百千万億兆]+(?=歳|才|円|人|個|本|枚|匹|冊|台|回|階|番|丁目|年|か月|ヶ月|月|日|週間|週|時間|時|分|秒|パーセント)',
+      ),
       (m) => normalizePracticeNumbers(m[0]!, 'zh'),
     );
   }

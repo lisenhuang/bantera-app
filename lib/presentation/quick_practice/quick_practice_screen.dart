@@ -2246,6 +2246,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                   .toList(),
               locale: _exerciseLocale ?? 'en',
               choice: _feedback!['choice'] as int?,
+              textEquivalent: _feedback!['textEquivalent'] == true,
               uncertainWords:
                   (_feedback!['uncertainWords'] as List?)?.cast<String>() ?? [],
             ),

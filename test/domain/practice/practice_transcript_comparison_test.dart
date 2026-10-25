@@ -12,6 +12,63 @@ void main() {
     expect(diff.reference, isEmpty);
   });
 
+  test('Japanese age formatting is not highlighted as a spoken error', () {
+    final diff = PracticeTranscriptComparison.compare(
+      '20歳です。',
+      ['二十歳です。', '東京です。'],
+      'ja-JP',
+      matchedChoice: 0,
+    );
+    expect(diff.heard, isEmpty);
+    expect(diff.reference, isEmpty);
+  });
+
+  for (final row in [
+    ('fr-FR', 'Cela coûte 20 euros.', 'Cela coûte vingt euros.'),
+    ('en-NZ', 'It opens at 8:00am.', 'It opens at eight am.'),
+    ('ko-KR', '저는 20살입니다.', '저는 스무 살입니다.'),
+  ]) {
+    test(
+      'server numeric equivalence suppresses formatting differences ${row.$1}',
+      () {
+        final diff = PracticeTranscriptComparison.compare(
+          row.$2,
+          [row.$3, 'Unrelated alternative.'],
+          row.$1,
+          matchedChoice: 0,
+          textEquivalent: true,
+        );
+        expect(diff.heard, isEmpty);
+        expect(diff.reference, isEmpty);
+      },
+    );
+  }
+
+  test('server equivalence requires a valid explicit matched choice', () {
+    for (final choice in [null, -1, 2]) {
+      final diff = PracticeTranscriptComparison.compare(
+        'Cela coûte 20 euros.',
+        ['Cela coûte vingt euros.', 'Demain matin.'],
+        'fr-FR',
+        matchedChoice: choice,
+        textEquivalent: true,
+      );
+      expect(diff.heard, isNotEmpty);
+      expect(diff.reference, isNotEmpty);
+    }
+  });
+
+  test('missing server equivalence retains comparison for old backends', () {
+    final diff = PracticeTranscriptComparison.compare(
+      'Cela coûte 20 euros.',
+      ['Cela coûte vingt euros.', 'Demain matin.'],
+      'fr-FR',
+      matchedChoice: 0,
+    );
+    expect(diff.heard, isNotEmpty);
+    expect(diff.reference, isNotEmpty);
+  });
+
   List<String> parts(String text, List<TranscriptRange> ranges) =>
       ranges.map((r) => text.substring(r.start, r.end)).toSet().toList();
   test('highlights a different word while retaining original offsets', () {
@@ -50,6 +107,19 @@ void main() {
       uncertainWords: ['Sam'],
     );
     expect(parts('I am Sam.', result.heard), ['Sam']);
+  });
+  test('server numeric equivalence keeps uncertain speech visible', () {
+    const text = 'Cela coûte 20 euros.';
+    final diff = PracticeTranscriptComparison.compare(
+      text,
+      ['Cela coûte vingt euros.', 'Demain matin.'],
+      'fr-FR',
+      matchedChoice: 0,
+      textEquivalent: true,
+      uncertainWords: ['20'],
+    );
+    expect(parts(text, diff.heard), ['20']);
+    expect(diff.reference, isEmpty);
   });
   test('Cantonese equivalent time is not highlighted as a wrong phrase', () {
     const text = '得啊我6:30可以';

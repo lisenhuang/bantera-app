@@ -23,6 +23,7 @@ class PracticeTranscriptComparison {
     List<String> choices,
     String locale, {
     int? matchedChoice,
+    bool textEquivalent = false,
     List<String> uncertainWords = const [],
   }) {
     final actual = _units(transcript, locale);
@@ -46,7 +47,13 @@ class PracticeTranscriptComparison {
       }
     }
     final heard = <TranscriptRange>[], reference = <TranscriptRange>[];
+    // The server has broader locale-aware numeric rules than older clients.
+    // Trust equivalence only for its explicit matched choice; keep the raw text
+    // and uncertainty highlights, and preserve local fallback for old servers.
+    final serverEquivalent =
+        textEquivalent && matchedChoice != null && choice == matchedChoice;
     if (choice != null &&
+        !serverEquivalent &&
         PracticeAnswerMatcher.normalise(transcript, locale) !=
             PracticeAnswerMatcher.normalise(choices[choice], locale)) {
       final expected = options[choice];

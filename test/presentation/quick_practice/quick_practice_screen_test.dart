@@ -962,6 +962,43 @@ void main() {
       matchesGoldenFile('goldens/practice-transcript.png'),
     );
   });
+  for (final confirmed in [false, true]) {
+    testWidgets('server numeric equivalence reaches feedback: $confirmed', (
+      tester,
+    ) async {
+      const raw = 'Cela coûte 20 euros.';
+      await mount(
+        tester,
+        material: {
+          ...exercise,
+          'locale': 'fr-FR',
+          'choices': [
+            {'text': 'Cela coûte vingt euros.', 'audioUrl': ''},
+            {'text': 'Demain matin.', 'audioUrl': ''},
+          ],
+        },
+        feedback: {
+          'outcome': 'correct',
+          'choice': 0,
+          'transcript': raw,
+          if (confirmed) 'textEquivalent': true,
+        },
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('practice-heard-text')),
+      );
+      await tester.pumpAndSettle();
+      final heard = tester.widget<Text>(
+        find.byKey(const ValueKey('practice-heard-text')),
+      );
+      expect(heard.textSpan!.toPlainText(), raw);
+      expect(
+        find.text('Compare with this reply'),
+        confirmed ? findsNothing : findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('empty recognition gives an explicit empty state', (
     tester,
   ) async {
