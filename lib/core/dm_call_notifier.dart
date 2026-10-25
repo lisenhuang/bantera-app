@@ -9,6 +9,7 @@ import '../infrastructure/auth_api_client.dart';
 import '../infrastructure/chat_api_client.dart';
 import '../infrastructure/callkit_service.dart';
 import '../infrastructure/push_notifications_service.dart';
+import '../infrastructure/region_service.dart';
 import 'auth_session_notifier.dart';
 import 'ai_callback_notifier.dart';
 import '../presentation/chats/ai/ai_chat_screen.dart';
@@ -116,6 +117,11 @@ class DmCallNotifier extends ChangeNotifier {
     }
 
     final generation = _generation;
+    if (!await RegionService.instance.isOutsideMainlandChina(refresh: true) ||
+        _generation != generation ||
+        _phase != DmCallPhase.idle) {
+      return;
+    }
     if (!await _ensurePermissions(mediaKind)) {
       notifyListeners();
       return;

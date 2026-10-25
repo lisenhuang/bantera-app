@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/chat_session_notifier.dart';
+import '../../infrastructure/region_service.dart';
 import '../../core/user_profile_notifier.dart';
 import '../chats/chat_conversation_screen.dart';
 import 'word_activity_image_encoder.dart';
@@ -58,9 +59,15 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
   @override
   void initState() {
     super.initState();
+    RegionService.instance.addListener(_regionChanged);
+    RegionService.instance.isOutsideMainlandChina();
     _ownerId = AuthSessionNotifier.instance.session?.userId;
     _nativeLanguage = UserProfileNotifier.instance.nativeLanguage;
     AuthSessionNotifier.instance.addListener(_accountChanged);
+  }
+
+  void _regionChanged() {
+    if (mounted) setState(() {});
   }
 
   void _accountChanged() {
@@ -75,6 +82,7 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
   @override
   void dispose() {
     AuthSessionNotifier.instance.removeListener(_accountChanged);
+    RegionService.instance.removeListener(_regionChanged);
     super.dispose();
   }
 
@@ -203,7 +211,11 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
   }
 
   Future<void> _shareToGroup(String groupKind, String language) async {
-    if (_busy || _preparing || _ownerId == null || language.isEmpty) {
+    if (!RegionService.instance.showSocialChatFeatures ||
+        _busy ||
+        _preparing ||
+        _ownerId == null ||
+        language.isEmpty) {
       return;
     }
     setState(() => _busy = true);
@@ -211,7 +223,8 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       final bytes = await _jpeg();
-      if (!mounted ||
+      if (!RegionService.instance.showSocialChatFeatures ||
+          !mounted ||
           _ownerId != AuthSessionNotifier.instance.session?.userId) {
         return;
       }
@@ -226,7 +239,8 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
         groupKind: groupKind,
         ownerId: _ownerId!,
       );
-      if (!mounted ||
+      if (!RegionService.instance.showSocialChatFeatures ||
+          !mounted ||
           _ownerId != AuthSessionNotifier.instance.session?.userId) {
         return;
       }
@@ -329,7 +343,8 @@ class _WordActivityShareScreenState extends State<WordActivityShareScreen> {
                     icon: const Icon(Icons.download_outlined),
                     label: Text(l10n.wordActivitySavePhotos),
                   ),
-                  if (_ownerId != null)
+                  if (_ownerId != null &&
+                      RegionService.instance.showSocialChatFeatures)
                     for (final destination in [
                       (kind: 'learning', language: widget.learningLanguage),
                       (kind: 'native', language: _nativeLanguage),

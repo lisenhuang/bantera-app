@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 
 import '../core/app_locale.dart';
+import '../core/app_resume_notifier.dart';
 import '../core/settings_notifier.dart';
 import 'transcription_locale_option.dart';
 
@@ -15,8 +16,10 @@ import 'transcription_locale_option.dart';
 /// country (`loc=CN`), so no third-party geo-IP service is involved. Until the
 /// lookup confirms a country other than CN, the user is treated as being in
 /// mainland China.
-class RegionService {
-  RegionService._() : _countryLookup = null, _appLocale = null;
+class RegionService extends ChangeNotifier {
+  RegionService._() : _countryLookup = null, _appLocale = null {
+    AppResumeNotifier.instance.addListener(_refreshCountry);
+  }
 
   @visibleForTesting
   RegionService.forTesting({
@@ -37,17 +40,44 @@ class RegionService {
   static const _timeout = Duration(seconds: 5);
 
   Future<bool>? _outsideMainlandChina;
+  bool _lookupPending = false;
+  bool _confirmedOutsideMainlandChina = false;
+
+  /// IP-only visibility for group chats and DM call controls, independent of
+  /// the app's display, native and learning languages. Hidden during startup.
+  bool get showSocialChatFeatures => _confirmedOutsideMainlandChina;
+
+  void _refreshCountry() {
+    unawaited(isOutsideMainlandChina(refresh: true));
+  }
 
   /// True only once the IP lookup confirms a country other than CN. Resolved
-  /// once per app session; a failed lookup returns false and is retried on the
-  /// next call.
-  Future<bool> isOutsideMainlandChina() {
-    return _outsideMainlandChina ??= (_countryLookup ?? _lookupCountry)().then((
-      country,
-    ) {
-      if (country == null) _outsideMainlandChina = null;
-      return country != null && country != 'CN';
-    });
+  /// per foreground session; resume refreshes the IP after network changes.
+  /// Failed lookups hide the controls and are retried on the next call.
+  Future<bool> isOutsideMainlandChina({bool refresh = false}) {
+    if (refresh && !_lookupPending) _outsideMainlandChina = null;
+    return _outsideMainlandChina ??= _resolveCountry();
+  }
+
+  Future<bool> _resolveCountry() async {
+    _lookupPending = true;
+    String? country;
+    try {
+      final value = await Future<String?>.sync(
+        _countryLookup ?? _lookupCountry,
+      );
+      country = value == null ? null : parseTraceCountry('loc=$value');
+    } catch (_) {
+      // Injected lookups and unexpected transport failures also fail closed.
+    }
+    _lookupPending = false;
+    if (country == null) _outsideMainlandChina = null;
+    final outside = country != null && country != 'CN';
+    if (_confirmedOutsideMainlandChina != outside) {
+      _confirmedOutsideMainlandChina = outside;
+      notifyListeners();
+    }
+    return outside;
   }
 
   Future<String?> _lookupCountry() async {
@@ -75,7 +105,9 @@ class RegionService {
       final trimmed = line.trim();
       if (trimmed.startsWith('loc=')) {
         final code = trimmed.substring(4).trim().toUpperCase();
-        return RegExp(r'^[A-Z]{2}$').hasMatch(code) ? code : null;
+        return RegExp(r'^[A-Z]{2}$').hasMatch(code) && code != 'XX'
+            ? code
+            : null;
       }
     }
     return null;

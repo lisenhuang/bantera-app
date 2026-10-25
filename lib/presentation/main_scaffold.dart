@@ -18,6 +18,7 @@ import '../core/practice_review_service.dart';
 import '../domain/models/chat_models.dart';
 import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
+import '../infrastructure/region_service.dart';
 import '../l10n/app_localizations.dart';
 import 'chats/chats_screen.dart';
 import 'profile/profile_screen.dart';
@@ -51,6 +52,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   @override
   void initState() {
     super.initState();
+    RegionService.instance.addListener(_updateUnread);
+    unawaited(RegionService.instance.isOutsideMainlandChina());
     WordActivityNotifier.instance.addListener(_schedulePracticeReview);
     WordActivityNotifier.instance.retain();
     practiceInteractionBusy.addListener(_schedulePracticeReview);
@@ -128,7 +131,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
 
   void _updateUnread() {
     final hasUnread =
-        _groups.any((t) => t.unreadCount > 0) ||
+        (RegionService.instance.showSocialChatFeatures &&
+            _groups.any((t) => t.unreadCount > 0)) ||
         _dms.any((t) => t.unreadCount > 0);
     if (hasUnread != _hasUnreadChats) {
       setState(() => _hasUnreadChats = hasUnread);
@@ -216,6 +220,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
 
   @override
   void dispose() {
+    RegionService.instance.removeListener(_updateUnread);
     _reviewTimer?.cancel();
     WordActivityNotifier.instance.removeListener(_schedulePracticeReview);
     WordActivityNotifier.instance.release();

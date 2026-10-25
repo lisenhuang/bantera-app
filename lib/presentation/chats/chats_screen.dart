@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/chat_session_notifier.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
+import '../../infrastructure/region_service.dart';
 import 'chat_discovery.dart';
 import '../../domain/models/chat_models.dart';
 import '../../l10n/app_localizations.dart';
@@ -30,18 +31,23 @@ class _ChatsScreenState extends State<ChatsScreen> {
     _chat,
     UserProfileNotifier.instance,
     AuthSessionNotifier.instance,
+    RegionService.instance,
   ]);
   int _avatarRefreshToken = 0;
 
   @override
   void didUpdateWidget(ChatsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.active && !oldWidget.active) _avatarRefreshToken++;
+    if (widget.active && !oldWidget.active) {
+      _avatarRefreshToken++;
+      RegionService.instance.isOutsideMainlandChina(refresh: true);
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    RegionService.instance.isOutsideMainlandChina();
     Future<void>.microtask(
       () => _chat.refreshBootstrap(showLoadingState: false),
     );
@@ -79,7 +85,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
         body: RefreshIndicator(
           onRefresh: () async {
             setState(() => _avatarRefreshToken++);
-            await _chat.refreshBootstrap();
+            await Future.wait([
+              RegionService.instance.isOutsideMainlandChina(refresh: true),
+              _chat.refreshBootstrap(),
+            ]);
           },
           child: ListenableBuilder(
             listenable: _chat,
@@ -243,7 +252,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return <_ChatHomeItem>[
       _ChatSectionHeaderItem(l10n.chatOnlineSection),
       const _ChatAiItem(),
-      ...groups.map((thread) => _ChatThreadItem(thread)),
+      if (RegionService.instance.showSocialChatFeatures)
+        ...groups.map((thread) => _ChatThreadItem(thread)),
       ...visibleOnlineUsers.map((user) => _ChatUserItem(user)),
       _ChatSectionHeaderItem(l10n.chatDirectMessagesSection),
       ...sortedDms.map(

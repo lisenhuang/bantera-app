@@ -7,6 +7,99 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('IP-based chat visibility', () {
+    for (final country in ['CN', ' cn ', null, 'XX', 'T1', 'invalid']) {
+      test('hides group chats and DM call controls for $country', () async {
+        final service = RegionService.forTesting(
+          countryLookup: () async => country,
+          appLocale: () => const Locale('en'),
+        );
+        expect(service.showSocialChatFeatures, isFalse);
+        expect(await service.isOutsideMainlandChina(), isFalse);
+        expect(service.showSocialChatFeatures, isFalse);
+        service.dispose();
+      });
+    }
+
+    for (final country in ['HK', 'MO', 'TW', 'NZ', 'US']) {
+      test('shows chat features for $country even with Chinese UI', () async {
+        final service = RegionService.forTesting(
+          countryLookup: () async => country,
+          appLocale: () => const Locale('zh', 'CN'),
+        );
+        expect(service.showSocialChatFeatures, isFalse);
+        expect(await service.isOutsideMainlandChina(), isTrue);
+        expect(service.showSocialChatFeatures, isTrue);
+        service.dispose();
+      });
+    }
+
+    test(
+      'notifies when a network change hides or restores chat features',
+      () async {
+        String? country = 'NZ';
+        final service = RegionService.forTesting(
+          countryLookup: () async => country,
+          appLocale: () => const Locale('en'),
+        );
+        final changes = <bool>[];
+        service.addListener(() => changes.add(service.showSocialChatFeatures));
+        await service.isOutsideMainlandChina();
+        country = 'CN';
+        await service.isOutsideMainlandChina(refresh: true);
+        country = 'HK';
+        await service.isOutsideMainlandChina(refresh: true);
+        country = null;
+        await service.isOutsideMainlandChina(refresh: true);
+        country = 'NZ';
+        await service.isOutsideMainlandChina();
+        expect(changes, [true, false, true, false, true]);
+        service.dispose();
+      },
+    );
+
+    test(
+      'deduplicates in-flight requests and never flashes controls at startup',
+      () async {
+        final country = Completer<String?>();
+        var requests = 0;
+        final service = RegionService.forTesting(
+          countryLookup: () {
+            requests++;
+            return country.future;
+          },
+          appLocale: () => const Locale('en'),
+        );
+        final first = service.isOutsideMainlandChina();
+        final second = service.isOutsideMainlandChina(refresh: true);
+        expect(service.showSocialChatFeatures, isFalse);
+        expect(requests, 1);
+        country.complete('CN');
+        expect(await first, isFalse);
+        expect(await second, isFalse);
+        service.dispose();
+      },
+    );
+
+    test(
+      'retries a thrown lookup instead of permanently caching failure',
+      () async {
+        var requests = 0;
+        final service = RegionService.forTesting(
+          countryLookup: () {
+            if (++requests == 1) throw StateError('offline');
+            return Future.value('NZ');
+          },
+          appLocale: () => const Locale('en'),
+        );
+        expect(await service.isOutsideMainlandChina(), isFalse);
+        expect(await service.isOutsideMainlandChina(), isTrue);
+        expect(requests, 2);
+        service.dispose();
+      },
+    );
+  });
+
   const options = [
     TranscriptionLocaleOption(
       identifier: 'zh-CN',

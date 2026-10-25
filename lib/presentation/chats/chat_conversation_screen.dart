@@ -18,6 +18,7 @@ import '../../domain/activity/listening_word_tracker.dart';
 import '../../domain/activity/voice_word_progress.dart';
 import '../../domain/models/chat_models.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/region_service.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -78,6 +79,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(RegionService.instance.isOutsideMainlandChina());
     WordActivityNotifier.instance.retain();
     _threadId = widget.thread?.threadId;
     _groupKind = _inferGroupKind(widget.thread);
@@ -138,8 +140,20 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         : (_partner?.name ?? widget.thread?.title ?? l10n.chatsTitle);
 
     return ListenableBuilder(
-      listenable: _chat,
+      listenable: Listenable.merge([_chat, RegionService.instance]),
       builder: (context, _) {
+        if (_isGroup && !RegionService.instance.showSocialChatFeatures) {
+          // Do not reveal cached group content through an already-open route.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                !RegionService.instance.showSocialChatFeatures &&
+                ModalRoute.of(context)?.isCurrent == true &&
+                Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          });
+          return Scaffold(appBar: AppBar(title: Text(l10n.chatsTitle)));
+        }
         return Scaffold(
           appBar: AppBar(
             titleSpacing: 0,
@@ -205,7 +219,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_partner != null)
+                        if (_partner != null &&
+                            RegionService.instance.showSocialChatFeatures)
                           ListenableBuilder(
                             listenable: DmCallNotifier.instance,
                             builder: (context, _) => IconButton(
@@ -394,37 +409,43 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _showCallOptions(ChatUserSummary partner) async {
+    if (!RegionService.instance.showSocialChatFeatures) return;
     final l10n = AppLocalizations.of(context)!;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.call_outlined),
-              title: Text(l10n.chatStartAudioCall),
-              onTap: () {
-                Navigator.of(context).pop();
-                unawaited(_startCall(partner, DmCallMediaKind.audio));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.videocam_outlined),
-              title: Text(l10n.chatStartVideoCall),
-              onTap: () {
-                Navigator.of(context).pop();
-                unawaited(_startCall(partner, DmCallMediaKind.video));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: Text(l10n.cancel),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
+      builder: (context) => ListenableBuilder(
+        listenable: RegionService.instance,
+        builder: (context, _) => !RegionService.instance.showSocialChatFeatures
+            ? const SizedBox.shrink()
+            : SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.call_outlined),
+                      title: Text(l10n.chatStartAudioCall),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        unawaited(_startCall(partner, DmCallMediaKind.audio));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.videocam_outlined),
+                      title: Text(l10n.chatStartVideoCall),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        unawaited(_startCall(partner, DmCallMediaKind.video));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.close),
+                      title: Text(l10n.cancel),
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -433,6 +454,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     ChatUserSummary partner,
     DmCallMediaKind mediaKind,
   ) async {
+    if (!RegionService.instance.showSocialChatFeatures) return;
     if (_isRecording) {
       await _cancelRecording();
     }
@@ -560,6 +582,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Future<void> _startRecording() async {
+    if (_isGroup && !RegionService.instance.showSocialChatFeatures) return;
     if (_isRecording ||
         _isSending ||
         _startingRecording ||
@@ -650,6 +673,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       if (path == null) return;
       audioFile = File(path);
       if (!mounted) return;
+      if (_isGroup && !RegionService.instance.showSocialChatFeatures) return;
       if (_isGroup && _groupKind == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1320,60 +1344,68 @@ class _GroupSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final chat = ChatSessionNotifier.instance;
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.chatGroupSettingsTitle)),
-      body: ListenableBuilder(
-        listenable: chat,
-        builder: (context, _) {
-          return StreamBuilder<List<ChatThreadSummary>>(
-            stream: chat.watchGroups(),
-            builder: (context, snapshot) {
-              final currentThread = _currentThread(snapshot.data) ?? thread;
-              final isUpdating = chat.isUpdatingThreadNotifications(
-                currentThread.threadId,
-              );
+    return ListenableBuilder(
+      listenable: RegionService.instance,
+      builder: (context, _) => !RegionService.instance.showSocialChatFeatures
+          ? Scaffold(appBar: AppBar(title: Text(l10n.chatsTitle)))
+          : Scaffold(
+              appBar: AppBar(title: Text(l10n.chatGroupSettingsTitle)),
+              body: ListenableBuilder(
+                listenable: chat,
+                builder: (context, _) {
+                  return StreamBuilder<List<ChatThreadSummary>>(
+                    stream: chat.watchGroups(),
+                    builder: (context, snapshot) {
+                      final currentThread =
+                          _currentThread(snapshot.data) ?? thread;
+                      final isUpdating = chat.isUpdatingThreadNotifications(
+                        currentThread.threadId,
+                      );
 
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  SwitchListTile(
-                    title: Text(l10n.chatNotifications),
-                    subtitle: Text(groupChatTitle(currentThread, l10n)),
-                    value: !currentThread.isMuted,
-                    onChanged: isUpdating
-                        ? null
-                        : (value) async {
-                            try {
-                              await chat.updateThreadNotifications(
-                                threadId: currentThread.threadId,
-                                enabled: value,
-                              );
-                            } catch (_) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n.chatNotificationUpdateFailed,
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.chatBlockedPeople,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  const BlockedUsersList(),
-                ],
-              );
-            },
-          );
-        },
-      ),
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          SwitchListTile(
+                            title: Text(l10n.chatNotifications),
+                            subtitle: Text(groupChatTitle(currentThread, l10n)),
+                            value: !currentThread.isMuted,
+                            onChanged: isUpdating
+                                ? null
+                                : (value) async {
+                                    try {
+                                      await chat.updateThreadNotifications(
+                                        threadId: currentThread.threadId,
+                                        enabled: value,
+                                      );
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              l10n.chatNotificationUpdateFailed,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.chatBlockedPeople,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          const BlockedUsersList(),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
     );
   }
 
