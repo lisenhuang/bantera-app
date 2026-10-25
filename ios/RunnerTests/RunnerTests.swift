@@ -9,6 +9,25 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testPracticeWholeWordBoundaries() throws {
+    for (text, locale, expected) in [
+      ("学校に行きます。", "ja-JP", "学校"),
+      ("朋友在学校。", "zh-CN", "朋友"),
+      ("香港朋友", "zh-HK", "香港"),
+      ("학교에 갑니다", "ko-KR", "학교에"),
+      ("สวัสดีครับ", "th-TH", "สวัสดี"),
+      ("नमस्ते दुनिया", "hi-IN", "नमस्ते")
+    ] {
+      let words = BanteraPracticeWords.tokenize(text, locale: locale)
+      let first = try XCTUnwrap(words.first)
+      let ns = text as NSString
+      XCTAssertEqual(ns.substring(with: NSRange(location: first["start"]!, length: first["end"]! - first["start"]!)), expected, locale)
+    }
+    let repeated = BanteraPracticeWords.tokenize("🙂「学校」学校。", locale: "ja-JP")
+    XCTAssertEqual(repeated, [["start": 3, "end": 5], ["start": 6, "end": 8]])
+    XCTAssertTrue(BanteraPracticeWords.tokenize("🙂。", locale: "ja-JP").isEmpty)
+  }
+
   func testFinalSpeechPassagesKeepBothSidesOfSilentPause() throws {
     guard #available(iOS 26.0, *) else { throw XCTSkip("SpeechTranscriber requires iOS 26") }
     var transcript = BanteraFinalSpeechTranscript()

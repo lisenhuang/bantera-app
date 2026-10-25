@@ -89,6 +89,17 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    FlutterMethodChannel(name: "bantera/word_boundaries", binaryMessenger: callEngine.binaryMessenger)
+      .setMethodCallHandler { call, result in
+        guard call.method == "tokenize" else { result(FlutterMethodNotImplemented); return }
+        guard let args = call.arguments as? [String: Any],
+              let text = args["text"] as? String, text.utf16.count <= 16000,
+              let locale = args["locale"] as? String else {
+          result(FlutterError(code: "invalid_text", message: "Invalid sentence.", details: nil))
+          return
+        }
+        result(BanteraPracticeWords.tokenize(text, locale: locale))
+      }
     FlutterMethodChannel(name: "bantera/media_audio", binaryMessenger: callEngine.binaryMessenger).setMethodCallHandler { [weak self] call, result in
       guard call.method == "preparePlayback" else { result(FlutterMethodNotImplemented); return }
       do { try self?.prepareMediaPlayback(); result(nil) }
@@ -149,6 +160,31 @@ import UserNotifications
       }
     }
     return payload
+  }
+}
+
+enum BanteraPracticeWords {
+  static func tokenize(_ text: String, locale: String) -> [[String: Int]] {
+    let tag = locale.replacingOccurrences(of: "_", with: "-").lowercased()
+    let language: String
+    if tag.hasPrefix("zh") || tag.hasPrefix("yue") {
+      language = tag.contains("hk") || tag.contains("tw") || tag.contains("hant") || tag.hasPrefix("yue")
+        ? "zh-Hant" : "zh-Hans"
+    } else {
+      language = String(tag.split(separator: "-").first ?? "")
+    }
+    let tokenizer = NLTokenizer(unit: .word)
+    tokenizer.string = text
+    tokenizer.setLanguage(NLLanguage(rawValue: language))
+    var words: [[String: Int]] = []
+    tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
+      if text[range].unicodeScalars.contains(where: { CharacterSet.alphanumerics.contains($0) }) {
+        let span = NSRange(range, in: text)
+        words.append(["start": span.location, "end": span.location + span.length])
+      }
+      return true
+    }
+    return words
   }
 }
 

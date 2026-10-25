@@ -1716,12 +1716,16 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       _pronunciation.status != 'ready')
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        _pronunciation.status == 'preparing'
-                            ? l.practicePronunciationPreparing
-                            : l.practicePronunciationUnavailable,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: c.onSurfaceVariant,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: Text(
+                          _pronunciation.status == 'preparing'
+                              ? l.practicePronunciationPreparing
+                              : l.practicePronunciationUnavailable,
+                          textAlign: TextAlign.end,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: c.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ),
@@ -2024,14 +2028,15 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         : (pronunciation?['choices'] as List?)?.elementAtOrNull(
             int.tryParse(part.replaceFirst('option', '')) ?? -1,
           );
-    if (!_pronunciation.enabled ||
-        _pronunciation.status != 'ready' ||
-        segments is! List) {
-      return plain;
-    }
     return PracticePronunciationText(
       sentence,
-      segments: segments,
+      locale: _exerciseLocale ?? '',
+      segments:
+          _pronunciation.enabled &&
+              _pronunciation.status == 'ready' &&
+              segments is List
+          ? segments
+          : const [],
       style: style,
       textDirection: _textDirection,
       selectedWord: plain.selectedWord,

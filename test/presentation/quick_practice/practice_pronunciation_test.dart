@@ -136,6 +136,14 @@ void main() {
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       expect(find.text('Preparing pronunciation…'), findsOneWidget);
+      expect(
+        tester.getTopRight(find.text('Preparing pronunciation…')).dx,
+        width - 24,
+      );
+      expect(
+        tester.getTopLeft(find.text('Preparing pronunciation…')).dy,
+        greaterThan(tester.getBottomLeft(toggle).dy),
+      );
       expect(tester.getSize(toggle), offSize);
       expect(tester.widget<Switch>(toggle).value, isTrue);
       response.complete({

@@ -64,6 +64,33 @@ class MainActivity : FlutterActivity() {
         waveformBridge = AudioWaveformBridge(flutterEngine.dartExecutor.binaryMessenger)
         aiAudioBridge = BanteraAiAudioBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         photoSaveBridge = PhotoSaveBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/word_boundaries")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "tokenize") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val text = call.argument<String>("text")
+                val tag = call.argument<String>("locale")
+                if (text == null || tag == null || text.length > 16000) {
+                    result.error("invalid_text", "Invalid sentence.", null)
+                    return@setMethodCallHandler
+                }
+                val locale = Locale.forLanguageTag(tag.replace('_', '-'))
+                val iterator = android.icu.text.BreakIterator.getWordInstance(locale)
+                iterator.setText(text)
+                val words = mutableListOf<Map<String, Int>>()
+                var start = iterator.first()
+                var end = iterator.next()
+                while (end != android.icu.text.BreakIterator.DONE) {
+                    if (text.substring(start, end).codePoints().anyMatch { Character.isLetterOrDigit(it) }) {
+                        words.add(mapOf("start" to start, "end" to end))
+                    }
+                    start = end
+                    end = iterator.next()
+                }
+                result.success(words)
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/app_updates")
             .setMethodCallHandler { call, result ->
                 if (call.method != "checkForUpdate") {

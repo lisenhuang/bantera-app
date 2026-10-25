@@ -13,8 +13,10 @@ class PracticeWordText extends StatefulWidget {
     required this.onWord,
     required this.onSelect,
     this.selectedWord,
+    this.words,
   });
   final String text;
+  final List<SubtitleWordToken>? words;
   final TextStyle? style;
   final TextDirection? textDirection;
   final void Function(SubtitleWordToken token) onWord;
@@ -37,7 +39,8 @@ class _PracticeWordTextState extends State<PracticeWordText> {
   void didUpdateWidget(PracticeWordText oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.text != widget.text ||
-        oldWidget.selectedWord != widget.selectedWord) {
+        oldWidget.selectedWord != widget.selectedWord ||
+        oldWidget.words != widget.words) {
       _update();
     }
   }
@@ -49,7 +52,7 @@ class _PracticeWordTextState extends State<PracticeWordText> {
     _recognizers.clear();
     _spans = [];
     var offset = 0;
-    for (final token in subtitleWordTokens(widget.text)) {
+    for (final token in widget.words ?? subtitleWordTokens(widget.text)) {
       if (token.start > offset) {
         _spans.add(TextSpan(text: widget.text.substring(offset, token.start)));
       }
