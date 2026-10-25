@@ -739,6 +739,7 @@ class AiChatController extends ChangeNotifier {
           }
           return vocabulary.execute(
             Map<String, dynamic>.from(call['args'] as Map),
+            conversationId: store.conversationId,
           );
         }
         return _search(
@@ -1785,6 +1786,7 @@ class AiChatController extends ChangeNotifier {
             : call['name'] == AiVocabulary.toolName
             ? await vocabulary.execute(
                 Map<String, dynamic>.from(call['args'] as Map),
+                conversationId: store.conversationId,
               )
             : call['name'] == 'search_web'
             ? await _search(

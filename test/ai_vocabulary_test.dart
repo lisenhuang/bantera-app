@@ -31,6 +31,117 @@ void main() {
     'meaning': 'A short meaning',
   });
   test(
+    'quiz progress survives new sessions and excludes more than 20 words',
+    () async {
+      for (var i = 0; i < 30; i++) {
+        await add('word $i');
+      }
+      final before = (await store.words()).map((w) => w.toJson()).toList();
+      final selected = <String>{};
+      for (var i = 0; i < 30; i++) {
+        final result = await create('one').execute({
+          'action': 'quiz',
+          'selection': 'all',
+        }, conversationId: 'conversation');
+        expect(selected.add(result['word']['id'] as String), isTrue);
+        expect(result['remaining'], 29 - i);
+      }
+      final exhausted = await store.execute({
+        'action': 'quiz',
+        'selection': 'all',
+      }, conversationId: 'conversation');
+      expect(exhausted['word'], isNull);
+      expect(exhausted['remaining'], 0);
+      expect(exhausted['instruction'], contains('Do not repeat'));
+      expect((await store.words()).map((w) => w.toJson()).toList(), before);
+    },
+  );
+
+  test('simultaneous quiz turns and pool changes share exclusions', () async {
+    final first = await add('criteria');
+    final second = await add('blame');
+    final results = await Future.wait([
+      store.execute({'action': 'quiz'}, conversationId: 'conversation'),
+      create('one').execute({
+        'action': 'quiz',
+        'selection': 'new',
+      }, conversationId: 'conversation'),
+    ]);
+    expect(results.map((r) => r['word']['id']).toSet(), {
+      first['word']['id'],
+      second['word']['id'],
+    });
+    expect(
+      (await store.execute({
+        'action': 'quiz',
+        'selection': 'all',
+      }, conversationId: 'conversation'))['word'],
+      isNull,
+    );
+    // An intentional request to revisit a specific word remains available.
+    expect(
+      (await store.execute({'action': 'list', 'query': 'criteria'}))['items'],
+      isNotEmpty,
+    );
+  });
+
+  test(
+    'quiz progress is account/conversation scoped and expires after inactivity',
+    () async {
+      await add('criteria');
+      await store.execute({'action': 'quiz'}, conversationId: 'conversation');
+      now = now.add(const Duration(hours: 23));
+      expect(
+        (await create(
+          'one',
+        ).execute({'action': 'quiz'}, conversationId: 'conversation'))['word'],
+        isNull,
+      );
+      now = now.add(const Duration(hours: 24));
+      expect(
+        (await store.execute({
+          'action': 'quiz',
+        }, conversationId: 'conversation'))['word'],
+        isNotNull,
+      );
+      expect(
+        (await store.execute({
+          'action': 'quiz',
+        }, conversationId: 'new conversation'))['word'],
+        isNotNull,
+      );
+      final other = create('other');
+      await other.execute({
+        'action': 'add',
+        'word': 'criteria',
+        'meaning': 'Standards',
+      });
+      expect(
+        (await other.execute({
+          'action': 'quiz',
+        }, conversationId: 'new conversation'))['word'],
+        isNotNull,
+      );
+    },
+  );
+
+  test(
+    'explicit exclusions still apply without using up excluded words',
+    () async {
+      final criteria = await add('criteria');
+      final blame = await add('blame');
+      final first = await store.execute({
+        'action': 'quiz',
+        'excludeIds': [criteria['word']['id']],
+      }, conversationId: 'conversation');
+      expect(first['word']['id'], blame['word']['id']);
+      final next = await store.execute({
+        'action': 'quiz',
+      }, conversationId: 'conversation');
+      expect(next['word']['id'], criteria['word']['id']);
+    },
+  );
+  test(
     'persists, counts and lists latest across repository instances; edits preserve learned date',
     () async {
       final first = await add('broth');

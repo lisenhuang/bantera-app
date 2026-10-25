@@ -164,8 +164,9 @@ class AiVocabulary {
   }
 
   Future<Map<String, dynamic>> execute(
-    Map<String, dynamic> args,
-  ) => _serial(() async {
+    Map<String, dynamic> args, {
+    String? conversationId,
+  }) => _serial(() async {
     final file = await _file();
     final data = await _read(file);
     _check();
@@ -223,14 +224,55 @@ class AiVocabulary {
         'all' => matches,
         _ => matches.take(20).toList(),
       }..removeWhere((w) => excluded.contains(w.id));
+      // Live voice messages use separate model sessions. Keep the selected IDs
+      // here instead of depending on the model's (limited) excludeIds memory.
+      // One shared round covers calls, messages and pool/language switches.
+      // An inactive round expires so tomorrow's revision can revisit words.
+      final saved = data['quizProgress'];
+      final last = saved is Map
+          ? DateTime.tryParse(saved['lastUsedAt'] as String? ?? '')
+          : null;
+      final continuing =
+          conversationId != null &&
+          saved is Map &&
+          saved['conversationId'] == conversationId &&
+          last != null &&
+          now.difference(last) < const Duration(hours: 24);
+      final existingIds = items.map((word) => word.id).toSet();
+      final seen = <String>{
+        if (continuing && saved['ids'] is List)
+          ...(saved['ids'] as List).whereType<String>().where(
+            existingIds.contains,
+          ),
+      };
+      pool.removeWhere((word) => seen.contains(word.id));
+      final chosen = pool.isEmpty ? null : pool[_random.nextInt(pool.length)];
+      if (conversationId != null) {
+        if (chosen != null) seen.add(chosen.id);
+        data['quizProgress'] = {
+          'conversationId': conversationId,
+          'lastUsedAt': now.toIso8601String(),
+          'ids': seen.toList(),
+        };
+        await _write(file, data);
+      }
       _check();
       return {
         ...base,
         'selection': selection.isEmpty ? 'recent' : selection,
         'eligible': pool.length,
-        'word': pool.isEmpty
-            ? null
-            : pool[_random.nextInt(pool.length)].toJson(),
+        'word': chosen?.toJson(),
+        if (conversationId != null) ...{
+          'remaining': pool.length - (chosen == null ? 0 : 1),
+          'instruction': chosen == null
+              ? 'No unasked words remain in this selection for the current quiz. '
+                    'Tell the learner and offer another selection. Do not repeat '
+                    'a previous question or invent a word. For an explicitly '
+                    'requested repeat, use list to look up that specific word.'
+              : 'Ask about this word next. Words previously selected in this '
+                    'quiz have already been excluded on the device. Do not '
+                    'substitute a word from conversation history.',
+        },
       };
     }
     if (action == 'list' || action == 'review_suggestions') {

@@ -183,6 +183,15 @@ void main() {
             if (action == 'quiz' || action == 'latest') {
               expect(result['word']['word'], 'skewer');
             }
+            if (action == 'quiz') {
+              // Each transport must carry the same persisted conversation ID;
+              // a later voice message/call must not draw this word again.
+              final next = await repository.execute({
+                'action': 'quiz',
+              }, conversationId: chat.store.conversationId);
+              expect(next['word'], isNull);
+              expect(next['remaining'], 0);
+            }
             expect((await repository.words()).single.word, 'skewer');
           }
           expect(chat.failed, false);
