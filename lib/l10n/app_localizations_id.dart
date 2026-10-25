@@ -2181,7 +2181,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Pilih bahasa yang dipelajari di Pengaturan.';
+      'Pilih bahasa yang dipelajari di Edit Profil.';
 
   @override
   String get quickCallActive => 'Akhiri panggilan sebelum berlatih.';
@@ -2218,7 +2218,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Setelah 12 latihan yang dinilai pada level saat ini, kami meninjau 12 hasil terakhirmu.';
 
   @override
-  String get quickLevelsUp => '10–12 benar: naik satu level.';
+  String get quickLevelsUp => '10–12 benar: lulus level ini.';
 
   @override
   String get quickLevelsStay => '5–9 benar: tetap di level ini.';
@@ -2492,4 +2492,17 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Menyalakan mikrofon…';
+
+  @override
+  String get quickLevelStateLocked => 'Terkunci';
+
+  @override
+  String get quickLevelPracticing => 'Sedang berlatih';
+
+  @override
+  String get quickLevelPassed => 'Lulus';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Mulai dari A0. Jawab benar minimal 10 dari 12 latihan terakhir yang dinilai untuk lulus dan membuka level berikutnya. Mencapai C2 hanya membukanya; Anda tetap perlu menjawab benar 10 dari 12 untuk menyelesaikannya. Level yang lulus tetap lulus meskipun level lebih mudah disarankan untuk mengulang.';
 }

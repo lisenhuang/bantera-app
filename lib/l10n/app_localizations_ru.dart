@@ -2245,7 +2245,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get quickStart => 'Начать';
 
   @override
-  String get quickChooseLanguage => 'Выберите изучаемый язык в настройках.';
+  String get quickChooseLanguage =>
+      'Выберите изучаемый язык в разделе «Редактировать профиль».';
 
   @override
   String get quickCallActive => 'Завершите звонок перед практикой.';
@@ -2282,7 +2283,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'После 12 оценённых упражнений на текущем уровне мы проверяем последние 12 результатов.';
 
   @override
-  String get quickLevelsUp => '10–12 верных: на один уровень выше.';
+  String get quickLevelsUp => '10–12 правильных: уровень пройден.';
 
   @override
   String get quickLevelsStay => '5–9 верных: уровень не меняется.';
@@ -2556,4 +2557,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Включение микрофона…';
+
+  @override
+  String get quickLevelStateLocked => 'Заблокирован';
+
+  @override
+  String get quickLevelPracticing => 'В процессе';
+
+  @override
+  String get quickLevelPassed => 'Пройден';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Начните с A0. Ответьте правильно минимум на 10 из последних 12 оцениваемых упражнений, чтобы пройти уровень и открыть следующий. Достижение C2 лишь открывает его: для завершения также нужны 10 правильных ответов из 12. Пройденные уровни сохраняются, даже если для повторения рекомендован более простой уровень.';
 }

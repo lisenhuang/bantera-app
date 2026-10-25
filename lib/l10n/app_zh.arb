@@ -686,7 +686,7 @@
   "quickAgain": "再说一次",
   "quickUnavailable": "准备练习需要多一点时间，请重试。",
   "quickStart": "开始练习",
-  "quickChooseLanguage": "请在设置中选择学习语言。",
+  "quickChooseLanguage": "请在“编辑个人资料”中选择学习语言。",
   "quickCallActive": "请先结束通话，再开始练习。",
   "goalCelebrationMessage": "今天，你为语言学习留出了时间。每个词都算数。",
   "goalCelebrationContinue": "继续练习",
@@ -697,7 +697,7 @@
   "quickLevelsLink": "等级如何调整？",
   "quickLevelsIntro": "每种语言都从 A0 开始。练习等级会根据你的表现自动调整。",
   "quickLevelsWindow": "在当前等级完成 12 次计分练习后，我们会评估最近 12 次的结果。",
-  "quickLevelsUp": "答对 10–12 次：上升一级。",
+  "quickLevelsUp": "答对 10–12 道：通过此级别。",
   "quickLevelsStay": "答对 5–9 次：保持当前等级。",
   "quickLevelsDown": "答对 0–4 次：下降一级。",
   "quickLevelsScoring": "每道练习只计算第一次清晰识别的回答。识别不清的录音和跳过的练习不计入。\n\nA1–C2: 查看过翻译的练习不计入等级调整。未使用翻译的答题结果会在进入下一题时计入。",
@@ -773,5 +773,9 @@
   "practicePronunciationSaveFailed": "无法保存发音设置。",
   "practiceReleaseToCheck": "松开以检查",
   "practiceTapToCheck": "轻点以检查",
-  "practiceMicStarting": "正在启动麦克风…"
+  "practiceMicStarting": "正在启动麦克风…",
+  "quickLevelStateLocked": "未解锁",
+  "quickLevelPracticing": "练习中",
+  "quickLevelPassed": "已通过",
+  "quickLevelStatesExplanation": "从 A0 开始。最近 12 道计分练习中至少答对 10 道，即可通过当前级别并解锁下一级。达到 C2 只是解锁，还需同样答对至少 10 道才能完成 C2。即使系统建议复习较低级别，已通过的级别仍保留。"
 }

@@ -2254,7 +2254,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get quickStart => 'Zacznij ćwiczyć';
 
   @override
-  String get quickChooseLanguage => 'Wybierz język nauki w ustawieniach.';
+  String get quickChooseLanguage =>
+      'Wybierz język do nauki w sekcji Edytuj profil.';
 
   @override
   String get quickCallActive => 'Zakończ rozmowę przed ćwiczeniem.';
@@ -2291,7 +2292,7 @@ class AppLocalizationsPl extends AppLocalizations {
       'Po 12 ocenionych ćwiczeniach na obecnym poziomie sprawdzamy Twoje ostatnie 12 wyników.';
 
   @override
-  String get quickLevelsUp => '10–12 poprawnych: poziom wyżej.';
+  String get quickLevelsUp => '10–12 poprawnych: poziom zaliczony.';
 
   @override
   String get quickLevelsStay => '5–9 poprawnych: poziom bez zmian.';
@@ -2567,4 +2568,17 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Uruchamianie mikrofonu…';
+
+  @override
+  String get quickLevelStateLocked => 'Zablokowany';
+
+  @override
+  String get quickLevelPracticing => 'W trakcie nauki';
+
+  @override
+  String get quickLevelPassed => 'Zaliczony';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Zaczynasz od A0. Co najmniej 10 poprawnych odpowiedzi w ostatnich 12 ocenianych ćwiczeniach zalicza poziom i odblokowuje następny. Dotarcie do C2 tylko go odblokowuje; do ukończenia nadal potrzeba 10 poprawnych odpowiedzi na 12. Zaliczone poziomy pozostają zaliczone, nawet gdy zalecana jest powtórka łatwiejszego poziomu.';
 }

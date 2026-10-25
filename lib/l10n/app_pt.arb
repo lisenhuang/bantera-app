@@ -651,7 +651,7 @@
   "quickAgain": "Dizer novamente",
   "quickUnavailable": "A preparação está a demorar um pouco mais. Tente novamente.",
   "quickStart": "Começar",
-  "quickChooseLanguage": "Escolha um idioma de aprendizagem nas Configurações.",
+  "quickChooseLanguage": "Escolha um idioma para aprender em Editar perfil.",
   "quickCallActive": "Termine a chamada antes de praticar.",
   "goalCelebrationMessage": "Hoje dedicou tempo ao seu idioma. Cada palavra conta.",
   "goalCelebrationContinue": "Continuar a praticar",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Como funcionam os níveis?",
   "quickLevelsIntro": "Cada idioma começa no A0. O seu nível ajusta-se automaticamente à medida que pratica.",
   "quickLevelsWindow": "Após 12 exercícios avaliados no nível atual, analisamos os seus últimos 12 resultados.",
-  "quickLevelsUp": "10–12 corretos: sobe um nível.",
+  "quickLevelsUp": "10–12 corretas: nível concluído.",
   "quickLevelsStay": "5–9 corretos: mantém este nível.",
   "quickLevelsDown": "0–4 corretos: desce um nível.",
   "quickLevelsScoring": "Só conta a primeira resposta reconhecida claramente em cada exercício. Gravações pouco claras e exercícios ignorados não contam.\n\nA1–C2: Exercícios com tradução não contam para mudanças de nível. Resultados sem tradução contam ao passar para o próximo exercício.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Não foi possível salvar a configuração de pronúncia.",
   "practiceReleaseToCheck": "Solte para verificar",
   "practiceTapToCheck": "Toque para verificar",
-  "practiceMicStarting": "Iniciando o microfone…"
+  "practiceMicStarting": "Iniciando o microfone…",
+  "quickLevelStateLocked": "Bloqueado",
+  "quickLevelPracticing": "Em prática",
+  "quickLevelPassed": "Concluído",
+  "quickLevelStatesExplanation": "Comece no A0. Acerte pelo menos 10 dos últimos 12 exercícios avaliados para concluir o nível e desbloquear o próximo. Chegar ao C2 apenas o desbloqueia; também é preciso acertar 10 de 12 para concluí-lo. Os níveis concluídos permanecem assim, mesmo quando um nível mais fácil é recomendado para revisão."
 }

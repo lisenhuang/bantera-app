@@ -651,7 +651,7 @@
   "quickAgain": "Ucapkan lagi",
   "quickUnavailable": "Persiapan memerlukan waktu lebih lama. Silakan coba lagi.",
   "quickStart": "Mulai berlatih",
-  "quickChooseLanguage": "Pilih bahasa yang dipelajari di Pengaturan.",
+  "quickChooseLanguage": "Pilih bahasa yang dipelajari di Edit Profil.",
   "quickCallActive": "Akhiri panggilan sebelum berlatih.",
   "goalCelebrationMessage": "Hari ini kamu meluangkan waktu untuk belajar bahasa. Setiap kata berarti.",
   "goalCelebrationContinue": "Terus berlatih",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Cara kerja level?",
   "quickLevelsIntro": "Setiap bahasa dimulai dari A0. Levelmu menyesuaikan secara otomatis saat berlatih.",
   "quickLevelsWindow": "Setelah 12 latihan yang dinilai pada level saat ini, kami meninjau 12 hasil terakhirmu.",
-  "quickLevelsUp": "10–12 benar: naik satu level.",
+  "quickLevelsUp": "10–12 benar: lulus level ini.",
   "quickLevelsStay": "5–9 benar: tetap di level ini.",
   "quickLevelsDown": "0–4 benar: turun satu level.",
   "quickLevelsScoring": "Hanya jawaban pertama yang dikenali dengan jelas pada setiap latihan yang dihitung. Rekaman yang tidak jelas dan latihan yang dilewati tidak dihitung.\n\nA1–C2: Latihan dengan terjemahan tidak dihitung untuk perubahan level. Hasil tanpa terjemahan dihitung saat beralih ke latihan berikutnya.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Pengaturan pelafalan tidak dapat disimpan.",
   "practiceReleaseToCheck": "Lepaskan untuk memeriksa",
   "practiceTapToCheck": "Ketuk untuk memeriksa",
-  "practiceMicStarting": "Menyalakan mikrofon…"
+  "practiceMicStarting": "Menyalakan mikrofon…",
+  "quickLevelStateLocked": "Terkunci",
+  "quickLevelPracticing": "Sedang berlatih",
+  "quickLevelPassed": "Lulus",
+  "quickLevelStatesExplanation": "Mulai dari A0. Jawab benar minimal 10 dari 12 latihan terakhir yang dinilai untuk lulus dan membuka level berikutnya. Mencapai C2 hanya membukanya; Anda tetap perlu menjawab benar 10 dari 12 untuk menyelesaikannya. Level yang lulus tetap lulus meskipun level lebih mudah disarankan untuk mengulang."
 }

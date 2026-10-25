@@ -57,13 +57,13 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app(const EditProfileScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('My Native Language'), findsNothing);
-    expect(find.text('Learning Language'), findsNothing);
+    expect(find.text('My Native Language'), findsOneWidget);
+    expect(find.text('Learning Language'), findsOneWidget);
     final identity = tester.getRect(
       find.byKey(const ValueKey('profile-identity')),
     );
-    expect(identity.top, greaterThan(180));
-    expect(identity.center.dy, inInclusiveRange(360, 520));
+    expect(identity.top, inInclusiveRange(70, 120));
+    expect(identity.width, lessThanOrEqualTo(440));
     await tester.tap(find.text('Name'));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsOneWidget);
@@ -82,28 +82,26 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: locale.toLanguageTag());
         expect(find.byType(ProfileAvatar), findsOneWidget);
-        await tester.ensureVisible(find.byType(ListTile));
+        await tester.ensureVisible(find.byType(ListTile).first);
         expect(tester.takeException(), isNull);
       }
     },
   );
 
-  testWidgets('language shortcuts land on all language controls in Settings', (
-    tester,
-  ) async {
+  testWidgets('Settings keeps only the app display language', (tester) async {
     await tester.binding.setSurfaceSize(const Size(402, 874));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app(const SettingsScreen(focusLanguages: true)));
     await tester.pumpAndSettle();
     expect(find.text('Languages'), findsOneWidget);
     expect(find.text('Display Language'), findsOneWidget);
-    expect(find.text('My Native Language'), findsOneWidget);
-    expect(find.text('Learning Language'), findsOneWidget);
+    expect(find.text('My Native Language'), findsNothing);
+    expect(find.text('Learning Language'), findsNothing);
     expect(
       tester.getTopLeft(find.text('Languages')).dy,
       inInclusiveRange(50, 100),
     );
-    expect(find.text('Learning Language').hitTestable(), findsOneWidget);
+
     await expectLater(
       find.byType(SettingsScreen),
       matchesGoldenFile('goldens/settings-languages.png'),
@@ -111,6 +109,18 @@ void main() {
     await tester.tap(find.byType(DropdownButton<AppLocalePreference>));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('language shortcuts focus the selectors on Edit Profile', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(402, 650));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(app(const EditProfileScreen(focusLanguages: true)));
+    await tester.pumpAndSettle();
+    expect(find.text('My Native Language').hitTestable(), findsOneWidget);
+    expect(find.text('Learning Language').hitTestable(), findsOneWidget);
+    expect(find.byType(DropdownButton<AppLocalePreference>), findsNothing);
   });
 
   for (final dark in [false, true]) {

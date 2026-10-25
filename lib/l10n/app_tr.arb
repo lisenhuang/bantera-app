@@ -651,7 +651,7 @@
   "quickAgain": "Tekrar söyle",
   "quickUnavailable": "Hazırlık biraz daha uzun sürüyor. Lütfen tekrar dene.",
   "quickStart": "Başla",
-  "quickChooseLanguage": "Ayarlardan öğrenmek istediğin dili seç.",
+  "quickChooseLanguage": "Profili Düzenle bölümünde öğrenmek istediğiniz dili seçin.",
   "quickCallActive": "Pratik yapmadan önce aramanı bitir.",
   "goalCelebrationMessage": "Bugün dil öğrenmeye zaman ayırdın. Her kelime önemli.",
   "goalCelebrationContinue": "Pratiğe devam et",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Seviyeler nasıl çalışır?",
   "quickLevelsIntro": "Her dil A0 seviyesinden başlar. Seviyen pratik yaptıkça otomatik olarak ayarlanır.",
   "quickLevelsWindow": "Mevcut seviyende puanlanan 12 alıştırmadan sonra son 12 sonucunu değerlendiririz.",
-  "quickLevelsUp": "10–12 doğru: bir seviye yükselirsin.",
+  "quickLevelsUp": "10–12 doğru: bu seviye geçilir.",
   "quickLevelsStay": "5–9 doğru: aynı seviyede kalırsın.",
   "quickLevelsDown": "0–4 doğru: bir seviye düşersin.",
   "quickLevelsScoring": "Her alıştırmada yalnızca net olarak tanınan ilk yanıtın sayılır. Anlaşılmayan kayıtlar ve atlanan alıştırmalar sayılmaz.\n\nA1–C2: Çeviri kullanılan alıştırmalar seviye değişikliklerinde sayılmaz. Çevirisiz sonuçlar bir sonraki alıştırmaya geçtiğinde sayılır.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Telaffuz ayarı kaydedilemedi.",
   "practiceReleaseToCheck": "Kontrol etmek için bırakın",
   "practiceTapToCheck": "Kontrol etmek için dokunun",
-  "practiceMicStarting": "Mikrofon başlatılıyor…"
+  "practiceMicStarting": "Mikrofon başlatılıyor…",
+  "quickLevelStateLocked": "Kilitli",
+  "quickLevelPracticing": "Çalışılıyor",
+  "quickLevelPassed": "Geçildi",
+  "quickLevelStatesExplanation": "A0'dan başlayın. Son 12 puanlanan alıştırmanın en az 10'unu doğru yanıtlayarak seviyeyi geçin ve bir sonrakini açın. C2'ye ulaşmak yalnızca kilidini açar; tamamlamak için yine 12 sorudan en az 10'unu doğru yanıtlamalısınız. Tekrar için daha kolay bir seviye önerilse bile geçilen seviyeler korunur."
 }

@@ -651,7 +651,7 @@
   "quickAgain": "Ripeti",
   "quickUnavailable": "La preparazione richiede un po’ più di tempo. Riprova.",
   "quickStart": "Inizia",
-  "quickChooseLanguage": "Scegli una lingua da imparare nelle impostazioni.",
+  "quickChooseLanguage": "Scegli una lingua da imparare in Modifica profilo.",
   "quickCallActive": "Termina la chiamata prima di esercitarti.",
   "goalCelebrationMessage": "Oggi hai dedicato tempo alla tua lingua. Ogni parola conta.",
   "goalCelebrationContinue": "Continua a esercitarti",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Come funzionano i livelli?",
   "quickLevelsIntro": "Ogni lingua parte da A0. Il tuo livello si adatta automaticamente mentre ti eserciti.",
   "quickLevelsWindow": "Dopo 12 esercizi valutati al livello attuale, esaminiamo i tuoi ultimi 12 risultati.",
-  "quickLevelsUp": "10–12 corretti: sali di un livello.",
+  "quickLevelsUp": "10–12 corrette: livello superato.",
   "quickLevelsStay": "5–9 corretti: resti a questo livello.",
   "quickLevelsDown": "0–4 corretti: scendi di un livello.",
   "quickLevelsScoring": "Conta solo la prima risposta riconosciuta chiaramente per ogni esercizio. Le registrazioni poco chiare e gli esercizi saltati non contano.\n\nA1–C2: Gli esercizi con traduzione non contano per i cambi di livello. I risultati senza traduzione contano quando passi all’esercizio successivo.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Impossibile salvare l’impostazione della pronuncia.",
   "practiceReleaseToCheck": "Rilascia per verificare",
   "practiceTapToCheck": "Tocca per verificare",
-  "practiceMicStarting": "Avvio del microfono…"
+  "practiceMicStarting": "Avvio del microfono…",
+  "quickLevelStateLocked": "Bloccato",
+  "quickLevelPracticing": "In pratica",
+  "quickLevelPassed": "Superato",
+  "quickLevelStatesExplanation": "Inizia da A0. Almeno 10 risposte corrette negli ultimi 12 esercizi valutati permettono di superare il livello e sbloccare il successivo. Raggiungere C2 lo sblocca soltanto: servono ancora 10 risposte corrette su 12 per completarlo. I livelli superati restano tali anche quando viene consigliato un livello più facile per ripassare."
 }

@@ -17,7 +17,6 @@ import '../../l10n/app_localizations.dart';
 import '../dev/dev_screen.dart';
 import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
-import 'profile_language_settings.dart';
 import 'permissions_screen.dart';
 import 'paid_key_settings.dart';
 
@@ -454,8 +453,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                ProfileLanguageSettings(key: ValueKey(auth.session?.cacheKey)),
                 const SizedBox(height: 24),
                 _buildSectionHeader(context, l10n.sectionNotifications),
                 ListenableBuilder(

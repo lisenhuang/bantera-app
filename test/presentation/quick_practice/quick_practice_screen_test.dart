@@ -219,7 +219,7 @@ void main() {
         );
         await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
         await tester.pumpAndSettle();
-        expect(find.text('Starting from zero'), findsOneWidget);
+        expect(find.textContaining('Starting from zero'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -560,7 +560,7 @@ void main() {
     (tester) async {
       await mount(tester, material: {...exercise, 'locale': 'mi-NZ'});
       expect(
-        find.text('Choose a learning language in Settings.'),
+        find.text('Choose a learning language in Edit Profile.'),
         findsOneWidget,
       );
       expect(
@@ -655,6 +655,68 @@ void main() {
     }
   }
 
+  for (final completed in [false, true]) {
+    testWidgets('C2 completion state is provided by the server: $completed', (
+      tester,
+    ) async {
+      await mount(
+        tester,
+        material: {
+          ...exercise,
+          'level': 'C2',
+          'currentLevel': 'C2',
+          'highestUnlockedLevel': 'C2',
+          'levelStates': {
+            for (final level in ['A0', 'A1', 'A2', 'B1', 'B2', 'C1'])
+              level: 'passed',
+            'C2': completed ? 'passed' : 'practicing',
+          },
+        },
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byIcon(Icons.check_circle_outline_rounded),
+        findsNWidgets(completed ? 7 : 6),
+      );
+      expect(
+        find.byIcon(Icons.lock_open_rounded),
+        completed ? findsNothing : findsOneWidget,
+      );
+      expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+      expect(find.byIcon(Icons.radio_button_checked), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+  testWidgets('earned level remains selectable after a review recommendation', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      material: {
+        ...exercise,
+        'level': 'A1',
+        'currentLevel': 'A1',
+        'highestUnlockedLevel': 'A2',
+        'levelStates': {
+          'A0': 'passed',
+          'A1': 'passed',
+          'A2': 'practicing',
+          'B1': 'locked',
+          'B2': 'locked',
+          'C1': 'locked',
+          'C2': 'locked',
+        },
+      },
+    );
+    await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('practice-level-option-A2')));
+    await tester.pumpAndSettle();
+    expect(find.text('Level not reached yet'), findsNothing);
+    expect(find.text('Continue'), findsOneWidget);
+  });
+
   testWidgets('shows the exercise level and tolerates older API responses', (
     tester,
   ) async {
@@ -680,7 +742,7 @@ void main() {
       await tester.ensureVisible(link);
       await tester.tap(link);
       await tester.pumpAndSettle();
-      expect(find.text('10–12 correct: move up one level.'), findsOneWidget);
+      expect(find.text('10–12 correct: pass this level.'), findsOneWidget);
       expect(find.text('5–9 correct: stay at this level.'), findsOneWidget);
       expect(find.text('0–4 correct: move down one level.'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -690,7 +752,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
-      expect(find.text('10–12 correct: move up one level.'), findsNothing);
+      expect(find.text('10–12 correct: pass this level.'), findsNothing);
       expect(find.text('Where is the station?'), findsOneWidget);
     },
   );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'practice_level_help.dart';
+import 'practice_level_state.dart';
 import '../../l10n/app_localizations.dart';
 
 const practiceLevels = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -11,8 +12,20 @@ class PracticeLevelMenu extends StatelessWidget {
     required this.level,
     required this.currentLevel,
     required this.onSelected,
+    this.levelStates,
+    this.highestUnlockedLevel,
   });
   final String level, currentLevel;
+  final Map<String, dynamic>? levelStates;
+  final String? highestUnlockedLevel;
+
+  String _state(String candidate) =>
+      levelStates?[candidate] as String? ??
+      (practiceLevels.indexOf(candidate) < practiceLevels.indexOf(currentLevel)
+          ? 'passed'
+          : candidate == currentLevel
+          ? 'practicing'
+          : 'locked');
   final ValueChanged<String>? onSelected;
 
   @override
@@ -107,9 +120,7 @@ class PracticeLevelMenu extends StatelessWidget {
                         candidate,
                         textDirection: TextDirection.ltr,
                         style: TextStyle(
-                          color:
-                              practiceLevels.indexOf(candidate) >
-                                  practiceLevels.indexOf(currentLevel)
+                          color: _state(candidate) == 'locked'
                               ? c.onSurface.withValues(alpha: .38)
                               : candidate == level
                               ? c.primary
@@ -119,18 +130,20 @@ class PracticeLevelMenu extends StatelessWidget {
                               : FontWeight.w500,
                         ),
                       ),
-                      subtitle: candidate == 'A0' ? Text(l.quickA0Label) : null,
-                      trailing:
-                          practiceLevels.indexOf(candidate) >
-                              practiceLevels.indexOf(currentLevel)
-                          ? Icon(
-                              Icons.lock_outline_rounded,
-                              size: 20,
-                              color: c.onSurface.withValues(alpha: .38),
-                              semanticLabel: l.quickLevelLocked,
-                            )
-                          : candidate == level
-                          ? Icon(Icons.check_rounded, color: c.primary)
+                      subtitle: Text(
+                        [
+                          if (candidate == 'A0') l.quickA0Label,
+                          practiceLevelStateLabel(l, _state(candidate)),
+                        ].join(' · '),
+                      ),
+                      leading: Icon(
+                        practiceLevelStateIcon(_state(candidate)),
+                        color: _state(candidate) == 'locked'
+                            ? c.onSurfaceVariant
+                            : c.primary,
+                      ),
+                      trailing: candidate == level
+                          ? Icon(Icons.radio_button_checked, color: c.primary)
                           : null,
                       onTap: () => Navigator.pop(sheetContext, candidate),
                     ),
@@ -162,10 +175,12 @@ Future<bool> confirmPracticeLevel(
   BuildContext context, {
   required String selected,
   required String current,
+  String? highestUnlockedLevel,
 }) async {
   final l = AppLocalizations.of(context)!;
   final locked =
-      practiceLevels.indexOf(selected) > practiceLevels.indexOf(current);
+      practiceLevels.indexOf(selected) >
+      practiceLevels.indexOf(highestUnlockedLevel ?? current);
   return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(

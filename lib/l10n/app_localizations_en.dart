@@ -2238,7 +2238,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickStart => 'Start practising';
 
   @override
-  String get quickChooseLanguage => 'Choose a learning language in Settings.';
+  String get quickChooseLanguage =>
+      'Choose a learning language in Edit Profile.';
 
   @override
   String get quickCallActive => 'Finish your call before practising.';
@@ -2275,7 +2276,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'After 12 scored exercises at your current level, we review your latest 12 results.';
 
   @override
-  String get quickLevelsUp => '10–12 correct: move up one level.';
+  String get quickLevelsUp => '10–12 correct: pass this level.';
 
   @override
   String get quickLevelsStay => '5–9 correct: stay at this level.';
@@ -2549,4 +2550,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Starting microphone…';
+
+  @override
+  String get quickLevelStateLocked => 'Locked';
+
+  @override
+  String get quickLevelPracticing => 'Practicing';
+
+  @override
+  String get quickLevelPassed => 'Passed';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review.';
 }

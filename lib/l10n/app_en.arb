@@ -912,7 +912,7 @@
   "quickAgain": "Say it again",
   "quickUnavailable": "Practice is taking a little longer. Please try again.",
   "quickStart": "Start practising",
-  "quickChooseLanguage": "Choose a learning language in Settings.",
+  "quickChooseLanguage": "Choose a learning language in Edit Profile.",
   "quickCallActive": "Finish your call before practising.",
   "goalCelebrationMessage": "You made time for your language today. Every word counts.",
   "goalCelebrationContinue": "Keep practising",
@@ -923,7 +923,7 @@
   "quickLevelsLink": "How levels work?",
   "quickLevelsIntro": "Each language starts at A0. Your level adjusts automatically as you practise.",
   "quickLevelsWindow": "After 12 scored exercises at your current level, we review your latest 12 results.",
-  "quickLevelsUp": "10–12 correct: move up one level.",
+  "quickLevelsUp": "10–12 correct: pass this level.",
   "quickLevelsStay": "5–9 correct: stay at this level.",
   "quickLevelsDown": "0–4 correct: move down one level.",
   "quickLevelsScoring": "Only your first clear answer to each exercise counts. Unclear recordings and skipped exercises do not count.\n\nA1–C2: Exercises with translation do not count toward level changes. Unassisted results count when you move to the next practice.",
@@ -1063,5 +1063,9 @@
   "practicePronunciationSaveFailed": "Could not save the pronunciation setting.",
   "practiceReleaseToCheck": "Release to check",
   "practiceTapToCheck": "Tap to check",
-  "practiceMicStarting": "Starting microphone…"
+  "practiceMicStarting": "Starting microphone…",
+  "quickLevelStateLocked": "Locked",
+  "quickLevelPracticing": "Practicing",
+  "quickLevelPassed": "Passed",
+  "quickLevelStatesExplanation": "Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review."
 }

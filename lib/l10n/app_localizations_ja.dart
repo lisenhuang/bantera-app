@@ -2081,7 +2081,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickStart => '練習を始める';
 
   @override
-  String get quickChooseLanguage => '設定で学習言語を選んでください。';
+  String get quickChooseLanguage => '「プロフィールを編集」で学習言語を選んでください。';
 
   @override
   String get quickCallActive => '通話を終えてから練習してください。';
@@ -2114,7 +2114,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickLevelsWindow => '現在のレベルで採点対象の練習を12問終えると、直近12問の結果を確認します。';
 
   @override
-  String get quickLevelsUp => '10〜12問正解：1レベル上がります。';
+  String get quickLevelsUp => '10〜12問正解：このレベルに合格。';
 
   @override
   String get quickLevelsStay => '5〜9問正解：現在のレベルを維持します。';
@@ -2370,4 +2370,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'マイクを起動中…';
+
+  @override
+  String get quickLevelStateLocked => 'ロック中';
+
+  @override
+  String get quickLevelPracticing => '練習中';
+
+  @override
+  String get quickLevelPassed => '合格済み';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'A0から始めます。直近12問の採点対象の練習で10問以上正解すると合格し、次のレベルが解放されます。C2到達は解放を意味し、修了には同じく12問中10問以上の正解が必要です。復習のために低いレベルを勧められても、合格は取り消されません。';
 }

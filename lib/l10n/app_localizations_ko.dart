@@ -2093,7 +2093,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickStart => '연습 시작';
 
   @override
-  String get quickChooseLanguage => '설정에서 학습 언어를 선택하세요.';
+  String get quickChooseLanguage => '프로필 편집에서 학습 언어를 선택하세요.';
 
   @override
   String get quickCallActive => '통화를 마친 후 연습해 주세요.';
@@ -2129,7 +2129,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '현재 레벨에서 채점되는 연습 12개를 완료하면 최근 12개의 결과를 확인합니다.';
 
   @override
-  String get quickLevelsUp => '10~12개 정답: 한 레벨 올라갑니다.';
+  String get quickLevelsUp => '10~12개 정답: 이 레벨 통과.';
 
   @override
   String get quickLevelsStay => '5~9개 정답: 현재 레벨을 유지합니다.';
@@ -2387,4 +2387,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get practiceMicStarting => '마이크 시작 중…';
+
+  @override
+  String get quickLevelStateLocked => '잠김';
+
+  @override
+  String get quickLevelPracticing => '연습 중';
+
+  @override
+  String get quickLevelPassed => '통과';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'A0부터 시작합니다. 최근 채점 대상 연습 12개 중 10개 이상을 맞히면 해당 레벨을 통과하고 다음 레벨이 열립니다. C2에 도달해도 완료한 것은 아니며, 동일하게 12개 중 10개 이상을 맞혀야 합니다. 낮은 레벨의 복습을 추천받아도 통과 기록은 유지됩니다.';
 }

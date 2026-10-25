@@ -651,7 +651,7 @@
   "quickAgain": "Dire à nouveau",
   "quickUnavailable": "La préparation prend un peu plus de temps. Réessayez.",
   "quickStart": "Commencer",
-  "quickChooseLanguage": "Choisissez une langue à apprendre dans les réglages.",
+  "quickChooseLanguage": "Choisissez une langue à apprendre dans Modifier le profil.",
   "quickCallActive": "Terminez votre appel avant de vous entraîner.",
   "goalCelebrationMessage": "Vous avez pris du temps pour apprendre aujourd’hui. Chaque mot compte.",
   "goalCelebrationContinue": "Continuer à pratiquer",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Comment fonctionnent les niveaux?",
   "quickLevelsIntro": "Chaque langue commence au niveau A0. Ton niveau s’adapte automatiquement au fil des exercices.",
   "quickLevelsWindow": "Après 12 exercices évalués à ton niveau actuel, nous examinons tes 12 derniers résultats.",
-  "quickLevelsUp": "10–12 réponses correctes : tu montes d’un niveau.",
+  "quickLevelsUp": "10–12 bonnes réponses : niveau validé.",
   "quickLevelsStay": "5–9 réponses correctes : tu restes à ce niveau.",
   "quickLevelsDown": "0–4 réponses correctes : tu descends d’un niveau.",
   "quickLevelsScoring": "Seule ta première réponse clairement reconnue à chaque exercice compte. Les enregistrements peu clairs et les exercices ignorés ne comptent pas.\n\nA1–C2: Les exercices avec traduction ne comptent pas pour les changements de niveau. Les résultats sans traduction comptent au passage à l’exercice suivant.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Impossible d’enregistrer le réglage de prononciation.",
   "practiceReleaseToCheck": "Relâchez pour vérifier",
   "practiceTapToCheck": "Touchez pour vérifier",
-  "practiceMicStarting": "Démarrage du micro…"
+  "practiceMicStarting": "Démarrage du micro…",
+  "quickLevelStateLocked": "Verrouillé",
+  "quickLevelPracticing": "En cours",
+  "quickLevelPassed": "Réussi",
+  "quickLevelStatesExplanation": "Commencez à A0. Réussissez au moins 10 des 12 derniers exercices évalués pour valider un niveau et débloquer le suivant. Atteindre C2 le débloque ; il faut aussi réussir 10 exercices sur 12 pour le terminer. Les niveaux validés le restent, même si un niveau plus facile est conseillé pour réviser."
 }

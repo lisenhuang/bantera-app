@@ -3983,7 +3983,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickChooseLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Choose a learning language in Settings.'**
+  /// **'Choose a learning language in Edit Profile.'**
   String get quickChooseLanguage;
 
   /// No description provided for @quickCallActive.
@@ -4049,7 +4049,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickLevelsUp.
   ///
   /// In en, this message translates to:
-  /// **'10–12 correct: move up one level.'**
+  /// **'10–12 correct: pass this level.'**
   String get quickLevelsUp;
 
   /// No description provided for @quickLevelsStay.
@@ -4507,6 +4507,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Starting microphone…'**
   String get practiceMicStarting;
+
+  /// No description provided for @quickLevelStateLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get quickLevelStateLocked;
+
+  /// No description provided for @quickLevelPracticing.
+  ///
+  /// In en, this message translates to:
+  /// **'Practicing'**
+  String get quickLevelPracticing;
+
+  /// No description provided for @quickLevelPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get quickLevelPassed;
+
+  /// No description provided for @quickLevelStatesExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review.'**
+  String get quickLevelStatesExplanation;
 }
 
 class _AppLocalizationsDelegate

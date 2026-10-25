@@ -2244,7 +2244,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Scegli una lingua da imparare nelle impostazioni.';
+      'Scegli una lingua da imparare in Modifica profilo.';
 
   @override
   String get quickCallActive => 'Termina la chiamata prima di esercitarti.';
@@ -2281,7 +2281,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Dopo 12 esercizi valutati al livello attuale, esaminiamo i tuoi ultimi 12 risultati.';
 
   @override
-  String get quickLevelsUp => '10–12 corretti: sali di un livello.';
+  String get quickLevelsUp => '10–12 corrette: livello superato.';
 
   @override
   String get quickLevelsStay => '5–9 corretti: resti a questo livello.';
@@ -2557,4 +2557,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Avvio del microfono…';
+
+  @override
+  String get quickLevelStateLocked => 'Bloccato';
+
+  @override
+  String get quickLevelPracticing => 'In pratica';
+
+  @override
+  String get quickLevelPassed => 'Superato';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Inizia da A0. Almeno 10 risposte corrette negli ultimi 12 esercizi valutati permettono di superare il livello e sbloccare il successivo. Raggiungere C2 lo sblocca soltanto: servono ancora 10 risposte corrette su 12 per completarlo. I livelli superati restano tali anche quando viene consigliato un livello più facile per ripassare.';
 }

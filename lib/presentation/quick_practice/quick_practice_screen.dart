@@ -111,6 +111,14 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool _confirmingNext = false;
   bool _translationRevealed = false;
   String? _currentLevel, _practiceLevel;
+  Map<String, dynamic>? _levelStates;
+  String? _highestUnlockedLevel;
+
+  void _readLevelStates(Map<String, dynamic>? data) {
+    _levelStates = (data?['levelStates'] as Map?)?.cast<String, dynamic>();
+    _highestUnlockedLevel = data?['highestUnlockedLevel'] as String?;
+  }
+
   ({String before, String after})? _pendingLevelUp;
   bool _celebratingLevel = false;
   Map<String, dynamic>? _savedSource;
@@ -201,6 +209,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     );
     if (widget.previewExercise != null) {
       _exercise = widget.previewExercise;
+      _readLevelStates(_exercise);
       _currentLevel =
           _exercise?['currentLevel'] as String? ??
           _exercise?['level'] as String?;
@@ -314,6 +323,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _beforeSaved = null;
       _savedSource = null;
       _currentLevel = null;
+      _readLevelStates(null);
       _practiceLevel = null;
       _owner = owner;
       _savedIds = {};
@@ -436,6 +446,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _exercise = response;
         _feedback = null;
         _selectedWord = null;
+        _readLevelStates(response);
         _currentLevel = response['currentLevel'] as String?;
         _practiceLevel = response['level'] as String?;
         _translationRevealed = response['level'] == 'A0';
@@ -595,6 +606,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           PracticeLevelPromotion.earned(_currentLevel, earnedLevel)) {
         _pendingLevelUp = (before: _currentLevel!, after: earnedLevel!);
       }
+      _readLevelStates(response);
       _currentLevel = earnedLevel;
       _practiceLevel =
           response['practiceLevel'] as String? ?? response['level'] as String?;
@@ -1345,6 +1357,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         context,
         selected: selected,
         current: _currentLevel!,
+        highestUnlockedLevel: _highestUnlockedLevel,
       );
       if (!confirmed || !mounted || epoch != _epoch) return;
       await WidgetsBinding.instance.endOfFrame;
@@ -1368,6 +1381,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         'level': selected,
       });
       if (!mounted || epoch != _epoch) return;
+      _readLevelStates(state);
       _currentLevel = state['currentLevel'] as String;
       _practiceLevel = state['practiceLevel'] as String;
       await _advance(autoplay: true);
@@ -1451,6 +1465,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     if (beforeSaved != null) {
       setState(() {
         _exercise = beforeSaved.exercise;
+        _readLevelStates(_exercise);
         _feedback = beforeSaved.feedback;
         _currentLevel = beforeSaved.currentLevel;
         _practiceLevel = beforeSaved.practiceLevel;
@@ -1651,6 +1666,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         PracticeLevelMenu(
                           level: level as String,
                           currentLevel: _currentLevel ?? level,
+                          levelStates: _levelStates,
+                          highestUnlockedLevel: _highestUnlockedLevel,
                           onSelected:
                               _savedSource != null ||
                                   _recording ||

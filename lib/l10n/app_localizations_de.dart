@@ -2240,7 +2240,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Wähle in den Einstellungen eine Lernsprache.';
+      'Wähle unter „Profil bearbeiten“ eine Lernsprache.';
 
   @override
   String get quickCallActive => 'Beende deinen Anruf, bevor du übst.';
@@ -2278,7 +2278,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nach 12 gewerteten Übungen auf deiner aktuellen Stufe prüfen wir deine letzten 12 Ergebnisse.';
 
   @override
-  String get quickLevelsUp => '10–12 richtig: eine Stufe höher.';
+  String get quickLevelsUp => '10–12 richtig: Diese Stufe bestehen.';
 
   @override
   String get quickLevelsStay => '5–9 richtig: auf dieser Stufe bleiben.';
@@ -2556,4 +2556,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Mikrofon wird gestartet…';
+
+  @override
+  String get quickLevelStateLocked => 'Gesperrt';
+
+  @override
+  String get quickLevelPracticing => 'In Übung';
+
+  @override
+  String get quickLevelPassed => 'Bestanden';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Beginne bei A0. Mindestens 10 richtige Antworten in den letzten 12 gewerteten Übungen schalten die nächste Stufe frei. C2 zu erreichen schaltet die Stufe nur frei; auch hier sind 10 von 12 richtigen Antworten zum Bestehen nötig. Bestandene Stufen bleiben bestanden, auch wenn eine leichtere Stufe zur Wiederholung empfohlen wird.';
 }

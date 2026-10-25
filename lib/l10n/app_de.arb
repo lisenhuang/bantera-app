@@ -651,7 +651,7 @@
   "quickAgain": "Noch einmal sagen",
   "quickUnavailable": "Die Vorbereitung dauert etwas länger. Bitte versuche es erneut.",
   "quickStart": "Übung starten",
-  "quickChooseLanguage": "Wähle in den Einstellungen eine Lernsprache.",
+  "quickChooseLanguage": "Wähle unter „Profil bearbeiten“ eine Lernsprache.",
   "quickCallActive": "Beende deinen Anruf, bevor du übst.",
   "goalCelebrationMessage": "Heute hast du dir Zeit für deine Sprache genommen. Jedes Wort zählt.",
   "goalCelebrationContinue": "Weiter üben",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "So funktionieren die Stufen?",
   "quickLevelsIntro": "Jede Sprache beginnt bei A0. Deine Stufe passt sich beim Üben automatisch an.",
   "quickLevelsWindow": "Nach 12 gewerteten Übungen auf deiner aktuellen Stufe prüfen wir deine letzten 12 Ergebnisse.",
-  "quickLevelsUp": "10–12 richtig: eine Stufe höher.",
+  "quickLevelsUp": "10–12 richtig: Diese Stufe bestehen.",
   "quickLevelsStay": "5–9 richtig: auf dieser Stufe bleiben.",
   "quickLevelsDown": "0–4 richtig: eine Stufe niedriger.",
   "quickLevelsScoring": "Pro Übung zählt nur deine erste klar erkannte Antwort. Unklare Aufnahmen und übersprungene Übungen zählen nicht.\n\nA1–C2: Übungen mit Übersetzung zählen nicht für Stufenänderungen. Ergebnisse ohne Übersetzung zählen, wenn du zur nächsten Übung gehst.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Die Ausspracheeinstellung konnte nicht gespeichert werden.",
   "practiceReleaseToCheck": "Loslassen zum Prüfen",
   "practiceTapToCheck": "Tippen zum Prüfen",
-  "practiceMicStarting": "Mikrofon wird gestartet…"
+  "practiceMicStarting": "Mikrofon wird gestartet…",
+  "quickLevelStateLocked": "Gesperrt",
+  "quickLevelPracticing": "In Übung",
+  "quickLevelPassed": "Bestanden",
+  "quickLevelStatesExplanation": "Beginne bei A0. Mindestens 10 richtige Antworten in den letzten 12 gewerteten Übungen schalten die nächste Stufe frei. C2 zu erreichen schaltet die Stufe nur frei; auch hier sind 10 von 12 richtigen Antworten zum Bestehen nötig. Bestandene Stufen bleiben bestanden, auch wenn eine leichtere Stufe zur Wiederholung empfohlen wird."
 }

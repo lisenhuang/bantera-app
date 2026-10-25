@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'practice_level_state.dart';
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -97,6 +98,17 @@ class PracticeLevelHelp extends StatelessWidget {
                       ),
                     ),
                 ],
+              ),
+              const SizedBox(height: 20),
+              for (final state in ['locked', 'practicing', 'passed'])
+                _rule(
+                  context,
+                  practiceLevelStateIcon(state),
+                  practiceLevelStateLabel(l, state),
+                ),
+              Text(
+                l.quickLevelStatesExplanation,
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
               ),
               const SizedBox(height: 20),
               Text(

@@ -686,7 +686,7 @@
   "quickAgain": "もう一度話す",
   "quickUnavailable": "準備に時間がかかっています。もう一度お試しください。",
   "quickStart": "練習を始める",
-  "quickChooseLanguage": "設定で学習言語を選んでください。",
+  "quickChooseLanguage": "「プロフィールを編集」で学習言語を選んでください。",
   "quickCallActive": "通話を終えてから練習してください。",
   "goalCelebrationMessage": "今日も言語学習に取り組めました。一語一語が力になります。",
   "goalCelebrationContinue": "練習を続ける",
@@ -697,7 +697,7 @@
   "quickLevelsLink": "レベルの仕組み？",
   "quickLevelsIntro": "各言語は A0 から始まります。練習に応じてレベルが自動で調整されます。",
   "quickLevelsWindow": "現在のレベルで採点対象の練習を12問終えると、直近12問の結果を確認します。",
-  "quickLevelsUp": "10〜12問正解：1レベル上がります。",
+  "quickLevelsUp": "10〜12問正解：このレベルに合格。",
   "quickLevelsStay": "5〜9問正解：現在のレベルを維持します。",
   "quickLevelsDown": "0〜4問正解：1レベル下がります。",
   "quickLevelsScoring": "各練習で最初にはっきり認識された回答だけがカウントされます。不明瞭な録音やスキップした練習はカウントされません。\n\nA1–C2: 翻訳を使用した練習はレベル判定に含まれません。翻訳を使用しなかった結果は、次の練習に進むと反映されます。",
@@ -773,5 +773,9 @@
   "practicePronunciationSaveFailed": "発音の設定を保存できませんでした。",
   "practiceReleaseToCheck": "指を離して確認",
   "practiceTapToCheck": "タップして確認",
-  "practiceMicStarting": "マイクを起動中…"
+  "practiceMicStarting": "マイクを起動中…",
+  "quickLevelStateLocked": "ロック中",
+  "quickLevelPracticing": "練習中",
+  "quickLevelPassed": "合格済み",
+  "quickLevelStatesExplanation": "A0から始めます。直近12問の採点対象の練習で10問以上正解すると合格し、次のレベルが解放されます。C2到達は解放を意味し、修了には同じく12問中10問以上の正解が必要です。復習のために低いレベルを勧められても、合格は取り消されません。"
 }

@@ -2243,7 +2243,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickChooseLanguage =>
-      'Choisissez une langue à apprendre dans les réglages.';
+      'Choisissez une langue à apprendre dans Modifier le profil.';
 
   @override
   String get quickCallActive => 'Terminez votre appel avant de vous entraîner.';
@@ -2281,8 +2281,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Après 12 exercices évalués à ton niveau actuel, nous examinons tes 12 derniers résultats.';
 
   @override
-  String get quickLevelsUp =>
-      '10–12 réponses correctes : tu montes d’un niveau.';
+  String get quickLevelsUp => '10–12 bonnes réponses : niveau validé.';
 
   @override
   String get quickLevelsStay =>
@@ -2563,4 +2562,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Démarrage du micro…';
+
+  @override
+  String get quickLevelStateLocked => 'Verrouillé';
+
+  @override
+  String get quickLevelPracticing => 'En cours';
+
+  @override
+  String get quickLevelPassed => 'Réussi';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Commencez à A0. Réussissez au moins 10 des 12 derniers exercices évalués pour valider un niveau et débloquer le suivant. Atteindre C2 le débloque ; il faut aussi réussir 10 exercices sur 12 pour le terminer. Les niveaux validés le restent, même si un niveau plus facile est conseillé pour réviser.';
 }

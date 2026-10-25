@@ -10,7 +10,7 @@ import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
-import '../profile/settings_screen.dart';
+import '../profile/edit_profile_screen.dart';
 import '../shared/profile_avatar.dart';
 
 // Number of recommended items to request from the server.
@@ -240,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const SettingsScreen(focusLanguages: true),
+          builder: (context) => const EditProfileScreen(focusLanguages: true),
         ),
       ),
       child: Container(

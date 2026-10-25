@@ -2157,7 +2157,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get quickStart => 'เริ่มฝึก';
 
   @override
-  String get quickChooseLanguage => 'เลือกภาษาที่เรียนในการตั้งค่า';
+  String get quickChooseLanguage => 'เลือกภาษาที่เรียนในหน้าแก้ไขโปรไฟล์';
 
   @override
   String get quickCallActive => 'วางสายก่อนเริ่มฝึก';
@@ -2194,7 +2194,7 @@ class AppLocalizationsTh extends AppLocalizations {
       'หลังทำแบบฝึกหัดที่มีการให้คะแนนครบ 12 ข้อในระดับปัจจุบัน เราจะพิจารณาผล 12 ข้อล่าสุด';
 
   @override
-  String get quickLevelsUp => 'ถูก 10–12 ข้อ: เลื่อนขึ้นหนึ่งระดับ';
+  String get quickLevelsUp => 'ถูก 10–12 ข้อ: ผ่านระดับนี้';
 
   @override
   String get quickLevelsStay => 'ถูก 5–9 ข้อ: อยู่ระดับเดิม';
@@ -2466,4 +2466,17 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'กำลังเปิดไมโครโฟน…';
+
+  @override
+  String get quickLevelStateLocked => 'ล็อกอยู่';
+
+  @override
+  String get quickLevelPracticing => 'กำลังฝึก';
+
+  @override
+  String get quickLevelPassed => 'ผ่านแล้ว';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'เริ่มจาก A0 ตอบถูกอย่างน้อย 10 ข้อจากแบบฝึกหัดที่นับคะแนน 12 ข้อล่าสุดเพื่อผ่านระดับและปลดล็อกระดับถัดไป การถึง C2 เป็นเพียงการปลดล็อก ยังต้องตอบถูก 10 จาก 12 ข้อเพื่อจบ C2 ระดับที่ผ่านแล้วจะยังคงผ่าน แม้ระบบจะแนะนำให้ทบทวนระดับที่ง่ายกว่า';
 }

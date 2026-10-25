@@ -8,7 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../shared/language_picker_totals.dart';
 import '../shared/locale_flag.dart';
 
-/// Account language preferences, displayed alongside the app language in Settings.
+/// Native and learning language preferences on Edit Profile.
 class ProfileLanguageSettings extends StatefulWidget {
   const ProfileLanguageSettings({super.key});
 
@@ -30,9 +30,13 @@ class _ProfileLanguageSettingsState extends State<ProfileLanguageSettings> {
   @override
   void initState() {
     super.initState();
-    if (_profile.profile == null) {
-      _profile.loadProfile(force: true);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _profile.profile == null &&
+          AuthSessionNotifier.instance.isAuthenticated) {
+        _profile.loadProfile(force: true);
+      }
+    });
     if (AuthSessionNotifier.instance.isAuthenticated) _loadLocales();
   }
 

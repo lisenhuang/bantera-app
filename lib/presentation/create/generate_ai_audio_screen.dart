@@ -20,7 +20,7 @@ import '../../domain/ai_audio_constants.dart';
 import '../../domain/models/models.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/video_processing_service.dart';
-import '../profile/settings_screen.dart';
+import '../profile/edit_profile_screen.dart';
 import '../shared/locale_flag.dart';
 import 'uploaded_video_detail_screen.dart';
 
@@ -538,12 +538,12 @@ class _GenerateAiAudioScreenState extends State<GenerateAiAudioScreen> {
           Text(l10n.aiGenLanguageSection, style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
           if (!hasLearningLang)
-            // No learning language set — show prompt to go to settings.
+            // No learning language set — show prompt to edit the profile.
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const SettingsScreen(focusLanguages: true),
+                  builder: (_) => const EditProfileScreen(focusLanguages: true),
                 ),
               ),
               child: Container(

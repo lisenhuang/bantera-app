@@ -2176,7 +2176,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get quickStart => 'Bắt đầu luyện tập';
 
   @override
-  String get quickChooseLanguage => 'Chọn ngôn ngữ học trong Cài đặt.';
+  String get quickChooseLanguage =>
+      'Chọn ngôn ngữ học trong mục Chỉnh sửa hồ sơ.';
 
   @override
   String get quickCallActive => 'Kết thúc cuộc gọi trước khi luyện tập.';
@@ -2213,7 +2214,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Sau 12 bài tập được chấm ở cấp độ hiện tại, chúng tôi xem xét 12 kết quả gần nhất.';
 
   @override
-  String get quickLevelsUp => 'Đúng 10–12 bài: tăng một cấp độ.';
+  String get quickLevelsUp => 'Đúng 10–12 câu: vượt qua cấp độ này.';
 
   @override
   String get quickLevelsStay => 'Đúng 5–9 bài: giữ nguyên cấp độ.';
@@ -2486,4 +2487,17 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Đang bật micrô…';
+
+  @override
+  String get quickLevelStateLocked => 'Đã khóa';
+
+  @override
+  String get quickLevelPracticing => 'Đang luyện tập';
+
+  @override
+  String get quickLevelPassed => 'Đã vượt qua';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'Bắt đầu từ A0. Trả lời đúng ít nhất 10 trong 12 bài tập được chấm điểm gần nhất để vượt qua cấp độ và mở cấp độ tiếp theo. Đạt C2 chỉ mở khóa cấp độ đó; bạn vẫn cần đúng 10 trên 12 để hoàn thành. Các cấp độ đã vượt qua được giữ nguyên, kể cả khi được đề xuất ôn tập cấp độ dễ hơn.';
 }

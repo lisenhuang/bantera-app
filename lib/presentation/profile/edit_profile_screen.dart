@@ -9,9 +9,12 @@ import '../../l10n/app_localizations.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
 import '../shared/profile_avatar.dart';
 import 'edit_profile_name_dialog.dart';
+import 'profile_language_settings.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key});
+  const EditProfileScreen({super.key, this.focusLanguages = false});
+
+  final bool focusLanguages;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -19,12 +22,20 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
+  final _languagesKey = GlobalKey();
   UserProfileNotifier get _profile => UserProfileNotifier.instance;
 
   @override
   void initState() {
     super.initState();
     if (_profile.profile == null) _profile.loadProfile(force: true);
+    if (widget.focusLanguages) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final target = _languagesKey.currentContext;
+        if (target != null) Scrollable.ensureVisible(target);
+      });
+    }
   }
 
   @override
@@ -37,12 +48,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           final l10n = AppLocalizations.of(context)!;
           return CustomScrollView(
             slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
+              SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Align(
-                    alignment: const Alignment(0, -.15),
+                    alignment: Alignment.topCenter,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 440),
                       child: Column(
@@ -124,16 +134,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   : _showEditName,
                             ),
                           ),
-                          if (_profile.localizedError(l10n)
-                              case final error?) ...[
-                            const SizedBox(height: 20),
-                            Text(
-                              error,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                          const SizedBox(height: 28),
+                          Align(
+                            key: _languagesKey,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                l10n.editProfileLanguagesSection,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                             ),
-                          ],
+                          ),
+                          const SizedBox(height: 12),
+                          ProfileLanguageSettings(
+                            key: ValueKey(
+                              AuthSessionNotifier.instance.session?.cacheKey,
+                            ),
+                          ),
                         ],
                       ),
                     ),

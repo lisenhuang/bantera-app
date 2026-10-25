@@ -20,7 +20,7 @@ import 'discover_filters.dart';
 import 'dialogues_library_menu.dart';
 import '../create/generate_ai_audio_screen.dart';
 import '../practice/media_detail_screen.dart';
-import '../profile/settings_screen.dart';
+import '../profile/edit_profile_screen.dart';
 import '../shared/locale_flag.dart';
 
 const _kPageSize = 20;
@@ -357,7 +357,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => const SettingsScreen(focusLanguages: true),
+          builder: (_) => const EditProfileScreen(focusLanguages: true),
         ),
       ),
       child: Container(

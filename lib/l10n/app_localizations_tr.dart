@@ -2175,7 +2175,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get quickStart => 'Başla';
 
   @override
-  String get quickChooseLanguage => 'Ayarlardan öğrenmek istediğin dili seç.';
+  String get quickChooseLanguage =>
+      'Profili Düzenle bölümünde öğrenmek istediğiniz dili seçin.';
 
   @override
   String get quickCallActive => 'Pratik yapmadan önce aramanı bitir.';
@@ -2212,7 +2213,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Mevcut seviyende puanlanan 12 alıştırmadan sonra son 12 sonucunu değerlendiririz.';
 
   @override
-  String get quickLevelsUp => '10–12 doğru: bir seviye yükselirsin.';
+  String get quickLevelsUp => '10–12 doğru: bu seviye geçilir.';
 
   @override
   String get quickLevelsStay => '5–9 doğru: aynı seviyede kalırsın.';
@@ -2487,4 +2488,17 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceMicStarting => 'Mikrofon başlatılıyor…';
+
+  @override
+  String get quickLevelStateLocked => 'Kilitli';
+
+  @override
+  String get quickLevelPracticing => 'Çalışılıyor';
+
+  @override
+  String get quickLevelPassed => 'Geçildi';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      'A0\'dan başlayın. Son 12 puanlanan alıştırmanın en az 10\'unu doğru yanıtlayarak seviyeyi geçin ve bir sonrakini açın. C2\'ye ulaşmak yalnızca kilidini açar; tamamlamak için yine 12 sorudan en az 10\'unu doğru yanıtlamalısınız. Tekrar için daha kolay bir seviye önerilse bile geçilen seviyeler korunur.';
 }

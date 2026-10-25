@@ -651,7 +651,7 @@
   "quickAgain": "Nói lại",
   "quickUnavailable": "Chuẩn bị lâu hơn một chút. Vui lòng thử lại.",
   "quickStart": "Bắt đầu luyện tập",
-  "quickChooseLanguage": "Chọn ngôn ngữ học trong Cài đặt.",
+  "quickChooseLanguage": "Chọn ngôn ngữ học trong mục Chỉnh sửa hồ sơ.",
   "quickCallActive": "Kết thúc cuộc gọi trước khi luyện tập.",
   "goalCelebrationMessage": "Hôm nay bạn đã dành thời gian học ngôn ngữ. Mỗi từ đều có ý nghĩa.",
   "goalCelebrationContinue": "Tiếp tục luyện tập",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Cách hoạt động của cấp độ?",
   "quickLevelsIntro": "Mỗi ngôn ngữ bắt đầu từ A0. Cấp độ tự động điều chỉnh khi bạn luyện tập.",
   "quickLevelsWindow": "Sau 12 bài tập được chấm ở cấp độ hiện tại, chúng tôi xem xét 12 kết quả gần nhất.",
-  "quickLevelsUp": "Đúng 10–12 bài: tăng một cấp độ.",
+  "quickLevelsUp": "Đúng 10–12 câu: vượt qua cấp độ này.",
   "quickLevelsStay": "Đúng 5–9 bài: giữ nguyên cấp độ.",
   "quickLevelsDown": "Đúng 0–4 bài: giảm một cấp độ.",
   "quickLevelsScoring": "Chỉ câu trả lời đầu tiên được nhận dạng rõ ràng trong mỗi bài tập mới được tính. Bản ghi âm không rõ và bài tập bỏ qua không được tính.\n\nA1–C2: Bài tập có dùng bản dịch không được tính khi điều chỉnh trình độ. Kết quả không dùng bản dịch được tính khi chuyển sang bài tiếp theo.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Không thể lưu cài đặt phát âm.",
   "practiceReleaseToCheck": "Thả ra để kiểm tra",
   "practiceTapToCheck": "Chạm để kiểm tra",
-  "practiceMicStarting": "Đang bật micrô…"
+  "practiceMicStarting": "Đang bật micrô…",
+  "quickLevelStateLocked": "Đã khóa",
+  "quickLevelPracticing": "Đang luyện tập",
+  "quickLevelPassed": "Đã vượt qua",
+  "quickLevelStatesExplanation": "Bắt đầu từ A0. Trả lời đúng ít nhất 10 trong 12 bài tập được chấm điểm gần nhất để vượt qua cấp độ và mở cấp độ tiếp theo. Đạt C2 chỉ mở khóa cấp độ đó; bạn vẫn cần đúng 10 trên 12 để hoàn thành. Các cấp độ đã vượt qua được giữ nguyên, kể cả khi được đề xuất ôn tập cấp độ dễ hơn."
 }

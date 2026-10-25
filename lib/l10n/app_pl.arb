@@ -651,7 +651,7 @@
   "quickAgain": "Powiedz ponownie",
   "quickUnavailable": "Przygotowanie trwa trochę dłużej. Spróbuj ponownie.",
   "quickStart": "Zacznij ćwiczyć",
-  "quickChooseLanguage": "Wybierz język nauki w ustawieniach.",
+  "quickChooseLanguage": "Wybierz język do nauki w sekcji Edytuj profil.",
   "quickCallActive": "Zakończ rozmowę przed ćwiczeniem.",
   "goalCelebrationMessage": "Dziś znalazł się czas na naukę języka. Każde słowo się liczy.",
   "goalCelebrationContinue": "Ćwicz dalej",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Jak działają poziomy?",
   "quickLevelsIntro": "Każdy język zaczyna się od A0. Poziom dostosowuje się automatycznie w miarę ćwiczeń.",
   "quickLevelsWindow": "Po 12 ocenionych ćwiczeniach na obecnym poziomie sprawdzamy Twoje ostatnie 12 wyników.",
-  "quickLevelsUp": "10–12 poprawnych: poziom wyżej.",
+  "quickLevelsUp": "10–12 poprawnych: poziom zaliczony.",
   "quickLevelsStay": "5–9 poprawnych: poziom bez zmian.",
   "quickLevelsDown": "0–4 poprawne: poziom niżej.",
   "quickLevelsScoring": "Liczy się tylko pierwsza wyraźnie rozpoznana odpowiedź w każdym ćwiczeniu. Niewyraźne nagrania i pominięte ćwiczenia nie są liczone.\n\nA1–C2: Ćwiczenia z tłumaczeniem nie liczą się do zmian poziomu. Wyniki bez tłumaczenia liczą się po przejściu do następnego ćwiczenia.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "Nie udało się zapisać ustawienia wymowy.",
   "practiceReleaseToCheck": "Puść, aby sprawdzić",
   "practiceTapToCheck": "Dotknij, aby sprawdzić",
-  "practiceMicStarting": "Uruchamianie mikrofonu…"
+  "practiceMicStarting": "Uruchamianie mikrofonu…",
+  "quickLevelStateLocked": "Zablokowany",
+  "quickLevelPracticing": "W trakcie nauki",
+  "quickLevelPassed": "Zaliczony",
+  "quickLevelStatesExplanation": "Zaczynasz od A0. Co najmniej 10 poprawnych odpowiedzi w ostatnich 12 ocenianych ćwiczeniach zalicza poziom i odblokowuje następny. Dotarcie do C2 tylko go odblokowuje; do ukończenia nadal potrzeba 10 poprawnych odpowiedzi na 12. Zaliczone poziomy pozostają zaliczone, nawet gdy zalecana jest powtórka łatwiejszego poziomu."
 }

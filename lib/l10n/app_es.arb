@@ -651,7 +651,7 @@
   "quickAgain": "Decir otra vez",
   "quickUnavailable": "La preparación está tardando un poco más. Inténtalo de nuevo.",
   "quickStart": "Empezar",
-  "quickChooseLanguage": "Elige un idioma de aprendizaje en Configuración.",
+  "quickChooseLanguage": "Elige un idioma de aprendizaje en Editar perfil.",
   "quickCallActive": "Termina la llamada antes de practicar.",
   "goalCelebrationMessage": "Hoy dedicaste tiempo a tu idioma. Cada palabra cuenta.",
   "goalCelebrationContinue": "Seguir practicando",
@@ -662,7 +662,7 @@
   "quickLevelsLink": "Cómo funcionan los niveles?",
   "quickLevelsIntro": "Cada idioma empieza en A0. Tu nivel se ajusta automáticamente mientras practicas.",
   "quickLevelsWindow": "Tras 12 ejercicios puntuados en tu nivel actual, revisamos tus últimos 12 resultados.",
-  "quickLevelsUp": "10–12 correctos: subes un nivel.",
+  "quickLevelsUp": "10–12 correctas: superas este nivel.",
   "quickLevelsStay": "5–9 correctos: mantienes este nivel.",
   "quickLevelsDown": "0–4 correctos: bajas un nivel.",
   "quickLevelsScoring": "Solo cuenta tu primera respuesta reconocida con claridad en cada ejercicio. Las grabaciones poco claras y los ejercicios omitidos no cuentan.\n\nA1–C2: Los ejercicios con traducción no cuentan para cambiar de nivel. Los resultados sin traducción cuentan al pasar al siguiente ejercicio.",
@@ -738,5 +738,9 @@
   "practicePronunciationSaveFailed": "No se pudo guardar el ajuste de pronunciación.",
   "practiceReleaseToCheck": "Suelta para comprobar",
   "practiceTapToCheck": "Toca para comprobar",
-  "practiceMicStarting": "Iniciando el micrófono…"
+  "practiceMicStarting": "Iniciando el micrófono…",
+  "quickLevelStateLocked": "Bloqueado",
+  "quickLevelPracticing": "En práctica",
+  "quickLevelPassed": "Superado",
+  "quickLevelStatesExplanation": "Empiezas en A0. Supera un nivel con al menos 10 respuestas correctas en los últimos 12 ejercicios puntuados para desbloquear el siguiente. Llegar a C2 solo lo desbloquea; también debes acertar 10 de 12 para completarlo. Los niveles superados se conservan aunque se recomiende repasar uno más fácil."
 }

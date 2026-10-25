@@ -2084,7 +2084,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickStart => '开始练习';
 
   @override
-  String get quickChooseLanguage => '请在设置中选择学习语言。';
+  String get quickChooseLanguage => '请在“编辑个人资料”中选择学习语言。';
 
   @override
   String get quickCallActive => '请先结束通话，再开始练习。';
@@ -2117,7 +2117,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickLevelsWindow => '在当前等级完成 12 次计分练习后，我们会评估最近 12 次的结果。';
 
   @override
-  String get quickLevelsUp => '答对 10–12 次：上升一级。';
+  String get quickLevelsUp => '答对 10–12 道：通过此级别。';
 
   @override
   String get quickLevelsStay => '答对 5–9 次：保持当前等级。';
@@ -2367,6 +2367,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get practiceMicStarting => '正在启动麦克风…';
+
+  @override
+  String get quickLevelStateLocked => '未解锁';
+
+  @override
+  String get quickLevelPracticing => '练习中';
+
+  @override
+  String get quickLevelPassed => '已通过';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      '从 A0 开始。最近 12 道计分练习中至少答对 10 道，即可通过当前级别并解锁下一级。达到 C2 只是解锁，还需同样答对至少 10 道才能完成 C2。即使系统建议复习较低级别，已通过的级别仍保留。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4453,7 +4466,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickStart => '開始練習';
 
   @override
-  String get quickChooseLanguage => '請在設定中選擇學習語言。';
+  String get quickChooseLanguage => '請在「編輯個人資料」中選擇學習語言。';
 
   @override
   String get quickCallActive => '請先結束通話，再開始練習。';
@@ -4486,7 +4499,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickLevelsWindow => '在目前等級完成 12 次計分練習後，我們會評估最近 12 次的結果。';
 
   @override
-  String get quickLevelsUp => '答對 10–12 次：上升一級。';
+  String get quickLevelsUp => '答對 10–12 道：通過此級別。';
 
   @override
   String get quickLevelsStay => '答對 5–9 次：維持目前等級。';
@@ -4736,4 +4749,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get practiceMicStarting => '正在啟動麥克風…';
+
+  @override
+  String get quickLevelStateLocked => '未解鎖';
+
+  @override
+  String get quickLevelPracticing => '練習中';
+
+  @override
+  String get quickLevelPassed => '已通過';
+
+  @override
+  String get quickLevelStatesExplanation =>
+      '從 A0 開始。最近 12 道計分練習中至少答對 10 道，即可通過目前級別並解鎖下一級。達到 C2 只是解鎖，還需同樣答對至少 10 道才能完成 C2。即使系統建議複習較低級別，已通過的級別仍保留。';
 }
