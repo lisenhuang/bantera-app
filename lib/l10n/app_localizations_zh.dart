@@ -2054,10 +2054,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickCue2 => '对话 2 · 你的回答';
 
   @override
-  String get quickSpeakHint => '点击麦克风，大声说出其中一个回答。';
+  String get quickSpeakHint => '轻点开始，再次轻点检查；或按住说话，松开检查。';
 
   @override
-  String get quickSpeak => '点击说话';
+  String get quickSpeak => '轻点或按住说话';
 
   @override
   String get quickChecking => '正在听你的回答…';
@@ -2346,6 +2346,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickClearSavedBody => '要从此设备中移除此账号保存的所有练习吗？';
+
+  @override
+  String get practicePronunciation => '发音';
+
+  @override
+  String get practicePronunciationPreparing => '正在准备发音…';
+
+  @override
+  String get practicePronunciationUnavailable => '暂时无法显示发音。';
+
+  @override
+  String get practicePronunciationSaveFailed => '无法保存发音设置。';
+
+  @override
+  String get practiceReleaseToCheck => '松开以检查';
+
+  @override
+  String get practiceTapToCheck => '轻点以检查';
+
+  @override
+  String get practiceMicStarting => '正在启动麦克风…';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4402,10 +4423,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickCue2 => '對話 2 · 你的回答';
 
   @override
-  String get quickSpeakHint => '點選麥克風，大聲說出其中一個回答。';
+  String get quickSpeakHint => '輕點開始，再次輕點檢查；或按住說話，放開檢查。';
 
   @override
-  String get quickSpeak => '點選說話';
+  String get quickSpeak => '輕點或按住說話';
 
   @override
   String get quickChecking => '正在聽你的回答…';
@@ -4694,4 +4715,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickClearSavedBody => '要從此裝置移除此帳號儲存的所有練習嗎？';
+
+  @override
+  String get practicePronunciation => '發音';
+
+  @override
+  String get practicePronunciationPreparing => '正在準備發音…';
+
+  @override
+  String get practicePronunciationUnavailable => '暫時無法顯示發音。';
+
+  @override
+  String get practicePronunciationSaveFailed => '無法儲存發音設定。';
+
+  @override
+  String get practiceReleaseToCheck => '放開以檢查';
+
+  @override
+  String get practiceTapToCheck => '輕點以檢查';
+
+  @override
+  String get practiceMicStarting => '正在啟動麥克風…';
 }

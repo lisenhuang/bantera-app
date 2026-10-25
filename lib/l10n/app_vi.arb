@@ -641,8 +641,8 @@
   "quickPreparingHint": "Một hội thoại ngắn sắp sẵn sàng. Chúng tôi chuẩn bị bài tiếp theo khi bạn luyện tập.",
   "quickCue1": "Lời thoại 1 · Nghe",
   "quickCue2": "Lời thoại 2 · Câu trả lời",
-  "quickSpeakHint": "Nhấn micrô và nói to một trong hai câu trả lời.",
-  "quickSpeak": "Nhấn để nói",
+  "quickSpeakHint": "Chạm để bắt đầu rồi chạm lần nữa để kiểm tra, hoặc giữ khi nói và thả ra để kiểm tra.",
+  "quickSpeak": "Chạm hoặc giữ để nói",
   "quickChecking": "Đang kiểm tra câu trả lời…",
   "quickCorrect": "Câu trả lời phù hợp. Làm tốt lắm.",
   "quickIncorrect": "Hãy thử câu trả lời còn lại.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Tạm dừng âm thanh",
   "quickResumeAudio": "Tiếp tục phát",
   "quickClearSavedTitle": "Xóa tất cả bài luyện tập đã lưu?",
-  "quickClearSavedBody": "Xóa tất cả bài luyện tập đã lưu của tài khoản này khỏi thiết bị này?"
+  "quickClearSavedBody": "Xóa tất cả bài luyện tập đã lưu của tài khoản này khỏi thiết bị này?",
+  "practicePronunciation": "Phát âm",
+  "practicePronunciationPreparing": "Đang chuẩn bị cách phát âm…",
+  "practicePronunciationUnavailable": "Hiện chưa có cách phát âm.",
+  "practicePronunciationSaveFailed": "Không thể lưu cài đặt phát âm.",
+  "practiceReleaseToCheck": "Thả ra để kiểm tra",
+  "practiceTapToCheck": "Chạm để kiểm tra",
+  "practiceMicStarting": "Đang bật micrô…"
 }

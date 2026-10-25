@@ -2207,10 +2207,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Tippe auf das Mikrofon und sprich eine der Antworten laut aus.';
+      'Zum Starten tippen und zum Prüfen erneut tippen. Oder beim Sprechen halten und zum Prüfen loslassen.';
 
   @override
-  String get quickSpeak => 'Zum Sprechen tippen';
+  String get quickSpeak => 'Tippen oder halten zum Sprechen';
 
   @override
   String get quickChecking => 'Deine Antwort wird geprüft…';
@@ -2533,4 +2533,27 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Alle gespeicherten Übungen dieses Kontos von diesem Gerät entfernen?';
+
+  @override
+  String get practicePronunciation => 'Aussprache';
+
+  @override
+  String get practicePronunciationPreparing => 'Aussprache wird vorbereitet…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Die Aussprache ist derzeit nicht verfügbar.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Die Ausspracheeinstellung konnte nicht gespeichert werden.';
+
+  @override
+  String get practiceReleaseToCheck => 'Loslassen zum Prüfen';
+
+  @override
+  String get practiceTapToCheck => 'Tippen zum Prüfen';
+
+  @override
+  String get practiceMicStarting => 'Mikrofon wird gestartet…';
 }

@@ -2222,10 +2222,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Dotknij mikrofonu i wypowiedz jedną z odpowiedzi.';
+      'Dotknij, aby rozpocząć, i ponownie, aby sprawdzić. Możesz też przytrzymać podczas mówienia i puścić, aby sprawdzić.';
 
   @override
-  String get quickSpeak => 'Dotknij, aby mówić';
+  String get quickSpeak => 'Dotknij lub przytrzymaj, aby mówić';
 
   @override
   String get quickChecking => 'Sprawdzamy odpowiedź…';
@@ -2544,4 +2544,27 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Usunąć z tego urządzenia wszystkie ćwiczenia zapisane dla tego konta?';
+
+  @override
+  String get practicePronunciation => 'Wymowa';
+
+  @override
+  String get practicePronunciationPreparing => 'Przygotowywanie wymowy…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Wymowa jest teraz niedostępna.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Nie udało się zapisać ustawienia wymowy.';
+
+  @override
+  String get practiceReleaseToCheck => 'Puść, aby sprawdzić';
+
+  @override
+  String get practiceTapToCheck => 'Dotknij, aby sprawdzić';
+
+  @override
+  String get practiceMicStarting => 'Uruchamianie mikrofonu…';
 }

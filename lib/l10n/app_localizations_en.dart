@@ -2207,10 +2207,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Tap the microphone and say one of the replies aloud.';
+      'Tap to start and tap again to check, or hold while speaking and release to check.';
 
   @override
-  String get quickSpeak => 'Tap to speak';
+  String get quickSpeak => 'Tap or hold to speak';
 
   @override
   String get quickChecking => 'Listening to your answer…';
@@ -2526,4 +2526,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Remove all saved practices for this account from this device?';
+
+  @override
+  String get practicePronunciation => 'Pronunciation';
+
+  @override
+  String get practicePronunciationPreparing => 'Preparing pronunciation…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Pronunciation is unavailable right now.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Could not save the pronunciation setting.';
+
+  @override
+  String get practiceReleaseToCheck => 'Release to check';
+
+  @override
+  String get practiceTapToCheck => 'Tap to check';
+
+  @override
+  String get practiceMicStarting => 'Starting microphone…';
 }

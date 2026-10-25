@@ -105,6 +105,7 @@ void main() {
     Map<String, dynamic>? feedback,
     Map<String, dynamic> material = exercise,
   }) async {
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.binding.setSurfaceSize(Size(width, height));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -410,7 +411,9 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(
-        find.text('Tap the microphone and say one of the replies aloud.'),
+        find.text(
+          'Tap to start and tap again to check, or hold while speaking and release to check.',
+        ),
         findsOneWidget,
       );
       expect(find.text('That reply fits. Nicely done.'), findsNothing);

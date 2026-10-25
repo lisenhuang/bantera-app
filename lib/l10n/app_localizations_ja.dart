@@ -2051,10 +2051,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickCue2 => 'セリフ2 · あなたの返事';
 
   @override
-  String get quickSpeakHint => 'マイクを押して、どちらかの返事を声に出してください。';
+  String get quickSpeakHint => 'タップで開始し、もう一度タップで確認。長押しして話し、指を離して確認することもできます。';
 
   @override
-  String get quickSpeak => 'タップして話す';
+  String get quickSpeak => 'タップまたは長押しで話す';
 
   @override
   String get quickChecking => '返事を確認中…';
@@ -2349,4 +2349,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickClearSavedBody => 'このアカウントで保存したすべての練習を、この端末から削除しますか？';
+
+  @override
+  String get practicePronunciation => '発音';
+
+  @override
+  String get practicePronunciationPreparing => '発音を準備中…';
+
+  @override
+  String get practicePronunciationUnavailable => '現在、発音を表示できません。';
+
+  @override
+  String get practicePronunciationSaveFailed => '発音の設定を保存できませんでした。';
+
+  @override
+  String get practiceReleaseToCheck => '指を離して確認';
+
+  @override
+  String get practiceTapToCheck => 'タップして確認';
+
+  @override
+  String get practiceMicStarting => 'マイクを起動中…';
 }

@@ -224,6 +224,12 @@ class PracticeAnswerMatcher {
           : r'\p{N}+',
       unicode: true,
     ).allMatches(text).map((x) => x.group(0)!).toList();
+    if (locale.toLowerCase().split('-').first == 'ja') {
+      // Bind values to their clock units and retain AM/PM: 6:12 is not 12:06.
+      result.addAll(
+        RegExp(r'[0-9]+[時分秒]|午前|午後').allMatches(text).map((m) => m[0]!),
+      );
+    }
     if (['zh', 'yue'].contains(locale.toLowerCase().split('-').first)) {
       result.addAll(
         // Protect the complete clock too: 6:12 must not equal 12:06.

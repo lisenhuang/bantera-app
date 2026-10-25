@@ -641,8 +641,8 @@
   "quickPreparingHint": "Ein kurzes Gespräch ist gleich bereit. Während du übst, bereiten wir die nächsten vor.",
   "quickCue1": "Äußerung 1 · Zuhören",
   "quickCue2": "Äußerung 2 · Deine Antwort",
-  "quickSpeakHint": "Tippe auf das Mikrofon und sprich eine der Antworten laut aus.",
-  "quickSpeak": "Zum Sprechen tippen",
+  "quickSpeakHint": "Zum Starten tippen und zum Prüfen erneut tippen. Oder beim Sprechen halten und zum Prüfen loslassen.",
+  "quickSpeak": "Tippen oder halten zum Sprechen",
   "quickChecking": "Deine Antwort wird geprüft…",
   "quickCorrect": "Die Antwort passt. Gut gemacht.",
   "quickIncorrect": "Versuche die andere Antwort.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Audio pausieren",
   "quickResumeAudio": "Audio fortsetzen",
   "quickClearSavedTitle": "Alle gespeicherten Übungen entfernen?",
-  "quickClearSavedBody": "Alle gespeicherten Übungen dieses Kontos von diesem Gerät entfernen?"
+  "quickClearSavedBody": "Alle gespeicherten Übungen dieses Kontos von diesem Gerät entfernen?",
+  "practicePronunciation": "Aussprache",
+  "practicePronunciationPreparing": "Aussprache wird vorbereitet…",
+  "practicePronunciationUnavailable": "Die Aussprache ist derzeit nicht verfügbar.",
+  "practicePronunciationSaveFailed": "Die Ausspracheeinstellung konnte nicht gespeichert werden.",
+  "practiceReleaseToCheck": "Loslassen zum Prüfen",
+  "practiceTapToCheck": "Tippen zum Prüfen",
+  "practiceMicStarting": "Mikrofon wird gestartet…"
 }

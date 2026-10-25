@@ -641,8 +641,8 @@
   "quickPreparingHint": "บทสนทนาสั้น ๆ ใกล้พร้อมแล้ว เราจะเตรียมข้อต่อไประหว่างที่คุณฝึก",
   "quickCue1": "บทพูด 1 · ฟัง",
   "quickCue2": "บทพูด 2 · คำตอบของคุณ",
-  "quickSpeakHint": "แตะไมโครโฟนแล้วพูดคำตอบหนึ่งข้อออกเสียง",
-  "quickSpeak": "แตะเพื่อพูด",
+  "quickSpeakHint": "แตะเพื่อเริ่มและแตะอีกครั้งเพื่อตรวจคำตอบ หรือกดค้างขณะพูดแล้วปล่อยเพื่อตรวจคำตอบ",
+  "quickSpeak": "แตะหรือกดค้างเพื่อพูด",
   "quickChecking": "กำลังตรวจคำตอบ…",
   "quickCorrect": "คำตอบนี้เหมาะสม ทำได้ดี",
   "quickIncorrect": "ลองคำตอบอีกข้อ",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "หยุดเสียงชั่วคราว",
   "quickResumeAudio": "เล่นเสียงต่อ",
   "quickClearSavedTitle": "ลบแบบฝึกที่บันทึกไว้ทั้งหมดหรือไม่?",
-  "quickClearSavedBody": "ลบแบบฝึกทั้งหมดที่บันทึกไว้สำหรับบัญชีนี้ออกจากอุปกรณ์นี้หรือไม่?"
+  "quickClearSavedBody": "ลบแบบฝึกทั้งหมดที่บันทึกไว้สำหรับบัญชีนี้ออกจากอุปกรณ์นี้หรือไม่?",
+  "practicePronunciation": "การออกเสียง",
+  "practicePronunciationPreparing": "กำลังเตรียมคำอ่าน…",
+  "practicePronunciationUnavailable": "ยังไม่สามารถแสดงคำอ่านได้ในขณะนี้",
+  "practicePronunciationSaveFailed": "บันทึกการตั้งค่าการออกเสียงไม่สำเร็จ",
+  "practiceReleaseToCheck": "ปล่อยเพื่อตรวจคำตอบ",
+  "practiceTapToCheck": "แตะเพื่อตรวจคำตอบ",
+  "practiceMicStarting": "กำลังเปิดไมโครโฟน…"
 }

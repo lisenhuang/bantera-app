@@ -902,8 +902,8 @@
   "quickPreparingHint": "A short conversation is on its way. We’ll prepare the next ones while you practise.",
   "quickCue1": "Cue 1 · Listen",
   "quickCue2": "Cue 2 · Your reply",
-  "quickSpeakHint": "Tap the microphone and say one of the replies aloud.",
-  "quickSpeak": "Tap to speak",
+  "quickSpeakHint": "Tap to start and tap again to check, or hold while speaking and release to check.",
+  "quickSpeak": "Tap or hold to speak",
   "quickChecking": "Listening to your answer…",
   "quickCorrect": "That reply fits. Nicely done.",
   "quickIncorrect": "Try the other reply.",
@@ -1056,5 +1056,12 @@
     }
   },
   "quickClearSavedTitle": "Clear all saved practice?",
-  "quickClearSavedBody": "Remove all saved practices for this account from this device?"
+  "quickClearSavedBody": "Remove all saved practices for this account from this device?",
+  "practicePronunciation": "Pronunciation",
+  "practicePronunciationPreparing": "Preparing pronunciation…",
+  "practicePronunciationUnavailable": "Pronunciation is unavailable right now.",
+  "practicePronunciationSaveFailed": "Could not save the pronunciation setting.",
+  "practiceReleaseToCheck": "Release to check",
+  "practiceTapToCheck": "Tap to check",
+  "practiceMicStarting": "Starting microphone…"
 }

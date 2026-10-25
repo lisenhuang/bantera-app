@@ -641,8 +641,8 @@
   "quickPreparingHint": "一段簡短對話即將準備好。練習時，我們會繼續準備下一題。",
   "quickCue1": "對話 1 · 聽一聽",
   "quickCue2": "對話 2 · 你的回答",
-  "quickSpeakHint": "點選麥克風，大聲說出其中一個回答。",
-  "quickSpeak": "點選說話",
+  "quickSpeakHint": "輕點開始，再次輕點檢查；或按住說話，放開檢查。",
+  "quickSpeak": "輕點或按住說話",
   "quickChecking": "正在聽你的回答…",
   "quickCorrect": "回答合適，做得不錯。",
   "quickIncorrect": "試試另一個回答。",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "暫停音訊",
   "quickResumeAudio": "繼續播放",
   "quickClearSavedTitle": "清空所有已儲存的練習？",
-  "quickClearSavedBody": "要從此裝置移除此帳號儲存的所有練習嗎？"
+  "quickClearSavedBody": "要從此裝置移除此帳號儲存的所有練習嗎？",
+  "practicePronunciation": "發音",
+  "practicePronunciationPreparing": "正在準備發音…",
+  "practicePronunciationUnavailable": "暫時無法顯示發音。",
+  "practicePronunciationSaveFailed": "無法儲存發音設定。",
+  "practiceReleaseToCheck": "放開以檢查",
+  "practiceTapToCheck": "輕點以檢查",
+  "practiceMicStarting": "正在啟動麥克風…"
 }

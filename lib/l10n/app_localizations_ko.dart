@@ -2062,10 +2062,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickCue2 => '대사 2 · 나의 답';
 
   @override
-  String get quickSpeakHint => '마이크를 누르고 두 답 중 하나를 소리 내어 말하세요.';
+  String get quickSpeakHint =>
+      '탭하여 시작하고 다시 탭하여 확인하세요. 길게 누른 채 말하고 손을 떼어 확인할 수도 있어요.';
 
   @override
-  String get quickSpeak => '눌러서 말하기';
+  String get quickSpeak => '탭하거나 길게 눌러 말하기';
 
   @override
   String get quickChecking => '답을 확인하고 있어요…';
@@ -2365,4 +2366,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get quickClearSavedBody => '이 계정에 저장된 모든 연습을 이 기기에서 삭제할까요?';
+
+  @override
+  String get practicePronunciation => '발음';
+
+  @override
+  String get practicePronunciationPreparing => '발음 준비 중…';
+
+  @override
+  String get practicePronunciationUnavailable => '지금은 발음을 표시할 수 없습니다.';
+
+  @override
+  String get practicePronunciationSaveFailed => '발음 설정을 저장하지 못했습니다.';
+
+  @override
+  String get practiceReleaseToCheck => '손을 떼어 확인';
+
+  @override
+  String get practiceTapToCheck => '탭하여 확인';
+
+  @override
+  String get practiceMicStarting => '마이크 시작 중…';
 }

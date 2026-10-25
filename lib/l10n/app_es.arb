@@ -641,8 +641,8 @@
   "quickPreparingHint": "Pronto tendrás una conversación breve. Prepararemos las siguientes mientras practicas.",
   "quickCue1": "Intervención 1 · Escucha",
   "quickCue2": "Intervención 2 · Tu respuesta",
-  "quickSpeakHint": "Toca el micrófono y di una de las respuestas en voz alta.",
-  "quickSpeak": "Toca para hablar",
+  "quickSpeakHint": "Toca para empezar y vuelve a tocar para comprobar, o mantén pulsado mientras hablas y suelta para comprobar.",
+  "quickSpeak": "Toca o mantén pulsado para hablar",
   "quickChecking": "Comprobando tu respuesta…",
   "quickCorrect": "Esa respuesta encaja. Bien hecho.",
   "quickIncorrect": "Prueba la otra respuesta.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Pausar audio",
   "quickResumeAudio": "Reanudar audio",
   "quickClearSavedTitle": "¿Borrar todos los ejercicios guardados?",
-  "quickClearSavedBody": "¿Quitar de este dispositivo todos los ejercicios guardados de esta cuenta?"
+  "quickClearSavedBody": "¿Quitar de este dispositivo todos los ejercicios guardados de esta cuenta?",
+  "practicePronunciation": "Pronunciación",
+  "practicePronunciationPreparing": "Preparando la pronunciación…",
+  "practicePronunciationUnavailable": "La pronunciación no está disponible ahora.",
+  "practicePronunciationSaveFailed": "No se pudo guardar el ajuste de pronunciación.",
+  "practiceReleaseToCheck": "Suelta para comprobar",
+  "practiceTapToCheck": "Toca para comprobar",
+  "practiceMicStarting": "Iniciando el micrófono…"
 }

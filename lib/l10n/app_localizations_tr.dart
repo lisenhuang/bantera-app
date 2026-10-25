@@ -2144,10 +2144,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Mikrofona dokun ve yanıtlardan birini sesli söyle.';
+      'Başlamak için dokunun, kontrol etmek için tekrar dokunun. Ya da konuşurken basılı tutup kontrol etmek için bırakın.';
 
   @override
-  String get quickSpeak => 'Konuşmak için dokun';
+  String get quickSpeak => 'Konuşmak için dokunun veya basılı tutun';
 
   @override
   String get quickChecking => 'Yanıtın kontrol ediliyor…';
@@ -2465,4 +2465,26 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Bu hesap için kaydedilen tüm alıştırmalar bu cihazdan kaldırılsın mı?';
+
+  @override
+  String get practicePronunciation => 'Telaffuz';
+
+  @override
+  String get practicePronunciationPreparing => 'Telaffuz hazırlanıyor…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Telaffuz şu anda kullanılamıyor.';
+
+  @override
+  String get practicePronunciationSaveFailed => 'Telaffuz ayarı kaydedilemedi.';
+
+  @override
+  String get practiceReleaseToCheck => 'Kontrol etmek için bırakın';
+
+  @override
+  String get practiceTapToCheck => 'Kontrol etmek için dokunun';
+
+  @override
+  String get practiceMicStarting => 'Mikrofon başlatılıyor…';
 }

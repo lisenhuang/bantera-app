@@ -676,8 +676,8 @@
   "quickPreparingHint": "短い会話を準備しています。練習中に次の問題も用意します。",
   "quickCue1": "セリフ1 · 聞く",
   "quickCue2": "セリフ2 · あなたの返事",
-  "quickSpeakHint": "マイクを押して、どちらかの返事を声に出してください。",
-  "quickSpeak": "タップして話す",
+  "quickSpeakHint": "タップで開始し、もう一度タップで確認。長押しして話し、指を離して確認することもできます。",
+  "quickSpeak": "タップまたは長押しで話す",
   "quickChecking": "返事を確認中…",
   "quickCorrect": "会話に合う返事です。",
   "quickIncorrect": "もう一方の返事を試しましょう。",
@@ -766,5 +766,12 @@
   "quickPauseAudio": "音声を一時停止",
   "quickResumeAudio": "音声を再開",
   "quickClearSavedTitle": "保存した練習をすべて削除しますか？",
-  "quickClearSavedBody": "このアカウントで保存したすべての練習を、この端末から削除しますか？"
+  "quickClearSavedBody": "このアカウントで保存したすべての練習を、この端末から削除しますか？",
+  "practicePronunciation": "発音",
+  "practicePronunciationPreparing": "発音を準備中…",
+  "practicePronunciationUnavailable": "現在、発音を表示できません。",
+  "practicePronunciationSaveFailed": "発音の設定を保存できませんでした。",
+  "practiceReleaseToCheck": "指を離して確認",
+  "practiceTapToCheck": "タップして確認",
+  "practiceMicStarting": "マイクを起動中…"
 }

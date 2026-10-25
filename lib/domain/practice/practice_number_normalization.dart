@@ -1,8 +1,16 @@
-/// Conservative Chinese number, time and currency equivalence for ASR output.
+/// Conservative number, time and currency equivalence for ASR output.
 /// Keep this aligned with PracticeNumberNormalization.cs and shared fixtures.
 String normalizePracticeNumbers(String text, String locale) {
   final language = locale.toLowerCase().split('-').first;
   if (language == 'en') return _englishCurrency(text);
+  if (language == 'ja') {
+    // ASR can write 三時 as 3時. Only explicit clock counters qualify;
+    // leave kanji inside names and ordinary words unchanged.
+    return text.replaceAllMapped(
+      RegExp(r'[〇零一二三四五六七八九十百千万億兆]+(?=[時分秒])'),
+      (m) => normalizePracticeNumbers(m[0]!, 'zh'),
+    );
+  }
   if (language != 'zh' && language != 'yue') return text;
   const digits = '零一二三四五六七八九';
   text = text.replaceAll('〇', '零').replaceAll('兩', '二').replaceAll('两', '二');

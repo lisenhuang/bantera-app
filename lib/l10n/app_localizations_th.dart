@@ -2125,10 +2125,11 @@ class AppLocalizationsTh extends AppLocalizations {
   String get quickCue2 => 'บทพูด 2 · คำตอบของคุณ';
 
   @override
-  String get quickSpeakHint => 'แตะไมโครโฟนแล้วพูดคำตอบหนึ่งข้อออกเสียง';
+  String get quickSpeakHint =>
+      'แตะเพื่อเริ่มและแตะอีกครั้งเพื่อตรวจคำตอบ หรือกดค้างขณะพูดแล้วปล่อยเพื่อตรวจคำตอบ';
 
   @override
-  String get quickSpeak => 'แตะเพื่อพูด';
+  String get quickSpeak => 'แตะหรือกดค้างเพื่อพูด';
 
   @override
   String get quickChecking => 'กำลังตรวจคำตอบ…';
@@ -2442,4 +2443,27 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'ลบแบบฝึกทั้งหมดที่บันทึกไว้สำหรับบัญชีนี้ออกจากอุปกรณ์นี้หรือไม่?';
+
+  @override
+  String get practicePronunciation => 'การออกเสียง';
+
+  @override
+  String get practicePronunciationPreparing => 'กำลังเตรียมคำอ่าน…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'ยังไม่สามารถแสดงคำอ่านได้ในขณะนี้';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'บันทึกการตั้งค่าการออกเสียงไม่สำเร็จ';
+
+  @override
+  String get practiceReleaseToCheck => 'ปล่อยเพื่อตรวจคำตอบ';
+
+  @override
+  String get practiceTapToCheck => 'แตะเพื่อตรวจคำตอบ';
+
+  @override
+  String get practiceMicStarting => 'กำลังเปิดไมโครโฟน…';
 }

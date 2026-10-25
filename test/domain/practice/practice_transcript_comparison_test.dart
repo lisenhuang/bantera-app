@@ -2,6 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/domain/practice/practice_transcript_comparison.dart';
 
 void main() {
+  test('Japanese clock formatting is not highlighted as a spoken error', () {
+    final diff = PracticeTranscriptComparison.compare('午後3時です。', [
+      '午後三時です。',
+      '月曜日は晴れです。',
+    ], 'ja-JP');
+    expect(diff.choice, 0);
+    expect(diff.heard, isEmpty);
+    expect(diff.reference, isEmpty);
+  });
+
   List<String> parts(String text, List<TranscriptRange> ranges) =>
       ranges.map((r) => text.substring(r.start, r.end)).toSet().toList();
   test('highlights a different word while retaining original offsets', () {

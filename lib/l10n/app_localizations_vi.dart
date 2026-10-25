@@ -2146,10 +2146,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Nhấn micrô và nói to một trong hai câu trả lời.';
+      'Chạm để bắt đầu rồi chạm lần nữa để kiểm tra, hoặc giữ khi nói và thả ra để kiểm tra.';
 
   @override
-  String get quickSpeak => 'Nhấn để nói';
+  String get quickSpeak => 'Chạm hoặc giữ để nói';
 
   @override
   String get quickChecking => 'Đang kiểm tra câu trả lời…';
@@ -2464,4 +2464,26 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Xóa tất cả bài luyện tập đã lưu của tài khoản này khỏi thiết bị này?';
+
+  @override
+  String get practicePronunciation => 'Phát âm';
+
+  @override
+  String get practicePronunciationPreparing => 'Đang chuẩn bị cách phát âm…';
+
+  @override
+  String get practicePronunciationUnavailable => 'Hiện chưa có cách phát âm.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Không thể lưu cài đặt phát âm.';
+
+  @override
+  String get practiceReleaseToCheck => 'Thả ra để kiểm tra';
+
+  @override
+  String get practiceTapToCheck => 'Chạm để kiểm tra';
+
+  @override
+  String get practiceMicStarting => 'Đang bật micrô…';
 }

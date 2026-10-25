@@ -641,8 +641,8 @@
   "quickPreparingHint": "Kısa bir diyalog hazırlanıyor. Sen pratik yaparken sıradakileri hazırlayacağız.",
   "quickCue1": "Replik 1 · Dinle",
   "quickCue2": "Replik 2 · Yanıtın",
-  "quickSpeakHint": "Mikrofona dokun ve yanıtlardan birini sesli söyle.",
-  "quickSpeak": "Konuşmak için dokun",
+  "quickSpeakHint": "Başlamak için dokunun, kontrol etmek için tekrar dokunun. Ya da konuşurken basılı tutup kontrol etmek için bırakın.",
+  "quickSpeak": "Konuşmak için dokunun veya basılı tutun",
   "quickChecking": "Yanıtın kontrol ediliyor…",
   "quickCorrect": "Bu yanıt uygun. Güzel iş.",
   "quickIncorrect": "Diğer yanıtı dene.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Sesi duraklat",
   "quickResumeAudio": "Sesi sürdür",
   "quickClearSavedTitle": "Kaydedilen tüm alıştırmalar kaldırılsın mı?",
-  "quickClearSavedBody": "Bu hesap için kaydedilen tüm alıştırmalar bu cihazdan kaldırılsın mı?"
+  "quickClearSavedBody": "Bu hesap için kaydedilen tüm alıştırmalar bu cihazdan kaldırılsın mı?",
+  "practicePronunciation": "Telaffuz",
+  "practicePronunciationPreparing": "Telaffuz hazırlanıyor…",
+  "practicePronunciationUnavailable": "Telaffuz şu anda kullanılamıyor.",
+  "practicePronunciationSaveFailed": "Telaffuz ayarı kaydedilemedi.",
+  "practiceReleaseToCheck": "Kontrol etmek için bırakın",
+  "practiceTapToCheck": "Kontrol etmek için dokunun",
+  "practiceMicStarting": "Mikrofon başlatılıyor…"
 }

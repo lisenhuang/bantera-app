@@ -641,8 +641,8 @@
   "quickPreparingHint": "Une courte conversation arrive. Nous préparons la suite pendant votre entraînement.",
   "quickCue1": "Réplique 1 · Écouter",
   "quickCue2": "Réplique 2 · Votre réponse",
-  "quickSpeakHint": "Touchez le micro et dites une des réponses à voix haute.",
-  "quickSpeak": "Touchez pour parler",
+  "quickSpeakHint": "Touchez pour commencer, puis à nouveau pour vérifier. Ou maintenez en parlant et relâchez pour vérifier.",
+  "quickSpeak": "Touchez ou maintenez pour parler",
   "quickChecking": "Vérification de votre réponse…",
   "quickCorrect": "Cette réponse convient. Bien joué.",
   "quickIncorrect": "Essayez l’autre réponse.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Mettre en pause",
   "quickResumeAudio": "Reprendre la lecture",
   "quickClearSavedTitle": "Supprimer tous les exercices enregistrés ?",
-  "quickClearSavedBody": "Supprimer de cet appareil tous les exercices enregistrés pour ce compte ?"
+  "quickClearSavedBody": "Supprimer de cet appareil tous les exercices enregistrés pour ce compte ?",
+  "practicePronunciation": "Prononciation",
+  "practicePronunciationPreparing": "Préparation de la prononciation…",
+  "practicePronunciationUnavailable": "La prononciation est indisponible pour le moment.",
+  "practicePronunciationSaveFailed": "Impossible d’enregistrer le réglage de prononciation.",
+  "practiceReleaseToCheck": "Relâchez pour vérifier",
+  "practiceTapToCheck": "Touchez pour vérifier",
+  "practiceMicStarting": "Démarrage du micro…"
 }

@@ -2214,10 +2214,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Нажмите на микрофон и произнесите один из ответов.';
+      'Нажмите, чтобы начать, и ещё раз, чтобы проверить. Или удерживайте во время речи и отпустите для проверки.';
 
   @override
-  String get quickSpeak => 'Нажмите и говорите';
+  String get quickSpeak => 'Нажмите или удерживайте, чтобы говорить';
 
   @override
   String get quickChecking => 'Проверяем ваш ответ…';
@@ -2533,4 +2533,27 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Удалить с этого устройства все упражнения, сохранённые для этой учётной записи?';
+
+  @override
+  String get practicePronunciation => 'Произношение';
+
+  @override
+  String get practicePronunciationPreparing => 'Подготовка произношения…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Произношение сейчас недоступно.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Не удалось сохранить настройку произношения.';
+
+  @override
+  String get practiceReleaseToCheck => 'Отпустите для проверки';
+
+  @override
+  String get practiceTapToCheck => 'Нажмите для проверки';
+
+  @override
+  String get practiceMicStarting => 'Включение микрофона…';
 }

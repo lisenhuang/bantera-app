@@ -3923,13 +3923,13 @@ abstract class AppLocalizations {
   /// No description provided for @quickSpeakHint.
   ///
   /// In en, this message translates to:
-  /// **'Tap the microphone and say one of the replies aloud.'**
+  /// **'Tap to start and tap again to check, or hold while speaking and release to check.'**
   String get quickSpeakHint;
 
   /// No description provided for @quickSpeak.
   ///
   /// In en, this message translates to:
-  /// **'Tap to speak'**
+  /// **'Tap or hold to speak'**
   String get quickSpeak;
 
   /// No description provided for @quickChecking.
@@ -4465,6 +4465,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove all saved practices for this account from this device?'**
   String get quickClearSavedBody;
+
+  /// No description provided for @practicePronunciation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pronunciation'**
+  String get practicePronunciation;
+
+  /// No description provided for @practicePronunciationPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing pronunciation…'**
+  String get practicePronunciationPreparing;
+
+  /// No description provided for @practicePronunciationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Pronunciation is unavailable right now.'**
+  String get practicePronunciationUnavailable;
+
+  /// No description provided for @practicePronunciationSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the pronunciation setting.'**
+  String get practicePronunciationSaveFailed;
+
+  /// No description provided for @practiceReleaseToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to check'**
+  String get practiceReleaseToCheck;
+
+  /// No description provided for @practiceTapToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to check'**
+  String get practiceTapToCheck;
+
+  /// No description provided for @practiceMicStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting microphone…'**
+  String get practiceMicStarting;
 }
 
 class _AppLocalizationsDelegate

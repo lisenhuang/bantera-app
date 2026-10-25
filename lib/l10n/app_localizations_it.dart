@@ -2212,10 +2212,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get quickSpeakHint =>
-      'Tocca il microfono e pronuncia una delle risposte.';
+      'Tocca per iniziare e di nuovo per verificare, oppure tieni premuto mentre parli e rilascia per verificare.';
 
   @override
-  String get quickSpeak => 'Tocca per parlare';
+  String get quickSpeak => 'Tocca o tieni premuto per parlare';
 
   @override
   String get quickChecking => 'Verifica della risposta…';
@@ -2534,4 +2534,27 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Rimuovere da questo dispositivo tutti gli esercizi salvati per questo account?';
+
+  @override
+  String get practicePronunciation => 'Pronuncia';
+
+  @override
+  String get practicePronunciationPreparing => 'Preparazione della pronuncia…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'La pronuncia non è disponibile al momento.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Impossibile salvare l’impostazione della pronuncia.';
+
+  @override
+  String get practiceReleaseToCheck => 'Rilascia per verificare';
+
+  @override
+  String get practiceTapToCheck => 'Tocca per verificare';
+
+  @override
+  String get practiceMicStarting => 'Avvio del microfono…';
 }

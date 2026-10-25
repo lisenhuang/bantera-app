@@ -641,8 +641,8 @@
   "quickPreparingHint": "Krótka rozmowa będzie za chwilę gotowa. Kolejne przygotujemy podczas ćwiczeń.",
   "quickCue1": "Kwestia 1 · Posłuchaj",
   "quickCue2": "Kwestia 2 · Twoja odpowiedź",
-  "quickSpeakHint": "Dotknij mikrofonu i wypowiedz jedną z odpowiedzi.",
-  "quickSpeak": "Dotknij, aby mówić",
+  "quickSpeakHint": "Dotknij, aby rozpocząć, i ponownie, aby sprawdzić. Możesz też przytrzymać podczas mówienia i puścić, aby sprawdzić.",
+  "quickSpeak": "Dotknij lub przytrzymaj, aby mówić",
   "quickChecking": "Sprawdzamy odpowiedź…",
   "quickCorrect": "Ta odpowiedź pasuje. Dobra robota.",
   "quickIncorrect": "Spróbuj drugiej odpowiedzi.",
@@ -731,5 +731,12 @@
   "quickPauseAudio": "Wstrzymaj dźwięk",
   "quickResumeAudio": "Wznów dźwięk",
   "quickClearSavedTitle": "Usunąć wszystkie zapisane ćwiczenia?",
-  "quickClearSavedBody": "Usunąć z tego urządzenia wszystkie ćwiczenia zapisane dla tego konta?"
+  "quickClearSavedBody": "Usunąć z tego urządzenia wszystkie ćwiczenia zapisane dla tego konta?",
+  "practicePronunciation": "Wymowa",
+  "practicePronunciationPreparing": "Przygotowywanie wymowy…",
+  "practicePronunciationUnavailable": "Wymowa jest teraz niedostępna.",
+  "practicePronunciationSaveFailed": "Nie udało się zapisać ustawienia wymowy.",
+  "practiceReleaseToCheck": "Puść, aby sprawdzić",
+  "practiceTapToCheck": "Dotknij, aby sprawdzić",
+  "practiceMicStarting": "Uruchamianie mikrofonu…"
 }

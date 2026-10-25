@@ -1,3 +1,7 @@
+import 'practice_record_control.dart';
+import 'practice_recording_layout.dart';
+import 'practice_pronunciation_controller.dart';
+import 'practice_pronunciation_text.dart';
 import '../../core/practice_review_service.dart';
 import 'practice_level_celebration.dart';
 import '../../core/apple_system_version.dart';
@@ -36,7 +40,6 @@ import '../../core/daily_goal_celebration.dart';
 import '../../core/practice_completion_store.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../domain/activity/listening_word_tracker.dart';
-import '../../domain/practice/practice_answer_matcher.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/dm_call_notifier.dart';
 import '../../core/user_profile_notifier.dart';
@@ -54,7 +57,8 @@ class QuickPracticeScreen extends StatefulWidget {
        previewFeedback = null,
        previewPlayer = null,
        previewSavedStore = null,
-       previewApi = null;
+       previewApi = null,
+       previewPronunciation = null;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
@@ -64,7 +68,9 @@ class QuickPracticeScreen extends StatefulWidget {
     this.previewPlayer,
     this.previewSavedStore,
     this.previewApi,
+    this.previewPronunciation,
   }) : goalTabAnchor = null;
+  final PracticePronunciationController? previewPronunciation;
   final bool active;
   final GlobalKey? goalTabAnchor;
   final Map<String, dynamic>? previewExercise;
@@ -93,6 +99,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   final _microphoneAnchor = GlobalKey();
   final _wordFlight = PracticeWordFlight();
   final _translations = PracticeTranslationController();
+  late final _pronunciation =
+      widget.previewPronunciation ?? PracticePronunciationController();
   String _translationTarget = '';
 
   final _autoplay = PracticePlaybackIntent();
@@ -166,6 +174,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   String? _previousId;
   ({Object exercise, String part, SubtitleWordToken token})? _selectedWord;
   bool _loading = false, _recording = false, _busy = false, _allowed = false;
+  bool _pinRecordingLayout = false;
   int _epoch = 0;
   DateTime? _waitingSince;
   AppLocalizations get l => AppLocalizations.of(context)!;
@@ -182,6 +191,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   @override
   void initState() {
     super.initState();
+    _pronunciation.addListener(_pronunciationChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncPronunciation();
+    });
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -253,6 +266,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   @override
   void didUpdateWidget(covariant QuickPracticeScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _syncPronunciation();
     if (!widget.active) {
       _poll?.cancel();
       unawaited(_stopAudio());
@@ -317,6 +331,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _waitingSince = null;
       _allowed = false;
     });
+    _syncPronunciation();
     unawaited(_checkConsent());
     unawaited(_refreshCompleted());
     unawaited(_refreshSaved());
@@ -503,6 +518,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _loading = false;
         _busy = false;
       });
+      _syncPronunciation();
     }
   }
 
@@ -516,6 +532,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _syncPronunciation();
     if (state != AppLifecycleState.resumed) {
       _poll?.cancel();
       unawaited(_stopAudio());
@@ -772,6 +789,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   void _requestTranslations({bool retry = false}) {
+    _syncPronunciation();
     final exercise = _exercise;
     if (!supportsBuiltInTranslation ||
         widget.previewExercise != null ||
@@ -1054,6 +1072,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
     if (mounted) {
       setState(() {
+        _pinRecordingLayout = false;
         _recording = false;
         _playing = null;
         _paused = false;
@@ -1072,26 +1091,30 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
-  Future<void> _record() async {
-    if (_busy || _exercise == null) return;
-    if (_recording) {
-      await _submit();
-      return;
-    }
+  Future<void> _startRecording(bool Function() stillWanted) async {
+    if (_busy || _recording || _exercise == null || !stillWanted()) return;
     if (!_canUseAudio) {
       _notice(l.quickCallActive);
       return;
     }
-    _audioGeneration++;
+    final generation = ++_audioGeneration;
     _autoplay.cancel();
     final epoch = _epoch;
+    bool current() =>
+        stillWanted() &&
+        _canUseAudio &&
+        epoch == _epoch &&
+        generation == _audioGeneration;
     setState(() {
+      _pinRecordingLayout = true;
       _busy = true;
       _loadingAudio = null;
     });
     try {
       await AiConsent.instance.requireCurrent();
+      if (!current()) return;
       final permission = await Permission.microphone.request();
+      if (!current()) return;
       if (!permission.isGranted) {
         if (mounted) {
           _notice(l.compareMicrophoneDeniedPermanent);
@@ -1100,6 +1123,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         return;
       }
       await _player.stop();
+      if (!current()) return;
       if (mounted) {
         setState(() {
           _playing = null;
@@ -1107,7 +1131,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         });
       }
       final directory = await getTemporaryDirectory();
-      if (!_canUseAudio || epoch != _epoch) return;
+      if (!current()) return;
       final path = '${directory.path}/practice-${const Uuid().v4()}.wav';
       _recordPath = path;
       await _recorder.start(
@@ -1118,18 +1142,27 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         ),
         path: path,
       );
-      if (!_canUseAudio || epoch != _epoch) {
+      if (!current()) {
         await _recorder.cancel();
+        if (_recordPath == path) _recordPath = null;
+        try {
+          await File(path).delete();
+        } catch (_) {}
         return;
       }
       await _discardReplay();
-      if (!mounted || epoch != _epoch) return;
+      if (!current()) {
+        await _recorder.cancel();
+        if (_recordPath == path) _recordPath = null;
+        try {
+          await File(path).delete();
+        } catch (_) {}
+        return;
+      }
       HapticFeedback.lightImpact();
       setState(() {
         _recording = true;
         _playing = null;
-        _feedback = null;
-        _error = null;
       });
       if (mounted && !MediaQuery.of(context).disableAnimations) {
         _pulse.repeat(reverse: true);
@@ -1139,7 +1172,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (mounted && epoch == _epoch) _notice(l.compareCouldNotStartRecording);
     } finally {
       if (mounted && epoch == _epoch) {
-        setState(() => _busy = false);
+        setState(() {
+          _busy = false;
+          if (!_recording) _pinRecordingLayout = false;
+        });
         _requestTranslations();
       }
     }
@@ -1153,6 +1189,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _recordLimit?.cancel();
     _pulse.stop();
     setState(() {
+      _pinRecordingLayout = false;
+      _feedback = null;
+      _error = null;
       _busy = true;
       _recording = false;
     });
@@ -1197,25 +1236,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           .map((w) => w.text)
           .take(20)
           .toList();
-      final choices = (_exercise!['choices'] as List)
-          .map((choice) => choice['text'] as String)
-          .toList();
-      final selected = PracticeAnswerMatcher.match(
-        transcript.transcriptText,
-        choices,
-        _exerciseLocale!,
-        uncertainWords: uncertain,
-      );
-      if (selected == null) {
-        setState(
-          () => _feedback = {
-            'outcome': 'unclear',
-            'transcript': transcript.transcriptText,
-            'uncertainWords': uncertain,
-          },
-        );
-        return;
-      }
+      // The backend owns grading. A stale client normalizer must not veto an
+      // answer before the current server rules can judge its raw transcript.
       final answerPath = _savedSource == null ? 'answer' : 'review/answer';
       final result = await _api('$exerciseId/$answerPath', {
         'attemptId': const Uuid().v4(),
@@ -1464,6 +1486,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     unawaited(_discardReplay());
     _completionDayTimer?.cancel();
     _completionGeneration++;
+    _pronunciation.removeListener(_pronunciationChanged);
+    _pronunciation.dispose();
     _translations.removeListener(_translationsChanged);
     _translations.dispose();
     _autoplay.cancel();
@@ -1613,23 +1637,84 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: PracticeRecordingLayout(
+                pinned: _pinRecordingLayout,
                 children: [
                   const SizedBox(height: 8),
                   if (showLevel)
-                    Center(
-                      child: PracticeLevelMenu(
-                        level: level as String,
-                        currentLevel: _currentLevel ?? level,
-                        onSelected:
-                            _savedSource != null ||
-                                _recording ||
-                                _busy ||
-                                _confirmingNext ||
-                                _loading
-                            ? null
-                            : _selectLevel,
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      spacing: 12,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        PracticeLevelMenu(
+                          level: level as String,
+                          currentLevel: _currentLevel ?? level,
+                          onSelected:
+                              _savedSource != null ||
+                                  _recording ||
+                                  _busy ||
+                                  _confirmingNext ||
+                                  _loading
+                              ? null
+                              : _selectLevel,
+                        ),
+                        if (supportsPracticePronunciation(_exerciseLocale))
+                          MergeSemantics(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      l.practicePronunciation,
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(color: c.primary),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Switch.adaptive(
+                                    key: const ValueKey(
+                                      'practice-pronunciation-toggle',
+                                    ),
+                                    value: _pronunciation.enabled,
+                                    activeTrackColor: c.primary,
+                                    onChanged:
+                                        _pronunciation.saving ||
+                                            _recording ||
+                                            _busy
+                                        ? null
+                                        : (_) => _togglePronunciation(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  if (supportsPracticePronunciation(_exerciseLocale) &&
+                      _pronunciation.enabled &&
+                      _pronunciation.status != 'ready')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        _pronunciation.status == 'preparing'
+                            ? l.practicePronunciationPreparing
+                            : l.practicePronunciationUnavailable,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: c.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  if (_pronunciation.enabled &&
+                      _pronunciation.status == 'unavailable')
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TextButton(
+                        onPressed: _pronunciation.retry,
+                        child: Text(l.compareTryAgain),
                       ),
                     ),
                   if (exercise?['reviewMode'] == true &&
@@ -1811,77 +1896,16 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       const SizedBox(height: 12),
                     ],
                     const SizedBox(height: 10),
-                    AnimatedBuilder(
-                      animation: _pulse,
-                      builder: (context, child) => Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: c.primary.withValues(
-                            alpha: _recording ? .08 + _pulse.value * .08 : .06,
-                          ),
-                        ),
-                        child: Center(
-                          child: SizedBox(
-                            width: 76,
-                            height: 76,
-                            key: _microphoneAnchor,
-                            child: FilledButton(
-                              key: const ValueKey('practice-record-button'),
-                              onPressed: _busy ? null : _record,
-                              style: FilledButton.styleFrom(
-                                shape: const CircleBorder(),
-                                padding: EdgeInsets.zero,
-                                backgroundColor: _recording
-                                    ? c.error
-                                    : c.primary,
-                              ),
-                              child: _busy
-                                  ? SizedBox(
-                                      width: 26,
-                                      height: 26,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: c.primary,
-                                      ),
-                                    )
-                                  : Icon(
-                                      _recording
-                                          ? CupertinoIcons.stop_fill
-                                          : CupertinoIcons.mic_fill,
-                                      size: 30,
-                                      semanticLabel: _recording
-                                          ? l.practiceStopRecording
-                                          : l.quickSpeak,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    PracticeRecordControl(
+                      enabled: _canUseAudio && !_confirmingNext,
+                      recording: _recording,
+                      busy: _busy,
+                      pulse: _pulse,
+                      microphoneAnchor: _microphoneAnchor,
+                      onStart: _startRecording,
+                      onCheck: _submit,
+                      onCancel: _stopAudio,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _busy
-                          ? l.quickChecking
-                          : _recording
-                          ? l.compareStatusRecording
-                          : _feedback?['outcome'] == 'correct'
-                          ? l.quickAgain
-                          : l.quickSpeak,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    if (!_recording && !_busy)
-                      Text(
-                        l.quickSpeakHint,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: c.onSurfaceVariant,
-                        ),
-                      ),
                     const SizedBox(height: 18),
                     if (_feedback != null) _result(),
                     if (_error != null)
@@ -1952,9 +1976,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 size: 20,
               ),
       );
-  PracticeWordText _wordText(String part, String sentence, {TextStyle? style}) {
+  Widget _wordText(String part, String sentence, {TextStyle? style}) {
     final selection = _selectedWord;
-    return PracticeWordText(
+    final plain = PracticeWordText(
       sentence,
       style: style,
       textDirection: _textDirection,
@@ -1976,6 +2000,55 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         );
       },
       onWord: (token) => _explainWord(token, sentence),
+    );
+    final pronunciation = _pronunciation.data;
+    final segments = part == 'cue'
+        ? (pronunciation?['cue'])
+        : (pronunciation?['choices'] as List?)?.elementAtOrNull(
+            int.tryParse(part.replaceFirst('option', '')) ?? -1,
+          );
+    if (!_pronunciation.enabled ||
+        _pronunciation.status != 'ready' ||
+        segments is! List) {
+      return plain;
+    }
+    return PracticePronunciationText(
+      sentence,
+      segments: segments,
+      style: style,
+      textDirection: _textDirection,
+      selectedWord: plain.selectedWord,
+      onSelect: plain.onSelect,
+      onWord: plain.onWord,
+    );
+  }
+
+  Future<void> _togglePronunciation() async {
+    final saved = await _pronunciation.setEnabled(!_pronunciation.enabled);
+    if (!saved && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.practicePronunciationSaveFailed)),
+      );
+    }
+  }
+
+  void _pronunciationChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _syncPronunciation() {
+    _pronunciation.configure(
+      owner: _owner ?? (widget.previewExercise != null ? 'preview' : null),
+      locale: _exerciseLocale,
+      id: _exercise?['id'] as String?,
+      embedded: (_exercise?['pronunciation'] as Map?)?.cast<String, dynamic>(),
+      active:
+          widget.active &&
+          _allowed &&
+          (widget.previewExercise != null ||
+              WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed),
+      fetch: (id) => _api('$id/pronunciation', {}),
     );
   }
 

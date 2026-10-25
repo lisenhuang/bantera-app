@@ -676,8 +676,8 @@
   "quickPreparingHint": "一段简短对话即将准备好。练习时，我们会继续准备下一题。",
   "quickCue1": "对话 1 · 听一听",
   "quickCue2": "对话 2 · 你的回答",
-  "quickSpeakHint": "点击麦克风，大声说出其中一个回答。",
-  "quickSpeak": "点击说话",
+  "quickSpeakHint": "轻点开始，再次轻点检查；或按住说话，松开检查。",
+  "quickSpeak": "轻点或按住说话",
   "quickChecking": "正在听你的回答…",
   "quickCorrect": "回答合适，做得不错。",
   "quickIncorrect": "试试另一个回答。",
@@ -766,5 +766,12 @@
   "quickPauseAudio": "暂停音频",
   "quickResumeAudio": "继续播放",
   "quickClearSavedTitle": "清空所有已保存的练习？",
-  "quickClearSavedBody": "要从此设备中移除此账号保存的所有练习吗？"
+  "quickClearSavedBody": "要从此设备中移除此账号保存的所有练习吗？",
+  "practicePronunciation": "发音",
+  "practicePronunciationPreparing": "正在准备发音…",
+  "practicePronunciationUnavailable": "暂时无法显示发音。",
+  "practicePronunciationSaveFailed": "无法保存发音设置。",
+  "practiceReleaseToCheck": "松开以检查",
+  "practiceTapToCheck": "轻点以检查",
+  "practiceMicStarting": "正在启动麦克风…"
 }

@@ -2148,10 +2148,11 @@ class AppLocalizationsId extends AppLocalizations {
   String get quickCue2 => 'Ucapan 2 · Jawabanmu';
 
   @override
-  String get quickSpeakHint => 'Ketuk mikrofon dan ucapkan salah satu jawaban.';
+  String get quickSpeakHint =>
+      'Ketuk untuk mulai dan ketuk lagi untuk memeriksa, atau tahan saat berbicara dan lepaskan untuk memeriksa.';
 
   @override
-  String get quickSpeak => 'Ketuk untuk bicara';
+  String get quickSpeak => 'Ketuk atau tahan untuk berbicara';
 
   @override
   String get quickChecking => 'Memeriksa jawabanmu…';
@@ -2468,4 +2469,27 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get quickClearSavedBody =>
       'Hapus semua latihan yang disimpan untuk akun ini dari perangkat ini?';
+
+  @override
+  String get practicePronunciation => 'Pelafalan';
+
+  @override
+  String get practicePronunciationPreparing => 'Menyiapkan pelafalan…';
+
+  @override
+  String get practicePronunciationUnavailable =>
+      'Pelafalan belum tersedia saat ini.';
+
+  @override
+  String get practicePronunciationSaveFailed =>
+      'Pengaturan pelafalan tidak dapat disimpan.';
+
+  @override
+  String get practiceReleaseToCheck => 'Lepaskan untuk memeriksa';
+
+  @override
+  String get practiceTapToCheck => 'Ketuk untuk memeriksa';
+
+  @override
+  String get practiceMicStarting => 'Menyalakan mikrofon…';
 }
