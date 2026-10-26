@@ -3,6 +3,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/presentation/chats/chat_bubble_parts.dart';
 
 void main() {
+  testWidgets('streaming audio stops animating when playback stops', (
+    tester,
+  ) async {
+    Future<void> mount({required bool playing, bool recording = false}) =>
+        tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ChatAudioHeader(
+                playing: playing,
+                receiving: true,
+                progress: 0,
+                onPlay: recording ? null : () {},
+              ),
+            ),
+          ),
+        );
+    double? progress() => tester
+        .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
+        .value;
+
+    await mount(playing: true);
+    expect(progress(), isNull);
+    await mount(playing: false);
+    expect(progress(), 0);
+    await tester.pumpAndSettle();
+    await mount(playing: true);
+    expect(progress(), isNull);
+    await mount(playing: false, recording: true);
+    expect(progress(), 0);
+    await tester.pumpAndSettle();
+    expect(tester.hasRunningAnimations, isFalse);
+  });
+
   testWidgets(
     'audio row keeps controls in order with expanded timeline at large text sizes',
     (tester) async {

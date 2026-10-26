@@ -145,6 +145,36 @@ lib/
 
 ## 🔑 Technical Deep Dives
 
+### Bantera AI: streamed audio, playback and waveforms
+
+Bantera AI voice-message replies arrive as small audio chunks. The app starts
+playing the available chunks while the AI continues generating and sending the
+rest of the response. It does not wait for a complete audio file before speaking.
+
+Receiving and playback finish independently:
+
+- **Receiving finishes** when the server sends the response-complete event. The
+  app then assembles and saves the received audio as a WAV file.
+- **Playback finishes** when the phone has played all queued audio. This can
+  happen later than receiving finishes; the gap varies between responses.
+- **The waveform appears** after the complete reply is saved and the app has
+  analysed its audio. The current implementation does not build a waveform
+  progressively from incoming chunks, so it can appear near the end of speech.
+  It does not deliberately wait for playback to finish.
+
+Starting a new recording stops the previous reply's playback, while its committed
+stream continues receiving and saving the response. Pausing playback also allows
+reception to continue. The voice bar stays still when playback is stopped or
+paused, even if more audio is arriving.
+
+A delay before the waveform appears can include AI generation, transmission,
+file saving and queued waveform analysis. Timing measurements are needed to
+identify the cause of a particular delay; it is not necessarily slow downloading.
+
+Implementation: [voice stream](lib/infrastructure/ai/ai_voice_stream.dart),
+[reply controller](lib/presentation/chats/ai/ai_chat_controller.dart), and
+[waveform analysis](lib/infrastructure/audio_waveform.dart).
+
 ### 🔊 Fixing AI speaker echo on iPhone
 
 [**How we investigated and fixed AI self-interruption**](docs/ios-echo-investigation.md)

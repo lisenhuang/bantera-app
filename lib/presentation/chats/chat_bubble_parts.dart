@@ -56,7 +56,9 @@ class ChatAudioHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ChatAudioWaveform(
               progress: progress,
-              receiving: receiving,
+              // A reply can keep downloading after playback is paused or
+              // interrupted by recording. Only animate while it is playing.
+              receiving: receiving && playing,
               audioKey: audioKey,
               loadAudioPath: loadAudioPath,
             ),
