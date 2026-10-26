@@ -1,3 +1,5 @@
+import '../ai_operation_client.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/ai_consent.dart';
 import 'ai_search_capabilities.dart';
 import 'ai_response_formatting.dart';
@@ -111,30 +113,26 @@ class AiApiClient {
     String? previous,
     List<Map<String, String>> turns,
   ) async {
-    await AiConsent.instance.require(owner);
-    final token = await _token(owner);
-    final request = await _http.postUrl(
-      Uri.parse('${ApiConfigNotifier.instance.baseUrl}/api/chat/ai/summary'),
+    final payload = <String, dynamic>{
+      'previousSummary': previous,
+      'turns': turns,
+    };
+    final id = const Uuid().v5(
+      Namespace.url.value,
+      '$owner/summary/${jsonEncode(payload)}',
     );
-    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
-    request.headers.contentType = ContentType.json;
-    await _checkRequestConsent(owner, request);
-    request.write(jsonEncode({'previousSummary': previous, 'turns': turns}));
-    final response = await request.close().timeout(const Duration(seconds: 55));
-    if (response.statusCode != 200) {
-      await response.drain<void>();
-      throw StateError('Memory unavailable');
-    }
-    var body = '';
-    await for (final chunk
-        in utf8.decoder.bind(response).timeout(const Duration(seconds: 10))) {
-      body += chunk;
-      if (body.length > 30000) throw StateError('Memory response too large');
-    }
-    if (_closed || AuthSessionNotifier.instance.session?.cacheKey != owner) {
-      throw StateError('Session changed');
-    }
-    return jsonDecode(body) as Map<String, dynamic>;
+    return AiOperationClient(
+      http: _http,
+      baseUrl: Uri.parse(ApiConfigNotifier.instance.baseUrl),
+      token: (_) => _token(owner),
+      ensureActive: () async {
+        if (_closed ||
+            AuthSessionNotifier.instance.session?.cacheKey != owner) {
+          throw StateError('Session changed');
+        }
+        await AiConsent.instance.require(owner);
+      },
+    ).run('/api/chat/ai/summary', payload, jobId: id);
   }
 
   Future<Map<String, dynamic>> reply({

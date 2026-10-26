@@ -150,6 +150,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: SpeakingLeaderboardCard(),
+                ),
+                const SizedBox(height: 24),
                 DailyWordGoalSection(
                   goal: WordActivityNotifier.instance.dailyGoal,
                   today: activity.today,
@@ -162,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 24),
                 WordActivitySection(
-                  afterTotals: const SpeakingLeaderboardCard(),
                   history: WordActivityNotifier.instance.historyFor(
                     profile.learningLanguage,
                   ),

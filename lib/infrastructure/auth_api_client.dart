@@ -1,3 +1,4 @@
+import 'ai_operation_client.dart';
 import '../core/auth_session_notifier.dart';
 import '../core/ai_consent.dart';
 import 'dart:async';
@@ -624,6 +625,28 @@ class AuthApiClient {
   /// Streams progress from the single generate endpoint.
   /// Calls [onDialogueDone] when dialogue text is ready, then
   /// [onAudioDone] with the saved video and original dialogue lines when audio is ready.
+  AiOperationClient _operationClient(String initialToken) {
+    var accessToken = initialToken;
+    final owner = _wordActivityTokenSubject(initialToken);
+    return AiOperationClient(
+      http: _httpClient,
+      baseUrl: _resolve('/'),
+      pollInterval: _recoveryPollInterval,
+      budget: _recoveryTimeout,
+      token: (refresh) async {
+        if (refresh) accessToken = await _doRefresh() ?? accessToken;
+        if (owner != null && _wordActivityTokenSubject(accessToken) != owner) {
+          throw const AuthApiException(
+            code: 'token_expired',
+            message: 'Your session changed.',
+          );
+        }
+        return accessToken;
+      },
+      ensureActive: () => _requireAiConsent(accessToken),
+    );
+  }
+
   Future<void> generateAiAudioStreaming({
     required String accessToken,
     required String language,
@@ -1523,14 +1546,18 @@ class AuthApiClient {
   }) async {
     await _requireAiConsent(accessToken);
     try {
-      final json = await _sendJsonRequest(
-        method: 'POST',
-        path: '/api/me/videos/$videoId/transcript/correct',
-        payload: {
-          'originalLines': originalLines,
-          'transcribedCues': transcribedCues.map((c) => c.toJson()).toList(),
-        },
-        accessToken: accessToken,
+      final payload = <String, dynamic>{
+        'originalLines': originalLines,
+        'transcribedCues': transcribedCues.map((c) => c.toJson()).toList(),
+      };
+      final jobId = const Uuid().v5(
+        Namespace.url.value,
+        '${_wordActivityTokenSubject(accessToken)}/transcript/$videoId/${jsonEncode(payload)}',
+      );
+      final json = await _operationClient(accessToken).run(
+        '/api/me/videos/$videoId/transcript/correct',
+        payload,
+        jobId: jobId,
       );
       return _uploadedVideoFromJson(json);
     } on SocketException {

@@ -173,6 +173,10 @@ void main() {
           body: SingleChildScrollView(
             child: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: SpeakingLeaderboardCard(preview: sample()),
+                ),
                 const Padding(
                   padding: EdgeInsets.all(20),
                   child: Row(
@@ -199,7 +203,6 @@ void main() {
                   today: const WordTotals(listened: 1240, spoken: 720),
                   week: const WordTotals(listened: 18460, spoken: 12450),
                   total: const WordTotals(listened: 86420, spoken: 49820),
-                  afterTotals: SpeakingLeaderboardCard(preview: sample()),
                 ),
               ],
             ),

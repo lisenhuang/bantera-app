@@ -1217,6 +1217,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final creditLocale = _exerciseLocale;
     final speechEventId = 'practice-speak:${const Uuid().v4()}';
     var credited = false;
+    var creditOwnedByAnimation = false;
     Future<void> creditSpeech() async {
       if (credited || spoken <= 0) return;
       try {
@@ -1263,18 +1264,6 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             : 'Uncertain words: ${uncertain.join(', ')}',
       });
       if (!mounted || epoch != _epoch) return;
-      // Credit flies to the persistent Goal tab, then its ring increments.
-      final goalTabAnchor = widget.goalTabAnchor;
-      if (spoken > 0 && _canUseAudio && goalTabAnchor != null) {
-        await _wordFlight.show(
-          context,
-          _microphoneAnchor,
-          goalTabAnchor,
-          outcome: result['outcome'] as String?,
-          onParticlesArrived: creditSpeech,
-        );
-      }
-      if (!mounted || epoch != _epoch) return;
       setState(
         () => _feedback = {
           ...result,
@@ -1282,10 +1271,33 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           'uncertainWords': uncertain,
         },
       );
+      // Celebration owns its credit sequence, but never the recording busy state.
+      // No delayed animation completion may overwrite feedback or a new recording.
+      final goalTabAnchor = widget.goalTabAnchor;
+      if (spoken > 0 && _canUseAudio && goalTabAnchor != null) {
+        creditOwnedByAnimation = true;
+        unawaited(() async {
+          try {
+            await _wordFlight.show(
+              context,
+              _microphoneAnchor,
+              goalTabAnchor,
+              outcome: result['outcome'] as String?,
+              onParticlesArrived: creditSpeech,
+            );
+          } catch (_) {
+            // Decorative failures must not change a confirmed answer.
+          } finally {
+            await creditSpeech();
+          }
+        }());
+      }
       if (result['outcome'] == 'correct') {
         HapticFeedback.mediumImpact();
-        await _refreshCompleted(
-          exerciseId: (_savedSource?['id'] ?? exerciseId) as String,
+        unawaited(
+          _refreshCompleted(
+            exerciseId: (_savedSource?['id'] ?? exerciseId) as String,
+          ),
         );
       }
     } on AuthApiException catch (error) {
@@ -1314,17 +1326,19 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         );
       }
     } finally {
+      // Release the mic before decorative work or storage finishes. Keeping this
+      // before any await prevents an old submission from clearing a new one's busy state.
+      if (mounted && epoch == _epoch) {
+        setState(() => _busy = false);
+        _requestTranslations();
+      }
       // All recognized speaking counts, including incorrect/unclear replies
-      // and answer-request failures. Only the confirmed correct result animates.
-      await creditSpeech();
+      // and answer-request failures. The animation saves credit when particles arrive.
+      if (!creditOwnedByAnimation) await creditSpeech();
       if (path != null && path != _replayPath) {
         try {
           await File(path).delete();
         } catch (_) {}
-      }
-      if (mounted && epoch == _epoch) {
-        setState(() => _busy = false);
-        _requestTranslations();
       }
     }
   }

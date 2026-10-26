@@ -715,3 +715,12 @@ working but cannot use the emoji tool until the backend is updated.
 ## Authorised AI key preference
 
 Settings shows “AI key preference” only when the backend grants the signed-in account access to the configured paid Gemini key. Users can select regular keys only, paid fallback, or paid only. The preference is saved on the server and applies to new Gemini requests across lessons and voice chats; it does not restart an existing call. The key itself never reaches the app. Missing permission, older servers and failed permission checks hide the control. Switching accounts discards the previous account’s settings state.
+
+### Recoverable AI work
+
+Conversation summaries and transcript corrections use saved backend jobs with
+short submission/status requests. The previous summary remains available until
+a replacement succeeds. Audio lesson generation retains streaming progress and
+reconnects to its original job after a disconnect. Reopening the app can discover
+queued and running lessons through the existing pending-jobs API. A lost network
+connection is not a reason to automatically generate the content again.
