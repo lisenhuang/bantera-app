@@ -58,7 +58,8 @@ class QuickPracticeScreen extends StatefulWidget {
        previewPlayer = null,
        previewSavedStore = null,
        previewApi = null,
-       previewPronunciation = null;
+       previewPronunciation = null,
+       previewTranslation = null;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
@@ -69,8 +70,10 @@ class QuickPracticeScreen extends StatefulWidget {
     this.previewSavedStore,
     this.previewApi,
     this.previewPronunciation,
+    this.previewTranslation,
   }) : goalTabAnchor = null;
   final PracticePronunciationController? previewPronunciation;
+  final PracticeTranslationController? previewTranslation;
   final bool active;
   final GlobalKey? goalTabAnchor;
   final Map<String, dynamic>? previewExercise;
@@ -98,7 +101,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   String _playbackEvent = '';
   final _microphoneAnchor = GlobalKey();
   final _wordFlight = PracticeWordFlight();
-  final _translations = PracticeTranslationController();
+  late final _translations =
+      widget.previewTranslation ?? PracticeTranslationController();
   late final _pronunciation =
       widget.previewPronunciation ?? PracticePronunciationController();
   String _translationTarget = '';
@@ -863,11 +867,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         !_canUseAudio ||
         _busy ||
         _recording ||
-        _confirmingNext ||
-        _translations.loading) {
+        _confirmingNext) {
       return;
     }
     bool current() => _canUseAudio && _owner == owner && _epoch == epoch;
+    final resumeAfterPicker = _translations.loading;
     setState(() => _busy = true);
     var changed = false;
     try {
@@ -908,7 +912,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     } finally {
       if (mounted && _epoch == epoch) setState(() => _busy = false);
     }
-    if (changed && current()) _requestTranslations();
+    if ((changed || resumeAfterPicker) && current()) _requestTranslations();
   }
 
   Future<bool> _confirmTranslationDownload() async {
@@ -1578,6 +1582,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         onLongerDialogues: _recording || _busy || _confirmingNext
             ? null
             : _openLongerDialogues,
+        showTranslationLanguage: supportsBuiltInTranslation,
         onTranslationLanguage:
             supportsBuiltInTranslation &&
                 _owner != null &&
@@ -1585,8 +1590,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 !_callActive &&
                 !_recording &&
                 !_busy &&
-                !_confirmingNext &&
-                !_translations.loading
+                !_confirmingNext
             ? _changeTranslationLanguage
             : null,
       ),

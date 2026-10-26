@@ -841,6 +841,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Поиск языков';
 
   @override
+  String get practiceTranslationViaEnglish => 'Через английский';
+
+  @override
   String get practiceTranslationInstalled => 'Установлен';
 
   @override

@@ -251,7 +251,7 @@ void main() {
       await load();
       expect(confirmations, 1);
       expect(choices, 1);
-      expect(calls, hasLength(1));
+      expect(calls, hasLength(2));
       expect(controller.issue, PracticeTranslationIssue.downloadCancelled);
       await load(retry: true);
       expect(confirmations, 2);
@@ -263,7 +263,7 @@ void main() {
     await load(choose: false);
     await load();
     expect(choices, 1);
-    expect(calls, hasLength(1));
+    expect(calls, hasLength(2));
     expect(controller.issue, PracticeTranslationIssue.selectionCancelled);
     await load(retry: true);
     expect(choices, 2);
@@ -292,7 +292,7 @@ void main() {
       await task;
       expect(await preferences.load('alice', 'yue'), isNull);
       expect(controller.translations, isEmpty);
-      expect(calls, hasLength(1));
+      expect(calls, hasLength(2));
     },
   );
   test(
@@ -324,6 +324,7 @@ void main() {
       expect(confirmations, 1);
       expect(calls.map((c) => c.method), [
         'getSupportedTranslationLocales',
+        'getSupportedTranslationLocales',
         'prepareTranslationAssets',
       ]);
       expect(controller.failed, true);
@@ -339,6 +340,7 @@ void main() {
       messenger.setMockMethodCallHandler(channel, (call) async {
         calls.add(call);
         if (call.method == 'getSupportedTranslationLocales') return options;
+        if (call.method == 'cancelTranslation') return null;
         downloading.complete();
         await downloaded.future;
         return null;
@@ -350,9 +352,78 @@ void main() {
       await task;
       expect(controller.translations, isEmpty);
       expect(controller.loading, false);
-      expect(calls, hasLength(2));
+      expect(calls, hasLength(4));
+      expect(calls.last.method, 'cancelTranslation');
     },
   );
+  for (final downloading in [true, false]) {
+    test(
+      'switch interrupts pending ${downloading ? 'download' : 'translation'} and ignores late results',
+      () async {
+        options = [option('fr', installed: !downloading), option('ja')];
+        final started = Completer<void>();
+        final obsolete = Completer<Object?>();
+        final dismissed = Completer<void>();
+        final cancellation = Completer<void>();
+        messenger.setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'getSupportedTranslationLocales') return options;
+          if (call.method == 'cancelTranslation') {
+            cancellation.complete();
+            await dismissed.future;
+            return null;
+          }
+          if (call.arguments['targetLocaleIdentifier'] == 'fr') {
+            started.complete();
+            return obsolete.future;
+          }
+          return [
+            {'id': 'cue', 'translatedText': 'Japanese result'},
+          ];
+        });
+        final old = load(source: 'en', native: 'fr');
+        await started.future;
+        var pickerOpened = false;
+        final switching = controller.changeTarget(
+          source: 'en',
+          owner: 'alice',
+          canStart: () => true,
+          chooseTarget: (options) async {
+            pickerOpened = true;
+            return options.firstWhere((o) => o.identifier == 'ja');
+          },
+        );
+        await cancellation.future;
+        expect(pickerOpened, false);
+        final cancelled = calls.last.arguments['requestId'];
+        expect(
+          cancelled,
+          calls
+              .firstWhere(
+                (c) =>
+                    c.method ==
+                    (downloading
+                        ? 'prepareTranslationAssets'
+                        : 'translateTranscriptCues'),
+              )
+              .arguments['requestId'],
+        );
+        dismissed.complete();
+        expect(await switching, true);
+        await load(source: 'en', native: 'fr');
+        await old;
+        expect(obsolete.isCompleted, false);
+        expect(controller.translations['cue'], 'Japanese result');
+        expect(await preferences.loadOverride('alice', 'en'), 'ja');
+        expect(calls.last.arguments['requestId'], isNot(cancelled));
+        obsolete.completeError(PlatformException(code: 'old_request_failed'));
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.translations['cue'], 'Japanese result');
+        expect(controller.failed, false);
+      },
+    );
+  }
+
   test('Cantonese and Chinese scripts are never silently substituted', () {
     final choices = [
       const TranslationLocaleOption(

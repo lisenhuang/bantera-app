@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:app/presentation/quick_practice/practice_translation_controller.dart';
 import 'package:app/core/apple_system_version.dart';
 import 'package:app/core/auth_session_notifier.dart';
 import 'package:app/core/practice_review_service.dart';
@@ -20,6 +21,7 @@ class CoveredPractice extends StatefulWidget {
 class _CoveredPracticeState extends State<CoveredPractice> with RouteAware {
   bool covered = false;
   final store = MemoryStore();
+  final translation = PracticeTranslationController()..loading = true;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -39,6 +41,7 @@ class _CoveredPracticeState extends State<CoveredPractice> with RouteAware {
   @override
   Widget build(BuildContext context) => QuickPracticeScreen.preview(
     previewSavedStore: store,
+    previewTranslation: translation,
     active: !covered,
     previewExercise: const {
       'id': 'test',
@@ -56,7 +59,7 @@ class _CoveredPracticeState extends State<CoveredPractice> with RouteAware {
 
 void main() {
   testWidgets(
-    'translation picker opens after menu route coverage and cancellation is safe',
+    'translation picker remains usable while loading and cancellation is safe',
     (tester) async {
       final dir = Directory.systemTemp.createTempSync('translation-menu-');
       translationCapabilityForTesting = true;

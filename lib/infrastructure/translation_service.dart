@@ -47,18 +47,34 @@ class TranslationService {
     }
   }
 
+  /// End only the named Practice request. OS-managed model downloads may
+  /// continue, but the caller can move on to a different language immediately.
+  Future<void> cancelRequest(String requestId) async {
+    try {
+      await _channel.invokeMethod<void>('cancelTranslation', {
+        'requestId': requestId,
+      });
+    } on PlatformException {
+      // The old result is also invalidated by the caller.
+    } on MissingPluginException {
+      // Compatibility with platforms that do not present a native session.
+    }
+  }
+
   /// Ensures on-device translation language packs are downloaded for the pair.
   /// On iOS 18+, may present the system download UI (SwiftUI `translationTask`).
   /// No-op when both languages are already installed.
   Future<void> prepareTranslationAssets({
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
+    String? requestId,
   }) async {
     _requireSupport();
     // iOS: Apple Translation framework. Android: Google ML Kit (both on-device).
     try {
       await _channel
           .invokeMethod<void>('prepareTranslationAssets', <String, Object?>{
+            'requestId': ?requestId,
             'sourceLocaleIdentifier': sourceLocaleIdentifier,
             'targetLocaleIdentifier': targetLocaleIdentifier,
           });
@@ -136,6 +152,7 @@ class TranslationService {
     required String sourceLocaleIdentifier,
     required String targetLocaleIdentifier,
     required List<Cue> cues,
+    String? requestId,
   }) async {
     _requireSupport();
     final inputCues = cues
@@ -151,6 +168,7 @@ class TranslationService {
               'sourceLocaleIdentifier': sourceLocaleIdentifier,
               'targetLocaleIdentifier': targetLocaleIdentifier,
               'cues': inputCues,
+              'requestId': ?requestId,
             },
           ) ??
           const <dynamic>[];

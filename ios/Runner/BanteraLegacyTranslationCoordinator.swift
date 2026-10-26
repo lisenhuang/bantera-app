@@ -35,16 +35,28 @@ enum BanteraLegacyTranslationCoordinator {
     }
   }
 
+  // Accessed on the main actor. Only requests carrying an ID can be cancelled;
+  // independent subtitle/chat translation sessions are unaffected.
+  @MainActor private static var pending: [String: LegacyDismissBox] = [:]
+
+  static func cancel(requestId: String, completion: @escaping () -> Void) {
+    DispatchQueue.main.async {
+      guard let box = pending[requestId] else { completion(); return }
+      box.finish(.failure(CancellationError()), afterDismiss: completion)
+    }
+  }
+
   // MARK: - Translation
 
   /// Translates cues using Apple's Translation framework (iOS 18+).
-  /// Presents an invisible SwiftUI host to obtain a `TranslationSession` via
+  /// Embeds an invisible SwiftUI host to obtain a `TranslationSession` via
   /// `.translationTask(configuration:)`, then translates each cue individually.
   static func translate(
     cues: [CueInput],
     sourceLocaleIdentifier: String,
     targetLocaleIdentifier: String,
     prepareOnly: Bool = false,
+    requestId: String? = nil,
     completion: @escaping (Result<[CueOutput], Error>) -> Void
   ) {
     let normalizedSource = normalizeIdentifier(sourceLocaleIdentifier)
@@ -52,50 +64,67 @@ enum BanteraLegacyTranslationCoordinator {
     let sourceLanguage = Locale.Language(identifier: normalizedSource)
     let targetLanguage = Locale.Language(identifier: normalizedTarget)
 
-    Task { @MainActor in
-      let status = await LanguageAvailability().status(from: sourceLanguage, to: targetLanguage)
-      guard status == .installed || status == .supported else {
-        completion(.failure(BanteraTranslationError.unsupportedLanguagePair(
-          source: normalizedSource, target: normalizedTarget)))
-        return
+    DispatchQueue.main.async {
+      let box = LegacyDismissBox()
+      box.onFinish = { outcome in
+        if let requestId, pending[requestId] === box {
+          pending.removeValue(forKey: requestId)
+        }
+        completion(outcome)
       }
-      if prepareOnly && status == .installed {
-        completion(.success([]))
-        return
-      }
-      let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-      let scene =
-        scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first
-      guard
-        let scene,
-        let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-      else {
-        completion(
-          .failure(
-            BanteraTranslationError.translationFailed(
-              "Could not open translation. Try again."
+      if let requestId { pending[requestId] = box }
+      Task { @MainActor in
+        guard !box.finished else { return }
+        let status = await LanguageAvailability().status(from: sourceLanguage, to: targetLanguage)
+        guard !box.finished else { return }
+        guard status == .installed || status == .supported else {
+          box.finish(.failure(BanteraTranslationError.unsupportedLanguagePair(
+            source: normalizedSource, target: normalizedTarget)))
+          return
+        }
+        if prepareOnly && status == .installed {
+          box.finish(.success([]))
+          return
+        }
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene =
+          scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first
+        guard
+          let scene,
+          let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        else {
+          box.finish(
+            .failure(
+              BanteraTranslationError.translationFailed(
+                "Could not open translation. Try again."
+              )
             )
           )
-        )
-        return
-      }
-
-      let presenter = topViewController(from: root)
-      let box = LegacyDismissBox()
-      let rootView = LegacyTranslationView(
-        source: sourceLanguage,
-        target: targetLanguage,
-        cues: cues,
-        prepareOnly: prepareOnly,
-        onComplete: { result in
-          box.finish { completion(result) }
+          return
         }
-      )
-      let host = UIHostingController(rootView: rootView)
-      box.controller = host
-      host.modalPresentationStyle = .overFullScreen
-      host.view.backgroundColor = .clear
-      presenter.present(host, animated: false)
+
+        let presenter = topViewController(from: root)
+        let rootView = LegacyTranslationView(
+          source: sourceLanguage,
+          target: targetLanguage,
+          cues: cues,
+          prepareOnly: prepareOnly,
+          onComplete: { result in
+            box.finish(result)
+          }
+        )
+        let host = UIHostingController(rootView: rootView)
+        box.controller = host
+        // A full-screen presented host blocks taps on the Flutter page while
+        // models download. Embed a non-interactive child so language selection
+        // remains available without interrupting unrelated modal flows.
+        presenter.addChild(host)
+        host.view.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
+        host.view.backgroundColor = .clear
+        host.view.isUserInteractionEnabled = false
+        presenter.view.addSubview(host.view)
+        host.didMove(toParent: presenter)
+      }
     }
   }
 
@@ -167,15 +196,41 @@ enum BanteraLegacyTranslationCoordinator {
 // MARK: - Private helpers
 
 @available(iOS 18.0, *)
-private final class LegacyDismissBox {
+final class LegacyDismissBox {
   weak var controller: UIViewController?
+  var onFinish: ((Result<[BanteraLegacyTranslationCoordinator.CueOutput], Error>) -> Void)?
+  private(set) var finished = false
+  private var dismissed = false
+  private var dismissalWaiters: [() -> Void] = []
 
-  private var finished = false
-  func finish(_ completion: @escaping () -> Void) {
+  func finish(
+    _ result: Result<[BanteraLegacyTranslationCoordinator.CueOutput], Error>,
+    afterDismiss: @escaping () -> Void = {}
+  ) {
+    if dismissed { afterDismiss(); return }
+    dismissalWaiters.append(afterDismiss)
     guard !finished else { return }
     finished = true
-    guard let controller else { completion(); return }
-    controller.dismiss(animated: false, completion: completion)
+    let notify = onFinish
+    onFinish = nil
+    let complete = {
+      self.dismissed = true
+      notify?(result)
+      let waiters = self.dismissalWaiters
+      self.dismissalWaiters.removeAll()
+      waiters.forEach { $0() }
+    }
+    guard let controller else { complete(); return }
+    // Removing the host cancels its SwiftUI translation task. The system may
+    // keep a shared language-model download running independently.
+    if controller.parent != nil {
+      controller.willMove(toParent: nil)
+      controller.view.removeFromSuperview()
+      controller.removeFromParent()
+      complete()
+    } else {
+      controller.dismiss(animated: false, completion: complete)
+    }
   }
 }
 

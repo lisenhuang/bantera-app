@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'practice_translation_route.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -95,9 +96,14 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
                   ),
                   title: Text(option.displayName),
                   subtitle: Text(
-                    option.isInstalled
-                        ? l.practiceTranslationInstalled
-                        : l.practiceTranslationDownload,
+                    [
+                      if (option is PracticeTranslationRoute &&
+                          option.viaEnglish != null)
+                        l.practiceTranslationViaEnglish,
+                      option.isInstalled
+                          ? l.practiceTranslationInstalled
+                          : l.practiceTranslationDownload,
+                    ].join(' · '),
                   ),
                   trailing: Icon(
                     option.identifier == widget.selectedLocale
@@ -118,12 +124,16 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
 }
 
 // Regional locales can use their own flag. Broad languages such as English,
-// Arabic and Chinese use a globe rather than implying a particular country.
+// Arabic use a globe. Unregionalized Simplified Mandarin represents mainland
+// Chinese in this picker, even when the OS returns zh or zh-Hans instead of zh-CN.
 String _translationLanguageFlag(String identifier) {
   final parts = identifier.toLowerCase().split(RegExp(r'[-_]'));
   final hasRegion = parts
       .skip(1)
       .any((part) => RegExp(r'^[a-z]{2}$').hasMatch(part));
+  if (!hasRegion && parts.first == 'zh' && !parts.contains('hant')) {
+    return '🇨🇳';
+  }
   const countryAssociatedLanguages = {
     'ja',
     'ko',

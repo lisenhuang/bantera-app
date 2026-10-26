@@ -64,6 +64,7 @@ void main() {
       final first = Completer<Object?>();
       var calls = 0;
       messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'cancelTranslation') return null;
         if (++calls == 1) return first.future;
         return response('nouveau');
       });

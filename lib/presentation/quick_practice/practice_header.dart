@@ -9,6 +9,7 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onSavePractice,
     this.onSavedPractice,
     this.onTranslationLanguage,
+    this.showTranslationLanguage = false,
     this.isSaved = false,
     this.playbackSpeed = 1.0,
     this.onCycleSpeed,
@@ -17,6 +18,9 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onSavePractice;
   final VoidCallback? onSavedPractice;
   final VoidCallback? onTranslationLanguage;
+
+  /// Capability controls visibility; temporary busy states only disable it.
+  final bool showTranslationLanguage;
   final bool isSaved;
   final double playbackSpeed;
   final VoidCallback? onCycleSpeed;
@@ -141,9 +145,11 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                         l.longerDialogues,
                       ),
                     ),
-                    if (onTranslationLanguage != null)
+                    if (showTranslationLanguage ||
+                        onTranslationLanguage != null)
                       PopupMenuItem(
                         value: 'translation',
+                        enabled: onTranslationLanguage != null,
                         child: _menuLabel(
                           Icons.translate,
                           l.quickTranslationLanguageLabel,

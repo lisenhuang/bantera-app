@@ -841,6 +841,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Пошук мов';
 
   @override
+  String get practiceTranslationViaEnglish => 'Через англійську';
+
+  @override
   String get practiceTranslationInstalled => 'Встановлено';
 
   @override

@@ -1648,6 +1648,12 @@ abstract class AppLocalizations {
   /// **'Search languages'**
   String get practiceSearchLanguagesHint;
 
+  /// No description provided for @practiceTranslationViaEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Via English'**
+  String get practiceTranslationViaEnglish;
+
   /// No description provided for @practiceTranslationInstalled.
   ///
   /// In en, this message translates to:

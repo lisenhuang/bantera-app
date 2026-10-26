@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:async';
+import 'package:uuid/uuid.dart';
+import 'practice_translation_route.dart';
 import '../../core/apple_system_version.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/models/models.dart';
@@ -12,7 +15,8 @@ enum PracticeTranslationIssue {
   downloadCancelled,
 }
 
-/// Translates the cue and both alternatives in one on-device batch. No backend
+/// Translates the cue and alternatives in on-device batches, using English
+/// only when a direct pair is unavailable and both bridge steps exist. No backend
 /// client or generative AI fallback is used. Late results cannot replace a newer
 /// exercise or the user's newly selected translation language.
 class PracticeTranslationController extends ChangeNotifier {
@@ -21,6 +25,17 @@ class PracticeTranslationController extends ChangeNotifier {
   final PracticeTranslationPreferences _preferences;
   final _service = TranslationService.instance;
   Future<void> _queue = Future.value();
+  Future<void> _nativeBarrier = Future.value();
+  _PracticeTranslationJob? _job;
+
+  void _cancelJob() {
+    final job = _job;
+    _job = null;
+    if (job == null) return;
+    final cancellation = job.cancel(_service);
+    _nativeBarrier = Future.wait([_nativeBarrier, cancellation]).then((_) {});
+  }
+
   String? _key;
   int _generation = 0;
   bool _disposed = false;
@@ -36,26 +51,10 @@ class PracticeTranslationController extends ChangeNotifier {
     return true;
   }
 
-  static String locale(String value) {
-    final code = value.trim().replaceAll('_', '-');
-    if (code.toLowerCase() == 'zh-hk' || code.toLowerCase() == 'zh-hant-hk') {
-      return 'yue-HK'; // Cantonese must never silently become Mandarin.
-    }
-    return code;
-  }
+  static String locale(String value) => practiceTranslationLocale(value);
 
-  static String languageKey(String value) {
-    final code = locale(value).toLowerCase();
-    final parts = code.split('-');
-    if (parts.first == 'zh') {
-      return parts.contains('hant') ||
-              parts.contains('tw') ||
-              parts.contains('mo')
-          ? 'zh-hant'
-          : 'zh-hans';
-    }
-    return parts.first;
-  }
+  static String languageKey(String value) =>
+      practiceTranslationLanguageKey(value);
 
   static TranslationLocaleOption? matching(
     List<TranslationLocaleOption> options,
@@ -85,11 +84,24 @@ class PracticeTranslationController extends ChangeNotifier {
     )
     chooseTarget,
   }) async {
+    if (_disposed || !supportsBuiltInTranslation || !canStart()) return false;
+    // Suspend the obsolete operation before opening a picker. If dismissed,
+    // the screen resumes the previous choice after its modal has closed.
+    if (loading) {
+      _generation++;
+      _key = null;
+      _cancelJob();
+      loading = false;
+      preparing = false;
+      notifyListeners();
+    }
     final generation = _generation;
     bool current() => !_disposed && generation == _generation && canStart();
-    if (!supportsBuiltInTranslation || !current()) return false;
-    final options = await _service.fetchSupportedLocales(
-      sourceLocaleIdentifier: locale(source),
+    await _nativeBarrier;
+    if (!current()) return false;
+    final options = await PracticeTranslationRoute.options(
+      source: locale(source),
+      canContinue: current,
     );
     if (!current()) return false;
     if (options.isEmpty) {
@@ -109,6 +121,8 @@ class PracticeTranslationController extends ChangeNotifier {
     );
     if (!current()) return false;
     clear();
+    targetLocale = selected.identifier;
+    notifyListeners();
     return true;
   }
 
@@ -134,6 +148,9 @@ class PracticeTranslationController extends ChangeNotifier {
       return _queue;
     }
     final generation = ++_generation;
+    _cancelJob();
+    final job = _PracticeTranslationJob();
+    _job = job;
     _key = key;
     translations = {};
     failed = false;
@@ -143,7 +160,7 @@ class PracticeTranslationController extends ChangeNotifier {
     loading = true;
     notifyListeners();
     bool current() => !_disposed && generation == _generation;
-    _queue = _queue.then((_) async {
+    _queue = _nativeBarrier.then((_) async {
       if (!current()) return;
       try {
         if (!supportsBuiltInTranslation || !canStart()) return;
@@ -158,8 +175,9 @@ class PracticeTranslationController extends ChangeNotifier {
         }
         TranslationLocaleOption? selected;
         if (chooseTarget != null) {
-          final options = await _service.fetchSupportedLocales(
-            sourceLocaleIdentifier: source,
+          final options = await PracticeTranslationRoute.options(
+            source: source,
+            canContinue: () => current() && canStart(),
           );
           if (!current() || !canStart()) return;
           selected = matching(options, override) ?? matching(options, target);
@@ -181,7 +199,7 @@ class PracticeTranslationController extends ChangeNotifier {
               failed = true;
               return;
             }
-            // Only accept a pair returned by the phone for this source.
+            // Only accept a route verified using this phone’s supported pairs.
             selected = matching(options, selected.identifier);
             if (selected == null) throw StateError('Unsupported selection');
             if (owner != null) {
@@ -196,6 +214,13 @@ class PracticeTranslationController extends ChangeNotifier {
           target = locale(selected.identifier);
         }
         targetLocale = target;
+        final via = selected is PracticeTranslationRoute
+            ? selected.viaEnglish?.identifier
+            : null;
+        final steps = [
+          if (via != null) (source: source, target: via),
+          (source: via ?? source, target: target),
+        ];
         Future<bool> prepare() async {
           if (!current() || !canStart()) return false;
           if (confirmDownload != null && !await confirmDownload()) {
@@ -209,10 +234,16 @@ class PracticeTranslationController extends ChangeNotifier {
           preparing = true;
           notifyListeners();
           try {
-            await _service.prepareTranslationAssets(
-              sourceLocaleIdentifier: source,
-              targetLocaleIdentifier: target,
-            );
+            for (final step in steps) {
+              if (!current() || !canStart()) return false;
+              await job.run(
+                () => _service.prepareTranslationAssets(
+                  sourceLocaleIdentifier: step.source,
+                  targetLocaleIdentifier: step.target,
+                  requestId: job.id,
+                ),
+              );
+            }
           } finally {
             if (current()) {
               preparing = false;
@@ -228,21 +259,41 @@ class PracticeTranslationController extends ChangeNotifier {
           prepared = true;
         }
         if (!current() || !canStart()) return;
-        Future<Map<String, String>> translate() => _service.translateCues(
-          sourceLocaleIdentifier: source,
-          targetLocaleIdentifier: target,
-          cues: texts.entries
-              .map(
-                (e) => Cue(
-                  id: e.key,
-                  startTimeMs: 0,
-                  endTimeMs: 0,
-                  originalText: e.value,
-                  translatedText: '',
-                ),
-              )
-              .toList(),
-        );
+        Future<Map<String, String>> translate() async {
+          var input = Map.of(texts);
+          for (final step in steps) {
+            if (!current() || !canStart()) return {};
+            final result = await job.run(
+              () => _service.translateCues(
+                requestId: job.id,
+                sourceLocaleIdentifier: step.source,
+                targetLocaleIdentifier: step.target,
+                cues: input.entries
+                    .map(
+                      (e) => Cue(
+                        id: e.key,
+                        startTimeMs: 0,
+                        endTimeMs: 0,
+                        originalText: e.value,
+                        translatedText: '',
+                      ),
+                    )
+                    .toList(),
+              ),
+            );
+            // Never display an intermediate English result or pass a partially
+            // translated batch on as if it were complete.
+            if (texts.keys.any((id) => (result[id]?.trim() ?? '').isEmpty)) {
+              throw const TranslationException(
+                code: 'incomplete_translation',
+                message: 'Translation could not be completed.',
+              );
+            }
+            input = {for (final id in texts.keys) id: result[id]!.trim()};
+          }
+          return input;
+        }
+
         Map<String, String> result;
         try {
           result = await translate();
@@ -253,7 +304,7 @@ class PracticeTranslationController extends ChangeNotifier {
           if (!await prepare()) return;
           result = await translate();
         }
-        if (!current()) return;
+        if (!current() || !canStart()) return;
         translations = {
           for (final id in texts.keys)
             if ((result[id]?.trim() ?? '').isNotEmpty) id: result[id]!.trim(),
@@ -265,6 +316,7 @@ class PracticeTranslationController extends ChangeNotifier {
           issue ??= PracticeTranslationIssue.unavailable;
         }
       } finally {
+        if (identical(_job, job)) _job = null;
         if (current()) {
           loading = false;
           notifyListeners();
@@ -276,6 +328,7 @@ class PracticeTranslationController extends ChangeNotifier {
 
   void clear() {
     _generation++;
+    _cancelJob();
     _key = null;
     translations = {};
     loading = false;
@@ -290,6 +343,44 @@ class PracticeTranslationController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _generation++;
+    _cancelJob();
     super.dispose();
+  }
+}
+
+/// Cancels the wait independently of an OS-managed model download. Every native
+/// result still has an observer, so late success/errors cannot leak into the UI.
+class _PracticeTranslationJob {
+  final id = const Uuid().v4();
+  final _cancelled = Completer<void>();
+  bool _nativeActive = false;
+
+  Future<T> run<T>(Future<T> Function() operation) async {
+    if (_cancelled.isCompleted) {
+      throw const TranslationException(
+        code: 'cancelled',
+        message: 'Translation cancelled.',
+      );
+    }
+    _nativeActive = true;
+    try {
+      return await Future.any([
+        operation(),
+        _cancelled.future.then<T>(
+          (_) => throw const TranslationException(
+            code: 'cancelled',
+            message: 'Translation cancelled.',
+          ),
+        ),
+      ]);
+    } finally {
+      _nativeActive = false;
+    }
+  }
+
+  Future<void> cancel(TranslationService service) async {
+    final active = _nativeActive;
+    if (!_cancelled.isCompleted) _cancelled.complete();
+    if (active) await service.cancelRequest(id);
   }
 }

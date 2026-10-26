@@ -9,6 +9,52 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  @MainActor
+  func testTranslationCancellationRemovesOnlyItsChildHost() throws {
+    guard #available(iOS 18.0, *) else { throw XCTSkip("Translation requires iOS 18") }
+    let parent = UIViewController()
+    let host = UIViewController()
+    let sibling = UIViewController()
+    parent.addChild(host)
+    parent.view.addSubview(host.view)
+    host.didMove(toParent: parent)
+    parent.addChild(sibling)
+    let box = LegacyDismissBox()
+    box.controller = host
+    var results = 0
+    var acknowledged = false
+    box.onFinish = { _ in results += 1 }
+    box.finish(.failure(CancellationError())) {
+      acknowledged = true
+      XCTAssertNil(host.parent)
+      XCTAssertNil(host.view.superview)
+    }
+    box.finish(.success([]))
+    XCTAssertTrue(acknowledged)
+    XCTAssertEqual(results, 1)
+    XCTAssertTrue(sibling.parent === parent)
+  }
+
+  @MainActor
+  func testTranslationCancellationWaitsForDismissalAndIgnoresLateCompletion() throws {
+    guard #available(iOS 18.0, *) else { throw XCTSkip("Translation requires iOS 18") }
+    let host = DeferredTranslationDismissController()
+    let box = LegacyDismissBox()
+    box.controller = host
+    var results = 0
+    var acknowledged = false
+    box.onFinish = { _ in results += 1 }
+    box.finish(.success([]))
+    box.finish(.failure(CancellationError())) { acknowledged = true }
+    XCTAssertFalse(acknowledged)
+    XCTAssertEqual(results, 0)
+    host.pendingDismissal?()
+    XCTAssertTrue(acknowledged)
+    XCTAssertEqual(results, 1)
+    box.finish(.success([]))
+    XCTAssertEqual(results, 1)
+  }
+
   func testPracticeWholeWordBoundaries() throws {
     for (text, locale, expected) in [
       ("学校に行きます。", "ja-JP", "学校"),
@@ -725,4 +771,11 @@ private final class CompatibilityTestMessenger: NSObject, FlutterBinaryMessenger
     return 1
   }
   func cleanUpConnection(_ connection: FlutterBinaryMessengerConnection) {}
+}
+
+private final class DeferredTranslationDismissController: UIViewController {
+  var pendingDismissal: (() -> Void)?
+  override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+    pendingDismissal = completion
+  }
 }

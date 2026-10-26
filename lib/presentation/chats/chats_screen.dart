@@ -255,7 +255,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
       if (RegionService.instance.showSocialChatFeatures)
         ...groups.map((thread) => _ChatThreadItem(thread)),
       ...visibleOnlineUsers.map((user) => _ChatUserItem(user)),
-      _ChatSectionHeaderItem(l10n.chatDirectMessagesSection),
+      _ChatSectionHeaderItem(
+        '${l10n.chatDirectMessagesSection}(${sortedDms.length})',
+      ),
       ...sortedDms.map(
         (thread) => _ChatThreadItem(
           thread,

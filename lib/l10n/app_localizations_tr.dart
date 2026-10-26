@@ -840,6 +840,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Dil ara';
 
   @override
+  String get practiceTranslationViaEnglish => 'İngilizce üzerinden';
+
+  @override
   String get practiceTranslationInstalled => 'Yüklü';
 
   @override

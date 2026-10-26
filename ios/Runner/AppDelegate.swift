@@ -925,6 +925,11 @@ private final class BanteraTranslationBridge {
       handleGetSupportedTranslationLocales(call: call, result: result)
     case "getAllSupportedTranslationLocales":
       handleGetAllSupportedTranslationLocales(result: result)
+    case "cancelTranslation":
+      guard #available(iOS 18.0, *),
+            let args = call.arguments as? [String: Any],
+            let requestId = args["requestId"] as? String else { result(nil); return }
+      BanteraLegacyTranslationCoordinator.cancel(requestId: requestId) { result(nil) }
     case "prepareTranslationAssets":
       handlePrepareTranslationAssets(call: call, result: result)
     case "translateTranscriptCues":
@@ -1032,7 +1037,8 @@ private final class BanteraTranslationBridge {
       cues: [],
       sourceLocaleIdentifier: sourceLocaleIdentifier,
       targetLocaleIdentifier: targetLocaleIdentifier,
-      prepareOnly: true
+      prepareOnly: true,
+      requestId: args["requestId"] as? String
     ) { outcome in
       DispatchQueue.main.async {
         switch outcome {
@@ -1074,7 +1080,8 @@ private final class BanteraTranslationBridge {
     BanteraLegacyTranslationCoordinator.translate(
       cues: cues,
       sourceLocaleIdentifier: sourceLocaleIdentifier,
-      targetLocaleIdentifier: targetLocaleIdentifier
+      targetLocaleIdentifier: targetLocaleIdentifier,
+      requestId: args["requestId"] as? String
     ) { legacyResult in
       DispatchQueue.main.async {
         switch legacyResult {

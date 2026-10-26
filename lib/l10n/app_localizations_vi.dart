@@ -841,6 +841,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Tìm ngôn ngữ';
 
   @override
+  String get practiceTranslationViaEnglish => 'Qua tiếng Anh';
+
+  @override
   String get practiceTranslationInstalled => 'Đã cài đặt';
 
   @override

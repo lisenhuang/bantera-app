@@ -841,6 +841,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Search languages';
 
   @override
+  String get practiceTranslationViaEnglish => 'Via English';
+
+  @override
   String get practiceTranslationInstalled => 'Installed';
 
   @override

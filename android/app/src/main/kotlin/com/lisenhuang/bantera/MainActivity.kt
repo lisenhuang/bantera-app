@@ -130,6 +130,10 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bantera/translation")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    // ML Kit model downloads have no cancellation API. The Dart
+                    // job abandons its wait and ignores late results; a new
+                    // language can use a separate translator immediately.
+                    "cancelTranslation" -> result.success(null)
                     "translateTranscriptCues" -> TranslationBridge.translateCues(call, result)
                     "prepareTranslationAssets" -> TranslationBridge.prepareAssets(call, result)
                     "getSupportedTranslationLocales" ->

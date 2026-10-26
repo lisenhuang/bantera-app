@@ -844,6 +844,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Szukaj języków';
 
   @override
+  String get practiceTranslationViaEnglish => 'Przez angielski';
+
+  @override
   String get practiceTranslationInstalled => 'Zainstalowany';
 
   @override

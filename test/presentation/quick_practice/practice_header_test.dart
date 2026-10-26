@@ -28,6 +28,7 @@ void main() {
     Locale locale = const Locale('en'),
     VoidCallback? onDialogues,
     VoidCallback? onTranslation,
+    bool showTranslation = false,
     TargetPlatform platform = TargetPlatform.iOS,
   }) async {
     await tester.binding.setSurfaceSize(Size(width, 400));
@@ -53,12 +54,50 @@ void main() {
             onSavePractice: () {},
             onSavedPractice: () {},
             onTranslationLanguage: onTranslation,
+            showTranslationLanguage: showTranslation,
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'translation stays visible while busy and works again when ready',
+    (tester) async {
+      var opened = 0;
+      await mount(tester, showTranslation: true);
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
+      await tester.pumpAndSettle();
+      final items = tester
+          .widgetList<PopupMenuItem<String>>(find.byType(PopupMenuItem<String>))
+          .toList();
+      expect(items.last.value, 'translation');
+      expect(items.last.enabled, false);
+      expect(find.text('Translation language'), findsOneWidget);
+      await tester.tap(find.text('Translation language'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(opened, 0);
+      expect(find.text('Translation language'), findsOneWidget);
+      await tester.tapAt(const Offset(8, 380));
+      await tester.pumpAndSettle();
+      await mount(tester, showTranslation: true, onTranslation: () => opened++);
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<PopupMenuItem<String>>(
+              find.byType(PopupMenuItem<String>),
+            )
+            .last
+            .enabled,
+        true,
+      );
+      await tester.tap(find.text('Translation language'));
+      await tester.pumpAndSettle();
+      expect(opened, 1);
+    },
+  );
 
   testWidgets('translation language is last and opens its action', (
     tester,
