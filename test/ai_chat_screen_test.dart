@@ -183,7 +183,8 @@ void main() {
       final formattedReply = AiMessage(
         role: 'model',
         text: 'A short spoken introduction.',
-        formattedText: '## Try these\n\n1. **Listen** carefully.\n2. Speak slowly.',
+        formattedText:
+            '## Try these\n\n1. **Listen** carefully.\n2. Speak slowly.',
       );
       formattedReply.audio = 'reply.wav';
       controller.automaticReply = formattedReply;
@@ -196,7 +197,10 @@ void main() {
       final response = tester.widget<Container>(responseFinder);
       expect(response.decoration, isNull);
       expect(find.text('A short spoken introduction.'), findsNothing);
-      expect(find.textContaining('Try these', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('Try these', findRichText: true),
+        findsOneWidget,
+      );
       expect(tester.getSize(responseFinder).width, closeTo(390 - 32, 1));
       final userContainer = tester.widget<Container>(
         find.byKey(ValueKey('ai-message-content-${store.messages.first.id}')),
@@ -268,6 +272,7 @@ void main() {
       controller.changed();
       await tester.pump();
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
+      expect(find.text('Bantera AI is replying…'), findsNothing);
       await tester.tap(find.byTooltip('Pause audio'));
       await tester.pump();
       expect(controller.automaticPaused, true);
@@ -276,6 +281,7 @@ void main() {
       await tester.tap(find.byTooltip('Resume audio'));
       await tester.pump();
       expect(controller.automaticPaused, false);
+      expect(find.text('Bantera AI is replying…'), findsNothing);
       controller.automaticReply = null;
       controller.voiceReply.addTranscript('A streamed reply', 'en-NZ');
       controller.voiceReply.message!.emojis.addAll(['🇮🇪', '🇮🇳']);

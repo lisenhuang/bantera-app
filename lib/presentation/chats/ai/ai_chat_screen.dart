@@ -915,6 +915,14 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
   }
 
+  bool get _replyIsPlaying => _chat.messages.any(
+    (message) =>
+        message.role != 'user' &&
+        ((_chat.isAutomaticReply(message) &&
+                !_chat.isAutomaticReplyPaused(message)) ||
+            (_playing == message.id && _player.state == PlayerState.playing)),
+  );
+
   Widget _composer(BuildContext context, AppLocalizations l) => AiImageComposer(
     chat: _chat,
     child: VoiceMessageComposer(
@@ -923,7 +931,11 @@ class _AiChatScreenState extends State<AiChatScreen>
       recording: _chat.recording,
       remainingSeconds: _chat.recordingRemaining,
       busyLabel: _chat.busy && !_chat.recording
-          ? (_chat.sendingVoice ? l.chatSendingAudio : l.aiReplying)
+          ? (_chat.sendingVoice
+                ? l.chatSendingAudio
+                : _replyIsPlaying
+                ? null
+                : l.aiReplying)
           : null,
       onStart: _startRecording,
       onSend: () async {
@@ -1039,7 +1051,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                   alignment: Alignment.centerRight,
                   child: translationAction,
                 ),
-              if (receiving)
+              if (receiving && !playing)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(l.aiReplying, style: theme.textTheme.labelMedium),

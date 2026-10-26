@@ -849,10 +849,15 @@ class AiChatController extends ChangeNotifier {
       if (job == null ||
           !available ||
           job.epoch != _epoch ||
-          pcm.length < 320) {
+          // 16 kHz mono PCM16: discard accidental sub-250 ms taps and digital
+          // silence before saving or committing a request to the AI. Longer
+          // non-speech recordings still use the server's no-speech detection.
+          pcm.length < 8000 ||
+          !pcm.any((byte) => byte != 0)) {
         await stream?.close();
         return;
       }
+      job.input.durationMs = pcm.length * 1000 ~/ 32000;
       job.input.audio = await store.saveAudio(aiWave(pcm, 16000));
       if (!available || job.epoch != _epoch) {
         await stream?.close();

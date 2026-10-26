@@ -18,7 +18,9 @@ class Recorder extends AudioRecorder {
     return input!.stream;
   }
 
-  void speak() => input!.add(Uint8List(3200));
+  void speak() => input!.add(
+    Uint8List.fromList(List.generate(16000, (i) => i.isEven ? 100 : 0)),
+  );
   @override
   Future<String?> stop() async {
     input?.add(Uint8List(320)); // Native recorders may flush a final chunk.
@@ -162,7 +164,7 @@ void main() {
         if (action == 'send' || action == 'overlap completions') {
           // A second reply completes before the first has finished downloading.
           await peers.last.committed.future;
-          expect(peers.last.bytes, 3520);
+          expect(peers.last.bytes, 16320);
           peers.last.audio('Second reply.');
           if (action == 'send') {
             peers.last.complete('Second reply.');
@@ -175,10 +177,10 @@ void main() {
         }
         peers.first.complete('First reply.');
         await first;
-        expect(peers.first.bytes, 3520);
+        expect(peers.first.bytes, 16320);
         expect(
           File(store.path(store.messages.first.audio!)).lengthSync(),
-          44 + 3520,
+          44 + 16320,
         );
         final saved = store.messages.singleWhere((m) => m.id == firstId);
         expect(saved.text, 'First reply.');
@@ -197,11 +199,11 @@ void main() {
         expect(api.contexts.last.any((m) => m['text'] == 'First'), true);
         if (action == 'keep recording') {
           expect(chat.recording, true);
-          await until(() => peers.last.bytes == 3200);
+          await until(() => peers.last.bytes == 16000);
           recorder.speak();
           second = chat.sendRecording();
           await peers.last.committed.future;
-          expect(peers.last.bytes, 6720);
+          expect(peers.last.bytes, 32320);
           peers.last.audio('Second reply.');
           peers.last.complete('Second reply.');
           await second;
