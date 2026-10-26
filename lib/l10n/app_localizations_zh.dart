@@ -793,9 +793,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceSearchLanguagesHint => '搜索语言';
 
   @override
-  String get practiceTranslationViaEnglish => '通过英语转译';
-
-  @override
   String get practiceTranslationInstalled => '已安装';
 
   @override
@@ -3174,9 +3171,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get practiceSearchLanguagesHint => '搜尋語言';
-
-  @override
-  String get practiceTranslationViaEnglish => '透過英語轉譯';
 
   @override
   String get practiceTranslationInstalled => '已安裝';

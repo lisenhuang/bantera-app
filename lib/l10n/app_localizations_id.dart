@@ -840,9 +840,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Cari bahasa';
 
   @override
-  String get practiceTranslationViaEnglish => 'Melalui bahasa Inggris';
-
-  @override
   String get practiceTranslationInstalled => 'Terpasang';
 
   @override

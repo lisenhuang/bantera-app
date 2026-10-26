@@ -833,9 +833,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'ค้นหาภาษา';
 
   @override
-  String get practiceTranslationViaEnglish => 'แปลผ่านภาษาอังกฤษ';
-
-  @override
   String get practiceTranslationInstalled => 'ติดตั้งแล้ว';
 
   @override

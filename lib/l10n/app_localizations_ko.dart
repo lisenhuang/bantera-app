@@ -804,9 +804,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceSearchLanguagesHint => '언어 검색';
 
   @override
-  String get practiceTranslationViaEnglish => '영어를 거쳐 번역';
-
-  @override
   String get practiceTranslationInstalled => '설치됨';
 
   @override

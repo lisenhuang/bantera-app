@@ -799,9 +799,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceSearchLanguagesHint => '言語を検索';
 
   @override
-  String get practiceTranslationViaEnglish => '英語を介して翻訳';
-
-  @override
   String get practiceTranslationInstalled => 'インストール済み';
 
   @override

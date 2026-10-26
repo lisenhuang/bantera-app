@@ -848,9 +848,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get practiceSearchLanguagesHint => 'Sprachen suchen';
 
   @override
-  String get practiceTranslationViaEnglish => 'Über Englisch';
-
-  @override
   String get practiceTranslationInstalled => 'Installiert';
 
   @override

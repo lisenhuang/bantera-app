@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'practice_translation_route.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -96,14 +95,9 @@ class _LanguageSheetState extends State<PracticeTranslationLanguageSheet> {
                   ),
                   title: Text(option.displayName),
                   subtitle: Text(
-                    [
-                      if (option is PracticeTranslationRoute &&
-                          option.viaEnglish != null)
-                        l.practiceTranslationViaEnglish,
-                      option.isInstalled
-                          ? l.practiceTranslationInstalled
-                          : l.practiceTranslationDownload,
-                    ].join(' · '),
+                    option.isInstalled
+                        ? l.practiceTranslationInstalled
+                        : l.practiceTranslationDownload,
                   ),
                   trailing: Icon(
                     option.identifier == widget.selectedLocale

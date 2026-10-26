@@ -6,40 +6,42 @@ import 'package:app/presentation/quick_practice/practice_translation_route.dart'
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('bridged destination explains the route and required download', (
-    tester,
-  ) async {
-    final route = PracticeTranslationRoute(
-      const TranslationLocaleOption(
-        identifier: 'zh-Hans',
-        displayName: 'Chinese',
-        isInstalled: true,
-      ),
-      viaEnglish: const TranslationLocaleOption(
-        identifier: 'en',
-        displayName: 'English',
-        isInstalled: false,
-      ),
-    );
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PracticeTranslationLanguageSheet(
-            options: [route],
-            fallback: false,
+  testWidgets(
+    'destination shows required download without exposing the translation route',
+    (tester) async {
+      final route = PracticeTranslationRoute(
+        const TranslationLocaleOption(
+          identifier: 'zh-Hans',
+          displayName: 'Chinese',
+          isInstalled: true,
+        ),
+        viaEnglish: const TranslationLocaleOption(
+          identifier: 'en',
+          displayName: 'English',
+          isInstalled: false,
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PracticeTranslationLanguageSheet(
+              options: [route],
+              fallback: false,
+            ),
           ),
         ),
-      ),
-    );
-    expect(find.text('Via English · Download'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('practice-translation-language-zh-Hans')),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      );
+      expect(find.text('Download'), findsOneWidget);
+      expect(find.textContaining('Via English'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('practice-translation-language-zh-Hans')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   const options = [
     TranslationLocaleOption(
