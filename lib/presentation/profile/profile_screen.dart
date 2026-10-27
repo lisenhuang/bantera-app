@@ -1,3 +1,4 @@
+import '../shared/adaptive_layout.dart';
 import 'goal_motion.dart';
 import '../widgets/widget_discovery.dart';
 import 'dart:async';
@@ -186,50 +187,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const WidgetSuggestion(),
                   const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SpeakingLeaderboardCard(
-                      active: widget.active,
-                      refreshTick: widget.refreshTick,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  DailyWordGoalSection(
-                    showSpeaking: showSpeaking,
-                    goal: WordActivityNotifier.instance.dailyGoal,
-                    today: activity.today,
-                    onEdit: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DailyWordGoalScreen(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  WordActivitySection(
-                    showSpeaking: showSpeaking,
-                    history: WordActivityNotifier.instance.historyFor(
-                      profile.learningLanguage,
-                    ),
-                    today: activity.today,
-                    week: activity.week,
-                    total: activity.total,
-                    onShare: !showSpeaking
-                        ? null
-                        : () => Navigator.push(
+                  AdaptiveColumns(
+                    textScale: MediaQuery.textScalerOf(context).scale(1),
+                    regions: AdaptiveLayoutScope.of(context).regions,
+                    gap: 0,
+                    first: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: SpeakingLeaderboardCard(
+                            active: widget.active,
+                            refreshTick: widget.refreshTick,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        DailyWordGoalSection(
+                          showSpeaking: showSpeaking,
+                          goal: WordActivityNotifier.instance.dailyGoal,
+                          today: activity.today,
+                          onEdit: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => WordActivityShareScreen(
-                                name: profile.displayName,
-                                learningLanguage: profile.learningLanguage,
-                                avatarUrl: profile.avatarUrl,
-                                avatarPath: profile.avatarImagePath,
-                                today: activity.today,
-                                week: activity.week,
-                                total: activity.total,
-                              ),
+                              builder: (_) => const DailyWordGoalScreen(),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                    second: WordActivitySection(
+                      showSpeaking: showSpeaking,
+                      history: WordActivityNotifier.instance.historyFor(
+                        profile.learningLanguage,
+                      ),
+                      today: activity.today,
+                      week: activity.week,
+                      total: activity.total,
+                      onShare: !showSpeaking
+                          ? null
+                          : () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => WordActivityShareScreen(
+                                  name: profile.displayName,
+                                  learningLanguage: profile.learningLanguage,
+                                  avatarUrl: profile.avatarUrl,
+                                  avatarPath: profile.avatarImagePath,
+                                  today: activity.today,
+                                  week: activity.week,
+                                  total: activity.total,
+                                ),
+                              ),
+                            ),
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],

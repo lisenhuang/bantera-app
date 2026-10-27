@@ -17,9 +17,16 @@ import 'chat_menu_item_row.dart';
 import 'group_chat_presentation.dart';
 
 class ChatsScreen extends StatefulWidget {
-  const ChatsScreen({super.key, this.active = true});
+  const ChatsScreen({
+    super.key,
+    this.active = true,
+    this.onOpen,
+    this.onOpenAi,
+  });
 
   final bool active;
+  final void Function(WidgetBuilder)? onOpen;
+  final VoidCallback? onOpenAi;
 
   @override
   State<ChatsScreen> createState() => _ChatsScreenState();
@@ -170,31 +177,27 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    onTap: () => openAiChat(context),
+                                    onTap:
+                                        widget.onOpenAi ??
+                                        () => openAiChat(context),
                                   ),
                                 ),
                                 _ChatThreadItem() => _ThreadCard(
                                   thread: item.thread,
                                   avatarRefreshToken: _avatarRefreshToken,
                                   isOnline: item.isOnline,
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) =>
-                                          ChatConversationScreen.thread(
-                                            thread: item.thread,
-                                          ),
+                                  onTap: () => _open(
+                                    (_) => ChatConversationScreen.thread(
+                                      thread: item.thread,
                                     ),
                                   ),
                                 ),
                                 _ChatUserItem() => _UserCard(
                                   user: item.user,
                                   avatarRefreshToken: _avatarRefreshToken,
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) =>
-                                          ChatConversationScreen.directUser(
-                                            partner: item.user,
-                                          ),
+                                  onTap: () => _open(
+                                    (_) => ChatConversationScreen.directUser(
+                                      partner: item.user,
                                     ),
                                   ),
                                 ),
@@ -212,6 +215,14 @@ class _ChatsScreenState extends State<ChatsScreen> {
         ),
       ),
     );
+  }
+
+  void _open(WidgetBuilder builder) {
+    if (widget.onOpen != null) {
+      widget.onOpen!(builder);
+      return;
+    }
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: builder));
   }
 
   void _handleMenuAction(_ChatsMenuAction action) {

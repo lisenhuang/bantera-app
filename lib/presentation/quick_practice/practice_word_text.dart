@@ -14,8 +14,10 @@ class PracticeWordText extends StatefulWidget {
     required this.onSelect,
     this.selectedWord,
     this.words,
+    this.softWrap = true,
   });
   final String text;
+  final bool softWrap;
   final List<SubtitleWordToken>? words;
   final TextStyle? style;
   final TextDirection? textDirection;
@@ -96,6 +98,7 @@ class _PracticeWordTextState extends State<PracticeWordText> {
   @override
   Widget build(BuildContext context) => Text.rich(
     TextSpan(children: _spans),
+    softWrap: widget.softWrap,
     textDirection: widget.textDirection,
     style: widget.style,
   );

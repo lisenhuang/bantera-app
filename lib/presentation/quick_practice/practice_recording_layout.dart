@@ -1,3 +1,4 @@
+import '../shared/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 import 'practice_record_control.dart';
 
@@ -23,13 +24,14 @@ class _PracticeRecordingLayoutState extends State<PracticeRecordingLayout> {
   @override
   Widget build(BuildContext context) {
     final mic = widget.children.indexWhere(
-      (child) => child is PracticeRecordControl,
+      (child) => child is PracticeRecordControl || child is AdaptiveColumns,
     );
     if (mic < 0) {
-      _before = _after = null;
+      if (!widget.pinned || _before == null) _before = widget.children;
+      _after = null;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: widget.children,
+        children: _before!,
       );
     }
     if (!widget.pinned || _before == null) {

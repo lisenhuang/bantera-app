@@ -14,6 +14,10 @@
 ![iOS](https://img.shields.io/badge/iOS-18%2B-black?logo=apple)
 ![Localization](https://img.shields.io/badge/Localization-EN%20%7C%20JA%20%7C%20KO%20%7C%20ZH-brightgreen)
 
+## Adaptive iPhone Duo layouts
+
+See the [visual guide and simulator screenshots](docs/iphone-duo-visual-guide.md) for Practice, Chats, Goal, Split View and tabletop layouts. [Implementation and verification notes](docs/iphone-duo-layout.md) describe the native bridge and regression coverage.
+
 ## Engineering quality
 
 Maintained by [@lisenhuang](https://github.com/lisenhuang), with reproducible local checks, regression tests, and documented review expectations.
@@ -825,3 +829,5 @@ New Zealand IP promotes New Zealand English to the top, with Māori preceding it
 for admins. Other or unknown countries use the normal popularity order, with
 admin-only Māori at the end. Cached picker lists are reordered on opening after
 a region refresh; native-language ordering and Māori visibility rules are unchanged.
+
+Pronunciation alignment changes, verification and simulator screenshots: [Pronunciation alignment review](docs/pronunciation-alignment.md).

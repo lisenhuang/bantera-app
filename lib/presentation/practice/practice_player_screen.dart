@@ -1,3 +1,6 @@
+import '../shared/adaptive_overlays.dart';
+import '../shared/adaptive_layout.dart';
+import '../shared/adaptive_player_frame.dart';
 import '../shared/language_code_label.dart';
 import '../../infrastructure/practice_audio_route.dart';
 import 'dart:async';
@@ -619,7 +622,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   Future<void> _confirmGoToFirstCueFromLast() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showBanteraDialog<bool>(
       context: context,
       builder: (ctx) {
         final l10n = AppLocalizations.of(ctx)!;
@@ -766,7 +769,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
     var selectedPause = initial.pauseBetweenCues;
     var selectedPlays = initial.playsPerCue.clamp(1, 3);
-    final result = await showDialog<PlayAllSettings>(
+    final result = await showBanteraDialog<PlayAllSettings>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setLocal) {
@@ -1672,7 +1675,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _cueRecordingTempPath = null;
       });
 
-      await showModalBottomSheet<void>(
+      await showAdaptiveBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
@@ -1811,290 +1814,359 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: _togglePlay,
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+        child: AdaptivePlayerFrame(
+          regions: AdaptiveLayoutScope.of(context).regions,
+          content: AdaptiveColumns(
+            fillHeight: true,
+            singlePane: 0,
+            textScale: MediaQuery.textScalerOf(context).scale(1),
+            regions: AdaptiveLayoutScope.of(context).regions,
+            first: GestureDetector(
+              onTap: _togglePlay,
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: _buildMainPracticeArea(cue, colorScheme),
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: _buildMainPracticeArea(cue, colorScheme),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      _buildCueTimeline(cue, colorScheme),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 18),
+                    _buildCueTimeline(cue, colorScheme),
+                  ],
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              child: Builder(
-                builder: (context) {
-                  final transcriptButton = OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
+            second: _buildAdaptiveTranscript(colorScheme),
+          ),
+          controls: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
                     ),
-                    onPressed: () {
-                      unawaited(_handleSubtitleToggle());
-                    },
-                    icon: _isTranslating
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            !supportsBuiltInTranslation
+                    child: Builder(
+                      builder: (context) {
+                        final transcriptButton = OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          onPressed: () {
+                            unawaited(_handleSubtitleToggle());
+                          },
+                          icon: _isTranslating
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  !supportsBuiltInTranslation
+                                      ? (_subtitleState == SubtitleState.hidden
+                                            ? CupertinoIcons.eye
+                                            : CupertinoIcons.eye_slash)
+                                      : (_subtitleState == SubtitleState.hidden
+                                            ? CupertinoIcons.eye
+                                            : _subtitleState ==
+                                                  SubtitleState.original
+                                            ? CupertinoIcons.globe
+                                            : CupertinoIcons.eye_slash),
+                                ),
+                          label: Text(
+                            _isTranslating
+                                ? _l10n.practiceTranslating
+                                : Platform.isIOS && !supportsBuiltInTranslation
+                                ? _l10n.practiceTextLabel
+                                : !supportsBuiltInTranslation
                                 ? (_subtitleState == SubtitleState.hidden
-                                      ? CupertinoIcons.eye
-                                      : CupertinoIcons.eye_slash)
+                                      ? _l10n.practiceShowTranscript
+                                      : _l10n.practiceHideText)
                                 : (_subtitleState == SubtitleState.hidden
-                                      ? CupertinoIcons.eye
+                                      ? _l10n.practiceShowTranscript
                                       : _subtitleState == SubtitleState.original
-                                      ? CupertinoIcons.globe
-                                      : CupertinoIcons.eye_slash),
+                                      ? _l10n.practiceTranslate
+                                      : _l10n.practiceHideText),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                    label: Text(
-                      _isTranslating
-                          ? _l10n.practiceTranslating
-                          : Platform.isIOS && !supportsBuiltInTranslation
-                          ? _l10n.practiceTextLabel
-                          : !supportsBuiltInTranslation
-                          ? (_subtitleState == SubtitleState.hidden
-                                ? _l10n.practiceShowTranscript
-                                : _l10n.practiceHideText)
-                          : (_subtitleState == SubtitleState.hidden
-                                ? _l10n.practiceShowTranscript
-                                : _subtitleState == SubtitleState.original
-                                ? _l10n.practiceTranslate
-                                : _l10n.practiceHideText),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  );
+                        );
 
-                  final actionButtonStyle = OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    padding: const EdgeInsets.all(12),
-                    minimumSize: const Size(48, 48),
-                    tapTargetSize: MaterialTapTargetSize.padded,
-                  );
-                  final shareButton = OutlinedButton(
-                    style: actionButtonStyle,
-                    onPressed: () {
-                      SharePlus.instance.share(
-                        ShareParams(
-                          uri: Uri.parse(
-                            'https://bantera.app/webapp/shadowing/${widget.mediaItem.id}',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Icon(CupertinoIcons.share, size: 18),
-                  );
-
-                  final saveButton = ListenableBuilder(
-                    listenable: SavedCueRepository.instance,
-                    builder: (context, _) {
-                      final isSaved = SavedCueRepository.instance.isSaved(
-                        widget.mediaItem.id,
-                        cue.id,
-                      );
-                      return Tooltip(
-                        message: isSaved
-                            ? _l10n.lessonUnsaveTooltip
-                            : _l10n.lessonSaveTooltip,
-                        child: OutlinedButton(
+                        final actionButtonStyle = OutlinedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.all(12),
+                          minimumSize: const Size(48, 48),
+                          tapTargetSize: MaterialTapTargetSize.padded,
+                        );
+                        final shareButton = OutlinedButton(
                           style: actionButtonStyle,
                           onPressed: () {
-                            unawaited(
-                              SavedCueRepository.instance.toggleSaveCue(
-                                mediaItem: widget.mediaItem,
-                                cue: cue,
-                                cueIndex: _currentCueIndex,
-                                metadata: _savedCueMetadataFor(cue),
+                            SharePlus.instance.share(
+                              ShareParams(
+                                uri: Uri.parse(
+                                  'https://bantera.app/webapp/shadowing/${widget.mediaItem.id}',
+                                ),
                               ),
                             );
                           },
-                          child: Icon(
-                            isSaved
-                                ? CupertinoIcons.bookmark_fill
-                                : CupertinoIcons.bookmark,
-                            size: 18,
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                          child: const Icon(CupertinoIcons.share, size: 18),
+                        );
 
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(child: transcriptButton),
-                      const SizedBox(width: 8),
-                      shareButton,
-                      const SizedBox(width: 8),
-                      saveButton,
-                    ],
-                  );
-                },
-              ),
-            ),
-            if (_translationErrorMessage != null && supportsBuiltInTranslation)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Text(
-                    _translationErrorMessage!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.red.shade700,
-                    ),
-                  ),
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 24,
-                left: 32,
-                right: 32,
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        iconSize: 36,
-                        icon: const Icon(CupertinoIcons.backward_fill),
-                        color: !_isPlayingAll && _currentCueIndex > 0
-                            ? colorScheme.primary
-                            : colorScheme.primary.withValues(alpha: 0.2),
-                        onPressed: _isPlayingAll ? null : _prevCue,
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        iconSize: 72,
-                        icon: Icon(
-                          _isPlaying
-                              ? CupertinoIcons.pause_circle_fill
-                              : CupertinoIcons.play_circle_fill,
-                        ),
-                        color: colorScheme.primary,
-                        onPressed: _togglePlay,
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        iconSize: 36,
-                        icon: const Icon(CupertinoIcons.forward_fill),
-                        color: !_isPlayingAll
-                            ? colorScheme.primary
-                            : colorScheme.primary.withValues(alpha: 0.2),
-                        onPressed: _isPlayingAll ? null : _nextCue,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      if (legacyApple && !iosLegacyPre26)
-                        Expanded(
-                          child: Center(
-                            child: _buildActionBtn(
-                              _isPlayingAll
-                                  ? CupertinoIcons.stop_fill
-                                  : CupertinoIcons.play_rectangle,
-                              _isPlayingAll
-                                  ? _l10n.practiceStop
-                                  : _l10n.practicePlayAll,
-                              () => _isPlayingAll
-                                  ? unawaited(_stopPlayAll())
-                                  : unawaited(_promptPlayAll()),
-                              colorScheme,
-                            ),
-                          ),
-                        )
-                      else ...[
-                        if (!legacyApple || iosLegacyPre26)
-                          Expanded(
-                            child: Center(
-                              child: _buildActionBtn(
-                                _isPlayingAll
-                                    ? CupertinoIcons.stop_fill
-                                    : CupertinoIcons.play_rectangle,
-                                _isPlayingAll
-                                    ? _l10n.practiceStop
-                                    : _l10n.practicePlayAll,
-                                () => _isPlayingAll
-                                    ? unawaited(_stopPlayAll())
-                                    : unawaited(_promptPlayAll()),
-                                colorScheme,
+                        final saveButton = ListenableBuilder(
+                          listenable: SavedCueRepository.instance,
+                          builder: (context, _) {
+                            final isSaved = SavedCueRepository.instance.isSaved(
+                              widget.mediaItem.id,
+                              cue.id,
+                            );
+                            return Tooltip(
+                              message: isSaved
+                                  ? _l10n.lessonUnsaveTooltip
+                                  : _l10n.lessonSaveTooltip,
+                              child: OutlinedButton(
+                                style: actionButtonStyle,
+                                onPressed: () {
+                                  unawaited(
+                                    SavedCueRepository.instance.toggleSaveCue(
+                                      mediaItem: widget.mediaItem,
+                                      cue: cue,
+                                      cueIndex: _currentCueIndex,
+                                      metadata: _savedCueMetadataFor(cue),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  isSaved
+                                      ? CupertinoIcons.bookmark_fill
+                                      : CupertinoIcons.bookmark,
+                                  size: 18,
+                                ),
                               ),
-                            ),
-                          ),
-                        Expanded(
-                          child: Center(
-                            child: _buildRecordActionColumn(colorScheme),
+                            );
+                          },
+                        );
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(child: transcriptButton),
+                            const SizedBox(width: 8),
+                            shareButton,
+                            const SizedBox(width: 8),
+                            saveButton,
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  if (_translationErrorMessage != null &&
+                      supportsBuiltInTranslation)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.2),
                           ),
                         ),
-                        Expanded(
-                          child: Center(
-                            child: _buildActionBtn(
-                              CupertinoIcons.list_bullet,
-                              _l10n.practiceRecords,
-                              _isPlayingAll ? null : _openRecordsSheet,
-                              colorScheme,
+                        child: Text(
+                          _translationErrorMessage!,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.red.shade700),
+                        ),
+                      ),
+                    ),
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 16,
+                      bottom: 24,
+                      left: 32,
+                      right: 32,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              iconSize: 36,
+                              icon: const Icon(CupertinoIcons.backward_fill),
+                              color: !_isPlayingAll && _currentCueIndex > 0
+                                  ? colorScheme.primary
+                                  : colorScheme.primary.withValues(alpha: 0.2),
+                              onPressed: _isPlayingAll ? null : _prevCue,
                             ),
-                          ),
+                            const SizedBox(width: 24),
+                            IconButton(
+                              iconSize: 72,
+                              icon: Icon(
+                                _isPlaying
+                                    ? CupertinoIcons.pause_circle_fill
+                                    : CupertinoIcons.play_circle_fill,
+                              ),
+                              color: colorScheme.primary,
+                              onPressed: _togglePlay,
+                            ),
+                            const SizedBox(width: 24),
+                            IconButton(
+                              iconSize: 36,
+                              icon: const Icon(CupertinoIcons.forward_fill),
+                              color: !_isPlayingAll
+                                  ? colorScheme.primary
+                                  : colorScheme.primary.withValues(alpha: 0.2),
+                              onPressed: _isPlayingAll ? null : _nextCue,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            if (legacyApple && !iosLegacyPre26)
+                              Expanded(
+                                child: Center(
+                                  child: _buildActionBtn(
+                                    _isPlayingAll
+                                        ? CupertinoIcons.stop_fill
+                                        : CupertinoIcons.play_rectangle,
+                                    _isPlayingAll
+                                        ? _l10n.practiceStop
+                                        : _l10n.practicePlayAll,
+                                    () => _isPlayingAll
+                                        ? unawaited(_stopPlayAll())
+                                        : unawaited(_promptPlayAll()),
+                                    colorScheme,
+                                  ),
+                                ),
+                              )
+                            else ...[
+                              if (!legacyApple || iosLegacyPre26)
+                                Expanded(
+                                  child: Center(
+                                    child: _buildActionBtn(
+                                      _isPlayingAll
+                                          ? CupertinoIcons.stop_fill
+                                          : CupertinoIcons.play_rectangle,
+                                      _isPlayingAll
+                                          ? _l10n.practiceStop
+                                          : _l10n.practicePlayAll,
+                                      () => _isPlayingAll
+                                          ? unawaited(_stopPlayAll())
+                                          : unawaited(_promptPlayAll()),
+                                      colorScheme,
+                                    ),
+                                  ),
+                                ),
+                              Expanded(
+                                child: Center(
+                                  child: _buildRecordActionColumn(colorScheme),
+                                ),
+                              ),
+                              Expanded(
+                                child: Center(
+                                  child: _buildActionBtn(
+                                    CupertinoIcons.list_bullet,
+                                    _l10n.practiceRecords,
+                                    _isPlayingAll ? null : _openRecordsSheet,
+                                    colorScheme,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildAdaptiveTranscript(ColorScheme colors) => Material(
+    color: colors.surfaceContainerLow,
+    child: ListView.builder(
+      key: const PageStorageKey('dialogue-wide-transcript'),
+      padding: const EdgeInsets.all(20),
+      itemCount: _activeCues.length,
+      itemBuilder: (context, index) {
+        final cue = _activeCues[index];
+        return Card(
+          color: index == _currentCueIndex
+              ? colors.primaryContainer
+              : colors.surface,
+          child: ListTile(
+            selected: index == _currentCueIndex,
+            selectedColor: colors.onPrimaryContainer,
+            contentPadding: const EdgeInsets.all(16),
+            title: SelectableText(
+              _subtitleState == SubtitleState.hidden
+                  ? _l10n.practiceTranscriptHidden
+                  : _subtitleState == SubtitleState.translated &&
+                        cue.translatedText.isNotEmpty
+                  ? (_translatedCueTextsFor(_activeCueSentenceMode)[cue.id] ??
+                        cue.translatedText)
+                  : cue.originalText,
+            ),
+            leading: IconButton(
+              tooltip: index == _currentCueIndex && _isPlaying
+                  ? _l10n.quickPauseAudio
+                  : _l10n.aiPlayAudio,
+              icon: Icon(
+                index == _currentCueIndex && _isPlaying
+                    ? Icons.pause
+                    : Icons.play_arrow,
+              ),
+              onPressed: _isPlayingAll
+                  ? null
+                  : () async {
+                      if (index != _currentCueIndex)
+                        await _selectCueFromTimeline(index);
+                      else
+                        _togglePlay();
+                    },
+            ),
+          ),
+        );
+      },
+    ),
+  );
 
   Widget _buildMainPracticeArea(Cue cue, ColorScheme colorScheme) {
     if (_isInitializingMedia) {
@@ -2669,7 +2741,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       setState(() {
-        _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+        _translationErrorMessage =
+            const {
+              'unsupported_language_pair',
+              'no_languages',
+              'unsupported_language',
+            }.contains(error.code)
+            ? null
+            : error.message;
       });
     } finally {
       if (mounted && _foregroundTranslationToken == myToken) {
@@ -2846,7 +2925,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+          _translationErrorMessage =
+              const {
+                'unsupported_language_pair',
+                'no_languages',
+                'unsupported_language',
+              }.contains(error.code)
+              ? null
+              : error.message;
         });
       }
       return null;
@@ -2872,7 +2958,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       } on TranslationException catch (error) {
         if (mounted) {
           setState(() {
-            _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+            _translationErrorMessage =
+                const {
+                  'unsupported_language_pair',
+                  'no_languages',
+                  'unsupported_language',
+                }.contains(error.code)
+                ? null
+                : error.message;
           });
         }
         return null;
@@ -2905,7 +2998,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+          _translationErrorMessage =
+              const {
+                'unsupported_language_pair',
+                'no_languages',
+                'unsupported_language',
+              }.contains(error.code)
+              ? null
+              : error.message;
         });
       }
       return null;
@@ -2957,7 +3057,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       setState(() {
-        _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+        _translationErrorMessage =
+            const {
+              'unsupported_language_pair',
+              'no_languages',
+              'unsupported_language',
+            }.contains(error.code)
+            ? null
+            : error.message;
       });
       return;
     }
@@ -3001,7 +3108,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
+          _translationErrorMessage =
+              const {
+                'unsupported_language_pair',
+                'no_languages',
+                'unsupported_language',
+              }.contains(error.code)
+              ? null
+              : error.message;
         });
       }
       return;
@@ -3041,7 +3155,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   void _openPracticeSettingsSheet() {
     unawaited(
-      showModalBottomSheet<void>(
+      showAdaptiveBottomSheet<void>(
         context: context,
         showDragHandle: true,
         builder: (sheetContext) => _PracticeSettingsSheet(
@@ -3335,7 +3449,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     required String title,
     required String description,
   }) {
-    return showModalBottomSheet<TranslationLocaleOption>(
+    return showAdaptiveBottomSheet<TranslationLocaleOption>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
@@ -3354,7 +3468,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     TranslationLocaleOption locale,
   ) async {
     final confirmed =
-        await showDialog<bool>(
+        await showBanteraDialog<bool>(
           context: context,
           builder: (dialogContext) {
             final theme = Theme.of(dialogContext);
@@ -3383,7 +3497,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(languageCodeLabel(locale.identifier), style: theme.textTheme.bodySmall),
+                  Text(
+                    languageCodeLabel(locale.identifier),
+                    style: theme.textTheme.bodySmall,
+                  ),
                   const SizedBox(height: 14),
                   Text(
                     l10n.practiceConfirmTranslationLanguageBody,

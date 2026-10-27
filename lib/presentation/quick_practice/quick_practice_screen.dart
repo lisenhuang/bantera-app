@@ -1,3 +1,5 @@
+import '../shared/adaptive_overlays.dart';
+import '../shared/adaptive_layout.dart';
 import 'practice_record_control.dart';
 import 'practice_recording_layout.dart';
 import 'practice_pronunciation_controller.dart';
@@ -146,7 +148,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     return locale != null &&
             supportsQuickPracticeLanguage(
               locale,
-              isAdmin: widget.previewIsAdmin || AuthSessionNotifier.instance.session?.isAdmin == true,
+              isAdmin:
+                  widget.previewIsAdmin ||
+                  AuthSessionNotifier.instance.session?.isAdmin == true,
             )
         ? locale
         : null;
@@ -968,7 +972,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     List<TranslationLocaleOption> options,
   ) async {
     if (!mounted || !_canUseAudio) return null;
-    final selected = await showModalBottomSheet<TranslationLocaleOption>(
+    final selected = await showAdaptiveBottomSheet<TranslationLocaleOption>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -1008,18 +1012,19 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         canStart: current,
         chooseTarget: (options) async {
           if (!mounted || !current()) return null;
-          final selected = await showModalBottomSheet<TranslationLocaleOption>(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            showDragHandle: true,
-            constraints: const BoxConstraints(maxWidth: 560),
-            builder: (_) => PracticeTranslationLanguageSheet(
-              options: options,
-              fallback: false,
-              selectedLocale: _translations.targetLocale,
-            ),
-          );
+          final selected =
+              await showAdaptiveBottomSheet<TranslationLocaleOption>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                showDragHandle: true,
+                constraints: const BoxConstraints(maxWidth: 560),
+                builder: (_) => PracticeTranslationLanguageSheet(
+                  options: options,
+                  fallback: false,
+                  selectedLocale: _translations.targetLocale,
+                ),
+              );
           await WidgetsBinding.instance.endOfFrame;
           return selected;
         },
@@ -1040,7 +1045,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   Future<bool> _confirmTranslationDownload() async {
     if (!mounted || !_canUseAudio) return false;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showBanteraDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l.quickTranslationDownloadTitle),
@@ -1191,7 +1196,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _stopAudio();
       if (!mounted || epoch != _epoch) return;
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showBanteraDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text(l.quickShowTranslation),
@@ -1618,7 +1623,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final epoch = _epoch;
     setState(() => _confirmingNext = true);
     try {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showBanteraDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.admin_panel_settings_outlined),
@@ -1679,7 +1684,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (!_listeningOnly &&
           _savedSource == null &&
           _feedback?['outcome'] != 'correct') {
-        final confirmed = await showDialog<bool>(
+        final confirmed = await showBanteraDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             title: Text(l.quickSkipTitle),
@@ -1932,7 +1937,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: 1280),
               child: PracticeRecordingLayout(
                 pinned: _pinRecordingLayout,
                 children: [
@@ -2059,197 +2064,223 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       button: l.compareTryAgain,
                       loading: _error == null,
                     )
-                  else ...[
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: dark
-                              ? [
-                                  const Color(0xFF312654),
-                                  const Color(0xFF24203C),
-                                ]
-                              : [
-                                  const Color(0xFFEEE8FF),
-                                  const Color(0xFFF5F0FF),
-                                ],
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: c.primary.withValues(alpha: .12),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  else
+                    AdaptiveColumns(
+                      textScale: MediaQuery.textScalerOf(context).scale(1),
+                      regions: AdaptiveLayoutScope.of(context).regions,
+                      first: PracticeRecordingLayout(
+                        pinned: _pinRecordingLayout,
                         children: [
-                          Row(
-                            children: [
-                              Icon(
-                                CupertinoIcons.chat_bubble_2,
-                                color: c.primary,
-                                size: 20,
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: dark
+                                    ? [
+                                        const Color(0xFF312654),
+                                        const Color(0xFF24203C),
+                                      ]
+                                    : [
+                                        const Color(0xFFEEE8FF),
+                                        const Color(0xFFF5F0FF),
+                                      ],
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  l.quickCue1,
-                                  style: TextStyle(
-                                    color: c.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: c.primary.withValues(alpha: .12),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          _wordText(
-                            'cue',
-                            exercise['cue'] as String,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              height: 1.35,
-                              letterSpacing: -.4,
                             ),
-                          ),
-                          _translationLine('cue'),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              _playButton(
-                                'cue',
-                                exercise['cueAudioUrl'] as String,
-                                c.primary,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ValueListenableBuilder<double>(
-                                  valueListenable: _cueProgress,
-                                  builder: (context, progress, _) =>
-                                      ChatAudioWaveform(
-                                        animateProgress: true,
-                                        progress: progress,
-                                        receiving: false,
-                                        audioKey:
-                                            exercise['cueAudioUrl'] as String,
-                                        loadAudioPath: _audioCache == null
-                                            ? null
-                                            : () async {
-                                                final path = await _audioCache!
-                                                    .prepare(
-                                                      exercise['cueAudioUrl']
-                                                          as String,
-                                                    );
-                                                if (path == null) {
-                                                  throw StateError(
-                                                    'Audio unavailable',
-                                                  );
-                                                }
-                                                return path;
-                                              },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      CupertinoIcons.chat_bubble_2,
+                                      color: c.primary,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        l.quickCue1,
+                                        style: TextStyle(
+                                          color: c.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 18),
+                                _wordText(
+                                  'cue',
+                                  exercise['cue'] as String,
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.35,
+                                        letterSpacing: -.4,
                                       ),
                                 ),
-                              ),
-                            ],
+                                _translationLine('cue'),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    _playButton(
+                                      'cue',
+                                      exercise['cueAudioUrl'] as String,
+                                      c.primary,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ValueListenableBuilder<double>(
+                                        valueListenable: _cueProgress,
+                                        builder: (context, progress, _) =>
+                                            ChatAudioWaveform(
+                                              animateProgress: true,
+                                              progress: progress,
+                                              receiving: false,
+                                              audioKey:
+                                                  exercise['cueAudioUrl']
+                                                      as String,
+                                              loadAudioPath: _audioCache == null
+                                                  ? null
+                                                  : () async {
+                                                      final path =
+                                                          await _audioCache!
+                                                              .prepare(
+                                                                exercise['cueAudioUrl']
+                                                                    as String,
+                                                              );
+                                                      if (path == null) {
+                                                        throw StateError(
+                                                          'Audio unavailable',
+                                                        );
+                                                      }
+                                                      return path;
+                                                    },
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(height: 25),
+                          if (!_isMaori &&
+                              supportsBuiltInTranslation &&
+                              !_translationRevealed &&
+                              _translations.issue !=
+                                  PracticeTranslationIssue.noLanguages)
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: TextButton.icon(
+                                key: const ValueKey(
+                                  'practice-show-translation',
+                                ),
+                                onPressed:
+                                    _busy || _recording || _confirmingNext
+                                    ? null
+                                    : _revealTranslations,
+                                icon: const Icon(Icons.translate, size: 18),
+                                label: Text(l.quickShowTranslation),
+                              ),
+                            ),
+                          if (!_listeningOnly && level == 'A0')
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: Text(
+                                exercise['reviewMode'] == true
+                                    ? l.quickReviewLevelBody(
+                                        _currentLevel ?? level,
+                                      )
+                                    : l.quickA0Hint,
+                                key: const ValueKey(
+                                  'practice-translation-scoring',
+                                ),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: c.onSurfaceVariant,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      second: PracticeRecordingLayout(
+                        pinned: _pinRecordingLayout,
+                        children: [
+                          Text(
+                            l.quickCue2,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          for (var i = 0; i < 2; i++) ...[
+                            _choice(
+                              i,
+                              Map<String, dynamic>.from(
+                                (exercise['choices'] as List)[i],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          const SizedBox(height: 10),
+                          if (!_listeningOnly)
+                            PracticeRecordControl(
+                              enabled: _canUseAudio && !_confirmingNext,
+                              recording: _recording,
+                              busy: _busy,
+                              pulse: _pulse,
+                              microphoneAnchor: _microphoneAnchor,
+                              onStart: _startRecording,
+                              onCheck: _submit,
+                              onCancel: _stopAudio,
+                            ),
+                          const SizedBox(height: 18),
+                          if (_feedback != null) _result(),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                _error!,
+                                style: TextStyle(color: c.error),
+                              ),
+                            ),
+                          if (_validatingCachedPractice && _error != null)
+                            TextButton(
+                              onPressed: _loading ? null : _load,
+                              child: Text(l.compareTryAgain),
+                            ),
+                          if (_error == l.compareMicrophoneDeniedPermanent)
+                            TextButton(
+                              onPressed: openAppSettings,
+                              child: Text(l.compareOpenIphoneSettings),
+                            ),
+                          if (!_recording && !_busy && !hasCorrectAnswer)
+                            _feedback != null
+                                ? FilledButton.icon(
+                                    onPressed: _confirmingNext ? null : _next,
+                                    icon: const Icon(
+                                      CupertinoIcons.arrow_right,
+                                      size: 18,
+                                    ),
+                                    label: Text(l.quickNext),
+                                    style: FilledButton.styleFrom(
+                                      padding: const EdgeInsets.all(16),
+                                    ),
+                                  )
+                                : TextButton(
+                                    onPressed: _confirmingNext ? null : _next,
+                                    child: Text(l.quickNext),
+                                  ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 25),
-                    if (!_isMaori &&
-                        supportsBuiltInTranslation &&
-                        !_translationRevealed &&
-                        _translations.issue !=
-                            PracticeTranslationIssue.noLanguages)
-                      Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: TextButton.icon(
-                          key: const ValueKey('practice-show-translation'),
-                          onPressed: _busy || _recording || _confirmingNext
-                              ? null
-                              : _revealTranslations,
-                          icon: const Icon(Icons.translate, size: 18),
-                          label: Text(l.quickShowTranslation),
-                        ),
-                      ),
-                    if (!_listeningOnly && level == 'A0')
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Text(
-                          exercise['reviewMode'] == true
-                              ? l.quickReviewLevelBody(_currentLevel ?? level)
-                              : l.quickA0Hint,
-                          key: const ValueKey('practice-translation-scoring'),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: c.onSurfaceVariant,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    Text(
-                      l.quickCue2,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    for (var i = 0; i < 2; i++) ...[
-                      _choice(
-                        i,
-                        Map<String, dynamic>.from(
-                          (exercise['choices'] as List)[i],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    const SizedBox(height: 10),
-                    if (!_listeningOnly)
-                      PracticeRecordControl(
-                        enabled: _canUseAudio && !_confirmingNext,
-                        recording: _recording,
-                        busy: _busy,
-                        pulse: _pulse,
-                        microphoneAnchor: _microphoneAnchor,
-                        onStart: _startRecording,
-                        onCheck: _submit,
-                        onCancel: _stopAudio,
-                      ),
-                    const SizedBox(height: 18),
-                    if (_feedback != null) _result(),
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(_error!, style: TextStyle(color: c.error)),
-                      ),
-                    if (_validatingCachedPractice && _error != null)
-                      TextButton(
-                        onPressed: _loading ? null : _load,
-                        child: Text(l.compareTryAgain),
-                      ),
-                    if (_error == l.compareMicrophoneDeniedPermanent)
-                      TextButton(
-                        onPressed: openAppSettings,
-                        child: Text(l.compareOpenIphoneSettings),
-                      ),
-                    if (!_recording && !_busy && !hasCorrectAnswer)
-                      _feedback != null
-                          ? FilledButton.icon(
-                              onPressed: _confirmingNext ? null : _next,
-                              icon: const Icon(
-                                CupertinoIcons.arrow_right,
-                                size: 18,
-                              ),
-                              label: Text(l.quickNext),
-                              style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.all(16),
-                              ),
-                            )
-                          : TextButton(
-                              onPressed: _confirmingNext ? null : _next,
-                              child: Text(l.quickNext),
-                            ),
-                  ],
                 ],
               ),
             ),
@@ -2348,7 +2379,15 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   void _pronunciationChanged() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      final current = _exercise;
+      final data = _pronunciation.data;
+      if (current != null && data != null && !identical(current['pronunciation'], data)) {
+        current['pronunciation'] = data;
+        _cachePractice(current);
+      }
+      setState(() {});
+    }
   }
 
   void _syncPronunciation() {
@@ -2357,6 +2396,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       locale: _exerciseLocale,
       id: _exercise?['id'] as String?,
       embedded: (_exercise?['pronunciation'] as Map?)?.cast<String, dynamic>(),
+      source: _exercise == null ? null : [
+        _exercise!['cue'] as String,
+        ...(_exercise!['choices'] as List).map((c) => c['text'] as String),
+      ],
       active:
           widget.active &&
           _allowed &&
@@ -2383,7 +2426,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _stopAudio();
       if (!mounted) return;
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showBanteraDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           scrollable: true,

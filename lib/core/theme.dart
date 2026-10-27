@@ -11,6 +11,8 @@ class BanteraTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      dialogTheme: const DialogThemeData(constraints: BoxConstraints(maxWidth: 560)),
+      bottomSheetTheme: const BottomSheetThemeData(constraints: BoxConstraints(maxWidth: 640)),
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
@@ -70,6 +72,8 @@ class BanteraTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      dialogTheme: const DialogThemeData(constraints: BoxConstraints(maxWidth: 560)),
+      bottomSheetTheme: const BottomSheetThemeData(constraints: BoxConstraints(maxWidth: 640)),
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFF8A72F6), // slightly lighter purple for dark mode contrast

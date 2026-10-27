@@ -25,6 +25,16 @@ import UserNotifications
   private var photoSaveBridge: BanteraPhotoSaveBridge?
   private var waveformBridge: BanteraWaveformBridge?
 
+  override func application(_ application: UIApplication,
+                            supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+    let layoutWindow = window ?? application.connectedScenes
+      .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }.first(where: { $0.isKeyWindow })
+    if let controller = layoutWindow?.rootViewController as? BanteraAdaptiveViewController {
+      return controller.adaptiveOrientations
+    }
+    return window?.traitCollection.userInterfaceIdiom == .pad ? .all : .portrait
+  }
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?

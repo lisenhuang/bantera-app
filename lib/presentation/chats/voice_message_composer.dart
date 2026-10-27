@@ -2,6 +2,19 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 
+/// Paint the home-indicator area as part of the composer, while keeping
+/// recording controls above it. Used by AI, direct and group conversations.
+class ChatComposerSafeArea extends StatelessWidget {
+  const ChatComposerSafeArea({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: Theme.of(context).colorScheme.surface,
+    child: SafeArea(top: false, child: child),
+  );
+}
+
 /// One control for tap-to-record/tap-to-send and hold-to-record/release-to-send.
 /// Releasing during permission/startup cancels the pending hold safely.
 class VoiceMessageComposer extends StatefulWidget {

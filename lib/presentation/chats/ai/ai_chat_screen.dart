@@ -1,3 +1,5 @@
+import '../../shared/adaptive_overlays.dart';
+import '../chat_pane_navigation.dart';
 import '../../../infrastructure/transcription_locale_option.dart';
 import 'ai_clear_history_dialog.dart';
 import '../../../core/apple_system_version.dart';
@@ -32,12 +34,19 @@ import '../../../infrastructure/ai/ai_word_explanation.dart';
 final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
 final _aiNavigation = AiChatNavigation();
 void openAiChat([BuildContext? context]) async {
-  final navigator = context == null
-      ? aiReminderNavigatorKey.currentState
-      : Navigator.of(context, rootNavigator: true);
+  final navigator =
+      chatPaneNavigatorKey.currentState ??
+      (context == null
+          ? aiReminderNavigatorKey.currentState
+          : Navigator.of(context, rootNavigator: true));
   if (navigator == null) return;
+  await openAiChatInNavigator(navigator);
+}
+
+Future<void> openAiChatInNavigator(NavigatorState navigator) async {
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
   if (!await AiConsent.instance.request() || !navigator.mounted) return;
+  activateChatPane?.call();
   _openAiNavigator(navigator);
 }
 
@@ -45,7 +54,9 @@ Future<void> openAiWordExplanation(
   BuildContext context,
   AiWordExplanation request,
 ) async {
-  final navigator = Navigator.of(context, rootNavigator: true);
+  final navigator =
+      chatPaneNavigatorKey.currentState ??
+      Navigator.of(context, rootNavigator: true);
   if (AuthSessionNotifier.instance.session?.cacheKey != request.owner ||
       !await AiConsent.instance.request() ||
       !navigator.mounted ||
@@ -53,6 +64,7 @@ Future<void> openAiWordExplanation(
     return;
   }
   pendingAiWordExplanation.value = request;
+  activateChatPane?.call();
   _openAiNavigator(navigator);
 }
 
@@ -172,15 +184,32 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
   }
 
+  bool _paneActive = true;
   ModalRoute<dynamic>? _observedRoute;
+  RouteObserver<ModalRoute<dynamic>> _routeObserver =
+      practiceReviewRouteObserver;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final paneActive = ChatPaneRouteScope.isActive(context);
+    if (paneActive != _paneActive) {
+      _paneActive = paneActive;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_paneActive) {
+          didPopNext();
+        } else {
+          didPushNext();
+        }
+      });
+    }
     final route = ModalRoute.of(context);
     if (!identical(route, _observedRoute)) {
-      practiceReviewRouteObserver.unsubscribe(this);
+      _routeObserver.unsubscribe(this);
+      _routeObserver =
+          ChatPaneRouteScope.of(context) ?? practiceReviewRouteObserver;
       _observedRoute = route;
-      if (route != null) practiceReviewRouteObserver.subscribe(this, route);
+      if (route != null) _routeObserver.subscribe(this, route);
     }
   }
 
@@ -304,7 +333,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
-    practiceReviewRouteObserver.unsubscribe(this);
+    _routeObserver.unsubscribe(this);
     pendingAiWordExplanation.removeListener(_wordRequested);
     if (pendingAiWordExplanation.value?.owner == _chat.owner) {
       pendingAiWordExplanation.value = null;
@@ -326,7 +355,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   Future<void> _deleteMessage(AiMessage message) async {
     if (!_chat.canDeleteMessage(message)) return;
     final l = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showBanteraDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l.chatDeleteMessageTitle),
@@ -364,7 +393,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   Future<void> _clear() async {
     final l = AppLocalizations.of(context)!;
-    final choice = await showDialog<AiHistoryClearChoice>(
+    final choice = await showBanteraDialog<AiHistoryClearChoice>(
       context: context,
       builder: (_) => AiClearHistoryDialog(usage: _chat.store.storageUsage()),
     );
@@ -461,7 +490,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     _confirmingCall = true;
     try {
       final l = AppLocalizations.of(context)!;
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showBanteraDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(l.aiCallConfirmTitle),
@@ -569,7 +598,7 @@ class _AiChatScreenState extends State<AiChatScreen>
               } else if (value == 'clear') {
                 _clear();
               } else if (value == 'usage') {
-                showDialog<void>(
+                showBanteraDialog<void>(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: Text(l.aiUsageTitle),
@@ -588,7 +617,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                   ),
                 );
               } else if (value == 'privacy') {
-                showDialog<void>(
+                showBanteraDialog<void>(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: Text(l.aiPrivacyNotice),
@@ -661,6 +690,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         ],
       ),
       body: SafeArea(
+        bottom: _chat.calling,
         child: Column(
           children: [
             if (_chat.privacyNoticeVisible)
@@ -762,7 +792,8 @@ class _AiChatScreenState extends State<AiChatScreen>
                   style: TextStyle(color: colors.error),
                 ),
               ),
-            if (!_chat.calling) _composer(context, l),
+            if (!_chat.calling)
+              ChatComposerSafeArea(child: _composer(context, l)),
           ],
         ),
       ),

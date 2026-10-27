@@ -82,6 +82,63 @@ class HarnessState extends State<Harness> {
 final recordButton = find.byKey(const Key('voice-record-button'));
 
 void main() {
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'composer surface reaches bottom with safe controls in $brightness',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.padding = const FakeViewPadding(bottom: 34);
+        tester.view.viewPadding = const FakeViewPadding(bottom: 34);
+        addTearDown(tester.view.reset);
+        final theme = ThemeData(brightness: brightness);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            home: const Scaffold(
+              body: Column(
+                children: [
+                  Expanded(child: SizedBox()),
+                  ChatComposerSafeArea(
+                    child: SizedBox(
+                      key: Key('safeControls'),
+                      height: 64,
+                      width: double.infinity,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        final surface = find.descendant(
+          of: find.byType(ChatComposerSafeArea),
+          matching: find.byType(ColoredBox),
+        );
+        expect(
+          tester.widget<ColoredBox>(surface).color,
+          theme.colorScheme.surface,
+        );
+        expect(tester.getRect(surface).bottom, 844);
+        expect(tester.getRect(surface).height, 98);
+        expect(
+          tester.getRect(find.byKey(const Key('safeControls'))).bottom,
+          810,
+        );
+        // With a keyboard the composer follows it, without another bottom gap.
+        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+        tester.view.padding = const FakeViewPadding();
+        await tester.pump();
+        expect(tester.getRect(surface).bottom, 544);
+        expect(
+          tester.getRect(find.byKey(const Key('safeControls'))).bottom,
+          544,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('same wide button taps to record, taps to send, and can cancel', (
     tester,
   ) async {

@@ -1,4 +1,5 @@
 import 'package:app/core/apple_system_version.dart';
+import 'package:app/presentation/chats/voice_message_composer.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -115,6 +116,10 @@ void main() {
       addTearDown(() => dir.deleteSync(recursive: true));
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(bottom: 34);
+      tester.view.viewPadding = const FakeViewPadding(bottom: 34);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final playbackCalls = <MethodCall>[];
@@ -196,6 +201,7 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await tester.pumpAndSettle();
+      expect(tester.getRect(find.byType(ChatComposerSafeArea)).bottom, 844);
       expect(find.text('I live in Auckland.'), findsOneWidget);
       expect(find.text('1:06'), findsOneWidget);
       final formattedReply = AiMessage(

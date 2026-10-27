@@ -13,6 +13,12 @@ import 'package:app/presentation/practice/subtitle_word_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+Map<String, dynamic> ready(String text) => {
+  'status': 'ready', 'alignmentVersion': 2,
+  'cue': [{'text': text, 'reading': text}],
+  'choices': [[{'text': text, 'reading': text}], [{'text': text, 'reading': text}]],
+};
+
 class MemoryPreferences extends PracticeTranslationPreferences {
   MemoryPreferences() : super(file: () async => throw UnimplementedError());
   String? value;
@@ -226,7 +232,7 @@ void main() {
         active: active,
         fetch: (id) => id == 'first'
             ? first.future
-            : Future.value({'status': 'ready', 'cue': id}),
+            : Future.value(ready(id)),
       );
       configure('one', 'zh-CN', 'first');
       await settle();
@@ -234,10 +240,10 @@ void main() {
       expect(await c.setEnabled(true), true);
       configure('one', 'zh-CN', 'second');
       await settle();
-      expect(c.data?['cue'], 'second');
-      first.complete({'status': 'ready', 'cue': 'stale'});
+      expect((c.data?['cue'] as List).first['text'], 'second');
+      first.complete(ready('stale'));
       await settle();
-      expect(c.data?['cue'], 'second');
+      expect((c.data?['cue'] as List).first['text'], 'second');
       configure('two', 'zh-CN', 'third');
       await settle();
       expect(c.enabled, false);
@@ -253,9 +259,9 @@ void main() {
         owner: 'one',
         locale: 'zh-CN',
         id: 'reopen',
-        embedded: {'status': 'ready'},
+        embedded: ready('reopen'),
         active: true,
-        fetch: (_) async => throw StateError('should use embedded'),
+        fetch: (_) async => ready('reopen'),
       );
       await settle();
       expect(reopened.enabled, true);
@@ -274,7 +280,7 @@ void main() {
     Future<Map<String, dynamic>> fetch(String _) async {
       calls++;
       if (calls == 1) throw Exception();
-      return {'status': 'ready'};
+      return ready('hello');
     }
 
     c.configure(

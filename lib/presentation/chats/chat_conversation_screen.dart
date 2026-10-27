@@ -1,3 +1,4 @@
+import '../shared/adaptive_overlays.dart';
 import '../../infrastructure/transcription_locale_option.dart';
 import 'dart:async';
 import 'dart:io';
@@ -353,8 +354,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   }
 
   Widget _buildComposer(BuildContext context, AppLocalizations l10n) =>
-      SafeArea(
-        top: false,
+      ChatComposerSafeArea(
         child: VoiceMessageComposer(
           enabled: !_isSending && !_stoppingRecording,
           recording: _isRecording,
@@ -425,7 +425,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   Future<void> _showCallOptions(ChatUserSummary partner) async {
     if (!RegionService.instance.showSocialChatFeatures) return;
     final l10n = AppLocalizations.of(context)!;
-    await showModalBottomSheet<void>(
+    await showAdaptiveBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (context) => ListenableBuilder(
@@ -567,7 +567,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     final permanentlyDenied = status.isPermanentlyDenied || status.isRestricted;
-    await showDialog<void>(
+    await showBanteraDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.chatMicrophoneRequiredTitle),
@@ -914,7 +914,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context);
-    await showModalBottomSheet<void>(
+    await showAdaptiveBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) => SafeArea(
@@ -1064,7 +1064,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     bool adminAction = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    return showDialog<bool>(
+    return showBanteraDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         alignment: Alignment.center,

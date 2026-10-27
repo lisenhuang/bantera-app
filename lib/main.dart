@@ -1,3 +1,4 @@
+import 'presentation/shared/adaptive_viewport_state.dart';
 import 'infrastructure/local_audio_storage.dart';
 import 'core/ai_consent.dart';
 import 'presentation/shared/ai_consent_dialog.dart';
@@ -114,7 +115,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         return MaterialApp(
           title: 'Bantera',
           navigatorKey: aiReminderNavigatorKey,
-          navigatorObservers: [practiceReviewRouteObserver],
+          navigatorObservers: [practiceReviewRouteObserver, adaptiveViewportObserver],
           builder: (context, child) {
             return AppKeyboardDismissal(
               child: AppViewport(

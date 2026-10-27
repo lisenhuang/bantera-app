@@ -1,3 +1,5 @@
+import 'chats/chat_pane_navigation.dart';
+import 'shared/adaptive_navigation.dart';
 import 'dart:async';
 
 import 'shared/animated_tab_icon.dart';
@@ -20,7 +22,7 @@ import '../infrastructure/app_update_service.dart';
 import '../infrastructure/local_chat_repository.dart';
 import '../infrastructure/region_service.dart';
 import '../l10n/app_localizations.dart';
-import 'chats/chats_screen.dart';
+import 'chats/adaptive_chats_screen.dart';
 import 'profile/profile_screen.dart';
 import 'profile/daily_word_goal_section.dart';
 import 'quick_practice/quick_practice_screen.dart';
@@ -46,6 +48,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   bool _covered = false;
   bool _checkingUpdate = false;
   bool _hasUnreadChats = false;
+  bool _chatDetailVisible = false;
   StreamSubscription<List<ChatThreadSummary>>? _groupsSub;
   StreamSubscription<List<ChatThreadSummary>>? _dmsSub;
   List<ChatThreadSummary> _groups = [];
@@ -54,6 +57,9 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   @override
   void initState() {
     super.initState();
+    activateChatPane = () {
+      if (mounted) _selectTab(1);
+    };
     RegionService.instance.addListener(_updateUnread);
     unawaited(RegionService.instance.isOutsideMainlandChina());
     WordActivityNotifier.instance.addListener(_schedulePracticeReview);
@@ -224,6 +230,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
 
   @override
   void dispose() {
+    activateChatPane = null;
     RegionService.instance.removeListener(_updateUnread);
     _reviewTimer?.cancel();
     WordActivityNotifier.instance.removeListener(_schedulePracticeReview);
@@ -298,7 +305,14 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         active: _currentIndex == 0 && !_covered,
         goalTabAnchor: _goalTabAnchor,
       ),
-      ChatsScreen(active: _currentIndex == 1 && !_covered),
+      AdaptiveChatsScreen(
+        active: _currentIndex == 1 && !_covered,
+        onDetailChanged: (value) {
+          if (mounted && value != _chatDetailVisible) {
+            setState(() => _chatDetailVisible = value);
+          }
+        },
+      ),
       ProfileScreen(
         active: _currentIndex == 2 && !_covered,
         refreshTick: _goalTabReplay,
@@ -308,11 +322,11 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     final stackIndex = _currentIndex.clamp(0, maxIndex);
 
     return Scaffold(
-      body: IndexedStack(index: stackIndex, children: screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: stackIndex,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        onTap: _selectTab,
+      body: AdaptiveMainNavigation(
+        visible: stackIndex != 1 || !_chatDetailVisible,
+        body: IndexedStack(index: stackIndex, children: screens),
+        selectedIndex: stackIndex,
+        onSelected: _selectTab,
         items: [
           BottomNavigationBarItem(
             icon: SizedBox.square(

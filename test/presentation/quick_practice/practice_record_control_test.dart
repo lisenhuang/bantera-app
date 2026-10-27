@@ -1,3 +1,4 @@
+import 'package:app/presentation/shared/adaptive_layout.dart';
 import 'dart:async';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/practice_record_control.dart';
@@ -7,8 +8,13 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class RecordingHarness extends StatefulWidget {
-  const RecordingHarness({super.key, this.scrolling = false});
+  const RecordingHarness({
+    super.key,
+    this.scrolling = false,
+    this.adaptive = false,
+  });
   final bool scrolling;
+  final bool adaptive;
   @override
   State<RecordingHarness> createState() => RecordingHarnessState();
 }
@@ -78,7 +84,36 @@ class RecordingHarnessState extends State<RecordingHarness> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: widget.scrolling
+        body: widget.adaptive
+            ? SingleChildScrollView(
+                controller: scroll,
+                child: PracticeRecordingLayout(
+                  pinned: busy || recording,
+                  children: [
+                    Text(reading),
+                    AdaptiveColumns(
+                      textScale: 1,
+                      first: PracticeRecordingLayout(
+                        pinned: busy || recording,
+                        children: [Text(reading), const SizedBox(height: 250)],
+                      ),
+                      second: PracticeRecordingLayout(
+                        pinned: busy || recording,
+                        children: [
+                          Text(reading),
+                          control,
+                          if (!recording)
+                            const SizedBox(
+                              height: 200,
+                              child: Text('Previous feedback'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : widget.scrolling
             ? SingleChildScrollView(
                 controller: scroll,
                 child: PracticeRecordingLayout(
@@ -109,6 +144,31 @@ void main() {
     await tester.pumpWidget(RecordingHarness(key: key));
     return key.currentState!;
   }
+
+  testWidgets(
+    'wide Practice holds mic position while background content changes',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1000, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final key = GlobalKey<RecordingHarnessState>();
+      await tester.pumpWidget(RecordingHarness(key: key, adaptive: true));
+      final state = key.currentState!;
+      final rect = tester.getRect(button);
+      final gesture = await tester.startGesture(rect.center);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pump();
+      expect(state.recording, isTrue);
+      state.finishBackgroundReading();
+      await tester.pump();
+      expect(tester.getRect(button), rect);
+      expect(find.text('New pronunciation arrived'), findsNothing);
+      await gesture.up();
+      await tester.pump();
+      expect(state.checks, 1);
+      expect(find.text('New pronunciation arrived'), findsNWidgets(3));
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'holding retains content, scroll extent and mic position through background updates',
