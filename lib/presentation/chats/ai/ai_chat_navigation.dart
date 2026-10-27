@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 class AiChatNavigation {
   PageRoute<void>? _route;
 
-  Future<void> open(NavigatorState navigator, WidgetBuilder builder) async {
+  Future<void> open(
+    NavigatorState navigator,
+    WidgetBuilder builder, {
+    VoidCallback? onReady,
+  }) async {
     // A notification or second tap must not change the stack mid-swipe.
     if (navigator.userGestureInProgress) {
       final ended = Completer<void>();
@@ -28,14 +32,28 @@ class AiChatNavigation {
       // for removal before reopening instead of pushing onto that animation.
       if (!existing.isActive) {
         await existing.completed;
-        if (navigator.mounted) await open(navigator, builder);
-      } else if (existing.navigator == navigator && !existing.isCurrent) {
-        navigator.popUntil(
-          (route) => identical(route, existing) || route.isFirst,
-        );
+        if (navigator.mounted) await open(navigator, builder, onReady: onReady);
+      } else if (existing.navigator == navigator) {
+        if (!existing.isCurrent) {
+          navigator.popUntil(
+            (route) => identical(route, existing) || route.isFirst,
+          );
+        }
+        onReady?.call();
+        // Callers opening an existing chat need the same close lifecycle as
+        // callers opening a new one, e.g. returning to Practice after a word.
+        await existing.completed;
+      } else {
+        // A Practice explanation belongs above Practice's root route, not in
+        // the Chats pane. Retire the hidden view first so only one AI screen
+        // owns recording, pending explanations and playback listeners.
+        existing.navigator?.removeRoute(existing);
+        await existing.completed;
+        if (navigator.mounted) await open(navigator, builder, onReady: onReady);
       }
       return;
     }
+    onReady?.call();
     final route = MaterialPageRoute<void>(
       settings: const RouteSettings(name: '/ai-chat'),
       builder: builder,

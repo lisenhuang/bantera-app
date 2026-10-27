@@ -126,6 +126,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   String? _currentLevel, _practiceLevel;
   Map<String, dynamic>? _levelStates;
   String? _highestUnlockedLevel;
+  // One presentation snapshot per level, scoped to the current account/language.
+  // The server owns the unfinished exercise and refreshes its signed audio URLs.
+  final _levelFeedback =
+      <
+        String,
+        ({String id, Map<String, dynamic>? feedback, bool translationRevealed})
+      >{};
 
   void _readLevelStates(Map<String, dynamic>? data) {
     _levelStates = (data?['levelStates'] as Map?)?.cast<String, dynamic>();
@@ -382,6 +389,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _audioCache = null;
     setState(() {
       _beforeSaved = null;
+      _levelFeedback.clear();
       _savedSource = null;
       _currentLevel = null;
       _readLevelStates(null);
@@ -702,7 +710,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _load() async {
-    if (widget.previewExercise != null) return;
+    if (widget.previewExercise != null && widget.previewApi == null) return;
     if (_loading || !_allowed || _locale == null || !widget.active) return;
     final epoch = _epoch, requestId = _requestId;
     _waitingSince ??= DateTime.now();
@@ -732,6 +740,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _practiceLevel =
           response['practiceLevel'] as String? ?? response['level'] as String?;
       if (response['status'] == 'ready') {
+        final remembered = _levelFeedback[response['level']];
+        final restoring = remembered?.id == response['id'];
         _cachePractice(response);
         unawaited(_audioCache?.dispose());
         final cache = _audioCache = QuickPracticeAudioCache();
@@ -748,8 +758,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _selectedWord = null;
           _translationRevealed =
               (response['level'] == 'A0' ||
-              response['translationUsed'] == true);
-          _feedback = null;
+              response['translationUsed'] == true ||
+              (restoring && remembered!.translationRevealed));
+          _feedback = restoring ? remembered!.feedback : null;
           _loading = false;
           _waitingSince = null;
         });
@@ -1561,7 +1572,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (!confirmed || !mounted || epoch != _epoch) return;
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted || !widget.active || epoch != _epoch) return;
-      if (widget.previewExercise != null) {
+      if (widget.previewExercise != null && widget.previewApi == null) {
         setState(() {
           _practiceLevel = selected;
           _exercise = {
@@ -1576,7 +1587,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       }
       if (_listeningOnly) {
         _practiceLevel = selected;
-        await _advance(autoplay: true);
+        await _advance(autoplay: true, switchingLevel: true);
         return;
       }
       final state = await _api('level', {
@@ -1588,7 +1599,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _readLevelStates(state);
       _currentLevel = state['currentLevel'] as String;
       _practiceLevel = state['practiceLevel'] as String;
-      await _advance(autoplay: true);
+      await _advance(autoplay: true, switchingLevel: true);
     } on AuthApiException catch (error) {
       if (mounted && epoch == _epoch) {
         _notice(
@@ -1723,7 +1734,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
-  Future<void> _advance({bool autoplay = false}) async {
+  Future<void> _advance({
+    bool autoplay = false,
+    bool switchingLevel = false,
+  }) async {
     final epoch = _epoch;
     await _stopAudio();
     if (!mounted || epoch != _epoch) return;
@@ -1750,12 +1764,23 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (_exercise == null) await _load();
       return;
     }
+    if (switchingLevel && _exercise != null) {
+      _levelFeedback[_exercise!['level'] as String] = (
+        id: _exercise!['id'] as String,
+        feedback: _feedback,
+        translationRevealed: _translationRevealed,
+      );
+    } else {
+      _levelFeedback.remove(_exercise?['level']);
+    }
     final scope = _practiceCacheScope;
     if (scope != null) unawaited(LastSnapshotCache.practice.clear(scope));
     setState(() {
       _loading = false;
       _validatingCachedPractice = false;
-      _previousId = _exercise?['id'] as String?;
+      // Only Next finishes/scores an exposure. A level change resumes the
+      // unfinished exposure for the chosen level via the existing API.
+      _previousId = switchingLevel ? null : _exercise?['id'] as String?;
       _requestId = const Uuid().v4();
       if (autoplay) _autoplay.next(_requestId);
       _exercise = null;
@@ -2382,7 +2407,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     if (mounted) {
       final current = _exercise;
       final data = _pronunciation.data;
-      if (current != null && data != null && !identical(current['pronunciation'], data)) {
+      if (current != null &&
+          data != null &&
+          !identical(current['pronunciation'], data)) {
         current['pronunciation'] = data;
         _cachePractice(current);
       }
@@ -2396,10 +2423,14 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       locale: _exerciseLocale,
       id: _exercise?['id'] as String?,
       embedded: (_exercise?['pronunciation'] as Map?)?.cast<String, dynamic>(),
-      source: _exercise == null ? null : [
-        _exercise!['cue'] as String,
-        ...(_exercise!['choices'] as List).map((c) => c['text'] as String),
-      ],
+      source: _exercise == null
+          ? null
+          : [
+              _exercise!['cue'] as String,
+              ...(_exercise!['choices'] as List).map(
+                (c) => c['text'] as String,
+              ),
+            ],
       active:
           widget.active &&
           _allowed &&

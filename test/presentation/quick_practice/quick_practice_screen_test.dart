@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:app/core/apple_system_version.dart';
 import 'package:app/presentation/discover/discover_screen.dart';
 import 'dart:io';
@@ -14,6 +15,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _LevelTestPlayer extends Fake implements AudioPlayer {
+  @override
+  Stream<Duration> get onDurationChanged => const Stream.empty();
+  @override
+  Stream<Duration> get onPositionChanged => const Stream.empty();
+  @override
+  Stream<void> get onPlayerComplete => const Stream.empty();
+  @override
+  Future<void> stop() async {}
+  @override
+  Future<void> dispose() async {}
+  @override
+  Future<void> setSource(Source source) async {}
+  @override
+  Future<void> setPlaybackRate(double rate) async {}
+  @override
+  Future<void> resume() async {}
+}
 
 const exercise = {
   'id': 'sample',
@@ -105,6 +125,7 @@ void main() {
     Map<String, dynamic>? feedback,
     Map<String, dynamic> material = exercise,
     bool isAdmin = false,
+    Future<Map<String, dynamic>> Function(String, Map<String, dynamic>)? api,
   }) async {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.binding.setSurfaceSize(Size(width, height));
@@ -128,6 +149,8 @@ void main() {
             previewExercise: material,
             previewIsAdmin: isAdmin,
             previewFeedback: feedback,
+            previewApi: api,
+            previewPlayer: api == null ? null : _LevelTestPlayer(),
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: 0,
@@ -166,6 +189,80 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'changing levels resumes each unfinished exercise without finishing it',
+    (tester) async {
+      var selected = 'A1';
+      final requests = <Map<String, dynamic>>[];
+      final finished = <String>[];
+      final active = <String, String>{'A1': 'sample', 'A0': 'beginner'};
+      Future<Map<String, dynamic>> api(
+        String path,
+        Map<String, dynamic> payload,
+      ) async {
+        if (path == 'level') {
+          selected = payload['level'] as String;
+          return {'currentLevel': 'A1', 'practiceLevel': selected};
+        }
+        expect(path, 'next');
+        requests.add({...payload});
+        if (payload['previousId'] != null) {
+          finished.add(payload['previousId'] as String);
+          active[selected] = 'next-$selected';
+        }
+        return {
+          ...exercise,
+          'status': 'ready',
+          'id': active[selected],
+          'level': selected,
+          'currentLevel': 'A1',
+          'practiceLevel': selected,
+          'cue': 'Exercise ${active[selected]}',
+        };
+      }
+
+      await mount(
+        tester,
+        height: 1600,
+        api: api,
+        feedback: {'outcome': 'unclear', 'transcript': 'My previous reply'},
+      );
+      Future<void> choose(String level) async {
+        await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(ValueKey('practice-level-option-$level')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+        await tester.pumpAndSettle();
+      }
+
+      await choose('A0');
+      expect(find.text('Exercise beginner'), findsOneWidget);
+      await choose('A1');
+      expect(find.text('Exercise sample'), findsOneWidget);
+      expect(find.text('My previous reply'), findsOneWidget);
+      await choose('A0');
+      expect(find.text('Exercise beginner'), findsOneWidget);
+      expect(finished, isEmpty);
+      expect(requests, hasLength(3));
+      expect(requests.every((r) => r['previousId'] == null), isTrue);
+      expect(requests.map((r) => r['requestId']).toSet(), hasLength(3));
+      // Only the explicit Next action finishes the current exposure.
+      await tester.ensureVisible(find.text('Next practice'));
+      await tester.tap(find.text('Next practice'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Skip practice'));
+      await tester.pumpAndSettle();
+      expect(finished, ['beginner']);
+      expect(find.text('Exercise next-A0'), findsOneWidget);
+      await choose('A1');
+      expect(find.text('Exercise sample'), findsOneWidget);
+      expect(find.text('My previous reply'), findsOneWidget);
+      expect(finished, ['beginner']);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'Maori shows English automatically without microphone or translation menus',

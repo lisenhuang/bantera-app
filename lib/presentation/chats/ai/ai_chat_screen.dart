@@ -47,44 +47,43 @@ Future<void> openAiChatInNavigator(NavigatorState navigator) async {
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
   if (!await AiConsent.instance.request() || !navigator.mounted) return;
   activateChatPane?.call();
-  _openAiNavigator(navigator);
+  unawaited(_openAiNavigator(navigator));
 }
 
 Future<void> openAiWordExplanation(
   BuildContext context,
   AiWordExplanation request,
 ) async {
-  final navigator =
-      chatPaneNavigatorKey.currentState ??
-      Navigator.of(context, rootNavigator: true);
+  // Keep Practice directly underneath the explanation, including throughout
+  // the native back/swipe animation. Do not switch the selected tab.
+  final navigator = Navigator.of(context, rootNavigator: true);
   if (AuthSessionNotifier.instance.session?.cacheKey != request.owner ||
       !await AiConsent.instance.request() ||
       !navigator.mounted ||
       AuthSessionNotifier.instance.session?.cacheKey != request.owner) {
     return;
   }
-  pendingAiWordExplanation.value = request;
-  activateChatPane?.call();
-  _openAiNavigator(navigator);
-}
-
-void _openAiNavigator(NavigatorState navigator) {
-  unawaited(
-    _aiNavigation.open(navigator, (_) {
-      final callback = AiCallbackNotifier.instance;
-      return ListenableBuilder(
-        listenable: callback,
-        builder: (_, _) {
-          final controller = callback.accepted ? callback.controller : null;
-          return AiChatScreen(
-            key: ObjectKey(controller),
-            controller: controller,
-          );
-        },
-      );
-    }),
+  await _openAiNavigator(
+    navigator,
+    // An old hidden AI screen clears its pending request on disposal. Publish
+    // this request only once that screen has been retired.
+    onReady: () => pendingAiWordExplanation.value = request,
   );
 }
+
+Future<void> _openAiNavigator(
+  NavigatorState navigator, {
+  VoidCallback? onReady,
+}) => _aiNavigation.open(navigator, (_) {
+  final callback = AiCallbackNotifier.instance;
+  return ListenableBuilder(
+    listenable: callback,
+    builder: (_, _) {
+      final controller = callback.accepted ? callback.controller : null;
+      return AiChatScreen(key: ObjectKey(controller), controller: controller);
+    },
+  );
+}, onReady: onReady);
 
 void openAiReminderChat() => openAiChat();
 
