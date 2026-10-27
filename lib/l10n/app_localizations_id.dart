@@ -1588,6 +1588,9 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 jam / hari';
+
+  @override
   String get dailyGoalCustom => 'Kustom';
 
   @override

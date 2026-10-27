@@ -1600,6 +1600,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 h / jour';
+
+  @override
   String get dailyGoalCustom => 'Personnalisé';
 
   @override

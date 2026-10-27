@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Hedefi düzenle",
   "dailyGoalChoose": "Günlük hedefini seç",
   "dailyGoalPreset": "Günde {minutes} dk",
+  "dailyGoalHourPreset": "1 sa. / gün",
   "dailyGoalCustom": "Özel",
   "dailyGoalListeningTarget": "Günlük dinlenen kelime",
   "dailyGoalSpeakingTarget": "Günlük konuşulan kelime",

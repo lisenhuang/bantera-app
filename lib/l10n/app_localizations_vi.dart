@@ -1586,6 +1586,9 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 giờ / ngày';
+
+  @override
   String get dailyGoalCustom => 'Tùy chỉnh';
 
   @override

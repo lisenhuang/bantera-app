@@ -1587,6 +1587,9 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 ч / день';
+
+  @override
   String get dailyGoalCustom => 'Своя цель';
 
   @override

@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Змінити ціль",
   "dailyGoalChoose": "Оберіть щоденну ціль",
   "dailyGoalPreset": "{minutes} хв на день",
+  "dailyGoalHourPreset": "1 год / день",
   "dailyGoalCustom": "Власна ціль",
   "dailyGoalListeningTarget": "Слова для слухання на день",
   "dailyGoalSpeakingTarget": "Слова для говоріння на день",

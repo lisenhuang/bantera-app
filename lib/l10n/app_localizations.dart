@@ -2956,6 +2956,12 @@ abstract class AppLocalizations {
   /// **'{minutes} min / day'**
   String dailyGoalPreset(String minutes);
 
+  /// No description provided for @dailyGoalHourPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'1 h / day'**
+  String get dailyGoalHourPreset;
+
   /// No description provided for @dailyGoalCustom.
   ///
   /// In en, this message translates to:

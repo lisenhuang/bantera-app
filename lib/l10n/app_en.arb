@@ -640,6 +640,7 @@
   "dailyGoalEdit": "Edit goal",
   "dailyGoalChoose": "Choose your daily goal",
   "dailyGoalPreset": "{minutes} min / day",
+  "dailyGoalHourPreset": "1 h / day",
   "dailyGoalCustom": "Custom",
   "dailyGoalListeningTarget": "Listening words per day",
   "dailyGoalSpeakingTarget": "Speaking words per day",

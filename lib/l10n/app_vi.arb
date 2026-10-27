@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Sửa mục tiêu",
   "dailyGoalChoose": "Chọn mục tiêu hằng ngày",
   "dailyGoalPreset": "{minutes} phút mỗi ngày",
+  "dailyGoalHourPreset": "1 giờ / ngày",
   "dailyGoalCustom": "Tùy chỉnh",
   "dailyGoalListeningTarget": "Số từ nghe mỗi ngày",
   "dailyGoalSpeakingTarget": "Số từ nói mỗi ngày",

@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Editar meta",
   "dailyGoalChoose": "Elige tu meta diaria",
   "dailyGoalPreset": "{minutes} min al día",
+  "dailyGoalHourPreset": "1 h / día",
   "dailyGoalCustom": "Personalizada",
   "dailyGoalListeningTarget": "Palabras escuchadas al día",
   "dailyGoalSpeakingTarget": "Palabras habladas al día",

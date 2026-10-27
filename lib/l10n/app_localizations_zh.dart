@@ -1493,6 +1493,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '每天 1 小时';
+
+  @override
   String get dailyGoalCustom => '自定义';
 
   @override
@@ -4071,6 +4074,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String dailyGoalPreset(String minutes) {
     return '每天 $minutes 分鐘';
   }
+
+  @override
+  String get dailyGoalHourPreset => '每天 1 小時';
 
   @override
   String get dailyGoalCustom => '自訂';

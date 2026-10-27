@@ -516,6 +516,7 @@
   "dailyGoalEdit": "编辑目标",
   "dailyGoalChoose": "选择每日目标",
   "dailyGoalPreset": "每天 {minutes} 分钟",
+  "dailyGoalHourPreset": "每天 1 小时",
   "dailyGoalCustom": "自定义",
   "dailyGoalListeningTarget": "每天听多少词",
   "dailyGoalSpeakingTarget": "每天说多少词",

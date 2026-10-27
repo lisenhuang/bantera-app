@@ -1597,6 +1597,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 Std. / Tag';
+
+  @override
   String get dailyGoalCustom => 'Individuell';
 
   @override

@@ -481,6 +481,7 @@
   "dailyGoalEdit": "แก้ไขเป้าหมาย",
   "dailyGoalChoose": "เลือกเป้าหมายรายวัน",
   "dailyGoalPreset": "วันละ {minutes} นาที",
+  "dailyGoalHourPreset": "1 ชม. / วัน",
   "dailyGoalCustom": "กำหนดเอง",
   "dailyGoalListeningTarget": "จำนวนคำที่ฟังต่อวัน",
   "dailyGoalSpeakingTarget": "จำนวนคำที่พูดต่อวัน",

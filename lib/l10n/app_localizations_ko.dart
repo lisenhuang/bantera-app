@@ -1518,6 +1518,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '하루 1시간';
+
+  @override
   String get dailyGoalCustom => '직접 설정';
 
   @override

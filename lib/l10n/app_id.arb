@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Edit target",
   "dailyGoalChoose": "Pilih target harianmu",
   "dailyGoalPreset": "{minutes} menit per hari",
+  "dailyGoalHourPreset": "1 jam / hari",
   "dailyGoalCustom": "Kustom",
   "dailyGoalListeningTarget": "Kata didengar per hari",
   "dailyGoalSpeakingTarget": "Kata diucapkan per hari",

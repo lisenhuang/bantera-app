@@ -236,6 +236,7 @@ class DailyWordGoalScreen extends StatefulWidget {
 }
 
 class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
+  static const _presetMinutes = [5, 10, 20, 30, 60];
   final _form = GlobalKey<FormState>();
   late final TextEditingController _listening;
   late final TextEditingController _speaking;
@@ -263,7 +264,7 @@ class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
     );
     _listening = TextEditingController(text: '${initial.listened}');
     _speaking = TextEditingController(text: '${initial.spoken}');
-    for (final minutes in [5, 10, 20, 30]) {
+    for (final minutes in _presetMinutes) {
       final preset = DailyWordGoal.forMinutes(minutes);
       if (initial.listened == preset.listened &&
           initial.spoken == preset.spoken) {
@@ -396,10 +397,14 @@ class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final minutes in [5, 10, 20, 30])
+                      for (final minutes in _presetMinutes)
                         ChoiceChip(
                           showCheckmark: false,
-                          label: Text(l10n.dailyGoalPreset('$minutes')),
+                          label: Text(
+                            minutes == 60
+                                ? l10n.dailyGoalHourPreset
+                                : l10n.dailyGoalPreset('$minutes'),
+                          ),
                           selected: _preset == minutes,
                           onSelected: _busy
                               ? null

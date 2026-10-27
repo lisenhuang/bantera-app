@@ -481,6 +481,7 @@
   "dailyGoalEdit": "Ziel bearbeiten",
   "dailyGoalChoose": "Wähle dein Tagesziel",
   "dailyGoalPreset": "{minutes} Min. pro Tag",
+  "dailyGoalHourPreset": "1 Std. / Tag",
   "dailyGoalCustom": "Individuell",
   "dailyGoalListeningTarget": "Gehörte Wörter pro Tag",
   "dailyGoalSpeakingTarget": "Gesprochene Wörter pro Tag",

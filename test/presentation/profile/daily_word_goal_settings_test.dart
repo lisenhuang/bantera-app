@@ -75,6 +75,28 @@ void main() {
     final done = find.widgetWithText(FilledButton, 'Done');
     expect(done.hitTestable(), findsOneWidget);
     final doneBeforeScroll = tester.getRect(done);
+    await tester.tap(find.widgetWithText(ChoiceChip, '1 h / day'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '1 h / day'))
+          .selected,
+      isTrue,
+    );
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('listening-goal')))
+          .controller!
+          .text,
+      '3600',
+    );
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('speaking-goal')))
+          .controller!
+          .text,
+      '1800',
+    );
     await tester.tap(find.byKey(const ValueKey('listening-goal')));
     await tester.pump();
     expect(tester.testTextInput.isVisible, isTrue);
@@ -141,8 +163,15 @@ void main() {
     expect(notifier.dailyGoal!.notificationsEnabled, isFalse);
     expect(notifier.dailyGoal!.notificationHour, 8);
     expect(notifier.dailyGoal!.notificationMinute, 45);
+    expect(notifier.dailyGoal!.totalMinutes, 60);
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '1 h / day'))
+          .selected,
+      isTrue,
+    );
     await tester.scrollUntilVisible(
       find.text('Remove goal'),
       200,

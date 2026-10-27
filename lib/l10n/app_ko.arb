@@ -516,6 +516,7 @@
   "dailyGoalEdit": "목표 수정",
   "dailyGoalChoose": "일일 목표 선택",
   "dailyGoalPreset": "하루 {minutes}분",
+  "dailyGoalHourPreset": "하루 1시간",
   "dailyGoalCustom": "직접 설정",
   "dailyGoalListeningTarget": "하루 듣기 단어 수",
   "dailyGoalSpeakingTarget": "하루 말하기 단어 수",

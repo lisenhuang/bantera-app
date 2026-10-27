@@ -1585,6 +1585,9 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 sa. / gün';
+
+  @override
   String get dailyGoalCustom => 'Özel';
 
   @override

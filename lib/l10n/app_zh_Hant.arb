@@ -481,6 +481,7 @@
   "dailyGoalEdit": "編輯目標",
   "dailyGoalChoose": "選擇每日目標",
   "dailyGoalPreset": "每天 {minutes} 分鐘",
+  "dailyGoalHourPreset": "每天 1 小時",
   "dailyGoalCustom": "自訂",
   "dailyGoalListeningTarget": "每天聽多少詞",
   "dailyGoalSpeakingTarget": "每天說多少詞",

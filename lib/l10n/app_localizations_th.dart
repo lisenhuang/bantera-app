@@ -1571,6 +1571,9 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get dailyGoalHourPreset => '1 ชม. / วัน';
+
+  @override
   String get dailyGoalCustom => 'กำหนดเอง';
 
   @override
