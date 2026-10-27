@@ -7,6 +7,78 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('regional learning-language ordering', () {
+    final choices = ['en-NZ', 'en-US', 'en-GB', 'ja-JP', 'MI_nz']
+        .map(
+          (code) => TranscriptionLocaleOption(
+            identifier: code,
+            displayName: code,
+            isInstalled: false,
+          ),
+        )
+        .toList();
+    for (final country in ['NZ', 'US', 'CN', null]) {
+      for (final admin in [true, false]) {
+        test('$country admin=$admin respects region and role', () async {
+          final service = RegionService.forTesting(
+            countryLookup: () async => country,
+            appLocale: () => const Locale('en'),
+          );
+          final result = await service.profileLanguageOptions(
+            choices,
+            isAdmin: admin,
+          );
+          expect(
+            result.map((o) => o.identifier),
+            country == 'NZ'
+                ? [if (admin) 'mi-NZ', 'en-NZ', 'en-US', 'en-GB', 'ja-JP']
+                : ['en-US', 'en-GB', 'en-NZ', 'ja-JP', if (admin) 'mi-NZ'],
+          );
+          final native = await service.profileLanguageOptions(
+            choices,
+            isAdmin: admin,
+            nativeLanguage: true,
+          );
+          expect(native.map((o) => o.identifier), [
+            'en-NZ',
+            'en-US',
+            'en-GB',
+            'ja-JP',
+          ]);
+          service.dispose();
+        });
+      }
+    }
+    test(
+      'cached NZ ordering is restored after moving away or failed lookup',
+      () async {
+        String? country = 'NZ';
+        final service = RegionService.forTesting(
+          countryLookup: () async => country,
+          appLocale: () => const Locale('en'),
+        );
+        var cached = await service.profileLanguageOptions(
+          choices,
+          isAdmin: true,
+        );
+        expect(cached.first.identifier, 'mi-NZ');
+        for (final next in ['US', null]) {
+          country = next;
+          await service.isOutsideMainlandChina(refresh: true);
+          cached = await service.profileLanguageOptions(cached, isAdmin: true);
+          expect(cached.map((o) => o.identifier), [
+            'en-US',
+            'en-GB',
+            'en-NZ',
+            'ja-JP',
+            'mi-NZ',
+          ]);
+        }
+        service.dispose();
+      },
+    );
+  });
+
   group('IP-based chat visibility', () {
     for (final country in ['CN', ' cn ', null, 'XX', 'T1', 'invalid']) {
       test('hides group chats and DM call controls for $country', () async {

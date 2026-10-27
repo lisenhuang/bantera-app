@@ -2723,4 +2723,73 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Supprimer ce contenu du serveur pour tout le monde ? Cette action est irréversible. Des copies téléchargées peuvent rester sur les appareils.';
+
+  @override
+  String get widgetAdd => 'Ajouter un widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Gardez vos progrès en vue';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Consultez votre objectif quotidien et votre classement sur l’écran d’accueil.';
+
+  @override
+  String get widgetHowTo => 'Comment ajouter un widget';
+
+  @override
+  String get widgetNotNow => 'Pas maintenant';
+
+  @override
+  String get widgetHideTitle => 'Masquer la suggestion de widget ?';
+
+  @override
+  String get widgetHideBody =>
+      'Les instructions restent disponibles dans les réglages.';
+
+  @override
+  String get widgetDontShowAgain => 'Ne plus afficher';
+
+  @override
+  String get widgetSaveFailed =>
+      'Impossible d’enregistrer votre choix. Réessayez.';
+
+  @override
+  String get widgetSmall => 'Petit';
+
+  @override
+  String get widgetMedium => 'Moyen';
+
+  @override
+  String get widgetLarge => 'Grand';
+
+  @override
+  String get widgetExtraLarge => 'Très grand';
+
+  @override
+  String get widgetStepHold =>
+      'Sur l’écran d’accueil, touchez une zone vide de façon prolongée jusqu’à ce que les apps s’animent.';
+
+  @override
+  String get widgetStepEdit =>
+      'Choisissez Modifier → Ajouter un widget. Sur les anciennes versions d’iOS ou d’iPadOS, touchez le bouton +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Recherchez Bantera et choisissez le widget d’entraînement quotidien.';
+
+  @override
+  String get widgetStepAdd =>
+      'Balayez pour choisir une taille, touchez Ajouter le widget, puis OK.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Aperçu du widget réel avec un exemple de progression.';
+
+  @override
+  String get widgetPreviewRetry => 'Recharger l’aperçu';
+
+  @override
+  String get widgetLocalNote =>
+      'Ajoutez le widget depuis l’écran d’accueil. Bantera vérifie sa configuration à votre retour, sans suivre la fréquence à laquelle vous le consultez.';
 }

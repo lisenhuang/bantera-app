@@ -10,7 +10,11 @@ void main() {
   );
   test('Māori is restricted to admin learning, even with cached options', () {
     final initial = ['en-NZ', 'mi-NZ', 'MI_nz'].map(option);
-    final admin = profileLanguageOptionsForRole(initial, isAdmin: true);
+    final admin = profileLanguageOptionsForRole(
+      initial,
+      isAdmin: true,
+      preferNewZealand: true,
+    );
     expect(admin.map((o) => o.identifier), ['mi-NZ', 'en-NZ']);
     expect(admin.first.flagEmoji, '🇳🇿');
     expect(

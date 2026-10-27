@@ -256,7 +256,18 @@ const kFallbackTranslationLanguages = <TranscriptionLocaleOption>[
 
 /// Last-resort list when the API is unreachable; mirrors [LearningLanguageCatalog] on the server.
 const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
-  // English (13)
+  TranscriptionLocaleOption(
+    identifier: 'en-US',
+    displayName: 'English (United States)',
+    isInstalled: false,
+    flagEmoji: '🇺🇸',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'en-GB',
+    displayName: 'English (United Kingdom)',
+    isInstalled: false,
+    flagEmoji: '🇬🇧',
+  ),
   TranscriptionLocaleOption(
     identifier: 'en-AU',
     displayName: 'English (Australia)',
@@ -268,18 +279,6 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     displayName: 'English (Canada)',
     isInstalled: false,
     flagEmoji: '🇨🇦',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'en-ID',
-    displayName: 'English (Indonesia)',
-    isInstalled: false,
-    flagEmoji: '🇮🇩',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'en-IE',
-    displayName: 'English (Ireland)',
-    isInstalled: false,
-    flagEmoji: '🇮🇪',
   ),
   TranscriptionLocaleOption(
     identifier: 'en-IN',
@@ -294,16 +293,10 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     flagEmoji: '🇳🇿',
   ),
   TranscriptionLocaleOption(
-    identifier: 'en-PH',
-    displayName: 'English (Philippines)',
+    identifier: 'en-IE',
+    displayName: 'English (Ireland)',
     isInstalled: false,
-    flagEmoji: '🇵🇭',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'en-SA',
-    displayName: 'English (Saudi Arabia)',
-    isInstalled: false,
-    flagEmoji: '🇸🇦',
+    flagEmoji: '🇮🇪',
   ),
   TranscriptionLocaleOption(
     identifier: 'en-SG',
@@ -318,29 +311,70 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     flagEmoji: '🇿🇦',
   ),
   TranscriptionLocaleOption(
+    identifier: 'en-PH',
+    displayName: 'English (Philippines)',
+    isInstalled: false,
+    flagEmoji: '🇵🇭',
+  ),
+  TranscriptionLocaleOption(
     identifier: 'en-AE',
     displayName: 'English (United Arab Emirates)',
     isInstalled: false,
     flagEmoji: '🇦🇪',
   ),
   TranscriptionLocaleOption(
-    identifier: 'en-GB',
-    displayName: 'English (United Kingdom)',
+    identifier: 'en-ID',
+    displayName: 'English (Indonesia)',
     isInstalled: false,
-    flagEmoji: '🇬🇧',
+    flagEmoji: '🇮🇩',
   ),
   TranscriptionLocaleOption(
-    identifier: 'en-US',
-    displayName: 'English (United States)',
+    identifier: 'en-SA',
+    displayName: 'English (Saudi Arabia)',
+    isInstalled: false,
+    flagEmoji: '🇸🇦',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'es-MX',
+    displayName: 'Spanish (Mexico)',
+    isInstalled: false,
+    flagEmoji: '🇲🇽',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'es-ES',
+    displayName: 'Spanish (Spain)',
+    isInstalled: false,
+    flagEmoji: '🇪🇸',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'es-419',
+    displayName: 'Spanish (Latin America)',
+    isInstalled: false,
+    flagEmoji: '🌎',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'es-US',
+    displayName: 'Spanish (United States)',
     isInstalled: false,
     flagEmoji: '🇺🇸',
   ),
-  // French (4)
   TranscriptionLocaleOption(
-    identifier: 'fr-BE',
-    displayName: 'French (Belgium)',
+    identifier: 'es-CO',
+    displayName: 'Spanish (Colombia)',
     isInstalled: false,
-    flagEmoji: '🇧🇪',
+    flagEmoji: '🇨🇴',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'es-CL',
+    displayName: 'Spanish (Chile)',
+    isInstalled: false,
+    flagEmoji: '🇨🇱',
+  ),
+  TranscriptionLocaleOption(
+    identifier: 'fr-FR',
+    displayName: 'French (France)',
+    isInstalled: false,
+    flagEmoji: '🇫🇷',
   ),
   TranscriptionLocaleOption(
     identifier: 'fr-CA',
@@ -349,31 +383,23 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     flagEmoji: '🇨🇦',
   ),
   TranscriptionLocaleOption(
+    identifier: 'fr-BE',
+    displayName: 'French (Belgium)',
+    isInstalled: false,
+    flagEmoji: '🇧🇪',
+  ),
+  TranscriptionLocaleOption(
     identifier: 'fr-CH',
     displayName: 'French (Switzerland)',
     isInstalled: false,
     flagEmoji: '🇨🇭',
   ),
   TranscriptionLocaleOption(
-    identifier: 'fr-FR',
-    displayName: 'French (France)',
+    identifier: 'de-DE',
+    displayName: 'German (Germany)',
     isInstalled: false,
-    flagEmoji: '🇫🇷',
+    flagEmoji: '🇩🇪',
   ),
-  // Italian (2)
-  TranscriptionLocaleOption(
-    identifier: 'it-CH',
-    displayName: 'Italian (Switzerland)',
-    isInstalled: false,
-    flagEmoji: '🇨🇭',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'it-IT',
-    displayName: 'Italian (Italy)',
-    isInstalled: false,
-    flagEmoji: '🇮🇹',
-  ),
-  // German (3)
   TranscriptionLocaleOption(
     identifier: 'de-AT',
     displayName: 'German (Austria)',
@@ -387,49 +413,17 @@ const kFallbackLearningLanguages = <TranscriptionLocaleOption>[
     flagEmoji: '🇨🇭',
   ),
   TranscriptionLocaleOption(
-    identifier: 'de-DE',
-    displayName: 'German (Germany)',
+    identifier: 'it-IT',
+    displayName: 'Italian (Italy)',
     isInstalled: false,
-    flagEmoji: '🇩🇪',
-  ),
-  // Spanish (6)
-  TranscriptionLocaleOption(
-    identifier: 'es-419',
-    displayName: 'Spanish (Latin America)',
-    isInstalled: false,
-    flagEmoji: '🌎',
+    flagEmoji: '🇮🇹',
   ),
   TranscriptionLocaleOption(
-    identifier: 'es-CL',
-    displayName: 'Spanish (Chile)',
+    identifier: 'it-CH',
+    displayName: 'Italian (Switzerland)',
     isInstalled: false,
-    flagEmoji: '🇨🇱',
+    flagEmoji: '🇨🇭',
   ),
-  TranscriptionLocaleOption(
-    identifier: 'es-CO',
-    displayName: 'Spanish (Colombia)',
-    isInstalled: false,
-    flagEmoji: '🇨🇴',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'es-ES',
-    displayName: 'Spanish (Spain)',
-    isInstalled: false,
-    flagEmoji: '🇪🇸',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'es-MX',
-    displayName: 'Spanish (Mexico)',
-    isInstalled: false,
-    flagEmoji: '🇲🇽',
-  ),
-  TranscriptionLocaleOption(
-    identifier: 'es-US',
-    displayName: 'Spanish (United States)',
-    isInstalled: false,
-    flagEmoji: '🇺🇸',
-  ),
-  // Other supported languages and regional accents.
   TranscriptionLocaleOption(
     identifier: 'zh-CN',
     displayName: 'Mandarin (Mainland China)',
@@ -654,27 +648,36 @@ List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
   Iterable<TranscriptionLocaleOption> options, {
   required bool isAdmin,
   bool nativeLanguage = false,
+  bool preferNewZealand = false,
 }) {
   final visible = availableProfileLanguages(
     options,
     nativeLanguage: nativeLanguage,
   );
-  if (!nativeLanguage) {
-    final firstEnglish = visible.indexWhere(
-      (option) =>
-          primaryLanguageCodeForLocaleIdentifier(option.identifier) == 'en',
-    );
-    final newZealand = visible.indexWhere(
-      (option) =>
-          normalizeLocaleIdentifierForLookup(option.identifier) == 'en-nz',
-    );
-    if (firstEnglish >= 0 && newZealand > firstEnglish) {
-      visible.insert(firstEnglish, visible.removeAt(newZealand));
-    }
-  }
-  if (isAdmin && !nativeLanguage) {
-    visible.insert(
-      0,
+  if (nativeLanguage) return visible;
+  // Restore the curated catalog order, including lists cached while in NZ.
+  final ranks = {
+    for (var i = 0; i < kFallbackLearningLanguages.length; i++)
+      normalizeLocaleIdentifierForLookup(
+        kFallbackLearningLanguages[i].identifier,
+      ): i,
+  };
+  final indexed = visible.indexed.toList();
+  indexed.sort((a, b) {
+    final rankA =
+        ranks[normalizeLocaleIdentifierForLookup(a.$2.identifier)] ??
+        ranks.length;
+    final rankB =
+        ranks[normalizeLocaleIdentifierForLookup(b.$2.identifier)] ??
+        ranks.length;
+    final order = rankA.compareTo(rankB);
+    return order != 0 ? order : a.$1.compareTo(b.$1);
+  });
+  visible
+    ..clear()
+    ..addAll(indexed.map((entry) => entry.$2));
+  if (isAdmin) {
+    visible.add(
       const TranscriptionLocaleOption(
         identifier: 'mi-NZ',
         displayName: 'Māori (New Zealand)',
@@ -682,6 +685,15 @@ List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
         flagEmoji: '🇳🇿',
       ),
     );
+  }
+  if (preferNewZealand) {
+    for (final code in ['en-nz', 'mi-nz']) {
+      final index = visible.indexWhere(
+        (option) =>
+            normalizeLocaleIdentifierForLookup(option.identifier) == code,
+      );
+      if (index > 0) visible.insert(0, visible.removeAt(index));
+    }
   }
   return visible;
 }

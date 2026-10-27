@@ -1,3 +1,4 @@
+import '../shared/language_code_label.dart';
 import '../../infrastructure/practice_audio_route.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -3382,7 +3383,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(locale.identifier, style: theme.textTheme.bodySmall),
+                  Text(languageCodeLabel(locale.identifier), style: theme.textTheme.bodySmall),
                   const SizedBox(height: 14),
                   Text(
                     l10n.practiceConfirmTranslationLanguageBody,
@@ -3990,7 +3991,7 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
                           ? const Icon(Icons.check, size: 18)
                           : const SizedBox(width: 18),
                       title: Text(_translationLanguageLabel(locale)),
-                      subtitle: Text(locale.identifier),
+                      subtitle: Text(languageCodeLabel(locale.identifier)),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -4041,7 +4042,7 @@ class _TranslationLanguageSheetState extends State<_TranslationLanguageSheet> {
 }
 
 String _translationLanguageLabel(TranslationLocaleOption locale) {
-  return '${_flagPrefixForIdentifier(locale.identifier)} ${locale.displayName} (${locale.identifier})';
+  return '${_flagPrefixForIdentifier(locale.identifier)} ${locale.displayName} (${languageCodeLabel(locale.identifier)})';
 }
 
 String _flagPrefixForIdentifier(String identifier) {

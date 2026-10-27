@@ -2542,4 +2542,66 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       '서버에서 이 콘텐츠를 모두에게 삭제할까요? 되돌릴 수 없습니다. 이미 다운로드한 사본은 기기에 남아 있을 수 있습니다.';
+
+  @override
+  String get widgetAdd => '위젯 추가';
+
+  @override
+  String get widgetSuggestionTitle => '진행 상황을 한눈에';
+
+  @override
+  String get widgetSuggestionBody => '홈 화면에서 일일 목표와 순위를 확인하세요.';
+
+  @override
+  String get widgetHowTo => '위젯 추가 방법';
+
+  @override
+  String get widgetNotNow => '나중에';
+
+  @override
+  String get widgetHideTitle => '위젯 제안을 숨길까요?';
+
+  @override
+  String get widgetHideBody => '설정에서 위젯 추가 방법을 계속 확인할 수 있어요.';
+
+  @override
+  String get widgetDontShowAgain => '다시 표시하지 않기';
+
+  @override
+  String get widgetSaveFailed => '선택을 저장하지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get widgetSmall => '작게';
+
+  @override
+  String get widgetMedium => '중간';
+
+  @override
+  String get widgetLarge => '크게';
+
+  @override
+  String get widgetExtraLarge => '아주 크게';
+
+  @override
+  String get widgetStepHold => '홈 화면의 빈 공간을 앱이 흔들릴 때까지 길게 누르세요.';
+
+  @override
+  String get widgetStepEdit =>
+      '편집 → 위젯 추가를 선택하세요. 이전 iOS 또는 iPadOS 버전에서는 + 버튼을 누르세요.';
+
+  @override
+  String get widgetStepSearch => 'Bantera를 검색하고 일일 연습 위젯을 선택하세요.';
+
+  @override
+  String get widgetStepAdd => '쓸어넘겨 크기를 고른 후 위젯 추가, 완료를 누르세요.';
+
+  @override
+  String get widgetPreviewDescription => '예시 진행 상황이 표시된 실제 위젯 미리보기.';
+
+  @override
+  String get widgetPreviewRetry => '미리보기 새로고침';
+
+  @override
+  String get widgetLocalNote =>
+      '홈 화면에서 직접 위젯을 추가하세요. Bantera는 돌아오면 위젯 설정 여부를 확인하며, 조회 빈도는 추적하지 않아요.';
 }

@@ -887,3 +887,25 @@ private final class DeferredTranslationDismissController: UIViewController {
     pendingDismissal = completion
   }
 }
+
+
+final class WidgetDiscoveryPreviewTests: XCTestCase {
+  @MainActor func testNativeGuideUsesActualWidgetForAllSizesAndThemes() throws {
+    for size in ["small", "medium", "large", "extraLarge"] {
+      for dark in [false, true] {
+        let data = try XCTUnwrap(BanteraPracticeWidgetBridge.preview(arguments: [
+          "size": size, "dark": dark, "locale": "de", "labels": [
+            "today": "Heute", "words": "Wörter", "spoken": "Sprechen", "listened": "Hören",
+            "chat": "Bantera AI", "level": "Stufe", "language": "Lernsprache", "position": "Dein Platz", "period": "Letzte 30 Tage"
+          ]]))
+        let image = try XCTUnwrap(UIImage(data: data))
+        XCTAssertGreaterThan(image.size.width, 100)
+        XCTAssertGreaterThan(data.count, 1000)
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "guide-\(size)-\(dark ? "dark" : "light")"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import 'goal_motion.dart';
+import '../widgets/widget_discovery.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -183,6 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
+                  const WidgetSuggestion(),
                   const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),

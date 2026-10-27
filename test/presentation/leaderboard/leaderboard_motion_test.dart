@@ -111,7 +111,7 @@ void main() {
           );
         }
         expect(find.textContaining('Learning '), findsNothing);
-        expect(find.text('English(en-us 🇺🇸)'), findsNWidgets(3));
+        expect(find.text('English(en-US 🇺🇸)'), findsNWidgets(3));
         expect(tester.takeException(), isNull);
       },
     );

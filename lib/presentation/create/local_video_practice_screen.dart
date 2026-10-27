@@ -1,3 +1,4 @@
+import '../shared/language_code_label.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -596,7 +597,7 @@ class _LocalVideoPracticeScreenState extends State<LocalVideoPracticeScreen> {
   }
 
   static String _languageLabel(TranscriptionLocaleOption locale) {
-    return '${locale.effectiveFlagEmoji} ${locale.displayName} (${locale.identifier})';
+    return '${locale.effectiveFlagEmoji} ${locale.displayName} (${languageCodeLabel(locale.identifier)})';
   }
 }
 
@@ -704,7 +705,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       title: Text(
                         _LocalVideoPracticeScreenState._languageLabel(locale),
                       ),
-                      subtitle: Text(locale.identifier),
+                      subtitle: Text(languageCodeLabel(locale.identifier)),
                       trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,

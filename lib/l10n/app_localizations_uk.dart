@@ -2716,4 +2716,71 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Видалити цей матеріал із сервера для всіх? Скасувати дію неможливо. Завантажені копії можуть залишитися на пристроях.';
+
+  @override
+  String get widgetAdd => 'Додати віджет';
+
+  @override
+  String get widgetSuggestionTitle => 'Ваш прогрес завжди на видноті';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Переглядайте щоденну ціль і місце в рейтингу на початковому екрані.';
+
+  @override
+  String get widgetHowTo => 'Як додати віджет';
+
+  @override
+  String get widgetNotNow => 'Не зараз';
+
+  @override
+  String get widgetHideTitle => 'Приховати пропозицію віджета?';
+
+  @override
+  String get widgetHideBody => 'Інструкції залишаться доступними в параметрах.';
+
+  @override
+  String get widgetDontShowAgain => 'Більше не показувати';
+
+  @override
+  String get widgetSaveFailed => 'Не вдалося зберегти вибір. Спробуйте ще раз.';
+
+  @override
+  String get widgetSmall => 'Малий';
+
+  @override
+  String get widgetMedium => 'Середній';
+
+  @override
+  String get widgetLarge => 'Великий';
+
+  @override
+  String get widgetExtraLarge => 'Дуже великий';
+
+  @override
+  String get widgetStepHold =>
+      'На початковому екрані торкніться порожньої ділянки й утримуйте, доки програми не почнуть тремтіти.';
+
+  @override
+  String get widgetStepEdit =>
+      'Виберіть «Редагувати» → «Додати віджет». У попередніх версіях iOS або iPadOS торкніться кнопки +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Знайдіть Bantera й виберіть віджет щоденної практики.';
+
+  @override
+  String get widgetStepAdd =>
+      'Проведіть, щоб вибрати розмір, торкніться «Додати віджет», а потім «Готово».';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Перегляд справжнього віджета з прикладом прогресу.';
+
+  @override
+  String get widgetPreviewRetry => 'Оновити перегляд';
+
+  @override
+  String get widgetLocalNote =>
+      'Додайте віджет із початкового екрана. Bantera перевіряє його налаштування після вашого повернення, але не відстежує частоту переглядів.';
 }

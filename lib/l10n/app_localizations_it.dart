@@ -2718,4 +2718,72 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Eliminare questo contenuto dal server per tutti? Non è possibile annullare. Le copie già scaricate possono rimanere sui dispositivi.';
+
+  @override
+  String get widgetAdd => 'Aggiungi un widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Tieni d’occhio i tuoi progressi';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Vedi il tuo obiettivo giornaliero e la posizione in classifica sulla schermata Home.';
+
+  @override
+  String get widgetHowTo => 'Come aggiungere un widget';
+
+  @override
+  String get widgetNotNow => 'Non ora';
+
+  @override
+  String get widgetHideTitle => 'Nascondere il suggerimento del widget?';
+
+  @override
+  String get widgetHideBody =>
+      'Troverai ancora le istruzioni nelle Impostazioni.';
+
+  @override
+  String get widgetDontShowAgain => 'Non mostrare più';
+
+  @override
+  String get widgetSaveFailed => 'Impossibile salvare la scelta. Riprova.';
+
+  @override
+  String get widgetSmall => 'Piccolo';
+
+  @override
+  String get widgetMedium => 'Medio';
+
+  @override
+  String get widgetLarge => 'Grande';
+
+  @override
+  String get widgetExtraLarge => 'Molto grande';
+
+  @override
+  String get widgetStepHold =>
+      'Nella schermata Home, tieni premuta un’area vuota finché le app non iniziano a muoversi.';
+
+  @override
+  String get widgetStepEdit =>
+      'Scegli Modifica → Aggiungi widget. Nelle versioni precedenti di iOS o iPadOS, tocca il pulsante +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Cerca Bantera e scegli il widget di pratica quotidiana.';
+
+  @override
+  String get widgetStepAdd =>
+      'Scorri per scegliere una dimensione, tocca Aggiungi widget e poi Fine.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Anteprima del widget reale con progressi di esempio.';
+
+  @override
+  String get widgetPreviewRetry => 'Ricarica anteprima';
+
+  @override
+  String get widgetLocalNote =>
+      'Aggiungi il widget dalla schermata Home. Bantera ne verifica la configurazione al tuo ritorno, senza monitorare quante volte lo guardi.';
 }

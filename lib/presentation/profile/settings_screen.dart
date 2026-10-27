@@ -20,6 +20,7 @@ import 'edit_profile_screen.dart';
 import 'permissions_screen.dart';
 import 'paid_key_settings.dart';
 import 'storage_cache_screen.dart';
+import '../widgets/widget_discovery.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, this.focusLanguages = false});
@@ -312,6 +313,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     key: ValueKey(session.cacheKey),
                     owner: session.cacheKey,
                   ),
+                const WidgetSuggestion(settings: true),
                 KeyedSubtree(
                   key: _languagesKey,
                   child: _buildSectionHeader(

@@ -2729,4 +2729,72 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Usunąć tę treść z serwera dla wszystkich? Nie można tego cofnąć. Pobrane kopie mogą pozostać na urządzeniach.';
+
+  @override
+  String get widgetAdd => 'Dodaj widżet';
+
+  @override
+  String get widgetSuggestionTitle => 'Miej postępy na oku';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Zobacz swój cel dzienny i pozycję w rankingu na ekranie początkowym.';
+
+  @override
+  String get widgetHowTo => 'Jak dodać widżet';
+
+  @override
+  String get widgetNotNow => 'Nie teraz';
+
+  @override
+  String get widgetHideTitle => 'Ukryć sugestię widżetu?';
+
+  @override
+  String get widgetHideBody => 'Instrukcje nadal będą dostępne w Ustawieniach.';
+
+  @override
+  String get widgetDontShowAgain => 'Nie pokazuj ponownie';
+
+  @override
+  String get widgetSaveFailed =>
+      'Nie udało się zapisać wyboru. Spróbuj ponownie.';
+
+  @override
+  String get widgetSmall => 'Mały';
+
+  @override
+  String get widgetMedium => 'Średni';
+
+  @override
+  String get widgetLarge => 'Duży';
+
+  @override
+  String get widgetExtraLarge => 'Bardzo duży';
+
+  @override
+  String get widgetStepHold =>
+      'Na ekranie początkowym dotknij pustego miejsca i przytrzymaj, aż aplikacje zaczną drżeć.';
+
+  @override
+  String get widgetStepEdit =>
+      'Wybierz Edytuj → Dodaj widżet. W starszych wersjach iOS lub iPadOS stuknij przycisk +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Wyszukaj Bantera i wybierz widżet codziennych ćwiczeń.';
+
+  @override
+  String get widgetStepAdd =>
+      'Przesuń, aby wybrać rozmiar, stuknij Dodaj widżet, a następnie Gotowe.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Podgląd rzeczywistego widżetu z przykładowymi postępami.';
+
+  @override
+  String get widgetPreviewRetry => 'Odśwież podgląd';
+
+  @override
+  String get widgetLocalNote =>
+      'Dodaj widżet z ekranu początkowego. Bantera sprawdza jego konfigurację po powrocie, ale nie śledzi, jak często go oglądasz.';
 }

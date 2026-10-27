@@ -20,6 +20,7 @@ import 'core/theme.dart';
 import 'core/user_profile_notifier.dart';
 import 'core/word_activity_notifier.dart';
 import 'core/practice_widget_service.dart';
+import 'core/widget_discovery_service.dart';
 import 'core/practice_review_service.dart';
 import 'infrastructure/push_notifications_service.dart';
 import 'infrastructure/video_processing_service.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
     ]),
   );
   runApp(const MyApp());
+  unawaited(WidgetDiscoveryService.instance.initialize());
   unawaited(LocalAudioStorage.migratePractice());
 }
 

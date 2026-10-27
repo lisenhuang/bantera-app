@@ -9,6 +9,7 @@ import '../core/app_locale.dart';
 import '../core/app_resume_notifier.dart';
 import '../core/settings_notifier.dart';
 import 'transcription_locale_option.dart';
+import 'learning_language_catalog.dart';
 
 /// Works out, from the user's IP, whether they are outside mainland China.
 ///
@@ -41,6 +42,7 @@ class RegionService extends ChangeNotifier {
 
   Future<bool>? _outsideMainlandChina;
   bool _lookupPending = false;
+  String? _confirmedCountry;
   bool _confirmedOutsideMainlandChina = false;
 
   /// IP-only visibility for group chats and DM call controls, independent of
@@ -72,6 +74,7 @@ class RegionService extends ChangeNotifier {
     }
     _lookupPending = false;
     if (country == null) _outsideMainlandChina = null;
+    _confirmedCountry = country;
     final outside = country != null && country != 'CN';
     if (_confirmedOutsideMainlandChina != outside) {
       _confirmedOutsideMainlandChina = outside;
@@ -111,6 +114,24 @@ class RegionService extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  /// Learning lists promote NZ choices only after a successful IP lookup.
+  /// Cached lists are re-sorted when opened after a foreground/network refresh.
+  Future<List<TranscriptionLocaleOption>> profileLanguageOptions(
+    Iterable<TranscriptionLocaleOption> options, {
+    required bool isAdmin,
+    bool nativeLanguage = false,
+  }) async {
+    if (!nativeLanguage) await isOutsideMainlandChina();
+    return filterLanguageOptions(
+      profileLanguageOptionsForRole(
+        options,
+        isAdmin: isAdmin,
+        nativeLanguage: nativeLanguage,
+        preferNewZealand: _confirmedCountry == 'NZ',
+      ),
+    );
   }
 
   /// Chinese (Taiwan) in any spelling: `zh-TW`, `zh_TW`, `zh-Hant-TW`.

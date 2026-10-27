@@ -286,11 +286,9 @@ class VideoProcessingService {
   /// only once the IP is confirmed outside mainland China.
   Future<List<TranscriptionLocaleOption>>
   fetchLearningLanguageOptions() async =>
-      RegionService.instance.filterLanguageOptions(
-        profileLanguageOptionsForRole(
-          await _fetchAllLearningLanguageOptions(),
-          isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
-        ),
+      RegionService.instance.profileLanguageOptions(
+        await _fetchAllLearningLanguageOptions(),
+        isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
       );
 
   Future<List<TranscriptionLocaleOption>>

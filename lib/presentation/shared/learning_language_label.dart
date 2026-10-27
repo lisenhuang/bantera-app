@@ -1,3 +1,4 @@
+import 'language_code_label.dart';
 import '../../infrastructure/learning_language_catalog.dart';
 import '../../infrastructure/audio_language_groups.dart';
 import '../../infrastructure/transcription_locale_option.dart';
@@ -72,7 +73,7 @@ String goalLearningLanguageLabel(String? identifier) {
       : '';
   final flagSuffix = countryFlag.isEmpty ? '' : ' $countryFlag';
   return accents.length > 1
-      ? '${language.name}($normalized$flagSuffix)'
+      ? '${language.name}(${languageCodeLabel(normalized)}$flagSuffix)'
       : '${language.name}$flagSuffix';
 }
 

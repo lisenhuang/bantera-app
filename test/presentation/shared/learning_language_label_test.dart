@@ -4,14 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'multiple accents show the selected lowercase locale and country flag',
+    'multiple accents show the selected conventional locale and country flag',
     () {
-      expect(goalLearningLanguageLabel('EN_us'), 'English(en-us 🇺🇸)');
-      expect(goalLearningLanguageLabel('en-NZ'), 'English(en-nz 🇳🇿)');
-      expect(goalLearningLanguageLabel('fr-CA'), 'French(fr-ca 🇨🇦)');
-      expect(goalLearningLanguageLabel('pt-BR'), 'Portuguese(pt-br 🇧🇷)');
-      expect(goalLearningLanguageLabel('nl-BE'), 'Dutch(nl-be 🇧🇪)');
-      expect(goalLearningLanguageLabel('ar-SA'), 'Arabic(ar-sa 🇸🇦)');
+      expect(goalLearningLanguageLabel('EN_us'), 'English(en-US 🇺🇸)');
+      expect(goalLearningLanguageLabel('en-NZ'), 'English(en-NZ 🇳🇿)');
+      expect(goalLearningLanguageLabel('fr-CA'), 'French(fr-CA 🇨🇦)');
+      expect(goalLearningLanguageLabel('pt-BR'), 'Portuguese(pt-BR 🇧🇷)');
+      expect(goalLearningLanguageLabel('nl-BE'), 'Dutch(nl-BE 🇧🇪)');
+      expect(goalLearningLanguageLabel('ar-SA'), 'Arabic(ar-SA 🇸🇦)');
     },
   );
 
@@ -37,16 +37,16 @@ void main() {
   );
 
   test('Mandarin and Cantonese accents are counted separately', () {
-    expect(goalLearningLanguageLabel('zh-CN'), 'Mandarin(zh-cn 🇨🇳)');
-    expect(goalLearningLanguageLabel('zh-TW'), 'Mandarin(zh-tw 🇹🇼)');
-    expect(goalLearningLanguageLabel('zh-HK'), 'Cantonese(zh-hk 🇭🇰)');
-    expect(goalLearningLanguageLabel('yue-CN'), 'Cantonese(yue-cn 🇨🇳)');
+    expect(goalLearningLanguageLabel('zh-CN'), 'Mandarin(zh-CN 🇨🇳)');
+    expect(goalLearningLanguageLabel('zh-TW'), 'Mandarin(zh-TW 🇹🇼)');
+    expect(goalLearningLanguageLabel('zh-HK'), 'Cantonese(zh-HK 🇭🇰)');
+    expect(goalLearningLanguageLabel('yue-CN'), 'Cantonese(yue-CN 🇨🇳)');
   });
 
   test(
     'legacy accent identifiers remain normalized and missing languages stay hidden',
     () {
-      expect(goalLearningLanguageLabel('fr'), 'French(fr-fr 🇫🇷)');
+      expect(goalLearningLanguageLabel('fr'), 'French(fr-FR 🇫🇷)');
       expect(goalLearningLanguageLabel(null), '');
       expect(goalLearningLanguageLabel(''), '');
       expect(goalLearningLanguageLabel('unknown-ZZ'), '');

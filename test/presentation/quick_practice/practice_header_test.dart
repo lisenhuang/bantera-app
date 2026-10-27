@@ -70,7 +70,7 @@ void main() {
     for (final width in [320.0, 393.0, 744.0]) {
       await mount(tester, width: width, scale: 2, learningLocale: 'mi-NZ');
       expect(find.text('🇳🇿'), findsOneWidget);
-      expect(find.text('mi-nz'), findsOneWidget);
+      expect(find.text('mi-NZ'), findsOneWidget);
       expect(
         tester
             .getRect(find.byKey(const ValueKey('practice-language-label')))

@@ -4777,6 +4777,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete this content from the server for everyone? This cannot be undone. Previously downloaded copies may remain on devices.'**
   String get adminDeleteContentBody;
+
+  /// No description provided for @widgetAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a widget'**
+  String get widgetAdd;
+
+  /// No description provided for @widgetSuggestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your progress in sight'**
+  String get widgetSuggestionTitle;
+
+  /// No description provided for @widgetSuggestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See your daily goal and leaderboard position on your Home Screen.'**
+  String get widgetSuggestionBody;
+
+  /// No description provided for @widgetHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'How to add a widget'**
+  String get widgetHowTo;
+
+  /// No description provided for @widgetNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get widgetNotNow;
+
+  /// No description provided for @widgetHideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide widget suggestion?'**
+  String get widgetHideTitle;
+
+  /// No description provided for @widgetHideBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can still find widget instructions in Settings.'**
+  String get widgetHideBody;
+
+  /// No description provided for @widgetDontShowAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don’t show again'**
+  String get widgetDontShowAgain;
+
+  /// No description provided for @widgetSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your choice. Please try again.'**
+  String get widgetSaveFailed;
+
+  /// No description provided for @widgetSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get widgetSmall;
+
+  /// No description provided for @widgetMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get widgetMedium;
+
+  /// No description provided for @widgetLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get widgetLarge;
+
+  /// No description provided for @widgetExtraLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra large'**
+  String get widgetExtraLarge;
+
+  /// No description provided for @widgetStepHold.
+  ///
+  /// In en, this message translates to:
+  /// **'On your Home Screen, touch and hold an empty area until the apps jiggle.'**
+  String get widgetStepHold;
+
+  /// No description provided for @widgetStepEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Edit → Add Widget. On earlier iOS or iPadOS versions, tap the + button instead.'**
+  String get widgetStepEdit;
+
+  /// No description provided for @widgetStepSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for Bantera and choose the Daily practice widget.'**
+  String get widgetStepSearch;
+
+  /// No description provided for @widgetStepAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to select a size, tap Add Widget, then tap Done.'**
+  String get widgetStepAdd;
+
+  /// No description provided for @widgetPreviewDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual widget preview with example progress.'**
+  String get widgetPreviewDescription;
+
+  /// No description provided for @widgetPreviewRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload preview'**
+  String get widgetPreviewRetry;
+
+  /// No description provided for @widgetLocalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it.'**
+  String get widgetLocalNote;
 }
 
 class _AppLocalizationsDelegate

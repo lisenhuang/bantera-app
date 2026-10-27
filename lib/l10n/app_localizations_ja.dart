@@ -2526,4 +2526,66 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'このコンテンツをサーバーから削除し、全員が利用できなくなるようにしますか？元に戻せません。ダウンロード済みのコピーは端末に残る場合があります。';
+
+  @override
+  String get widgetAdd => 'ウィジェットを追加';
+
+  @override
+  String get widgetSuggestionTitle => '進み具合をいつでも確認';
+
+  @override
+  String get widgetSuggestionBody => 'ホーム画面で毎日の目標とランキング順位を確認できます。';
+
+  @override
+  String get widgetHowTo => 'ウィジェットの追加方法';
+
+  @override
+  String get widgetNotNow => '今はしない';
+
+  @override
+  String get widgetHideTitle => 'ウィジェットの提案を非表示にしますか？';
+
+  @override
+  String get widgetHideBody => '追加方法は引き続き設定で確認できます。';
+
+  @override
+  String get widgetDontShowAgain => '今後表示しない';
+
+  @override
+  String get widgetSaveFailed => '選択を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get widgetSmall => '小';
+
+  @override
+  String get widgetMedium => '中';
+
+  @override
+  String get widgetLarge => '大';
+
+  @override
+  String get widgetExtraLarge => '特大';
+
+  @override
+  String get widgetStepHold => 'ホーム画面の何もない場所を、アプリが揺れるまで長押しします。';
+
+  @override
+  String get widgetStepEdit =>
+      '「編集」→「ウィジェットを追加」を選びます。以前のiOS・iPadOSでは「＋」をタップします。';
+
+  @override
+  String get widgetStepSearch => 'Banteraを検索し、毎日の練習ウィジェットを選びます。';
+
+  @override
+  String get widgetStepAdd => 'スワイプしてサイズを選び、「ウィジェットを追加」、次に「完了」をタップします。';
+
+  @override
+  String get widgetPreviewDescription => 'サンプルの進捗を使った実際のウィジェットのプレビュー。';
+
+  @override
+  String get widgetPreviewRetry => 'プレビューを再読み込み';
+
+  @override
+  String get widgetLocalNote =>
+      'ウィジェットはホーム画面から追加します。Banteraに戻ると設定状況を確認しますが、閲覧頻度は追跡しません。';
 }

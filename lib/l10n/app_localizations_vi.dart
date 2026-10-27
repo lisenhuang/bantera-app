@@ -2648,4 +2648,71 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Xóa nội dung này khỏi máy chủ cho tất cả mọi người? Không thể hoàn tác. Các bản đã tải xuống có thể vẫn còn trên thiết bị.';
+
+  @override
+  String get widgetAdd => 'Thêm tiện ích';
+
+  @override
+  String get widgetSuggestionTitle => 'Luôn thấy tiến bộ của bạn';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Xem mục tiêu hằng ngày và vị trí trên bảng xếp hạng ngay trên Màn hình chính.';
+
+  @override
+  String get widgetHowTo => 'Cách thêm tiện ích';
+
+  @override
+  String get widgetNotNow => 'Để sau';
+
+  @override
+  String get widgetHideTitle => 'Ẩn gợi ý tiện ích?';
+
+  @override
+  String get widgetHideBody => 'Bạn vẫn có thể xem hướng dẫn trong Cài đặt.';
+
+  @override
+  String get widgetDontShowAgain => 'Không hiển thị lại';
+
+  @override
+  String get widgetSaveFailed => 'Không thể lưu lựa chọn. Vui lòng thử lại.';
+
+  @override
+  String get widgetSmall => 'Nhỏ';
+
+  @override
+  String get widgetMedium => 'Vừa';
+
+  @override
+  String get widgetLarge => 'Lớn';
+
+  @override
+  String get widgetExtraLarge => 'Rất lớn';
+
+  @override
+  String get widgetStepHold =>
+      'Trên Màn hình chính, chạm và giữ vùng trống cho đến khi các ứng dụng rung lắc.';
+
+  @override
+  String get widgetStepEdit =>
+      'Chọn Sửa → Thêm tiện ích. Trên các phiên bản iOS hoặc iPadOS cũ hơn, chạm nút +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Tìm Bantera và chọn tiện ích luyện tập hằng ngày.';
+
+  @override
+  String get widgetStepAdd =>
+      'Vuốt để chọn kích cỡ, chạm Thêm tiện ích, rồi chạm Xong.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Bản xem trước tiện ích thực với tiến độ minh họa.';
+
+  @override
+  String get widgetPreviewRetry => 'Tải lại bản xem trước';
+
+  @override
+  String get widgetLocalNote =>
+      'Bạn thêm tiện ích từ Màn hình chính. Bantera kiểm tra cấu hình khi bạn quay lại, không theo dõi tần suất bạn xem tiện ích.';
 }

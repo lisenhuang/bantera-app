@@ -2517,6 +2517,67 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       '要从服务器为所有人删除此内容吗？此操作无法撤销。已下载的副本可能仍保留在设备上。';
+
+  @override
+  String get widgetAdd => '添加小组件';
+
+  @override
+  String get widgetSuggestionTitle => '随时查看学习进度';
+
+  @override
+  String get widgetSuggestionBody => '在主屏幕上查看每日目标和排行榜名次。';
+
+  @override
+  String get widgetHowTo => '如何添加小组件';
+
+  @override
+  String get widgetNotNow => '暂不添加';
+
+  @override
+  String get widgetHideTitle => '隐藏小组件建议？';
+
+  @override
+  String get widgetHideBody => '你仍可在设置中查看小组件添加说明。';
+
+  @override
+  String get widgetDontShowAgain => '不再显示';
+
+  @override
+  String get widgetSaveFailed => '无法保存选择，请重试。';
+
+  @override
+  String get widgetSmall => '小号';
+
+  @override
+  String get widgetMedium => '中号';
+
+  @override
+  String get widgetLarge => '大号';
+
+  @override
+  String get widgetExtraLarge => '特大号';
+
+  @override
+  String get widgetStepHold => '在主屏幕上长按空白处，直到 App 开始晃动。';
+
+  @override
+  String get widgetStepEdit => '选择“编辑”→“添加小组件”。在较早版本的 iOS 或 iPadOS 上，请点按“+”按钮。';
+
+  @override
+  String get widgetStepSearch => '搜索 Bantera，选择每日练习小组件。';
+
+  @override
+  String get widgetStepAdd => '左右轻扫选择尺寸，点按“添加小组件”，然后点按“完成”。';
+
+  @override
+  String get widgetPreviewDescription => '使用示例进度展示的真实小组件预览。';
+
+  @override
+  String get widgetPreviewRetry => '重新加载预览';
+
+  @override
+  String get widgetLocalNote =>
+      '请从主屏幕添加小组件。返回 Bantera 时，App 会检查小组件是否已配置，但不会跟踪你的查看频率。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -5036,4 +5097,66 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get adminDeleteContentBody =>
       '要從伺服器為所有人刪除此內容嗎？此操作無法復原。已下載的副本可能仍保留在裝置上。';
+
+  @override
+  String get widgetAdd => '加入小工具';
+
+  @override
+  String get widgetSuggestionTitle => '隨時查看學習進度';
+
+  @override
+  String get widgetSuggestionBody => '在主畫面上查看每日目標和排行榜名次。';
+
+  @override
+  String get widgetHowTo => '如何加入小工具';
+
+  @override
+  String get widgetNotNow => '暫時不要';
+
+  @override
+  String get widgetHideTitle => '隱藏小工具建議？';
+
+  @override
+  String get widgetHideBody => '你仍可在設定中查看小工具加入說明。';
+
+  @override
+  String get widgetDontShowAgain => '不再顯示';
+
+  @override
+  String get widgetSaveFailed => '無法儲存選擇，請重試。';
+
+  @override
+  String get widgetSmall => '小型';
+
+  @override
+  String get widgetMedium => '中型';
+
+  @override
+  String get widgetLarge => '大型';
+
+  @override
+  String get widgetExtraLarge => '特大型';
+
+  @override
+  String get widgetStepHold => '在主畫面上長按空白處，直到 App 開始晃動。';
+
+  @override
+  String get widgetStepEdit =>
+      '選擇「編輯」→「加入小工具」。在較早版本的 iOS 或 iPadOS 上，請點一下「+」按鈕。';
+
+  @override
+  String get widgetStepSearch => '搜尋 Bantera，選擇每日練習小工具。';
+
+  @override
+  String get widgetStepAdd => '左右滑動選擇尺寸，點一下「加入小工具」，然後點一下「完成」。';
+
+  @override
+  String get widgetPreviewDescription => '使用範例進度展示的實際小工具預覽。';
+
+  @override
+  String get widgetPreviewRetry => '重新載入預覽';
+
+  @override
+  String get widgetLocalNote =>
+      '請從主畫面加入小工具。返回 Bantera 時，App 會檢查小工具是否已設定，但不會追蹤你的查看頻率。';
 }

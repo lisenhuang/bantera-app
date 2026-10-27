@@ -2713,4 +2713,73 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Eliminar este conteúdo do servidor para todos? Não é possível anular. As cópias já descarregadas podem permanecer nos dispositivos.';
+
+  @override
+  String get widgetAdd => 'Adicionar um widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Tenha o seu progresso à vista';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Veja a sua meta diária e posição na classificação no ecrã principal.';
+
+  @override
+  String get widgetHowTo => 'Como adicionar um widget';
+
+  @override
+  String get widgetNotNow => 'Agora não';
+
+  @override
+  String get widgetHideTitle => 'Ocultar a sugestão de widget?';
+
+  @override
+  String get widgetHideBody =>
+      'As instruções continuam disponíveis nas Definições.';
+
+  @override
+  String get widgetDontShowAgain => 'Não voltar a mostrar';
+
+  @override
+  String get widgetSaveFailed =>
+      'Não foi possível guardar a escolha. Tente novamente.';
+
+  @override
+  String get widgetSmall => 'Pequeno';
+
+  @override
+  String get widgetMedium => 'Médio';
+
+  @override
+  String get widgetLarge => 'Grande';
+
+  @override
+  String get widgetExtraLarge => 'Muito grande';
+
+  @override
+  String get widgetStepHold =>
+      'No ecrã principal, toque sem soltar numa área vazia até as apps começarem a tremer.';
+
+  @override
+  String get widgetStepEdit =>
+      'Escolha Editar → Adicionar widget. Em versões anteriores do iOS ou iPadOS, toque no botão +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Procure Bantera e escolha o widget de prática diária.';
+
+  @override
+  String get widgetStepAdd =>
+      'Passe o dedo para escolher um tamanho, toque em Adicionar widget e depois em OK.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Pré-visualização do widget real com progresso de exemplo.';
+
+  @override
+  String get widgetPreviewRetry => 'Recarregar pré-visualização';
+
+  @override
+  String get widgetLocalNote =>
+      'Adicione o widget a partir do ecrã principal. A Bantera verifica a configuração quando regressa, mas não regista a frequência de visualização.';
 }

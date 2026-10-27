@@ -2717,4 +2717,73 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       '¿Eliminar este contenido del servidor para todos? No se puede deshacer. Las copias descargadas pueden permanecer en los dispositivos.';
+
+  @override
+  String get widgetAdd => 'Añadir un widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Ten tu progreso a la vista';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Consulta tu objetivo diario y tu posición en la clasificación desde la pantalla de inicio.';
+
+  @override
+  String get widgetHowTo => 'Cómo añadir un widget';
+
+  @override
+  String get widgetNotNow => 'Ahora no';
+
+  @override
+  String get widgetHideTitle => '¿Ocultar la sugerencia del widget?';
+
+  @override
+  String get widgetHideBody =>
+      'Las instrucciones seguirán disponibles en Ajustes.';
+
+  @override
+  String get widgetDontShowAgain => 'No volver a mostrar';
+
+  @override
+  String get widgetSaveFailed =>
+      'No se pudo guardar tu elección. Inténtalo de nuevo.';
+
+  @override
+  String get widgetSmall => 'Pequeño';
+
+  @override
+  String get widgetMedium => 'Mediano';
+
+  @override
+  String get widgetLarge => 'Grande';
+
+  @override
+  String get widgetExtraLarge => 'Extragrande';
+
+  @override
+  String get widgetStepHold =>
+      'Mantén pulsada una zona vacía de la pantalla de inicio hasta que las apps se muevan.';
+
+  @override
+  String get widgetStepEdit =>
+      'Elige Editar → Añadir widget. En versiones anteriores de iOS o iPadOS, pulsa el botón +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Busca Bantera y elige el widget de práctica diaria.';
+
+  @override
+  String get widgetStepAdd =>
+      'Desliza para elegir un tamaño, pulsa Añadir widget y luego OK.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Vista previa del widget real con progreso de ejemplo.';
+
+  @override
+  String get widgetPreviewRetry => 'Recargar vista previa';
+
+  @override
+  String get widgetLocalNote =>
+      'Añade el widget desde la pantalla de inicio. Bantera comprueba su configuración cuando vuelves, pero no registra cuántas veces lo miras.';
 }

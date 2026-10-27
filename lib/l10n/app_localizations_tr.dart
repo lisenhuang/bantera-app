@@ -2649,4 +2649,72 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Bu içerik sunucudan herkes için silinsin mi? Bu işlem geri alınamaz. İndirilen kopyalar cihazlarda kalabilir.';
+
+  @override
+  String get widgetAdd => 'Araç takımı ekle';
+
+  @override
+  String get widgetSuggestionTitle => 'İlerlemen göz önünde olsun';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Günlük hedefini ve sıralamadaki yerini Ana Ekran’da gör.';
+
+  @override
+  String get widgetHowTo => 'Araç takımı nasıl eklenir';
+
+  @override
+  String get widgetNotNow => 'Şimdi değil';
+
+  @override
+  String get widgetHideTitle => 'Araç takımı önerisi gizlensin mi?';
+
+  @override
+  String get widgetHideBody =>
+      'Talimatları Ayarlar’da bulmaya devam edebilirsin.';
+
+  @override
+  String get widgetDontShowAgain => 'Bir daha gösterme';
+
+  @override
+  String get widgetSaveFailed => 'Seçimin kaydedilemedi. Lütfen tekrar dene.';
+
+  @override
+  String get widgetSmall => 'Küçük';
+
+  @override
+  String get widgetMedium => 'Orta';
+
+  @override
+  String get widgetLarge => 'Büyük';
+
+  @override
+  String get widgetExtraLarge => 'Çok büyük';
+
+  @override
+  String get widgetStepHold =>
+      'Ana Ekran’da boş bir alana, uygulamalar titreyene kadar dokunup basılı tut.';
+
+  @override
+  String get widgetStepEdit =>
+      'Düzenle → Araç Takımı Ekle’yi seç. Eski iOS veya iPadOS sürümlerinde + düğmesine dokun.';
+
+  @override
+  String get widgetStepSearch =>
+      'Bantera’yı ara ve günlük alıştırma araç takımını seç.';
+
+  @override
+  String get widgetStepAdd =>
+      'Boyut seçmek için kaydır, Araç Takımı Ekle’ye, ardından Bitti’ye dokun.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Örnek ilerleme içeren gerçek araç takımı önizlemesi.';
+
+  @override
+  String get widgetPreviewRetry => 'Önizlemeyi yenile';
+
+  @override
+  String get widgetLocalNote =>
+      'Araç takımını Ana Ekran’dan eklersin. Bantera döndüğünde yapılandırmayı kontrol eder; ne sıklıkla baktığını izlemez.';
 }

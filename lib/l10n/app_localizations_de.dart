@@ -2717,4 +2717,73 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Diesen Inhalt für alle vom Server löschen? Dies kann nicht rückgängig gemacht werden. Bereits heruntergeladene Kopien können auf Geräten verbleiben.';
+
+  @override
+  String get widgetAdd => 'Widget hinzufügen';
+
+  @override
+  String get widgetSuggestionTitle => 'Deinen Fortschritt im Blick';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Sieh dein Tagesziel und deinen Rang auf dem Home-Bildschirm.';
+
+  @override
+  String get widgetHowTo => 'So fügst du ein Widget hinzu';
+
+  @override
+  String get widgetNotNow => 'Nicht jetzt';
+
+  @override
+  String get widgetHideTitle => 'Widget-Vorschlag ausblenden?';
+
+  @override
+  String get widgetHideBody =>
+      'Die Anleitung findest du weiterhin in den Einstellungen.';
+
+  @override
+  String get widgetDontShowAgain => 'Nicht mehr anzeigen';
+
+  @override
+  String get widgetSaveFailed =>
+      'Deine Auswahl konnte nicht gespeichert werden. Versuche es erneut.';
+
+  @override
+  String get widgetSmall => 'Klein';
+
+  @override
+  String get widgetMedium => 'Mittel';
+
+  @override
+  String get widgetLarge => 'Groß';
+
+  @override
+  String get widgetExtraLarge => 'Extra groß';
+
+  @override
+  String get widgetStepHold =>
+      'Halte einen leeren Bereich auf dem Home-Bildschirm gedrückt, bis die Apps wackeln.';
+
+  @override
+  String get widgetStepEdit =>
+      'Wähle Bearbeiten → Widget hinzufügen. Tippe bei älteren iOS- oder iPadOS-Versionen stattdessen auf +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Suche nach Bantera und wähle das Widget für tägliches Üben.';
+
+  @override
+  String get widgetStepAdd =>
+      'Wische, um eine Größe auszuwählen, tippe auf Widget hinzufügen und dann auf Fertig.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Vorschau des echten Widgets mit Beispielfortschritt.';
+
+  @override
+  String get widgetPreviewRetry => 'Vorschau neu laden';
+
+  @override
+  String get widgetLocalNote =>
+      'Du fügst das Widget auf deinem Home-Bildschirm hinzu. Bantera prüft die Konfiguration bei deiner Rückkehr, erfasst aber nicht, wie oft du es ansiehst.';
 }

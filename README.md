@@ -153,7 +153,7 @@ Chat deletion uses a left swipe, an explicit Delete action and confirmation. AI 
 
 Admins can choose rolling 24H, 7-day or 30-day periods on the speaking leaderboard, open a participant's DM after confirmation, and delete current Practice content or a long dialogue with shield-marked controls. Ordinary users retain the 30-day leaderboard. Each response ends at its refresh timestamp; pagination shares that cutoff. New speaking counts sync as idempotent timestamped events. Historical daily totals remain usable for whole interior days and the current UTC day inside a window. Exact counts from the first partial historical day cannot be recovered. Totals always combine all spoken languages, regardless of the current learning language.
 
-Māori is available first in the learning-language list for admins only, never in native-language selection or ordinary onboarding. Practice uses listening mode without a microphone, allows every level without awarding test passes, and automatically displays saved en-NZ translations. The backend generates these English meanings only for Māori, including background preparation of older exercises. Māori has no system transcription/translation actions in chat. Goal displays Māori with 🇳🇿; languages without system transcription hide achievement sharing and speaking metrics in Daily Goal, My Achievements and the trend chart. Language pickers initially scroll to the saved selection.
+Māori is available in the learning-language list for admins only, never in native-language selection or ordinary onboarding. It is promoted to the top only when the IP country is confirmed as New Zealand. Practice uses listening mode without a microphone, allows every level without awarding test passes, and automatically displays saved en-NZ translations. The backend generates these English meanings only for Māori, including background preparation of older exercises. Māori has no system transcription/translation actions in chat. Goal displays Māori with 🇳🇿; languages without system transcription hide achievement sharing and speaking metrics in Daily Goal, My Achievements and the trend chart. Language pickers initially scroll to the saved selection.
 
 This app requires backend 1.47.2 to be deployed and verified before installation. Two additive migrations create timestamped speaking events and a nullable Māori English field. No new environment variables are required. Existing calendar-day endpoints and published clients remain compatible.
 
@@ -820,5 +820,8 @@ that interval still count. No individual timestamps are invented for older speec
 This requires the additive `SpeakingLocalDayWindows` migration before app rollout.
 Open the updated app online to sync these local bounds; installation alone does
 not upload them. Own leaderboard language labels follow current profile changes.
-New Zealand English is first among English learning accents, with Māori still
-first only for admins; native-language ordering is unchanged.
+Learning languages use the curated global popularity order. Only a confirmed
+New Zealand IP promotes New Zealand English to the top, with Māori preceding it
+for admins. Other or unknown countries use the normal popularity order, with
+admin-only Māori at the end. Cached picker lists are reordered on opening after
+a region refresh; native-language ordering and Māori visibility rules are unchanged.

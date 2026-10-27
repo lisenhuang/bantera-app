@@ -2627,4 +2627,70 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'ลบเนื้อหานี้จากเซิร์ฟเวอร์สำหรับทุกคนหรือไม่? ไม่สามารถยกเลิกได้ สำเนาที่ดาวน์โหลดแล้วอาจยังอยู่ในอุปกรณ์';
+
+  @override
+  String get widgetAdd => 'เพิ่มวิดเจ็ต';
+
+  @override
+  String get widgetSuggestionTitle => 'เห็นความก้าวหน้าได้เสมอ';
+
+  @override
+  String get widgetSuggestionBody =>
+      'ดูเป้าหมายประจำวันและอันดับของคุณบนหน้าจอโฮม';
+
+  @override
+  String get widgetHowTo => 'วิธีเพิ่มวิดเจ็ต';
+
+  @override
+  String get widgetNotNow => 'ไว้ก่อน';
+
+  @override
+  String get widgetHideTitle => 'ซ่อนคำแนะนำวิดเจ็ตหรือไม่?';
+
+  @override
+  String get widgetHideBody => 'คุณยังดูวิธีเพิ่มวิดเจ็ตได้ในการตั้งค่า';
+
+  @override
+  String get widgetDontShowAgain => 'ไม่ต้องแสดงอีก';
+
+  @override
+  String get widgetSaveFailed => 'บันทึกตัวเลือกไม่ได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get widgetSmall => 'เล็ก';
+
+  @override
+  String get widgetMedium => 'กลาง';
+
+  @override
+  String get widgetLarge => 'ใหญ่';
+
+  @override
+  String get widgetExtraLarge => 'ใหญ่พิเศษ';
+
+  @override
+  String get widgetStepHold =>
+      'บนหน้าจอโฮม ให้แตะพื้นที่ว่างค้างไว้จนแอปเริ่มสั่น';
+
+  @override
+  String get widgetStepEdit =>
+      'เลือก แก้ไข → เพิ่มวิดเจ็ต สำหรับ iOS หรือ iPadOS รุ่นก่อนหน้า ให้แตะปุ่ม +';
+
+  @override
+  String get widgetStepSearch => 'ค้นหา Bantera แล้วเลือกวิดเจ็ตฝึกประจำวัน';
+
+  @override
+  String get widgetStepAdd =>
+      'ปัดเพื่อเลือกขนาด แตะเพิ่มวิดเจ็ต แล้วแตะเสร็จสิ้น';
+
+  @override
+  String get widgetPreviewDescription =>
+      'ตัวอย่างวิดเจ็ตจริงพร้อมข้อมูลความก้าวหน้าสมมติ';
+
+  @override
+  String get widgetPreviewRetry => 'โหลดตัวอย่างอีกครั้ง';
+
+  @override
+  String get widgetLocalNote =>
+      'เพิ่มวิดเจ็ตจากหน้าจอโฮม Bantera จะตรวจสอบการตั้งค่าเมื่อคุณกลับมา แต่จะไม่ติดตามว่าคุณดูบ่อยแค่ไหน';
 }

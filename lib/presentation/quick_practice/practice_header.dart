@@ -1,3 +1,4 @@
+import '../shared/language_code_label.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -84,9 +85,7 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  learningLocale!
-                                      .replaceAll('_', '-')
-                                      .toLowerCase(),
+                                  languageCodeLabel(learningLocale!),
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
                                   ),

@@ -1,10 +1,10 @@
+import '../shared/language_code_label.dart';
 import '../shared/selected_language_list.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/region_service.dart';
-import '../../infrastructure/learning_language_catalog.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/language_picker_totals.dart';
@@ -215,7 +215,7 @@ class _ProfileLanguageSettingsState extends State<ProfileLanguageSettings> {
         return fallbackMatch.displayName;
       }
     }
-    return identifier;
+    return languageCodeLabel(identifier);
   }
 
   String? _selectedIdentifierForPicker({
@@ -248,12 +248,10 @@ class _ProfileLanguageSettingsState extends State<ProfileLanguageSettings> {
       return;
     }
 
-    final filteredOptions = await RegionService.instance.filterLanguageOptions(
-      profileLanguageOptionsForRole(
-        options,
-        isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
-        nativeLanguage: !isLearningPicker,
-      ),
+    final filteredOptions = await RegionService.instance.profileLanguageOptions(
+      options,
+      isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+      nativeLanguage: !isLearningPicker,
     );
     if (!mounted) return;
     final selectedIdentifier = _selectedIdentifierForPicker(
@@ -474,7 +472,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                             ],
                           ),
                           subtitle: Text(
-                            option.identifier,
+                            languageCodeLabel(option.identifier),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           trailing: isSelected

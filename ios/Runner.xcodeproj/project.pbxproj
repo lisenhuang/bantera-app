@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D15C0A000000000000000001 /* BanteraPracticeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9408B33DD6625C710F34DEE4 /* BanteraPracticeWidget.swift */; };
 		BACEAACC0000000000000001 /* BanteraLocalAudioStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BACEAACC0000000000000002 /* BanteraLocalAudioStorage.swift */; };
 		006ECCE411BF10875506CD1D /* BanteraPracticeSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFCA74AC8BD31AE72AAD1DC /* BanteraPracticeSnapshot.swift */; };
 		048E6540B03DF686D193E631 /* BanteraPracticeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9408B33DD6625C710F34DEE4 /* BanteraPracticeWidget.swift */; };
@@ -611,6 +612,7 @@
 				9BC6ED2A835E94F56B5B8DC2 /* BanteraAiCallActivityBridge.swift in Sources */,
 				892C6B61D2679679EA3F13DD /* BanteraPracticeSnapshot.swift in Sources */,
 				0689D96B2A0B973F25627008 /* BanteraPracticeWidgetBridge.swift in Sources */,
+				D15C0A000000000000000001 /* BanteraPracticeWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

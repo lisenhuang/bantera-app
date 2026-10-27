@@ -2718,4 +2718,72 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Удалить этот материал с сервера для всех? Отменить действие нельзя. Скачанные копии могут остаться на устройствах.';
+
+  @override
+  String get widgetAdd => 'Добавить виджет';
+
+  @override
+  String get widgetSuggestionTitle => 'Ваш прогресс всегда на виду';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Следите за дневной целью и местом в рейтинге на экране «Домой».';
+
+  @override
+  String get widgetHowTo => 'Как добавить виджет';
+
+  @override
+  String get widgetNotNow => 'Не сейчас';
+
+  @override
+  String get widgetHideTitle => 'Скрыть предложение виджета?';
+
+  @override
+  String get widgetHideBody => 'Инструкции останутся доступны в настройках.';
+
+  @override
+  String get widgetDontShowAgain => 'Больше не показывать';
+
+  @override
+  String get widgetSaveFailed =>
+      'Не удалось сохранить выбор. Попробуйте ещё раз.';
+
+  @override
+  String get widgetSmall => 'Маленький';
+
+  @override
+  String get widgetMedium => 'Средний';
+
+  @override
+  String get widgetLarge => 'Большой';
+
+  @override
+  String get widgetExtraLarge => 'Очень большой';
+
+  @override
+  String get widgetStepHold =>
+      'На экране «Домой» нажмите и удерживайте пустую область, пока приложения не начнут покачиваться.';
+
+  @override
+  String get widgetStepEdit =>
+      'Выберите «Изменить» → «Добавить виджет». В более ранних версиях iOS или iPadOS нажмите кнопку +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Найдите Bantera и выберите виджет ежедневной практики.';
+
+  @override
+  String get widgetStepAdd =>
+      'Смахните, чтобы выбрать размер, нажмите «Добавить виджет», затем «Готово».';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Предпросмотр настоящего виджета с примером прогресса.';
+
+  @override
+  String get widgetPreviewRetry => 'Обновить предпросмотр';
+
+  @override
+  String get widgetLocalNote =>
+      'Добавьте виджет с экрана «Домой». Bantera проверяет его настройку, когда вы возвращаетесь, но не отслеживает частоту просмотров.';
 }

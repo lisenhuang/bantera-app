@@ -2653,4 +2653,71 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Hapus konten ini dari server untuk semua orang? Tindakan ini tidak dapat dibatalkan. Salinan yang sudah diunduh mungkin tetap ada di perangkat.';
+
+  @override
+  String get widgetAdd => 'Tambahkan widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Pantau kemajuan Anda';
+
+  @override
+  String get widgetSuggestionBody =>
+      'Lihat target harian dan posisi papan peringkat di Layar Utama.';
+
+  @override
+  String get widgetHowTo => 'Cara menambahkan widget';
+
+  @override
+  String get widgetNotNow => 'Jangan sekarang';
+
+  @override
+  String get widgetHideTitle => 'Sembunyikan saran widget?';
+
+  @override
+  String get widgetHideBody => 'Petunjuk widget tetap tersedia di Pengaturan.';
+
+  @override
+  String get widgetDontShowAgain => 'Jangan tampilkan lagi';
+
+  @override
+  String get widgetSaveFailed => 'Pilihan tidak dapat disimpan. Coba lagi.';
+
+  @override
+  String get widgetSmall => 'Kecil';
+
+  @override
+  String get widgetMedium => 'Sedang';
+
+  @override
+  String get widgetLarge => 'Besar';
+
+  @override
+  String get widgetExtraLarge => 'Sangat besar';
+
+  @override
+  String get widgetStepHold =>
+      'Di Layar Utama, sentuh dan tahan area kosong hingga app bergoyang.';
+
+  @override
+  String get widgetStepEdit =>
+      'Pilih Edit → Tambah Widget. Pada iOS atau iPadOS versi lama, ketuk tombol +.';
+
+  @override
+  String get widgetStepSearch =>
+      'Cari Bantera dan pilih widget latihan harian.';
+
+  @override
+  String get widgetStepAdd =>
+      'Geser untuk memilih ukuran, ketuk Tambah Widget, lalu Selesai.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Pratinjau widget asli dengan contoh kemajuan.';
+
+  @override
+  String get widgetPreviewRetry => 'Muat ulang pratinjau';
+
+  @override
+  String get widgetLocalNote =>
+      'Tambahkan widget dari Layar Utama. Bantera memeriksa konfigurasinya saat Anda kembali, bukan seberapa sering Anda melihatnya.';
 }

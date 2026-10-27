@@ -1,3 +1,4 @@
+import '../shared/language_code_label.dart';
 import '../shared/selected_language_list.dart';
 import '../../core/auth_session_notifier.dart';
 import '../shared/language_picker_totals.dart';
@@ -9,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
 import '../../infrastructure/region_service.dart';
-import '../../infrastructure/learning_language_catalog.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -234,12 +234,10 @@ class _LearningLanguageSetupScreenState
   Future<void> _chooseLanguage({required bool learning}) async {
     final options = learning ? _learningLocales : _nativeLocales;
     if (options == null || options.isEmpty) return;
-    final visibleOptions = await RegionService.instance.filterLanguageOptions(
-      profileLanguageOptionsForRole(
-        options,
-        isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
-        nativeLanguage: !learning,
-      ),
+    final visibleOptions = await RegionService.instance.profileLanguageOptions(
+      options,
+      isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+      nativeLanguage: !learning,
     );
     if (!mounted) return;
     final selected = await showModalBottomSheet<TranscriptionLocaleOption>(
@@ -474,7 +472,9 @@ class _LanguageStep extends StatelessWidget {
                     style: const TextStyle(fontSize: 28),
                   ),
             title: Text(selected?.displayName ?? l10n.onboardingChooseLanguage),
-            subtitle: selected == null ? null : Text(selected.identifier),
+            subtitle: selected == null
+                ? null
+                : Text(languageCodeLabel(selected.identifier)),
             trailing: const Icon(Icons.chevron_right),
             onTap: onTap,
           ),
@@ -659,7 +659,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                                 ),
                             ],
                           ),
-                          subtitle: Text(option.identifier),
+                          subtitle: Text(languageCodeLabel(option.identifier)),
                           trailing: selected
                               ? Icon(
                                   Icons.check_circle,

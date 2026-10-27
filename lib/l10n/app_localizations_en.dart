@@ -2711,4 +2711,73 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminDeleteContentBody =>
       'Delete this content from the server for everyone? This cannot be undone. Previously downloaded copies may remain on devices.';
+
+  @override
+  String get widgetAdd => 'Add a widget';
+
+  @override
+  String get widgetSuggestionTitle => 'Keep your progress in sight';
+
+  @override
+  String get widgetSuggestionBody =>
+      'See your daily goal and leaderboard position on your Home Screen.';
+
+  @override
+  String get widgetHowTo => 'How to add a widget';
+
+  @override
+  String get widgetNotNow => 'Not now';
+
+  @override
+  String get widgetHideTitle => 'Hide widget suggestion?';
+
+  @override
+  String get widgetHideBody =>
+      'You can still find widget instructions in Settings.';
+
+  @override
+  String get widgetDontShowAgain => 'Don’t show again';
+
+  @override
+  String get widgetSaveFailed =>
+      'Could not save your choice. Please try again.';
+
+  @override
+  String get widgetSmall => 'Small';
+
+  @override
+  String get widgetMedium => 'Medium';
+
+  @override
+  String get widgetLarge => 'Large';
+
+  @override
+  String get widgetExtraLarge => 'Extra large';
+
+  @override
+  String get widgetStepHold =>
+      'On your Home Screen, touch and hold an empty area until the apps jiggle.';
+
+  @override
+  String get widgetStepEdit =>
+      'Choose Edit → Add Widget. On earlier iOS or iPadOS versions, tap the + button instead.';
+
+  @override
+  String get widgetStepSearch =>
+      'Search for Bantera and choose the Daily practice widget.';
+
+  @override
+  String get widgetStepAdd =>
+      'Swipe to select a size, tap Add Widget, then tap Done.';
+
+  @override
+  String get widgetPreviewDescription =>
+      'Actual widget preview with example progress.';
+
+  @override
+  String get widgetPreviewRetry => 'Reload preview';
+
+  @override
+  String get widgetLocalNote =>
+      'You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it.';
 }
