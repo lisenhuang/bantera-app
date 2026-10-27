@@ -1835,7 +1835,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.';
 
   @override
-  String get aiClearHistory => 'Geçmişi temizle';
+  String get aiClearHistory => 'Sohbeti temizle';
 
   @override
   String get aiClearHistoryBody =>
@@ -1868,7 +1868,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiPrivacyNotice => 'Gizlilik bildirimi';
 
   @override
-  String get aiUsageTitle => 'Kullanım';
+  String get aiUsageTitle => 'Nasıl Kullanılır';
 
   @override
   String get aiUsageBody =>
@@ -2501,4 +2501,125 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'A0\'dan başlayın. Son 12 puanlanan alıştırmanın en az 10\'unu doğru yanıtlayarak seviyeyi geçin ve bir sonrakini açın. C2\'ye ulaşmak yalnızca kilidini açar; tamamlamak için yine 12 sorudan en az 10\'unu doğru yanıtlamalısınız. Tekrar için daha kolay bir seviye önerilse bile geçilen seviyeler korunur.';
+
+  @override
+  String get storageTitle => 'Depolama ve önbellek';
+
+  @override
+  String get storageMeasured => 'Bu cihazda saklanan';
+
+  @override
+  String get storageClearable => 'Güvenle temizlenebilir';
+
+  @override
+  String get storageClear => 'Önbelleği temizle';
+
+  @override
+  String get storageKeep => 'Cihazda tutulur';
+
+  @override
+  String get storageImages => 'Fotoğraf ve görseller';
+
+  @override
+  String get storageSnapshots => 'Sıralama ve son alıştırma';
+
+  @override
+  String get storageTemporaryAudio => 'Geçici alıştırma sesleri';
+
+  @override
+  String get storageAiChats => 'Yapay zekâ sohbetleri ve kayıtlar';
+
+  @override
+  String get storageDm => 'Özel mesajlar ve kayıtlar';
+
+  @override
+  String get storagePractice => 'Kaydedilen alıştırmalar ve indirmeler';
+
+  @override
+  String get storageOther => 'Ayarlar ve diğer yerel dosyalar';
+
+  @override
+  String get storageScope =>
+      'Yalnızca erişilebilir uygulama dosyaları ölçülür. Uygulama kurulumu ve sistemin yönettiği dil modelleri dahil değildir. Kullanılan dosyalar önbellekte kalabilir.';
+
+  @override
+  String get storageClearExplanation =>
+      'Yeniden indirilebilen önbellek dosyaları silinsin mi? Görseller ve alıştırmalar yeniden indirilebilir. Kayıtlar, konuşmalar, kaydedilen alıştırmalar, indirmeler ve ayarlar korunur.';
+
+  @override
+  String get storagePrivacy =>
+      'Mümkün olduğunda verileri cihazınızda saklarız. Yapay zekâ istekleri, mesajlar, yüklemeler ve ilerleme eşitlemesi bu özellikler için gereken verileri göndermeye devam eder. Önbelleği temizlemek hesabınızı veya sunucu verilerini silmez.';
+
+  @override
+  String get storageError =>
+      'Bazı veriler okunamadı veya temizlenemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Temizlemek için yapay zekâ sohbet menüsünü açıp “$action” seçeneğini seçin.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Kaldırmak için konuşma menüsünü açıp “$action” seçeneğini seçin.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Kaydedilen alıştırmaları veya indirmeleri kaldırmak için ilgili kayıtlı öğeleri silin.';
+
+  @override
+  String get aiClearAudioTitle => 'Yalnızca ses';
+
+  @override
+  String get aiClearAudioBody =>
+      'Kayıtlarınızı ve AI sesini silin. Mesajlar, dökümler ve görseller kalsın.';
+
+  @override
+  String get aiClearAllTitle => 'Tüm mesajlar ve sesler';
+
+  @override
+  String get aiClearAllBody =>
+      'Bu sohbetin mesajlarını, dökümlerini, kayıtlarını ve eklerini silin.';
+
+  @override
+  String get aiKeepSummary => 'Son özeti sakla';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Son kaydedilen özeti AI belleği olarak saklayın. Yeni mesajlar özette olmayabilir.';
+
+  @override
+  String get aiNoSummary => 'Henüz kaydedilmiş özet yok.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Tahmini boşalacak alan: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Devam eden AI araması sona erer. Kelimeler ve planlanmış hatırlatmalar değişmez.';
+
+  @override
+  String get clearAllLabel => 'Tümünü sil';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Planlanmış olanlar dahil tüm hatırlatmalar silinsin mi? Bekleyen hatırlatmalar sunucuda iptal edilir.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Bazı hatırlatmalar silinemedi ve burada kalıyor. Çalmaya başlamış bir arama buradan iptal edilemez.';
+
+  @override
+  String get vocabClearBody =>
+      'Filtreyle gizlenenler dahil tüm kayıtlı kelimeler ve tekrar ilerlemesi silinsin mi? Bu işlem geri alınamaz.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Kelimelerin tekrar zamanı neden geldi?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera aralıklı tekrarı kullanır: bir aradan sonra tekrar etmek daha uzun süre hatırlamaya yardımcı olabilir. Bu, belleğin zamanla zayıflamasını anlatan unutma eğrisiyle ilişkilidir.\n\nProgramımız:\n• İlk tekrar: kaydettikten 1 gün sonra.\n• Sonraki tekrarların ardından: 3, 7, 14, ardından 30 gün.\n• Daha sonra her 30 günde bir.\n\nPlanlanan tarihte kelimenin tekrar zamanı gelir. Tekrar edildi olarak işaretlemek, sonraki aralığı o andan başlatır. Bu sabit bir programdır; belleğinizin ölçümü veya kelimeyi unuttuğunuzun tahmini değildir.';
 }

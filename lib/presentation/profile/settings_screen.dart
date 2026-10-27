@@ -19,6 +19,7 @@ import 'account_more_screen.dart';
 import 'edit_profile_screen.dart';
 import 'permissions_screen.dart';
 import 'paid_key_settings.dart';
+import 'storage_cache_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, this.focusLanguages = false});
@@ -311,6 +312,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     key: ValueKey(session.cacheKey),
                     owner: session.cacheKey,
                   ),
+                KeyedSubtree(
+                  key: _languagesKey,
+                  child: _buildSectionHeader(
+                    context,
+                    l10n.editProfileLanguagesSection,
+                  ),
+                ),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Icon(
+                            Icons.language_outlined,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.sectionLanguage,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.languageSectionSubtitle,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 12),
+                              ListenableBuilder(
+                                listenable: SettingsNotifier.instance,
+                                builder: (context, _) {
+                                  final settings = SettingsNotifier.instance;
+                                  return DropdownButton<AppLocalePreference>(
+                                    isExpanded: true,
+                                    value: settings.appLocalePreference,
+                                    borderRadius: BorderRadius.circular(12),
+                                    padding: EdgeInsets.zero,
+                                    alignment: AlignmentDirectional.centerStart,
+                                    items: [
+                                      for (final option
+                                          in AppLocalePreference.values)
+                                        DropdownMenuItem(
+                                          value: option,
+                                          child: Text(option.label),
+                                        ),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        SettingsNotifier.instance
+                                            .setAppLocalePreference(v);
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionRateAndShare),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.star_rounded),
+                        title: Text(l10n.settingsRateAppButton),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          await InAppReview.instance.openStoreListing(
+                            appStoreId: '6761799720',
+                          );
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.ios_share_rounded),
+                        title: Text(l10n.settingsShareButton),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          SharePlus.instance.share(
+                            ShareParams(
+                              uri: Uri.parse('https://bantera.app?from=iOS'),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 _buildSectionHeader(context, l10n.sectionAppearance),
                 ListenableBuilder(
                   listenable: SettingsNotifier.instance,
@@ -383,77 +491,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                KeyedSubtree(
-                  key: _languagesKey,
-                  child: _buildSectionHeader(
-                    context,
-                    l10n.editProfileLanguagesSection,
-                  ),
-                ),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Icon(
-                            Icons.language_outlined,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.sectionLanguage,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.languageSectionSubtitle,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 12),
-                              ListenableBuilder(
-                                listenable: SettingsNotifier.instance,
-                                builder: (context, _) {
-                                  final settings = SettingsNotifier.instance;
-                                  return DropdownButton<AppLocalePreference>(
-                                    isExpanded: true,
-                                    value: settings.appLocalePreference,
-                                    borderRadius: BorderRadius.circular(12),
-                                    padding: EdgeInsets.zero,
-                                    alignment: AlignmentDirectional.centerStart,
-                                    items: [
-                                      for (final option
-                                          in AppLocalePreference.values)
-                                        DropdownMenuItem(
-                                          value: option,
-                                          child: Text(option.label),
-                                        ),
-                                    ],
-                                    onChanged: (v) {
-                                      if (v != null) {
-                                        SettingsNotifier.instance
-                                            .setAppLocalePreference(v);
-                                      }
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
                 _buildSectionHeader(context, l10n.sectionNotifications),
                 ListenableBuilder(
                   listenable: ChatSessionNotifier.instance,
@@ -472,6 +509,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     );
                   },
+                ),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.storageTitle),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(Icons.storage_outlined),
+                    title: Text(l10n.storageTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const StorageCacheScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, l10n.sectionPermissions),
+                Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: const Icon(Icons.auto_awesome_outlined),
+                    title: Text(l10n.aiConsentSettings),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: auth.session == null
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const AiConsentSettingsScreen(),
+                              ),
+                            );
+                          },
+                  ),
+                ),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined),
+                    title: Text(l10n.appPermissionsTitle),
+                    subtitle: Text(l10n.appPermissionsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const PermissionsScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(height: 24),
                 _buildSectionHeader(context, l10n.sectionAccount),
@@ -541,77 +628,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onTap: auth.session == null ? null : _confirmSignOut,
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildSectionHeader(context, l10n.sectionRateAndShare),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.star_rounded),
-                        title: Text(l10n.settingsRateAppButton),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () async {
-                          await InAppReview.instance.openStoreListing(
-                            appStoreId: '6761799720',
-                          );
-                        },
-                      ),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.ios_share_rounded),
-                        title: Text(l10n.settingsShareButton),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          SharePlus.instance.share(
-                            ShareParams(
-                              uri: Uri.parse('https://bantera.app?from=iOS'),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildSectionHeader(context, l10n.sectionPermissions),
-                Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: const Icon(Icons.auto_awesome_outlined),
-                    title: Text(l10n.aiConsentSettings),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: auth.session == null
-                        ? null
-                        : () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const AiConsentSettingsScreen(),
-                              ),
-                            );
-                          },
-                  ),
-                ),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined),
-                    title: Text(l10n.appPermissionsTitle),
-                    subtitle: Text(l10n.appPermissionsSubtitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => const PermissionsScreen(),
-                        ),
-                      );
-                    },
                   ),
                 ),
                 const SizedBox(height: 24),

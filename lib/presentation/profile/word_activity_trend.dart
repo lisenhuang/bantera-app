@@ -1,3 +1,4 @@
+import 'goal_motion.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ class WordActivityTrend extends StatefulWidget {
 
 class _WordActivityTrendState extends State<WordActivityTrend> {
   int? _days = 7;
+  int _drawRevision = 0;
   String? _selectedDate;
 
   @override
@@ -109,6 +111,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
                 selected: _days == range.days,
                 showCheckmark: false,
                 onSelected: (_) => setState(() {
+                  _drawRevision++;
                   _days = range.days;
                   _selectedDate = null;
                 }),
@@ -154,15 +157,29 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
                 select((fraction * (points.length - 1)).round());
               },
               child: ExcludeSemantics(
-                child: CustomPaint(
-                  size: Size(constraints.maxWidth, 140),
-                  painter: _TrendPainter(
-                    values: points.map((p) => p.totals).toList(),
-                    maximum: maximum,
-                    selected: selected,
-                    listening: activityColor(context, listening: true),
-                    speaking: activityColor(context, listening: false),
-                    grid: theme.colorScheme.outlineVariant,
+                child: TweenAnimationBuilder<double>(
+                  key: ValueKey((
+                    GoalMotion.revisionOf(context),
+                    _drawRevision,
+                  )),
+                  tween: Tween(begin: 0, end: 1),
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 1000),
+                  curve: Curves.easeInOutCubic,
+                  builder: (context, reveal, _) => CustomPaint(
+                    size: Size(constraints.maxWidth, 140),
+                    painter: _TrendPainter(
+                      reveal: MediaQuery.disableAnimationsOf(context)
+                          ? 1
+                          : reveal,
+                      values: points.map((p) => p.totals).toList(),
+                      maximum: maximum,
+                      selected: selected,
+                      listening: activityColor(context, listening: true),
+                      speaking: activityColor(context, listening: false),
+                      grid: theme.colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
               ),
@@ -202,6 +219,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
 
 class _TrendPainter extends CustomPainter {
   _TrendPainter({
+    required this.reveal,
     required this.values,
     required this.maximum,
     required this.selected,
@@ -209,6 +227,7 @@ class _TrendPainter extends CustomPainter {
     required this.speaking,
     required this.grid,
   });
+  final double reveal;
   final List<WordTotals> values;
   final int maximum;
   final int selected;
@@ -237,6 +256,8 @@ class _TrendPainter extends CustomPainter {
       Offset(x(selected), size.height),
       guide,
     );
+    canvas.save();
+    canvas.clipRect(Rect.fromLTRB(0, 0, size.width * reveal, size.height));
     for (final isListening in [true, false]) {
       final paint = Paint()
         ..color = isListening ? listening : speaking
@@ -285,6 +306,7 @@ class _TrendPainter extends CustomPainter {
         );
       }
     }
+    canvas.restore();
   }
 
   @override

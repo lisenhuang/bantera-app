@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Ascolto";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Accedi";
+
+"practice.widget.level" = "Livello";
+"practice.widget.language" = "Lingua che stai imparando";
+"practice.widget.position" = "La tua posizione";
+"practice.widget.period" = "Ultimi 30 giorni";

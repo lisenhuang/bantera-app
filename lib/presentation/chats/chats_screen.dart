@@ -7,7 +7,7 @@ import '../../infrastructure/region_service.dart';
 import 'chat_discovery.dart';
 import '../../domain/models/chat_models.dart';
 import '../../l10n/app_localizations.dart';
-import '../shared/locale_flag.dart';
+import 'chat_language_label.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'ai/ai_chat_screen.dart';
@@ -321,10 +321,15 @@ class _ThreadCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final subtitle = [
       if (thread.isGroup) ...thread.roleBadges,
-      if (thread.learningLanguageDisplay != null)
-        thread.learningLanguageDisplay,
-      if (thread.nativeLanguageDisplay != null && !thread.isGroup)
-        thread.nativeLanguageDisplay,
+      if (thread.isGroup) thread.learningLanguageDisplay,
+      if (!thread.isGroup) ...[
+        chatLanguageLabel(
+          thread.otherUser?.learningLanguage ?? thread.learningLanguage,
+        ),
+        chatLanguageLabel(
+          thread.otherUser?.nativeLanguage ?? thread.nativeLanguage,
+        ),
+      ],
     ].whereType<String>().where((value) => value.isNotEmpty).join(' • ');
 
     return Card(
@@ -435,8 +440,8 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languages = [
-      _languageLabel(user.learningLanguage, user.learningLanguageDisplay),
-      _languageLabel(user.nativeLanguage, user.nativeLanguageDisplay),
+      chatLanguageLabel(user.learningLanguage),
+      chatLanguageLabel(user.nativeLanguage),
     ].whereType<String>().join(' • ');
 
     return Card(
@@ -468,17 +473,6 @@ class _UserCard extends StatelessWidget {
         subtitle: Text(languages, maxLines: 2, overflow: TextOverflow.ellipsis),
       ),
     );
-  }
-
-  String? _languageLabel(String? identifier, String? displayName) {
-    final value = displayName ?? identifier;
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-    final flag = identifier == null || identifier.trim().isEmpty
-        ? '🌐'
-        : flagEmojiForLocale(identifier);
-    return '$flag $value';
   }
 }
 

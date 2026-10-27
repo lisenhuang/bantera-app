@@ -1,3 +1,4 @@
+import 'goal_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -72,11 +73,13 @@ class WordActivitySection extends StatelessWidget {
                 count,
               ),
         child: ExcludeSemantics(
-          child: Text(
-            number.format(count),
-            textAlign: TextAlign.center,
-            style: countStyle.copyWith(
-              color: activityColor(context, listening: listening),
+          child: GoalMotionBuilder(
+            builder: (context, progress, _) => Text(
+              number.format((count * progress).round()),
+              textAlign: TextAlign.center,
+              style: countStyle.copyWith(
+                color: activityColor(context, listening: listening),
+              ),
             ),
           ),
         ),

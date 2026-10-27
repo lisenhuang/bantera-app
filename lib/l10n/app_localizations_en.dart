@@ -1899,7 +1899,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This media is no longer on this device. You can remove it from history.';
 
   @override
-  String get aiClearHistory => 'Clear history';
+  String get aiClearHistory => 'Clear chat';
 
   @override
   String get aiClearHistoryBody =>
@@ -1932,7 +1932,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiPrivacyNotice => 'Privacy notice';
 
   @override
-  String get aiUsageTitle => 'Usage';
+  String get aiUsageTitle => 'How to Use';
 
   @override
   String get aiUsageBody =>
@@ -2563,4 +2563,125 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review.';
+
+  @override
+  String get storageTitle => 'Storage & Cache';
+
+  @override
+  String get storageMeasured => 'Stored on this device';
+
+  @override
+  String get storageClearable => 'Safe to clear';
+
+  @override
+  String get storageClear => 'Clear cache';
+
+  @override
+  String get storageKeep => 'Kept on device';
+
+  @override
+  String get storageImages => 'Photos & images';
+
+  @override
+  String get storageSnapshots => 'Leaderboard & last Practice';
+
+  @override
+  String get storageTemporaryAudio => 'Temporary Practice audio';
+
+  @override
+  String get storageAiChats => 'AI chats & recordings';
+
+  @override
+  String get storageDm => 'Direct messages & recordings';
+
+  @override
+  String get storagePractice => 'Saved Practice & downloads';
+
+  @override
+  String get storageOther => 'Settings & other local files';
+
+  @override
+  String get storageScope =>
+      'Measured app files only. App installation and system-managed language models are not included. Files in use may remain cached.';
+
+  @override
+  String get storageClearExplanation =>
+      'Remove replaceable cached files? Images and Practice content can download again. Your recordings, conversations, saved practices, downloads and settings will be kept.';
+
+  @override
+  String get storagePrivacy =>
+      'We store data on your device where possible. AI requests, messaging, uploads and progress sync still send the data needed for those features. Clearing cache does not delete your account or server data.';
+
+  @override
+  String get storageError =>
+      'Some storage could not be read or cleared. Please try again.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'To clear these, open the AI chat menu and choose “$action”.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'To remove these, open the conversation menu and choose “$action”.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'To remove saved practices or downloads, delete the corresponding saved items.';
+
+  @override
+  String get aiClearAudioTitle => 'Audio only';
+
+  @override
+  String get aiClearAudioBody =>
+      'Remove your recordings and AI audio. Keep messages, transcripts and images.';
+
+  @override
+  String get aiClearAllTitle => 'All messages and audio';
+
+  @override
+  String get aiClearAllBody =>
+      'Remove this chat’s messages, transcripts, recordings and attachments.';
+
+  @override
+  String get aiKeepSummary => 'Keep the last summary';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Keep the latest saved summary as AI memory. Recent messages may not be included.';
+
+  @override
+  String get aiNoSummary => 'No saved summary yet.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Estimated space freed: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'This ends any current AI call. Vocabulary and scheduled reminders stay unchanged.';
+
+  @override
+  String get clearAllLabel => 'Clear all';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Remove all reminders, including scheduled ones? Pending reminders will be cancelled on the server.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Some reminders could not be removed and remain here. A call already ringing cannot be cancelled here.';
+
+  @override
+  String get vocabClearBody =>
+      'Delete all saved vocabulary words and their review progress, including words hidden by your current filter? This cannot be undone.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Why are words due for review?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.';
 }

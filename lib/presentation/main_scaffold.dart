@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'shared/animated_tab_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,6 +40,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   int _currentIndex = 0;
   int _tabSelection = 0;
   int _goalTabReplay = 0;
+  int _practiceTabReplay = 0;
+  int _chatTabReplay = 0;
   bool _goalSetupOpen = false;
   bool _covered = false;
   bool _checkingUpdate = false;
@@ -101,6 +103,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
     setState(() {
       _currentIndex = index;
       if (index == 2) _goalTabReplay++;
+      if (index == 0) _practiceTabReplay++;
+      if (index == 1) _chatTabReplay++;
     });
     _schedulePracticeReview();
     if (index == 2) unawaited(_openGoalSetupIfNeeded(selection));
@@ -295,7 +299,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         goalTabAnchor: _goalTabAnchor,
       ),
       ChatsScreen(active: _currentIndex == 1 && !_covered),
-      const ProfileScreen(),
+      ProfileScreen(
+        active: _currentIndex == 2 && !_covered,
+        refreshTick: _goalTabReplay,
+      ),
     ];
     final maxIndex = screens.length - 1;
     final stackIndex = _currentIndex.clamp(0, maxIndex);
@@ -308,9 +315,15 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
         onTap: _selectTab,
         items: [
           BottomNavigationBarItem(
-            icon: const SizedBox.square(
+            icon: SizedBox.square(
               dimension: 36,
-              child: Center(child: Icon(CupertinoIcons.waveform, size: 28)),
+              child: Center(
+                child: AnimatedTabIcon(
+                  kind: AnimatedTabKind.practice,
+                  replayTick: _practiceTabReplay,
+                  selected: stackIndex == 0,
+                ),
+              ),
             ),
             label: l10n.navPractice,
           ),
@@ -321,11 +334,10 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(
-                      stackIndex == 1
-                          ? CupertinoIcons.chat_bubble_text_fill
-                          : CupertinoIcons.chat_bubble_text,
-                      size: 28,
+                    AnimatedTabIcon(
+                      kind: AnimatedTabKind.chats,
+                      replayTick: _chatTabReplay,
+                      selected: stackIndex == 1,
                     ),
                     if (_hasUnreadChats)
                       Positioned(

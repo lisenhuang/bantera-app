@@ -1,3 +1,4 @@
+import 'infrastructure/local_audio_storage.dart';
 import 'core/ai_consent.dart';
 import 'presentation/shared/ai_consent_dialog.dart';
 import 'dart:async';
@@ -26,6 +27,7 @@ import 'l10n/app_localizations.dart';
 import 'presentation/auth/auth_screen.dart';
 import 'presentation/main_scaffold.dart';
 import 'presentation/shared/app_viewport.dart';
+import 'presentation/shared/app_keyboard_dismissal.dart';
 import 'presentation/chats/dm_call_overlay_host.dart';
 import 'presentation/onboarding/learning_language_setup_screen.dart';
 
@@ -51,6 +53,7 @@ Future<void> main() async {
     ]),
   );
   runApp(const MyApp());
+  unawaited(LocalAudioStorage.migratePractice());
 }
 
 class MyApp extends StatefulWidget {
@@ -111,13 +114,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           navigatorKey: aiReminderNavigatorKey,
           navigatorObservers: [practiceReviewRouteObserver],
           builder: (context, child) {
-            return AppViewport(
-              child: Stack(
-                children: [
-                  child ?? const SizedBox.shrink(),
-                  const DmCallOverlayHost(),
-                  const AiCallbackHost(),
-                ],
+            return AppKeyboardDismissal(
+              child: AppViewport(
+                child: Stack(
+                  children: [
+                    child ?? const SizedBox.shrink(),
+                    const DmCallOverlayHost(),
+                    const AiCallbackHost(),
+                  ],
+                ),
               ),
             );
           },

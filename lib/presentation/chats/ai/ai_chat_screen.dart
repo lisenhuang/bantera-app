@@ -1,3 +1,4 @@
+import 'ai_clear_history_dialog.dart';
 import '../../../core/apple_system_version.dart';
 import '../../../core/practice_review_service.dart';
 import '../../../core/ai_consent.dart';
@@ -401,31 +402,15 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   Future<void> _clear() async {
     final l = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final choice = await showDialog<AiHistoryClearChoice>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l.aiClearHistory),
-        content: Text(l.aiClearHistoryBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(l.aiClearHistory),
-          ),
-        ],
-      ),
+      builder: (_) => AiClearHistoryDialog(usage: _chat.store.storageUsage()),
     );
-    if (confirmed == true && mounted) {
+    if (choice != null && mounted) {
       await _player.stop();
       _playing = null;
       try {
-        await _chat.clear();
+        await _chat.clear(mode: choice.mode, keepSummary: choice.keepSummary);
       } catch (_) {
         if (mounted) {
           ScaffoldMessenger.of(

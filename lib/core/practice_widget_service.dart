@@ -6,28 +6,107 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/activity/word_activity.dart';
+import '../infrastructure/last_snapshot_cache.dart';
 import '../l10n/app_localizations.dart';
 import 'app_locale.dart';
 import 'settings_notifier.dart';
 
-/// The native extension receives only today's aggregates and translated labels.
+/// Shares aggregate progress and translated labels, never credentials or chats.
 class PracticeWidgetService {
-  PracticeWidgetService._() : _send = _sendNative, _supported = Platform.isIOS;
+  PracticeWidgetService._()
+    : _send = _sendNative,
+      _supported = Platform.isIOS,
+      _restoreFromCache = true;
 
   @visibleForTesting
   PracticeWidgetService.forTesting({
     required Future<void> Function(Map<String, Object>) send,
   }) : _send = send,
-       _supported = true;
+       _supported = true,
+       _restoreFromCache = false;
 
   static final instance = PracticeWidgetService._();
   static const channel = MethodChannel('bantera/practice_widget');
   final Future<void> Function(Map<String, Object>) _send;
   final bool _supported;
+  final bool _restoreFromCache;
   final chatRequested = ValueNotifier(false);
   Future<void> _queue = Future.value();
   String? _lastSignature;
   bool _initialized = false;
+  String? _owner, _language, _level, _rankingDate;
+  int? _rank;
+  bool _rankKnown = false;
+  int _scopeGeneration = 0;
+  WordTotals _today = const WordTotals();
+  AppLocalizations? _localizations;
+
+  void setProgress({
+    required String owner,
+    required String language,
+    required String? level,
+  }) {
+    if (!_supported ||
+        owner != _owner ||
+        language != _language ||
+        !const ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].contains(level)) {
+      return;
+    }
+    _level = level;
+    _republish();
+  }
+
+  void setLeaderboard({
+    required String owner,
+    required Map<String, dynamic> report,
+  }) {
+    if (!_supported || owner != _owner) return;
+    final you = report['you'];
+    _rank = you is Map && you['rank'] is num && (you['rank'] as num) > 0
+        ? (you['rank'] as num).toInt()
+        : null;
+    _rankingDate = report['throughDate'] as String?;
+    _rankKnown = true;
+    _republish();
+  }
+
+  void _republish() {
+    unawaited(
+      update(
+        signedIn: _owner != null,
+        owner: _owner,
+        learningLanguage: _language,
+        today: _today,
+        localizations: _localizations,
+      ),
+    );
+  }
+
+  Future<void> _restoreDetails(
+    String owner,
+    String? language,
+    int generation,
+  ) async {
+    final practice = language == null
+        ? null
+        : await LastSnapshotCache.practice.read(jsonEncode([owner, language]));
+    final ranking = await LastSnapshotCache.leaderboard.read(owner);
+    if (_owner != owner ||
+        _language != language ||
+        generation != _scopeGeneration) {
+      return;
+    }
+    if (_level == null && practice?['currentLevel'] is String) {
+      setProgress(
+        owner: owner,
+        language: language!,
+        level: practice!['currentLevel'] as String,
+      );
+    }
+    if (!_rankKnown && ranking != null) {
+      setLeaderboard(owner: owner, report: ranking);
+    }
+  }
 
   Future<void> initialize() async {
     if (!_supported || _initialized) return;
@@ -54,11 +133,39 @@ class PracticeWidgetService {
   Future<void> update({
     required bool signedIn,
     required WordTotals today,
+    String? owner,
+    String? learningLanguage,
     DateTime? now,
     AppLocalizations? localizations,
   }) {
     if (!_supported) return Future.value();
     final date = now ?? DateTime.now();
+    final nextOwner = signedIn ? owner : null;
+    final nextLanguage = signedIn ? learningLanguage : null;
+    final scopeChanged = nextOwner != _owner || nextLanguage != _language;
+    if (nextOwner != _owner || !signedIn) {
+      _rank = null;
+      _rankingDate = null;
+      _rankKnown = false;
+    }
+    if (scopeChanged || !signedIn) _level = null;
+    _owner = nextOwner;
+    _language = nextLanguage;
+    _today = today;
+    _localizations = localizations;
+    if (scopeChanged) {
+      final generation = ++_scopeGeneration;
+      if (_restoreFromCache && nextOwner != null) {
+        unawaited(_restoreDetails(nextOwner, nextLanguage, generation));
+      }
+    }
+    // Capture the details with this write so later account changes cannot leak
+    // another learner's progress into an older queued snapshot.
+    final level = signedIn ? _level : null;
+    final rankingDate = signedIn ? _rankingDate : null;
+    final rank = signedIn && rankingDate == wordActivityDateKey(date.toUtc())
+        ? _rank
+        : null;
     final locale = localizations != null
         ? null
         : resolveAppLocale(
@@ -77,6 +184,10 @@ class PracticeWidgetService {
             'spoken': signedIn ? today.spoken : 0,
             'listened': signedIn ? today.listened : 0,
             'locale': l.localeName,
+            'learningLanguage': ?nextLanguage,
+            'level': ?level,
+            'rank': ?rank,
+            'rankingDate': ?rankingDate,
             'labels': {
               'today': l.wordActivityToday,
               'spoken': l.wordActivitySpeaking,
@@ -84,6 +195,10 @@ class PracticeWidgetService {
               'words': l.wordActivityWords,
               'chat': 'Bantera AI',
               'signIn': l.authSignIn,
+              'level': l.audioLevelSection,
+              'language': l.editProfileLearningLanguage,
+              'position': l.leaderboardYourPosition,
+              'period': l.leaderboardScope,
             },
           };
           final signature = jsonEncode(data);

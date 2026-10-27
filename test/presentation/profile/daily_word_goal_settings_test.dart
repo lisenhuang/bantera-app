@@ -7,6 +7,7 @@ import 'package:app/domain/activity/daily_word_goal.dart';
 import 'package:app/infrastructure/auth_api_client.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/profile/daily_word_goal_section.dart';
+import 'package:app/presentation/shared/app_keyboard_dismissal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -50,6 +51,8 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.iOS),
+        builder: (_, child) => AppKeyboardDismissal(child: child!),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
@@ -69,6 +72,15 @@ void main() {
     );
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
+    final done = find.widgetWithText(FilledButton, 'Done');
+    expect(done.hitTestable(), findsOneWidget);
+    final doneBeforeScroll = tester.getRect(done);
+    await tester.tap(find.byKey(const ValueKey('listening-goal')));
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isTrue);
+    await tester.tap(find.text('Daily goal').first);
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isFalse);
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('daily-goal-notifications')),
       250,
@@ -105,16 +117,22 @@ void main() {
       find.byKey(const ValueKey('daily-goal-notification-time')),
       findsNothing,
     );
-    await tester.scrollUntilVisible(
-      find.text('Done'),
-      150,
-      scrollable: find
-          .descendant(
-            of: find.byType(ListView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+    expect(tester.getRect(done), doneBeforeScroll);
+    // The fixed action also stays above the keyboard when editing a target.
+    tester.view.viewInsets = const FakeViewPadding(bottom: 250);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    expect(done.hitTestable(), findsOneWidget);
+    expect(
+      tester.getRect(done).bottom,
+      lessThanOrEqualTo(
+        tester.view.physicalSize.height / tester.view.devicePixelRatio -
+            250 / tester.view.devicePixelRatio,
+      ),
     );
+    expect(tester.takeException(), isNull);
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
     await tester.runAsync(() async {
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
       await Future<void>.delayed(const Duration(milliseconds: 200));

@@ -63,7 +63,7 @@ For Android, open the downloaded APK and allow installation from your browser or
 | 💬 **Language Exchange Chat**       | Chat with native speakers directly in-app                           |
 | 🔖 **Saved Cues**                   | Bookmark cues for focused review sessions                           |
 | 📤 **Video Upload**                 | Upload your own videos to share with the community                  |
-| 📊 **iOS Practice Widget**         | Today’s spoken/listened words and one-tap access to Bantera AI; [setup and design](docs/ios-practice-widget.md) |
+| 📊 **iOS Practice Widget**         | Today’s spoken/listened words and leaderboard rank, level on larger sizes, and one-tap access to Bantera AI; [setup and design](docs/ios-practice-widget.md) |
 | 🌙 **Dark Mode**                    | Full light/dark theme support                                       |
 | 🌏 **i18n**                         | UI available in English, Japanese, Korean, and Chinese              |
 
@@ -144,6 +144,41 @@ lib/
 ---
 
 ## 🔑 Technical Deep Dives
+
+### Local audio storage
+
+Completed AI recordings and replies are saved on-device as AAC in M4A at 64 kbps
+per channel. Live recording/streaming still uses PCM; file compression never
+activates or reconfigures the audio session. Practice recordings use AAC directly.
+DM/group recordings already use AAC; received WAV attachments and downloaded
+Practice WAVs also use local compression. Existing MP3, AAC, M4A, Ogg and WebM
+files are kept as-is to avoid another lossy encode.
+
+Older AI WAVs migrate gradually when their chat opens. Saved Practice downloads,
+Practice attempts and chat WAV attachments migrate one at a time after startup.
+Stable old `.wav` references resolve to a `.wav.m4a` companion, so databases and
+history snapshots do not need an unsafe bulk rewrite. Native codecs decode-check
+each conversion and verify duration/channels. Only a smaller, verified result is
+atomically committed before deleting its original. Failures retain the WAV and
+can retry next time. Android retains WAVs over 64 MiB to bound codec memory.
+Interrupted/partial conversions never replace the source. A failed AI message
+can still be retried: AAC is decoded locally to 16 kHz mono PCM for the live API.
+
+At 64 kbps mono, saved audio is approximately 480 KB/minute, versus 1.92 MB/minute
+for 16 kHz PCM16 and 2.88 MB/minute for 24 kHz PCM16. AAC is lossy; actual sizes
+vary. Conversion uploads nothing. Storage & Cache shows the smaller files after
+refresh, but conversion does not make personal chats or saved items disposable.
+
+### Local snapshots and Storage & Cache
+
+Settings → Storage & Cache measures accessible app files by category and clears only replaceable cache. Recordings, AI/DM history, saved practices, downloaded lessons, preferences and unknown files are kept. System-managed language models and the app installation are not included in the measured size. Cache can be recreated by an active download or later use.
+
+- The Speaking Leaderboard restores its last first page immediately, then refreshes from the API. The account-scoped snapshot expires after one day; additional pages are not persisted. Goal-tab activation syncs local speech before refreshing the card. Leaderboard refreshes animate changed totals and positions while respecting Reduce Motion; all participants in the rolling 30-day window remain reachable through pagination.
+- Practice retains one ready exercise snapshot total, scoped to its account and learning language, with a seven-day expiry. A new exercise replaces it. It is displayed while the server validates the active exercise, selected level and audio URLs; recording/playback waits for that validation. Next removes the previous snapshot. Saved-review mode does not overwrite it.
+- Each snapshot is capped at 512 KiB. They store JSON content and metadata, not a growing library of audio. Current Practice clips remain temporary and are removed when released. Cache cleanup skips clips in use and removes only recognized orphan clips.
+- Image-cache cleanup uses the image cache managers. Snapshot cleanup also invalidates in-memory copies. No account deletion, server deletion, recording deletion or upload cancellation is part of this action.
+
+Local storage does not mean offline processing for every feature. AI requests, messaging, uploads and progress synchronization still transmit the data needed for those features under the existing consent flow.
 
 ### Bantera AI: streamed audio, playback and waveforms
 
@@ -724,3 +759,41 @@ a replacement succeeds. Audio lesson generation retains streaming progress and
 reconnects to its original job after a disconnect. Reopening the app can discover
 queued and running lessons through the existing pending-jobs API. A lost network
 connection is not a reason to automatically generate the content again.
+
+### Goal and tab motion
+
+Entering or reselecting Goal replays its spoken total, daily word counts, goal
+bars and achievement totals from zero. Bars finish before completed-goal badges
+appear. The Practice-over-time chart reveals its lines from left to right on
+entry and on every 7-day, 30-day or all-time selection. Leaderboard participants
+count up on opening; live refreshes continue from the displayed value.
+Practice and Chats tab icons play a single one-second waveform/text animation
+on tap, including reselection. Reduce Motion shows final values and static icons.
+
+### AI chat cleanup and vocabulary
+
+Clear chat lets the user choose audio only or all messages/attachments, with no
+preselected destructive option. Both user and AI recordings (including local
+WAV/M4A companions) count toward estimated reclaimable storage. The separate,
+initially unchecked summary option retains only the last saved conversation
+summary; it may not cover recent messages. Retained memory seeds future chats
+and continues updating. Vocabulary and scheduled reminders are independent.
+
+Reminders use server-confirmed removal: swipe left to reveal Delete, or use the
+trash icon to clear all, including pending schedules. Failed requests retain
+cards. Calls already ringing remain visible because dispatch may have begun.
+The additive `/api/chat/ai/reminders/history` endpoints require API 1.44.0+.
+
+Vocabulary additions come through AI. The tool instructions request a concise
+meaning in very basic everyday words and a natural example containing the word.
+The detail view highlights literal word/phrase occurrences. The review help
+explains the actual fixed intervals: 1 day after saving, then 3, 7, 14 and 30 days
+after successive reviews, remaining at 30 days thereafter. This is spaced
+repetition, not an individual forgetting prediction. Background reading:
+[Carpenter et al., spacing and retrieval practice](https://doi.org/10.1038/s44159-022-00089-1).
+A subtle Clear all action confirms before removing the notebook and its review
+progress. Existing words remain editable; the manual Add button is removed.
+
+Speaking leaderboard names use only the first whitespace-separated component,
+including Unicode spaces. Names without spaces remain intact; profile data is
+not rewritten.

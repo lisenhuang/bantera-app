@@ -1899,7 +1899,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este contenido ya no está en el dispositivo. Puedes eliminarlo del historial.';
 
   @override
-  String get aiClearHistory => 'Borrar historial';
+  String get aiClearHistory => 'Borrar chat';
 
   @override
   String get aiClearHistoryBody =>
@@ -1932,7 +1932,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiPrivacyNotice => 'Aviso de privacidad';
 
   @override
-  String get aiUsageTitle => 'Cómo usarlo';
+  String get aiUsageTitle => 'Cómo usar';
 
   @override
   String get aiUsageBody =>
@@ -2569,4 +2569,125 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Empiezas en A0. Supera un nivel con al menos 10 respuestas correctas en los últimos 12 ejercicios puntuados para desbloquear el siguiente. Llegar a C2 solo lo desbloquea; también debes acertar 10 de 12 para completarlo. Los niveles superados se conservan aunque se recomiende repasar uno más fácil.';
+
+  @override
+  String get storageTitle => 'Almacenamiento y caché';
+
+  @override
+  String get storageMeasured => 'Guardado en este dispositivo';
+
+  @override
+  String get storageClearable => 'Se puede borrar con seguridad';
+
+  @override
+  String get storageClear => 'Borrar caché';
+
+  @override
+  String get storageKeep => 'Se conserva en el dispositivo';
+
+  @override
+  String get storageImages => 'Fotos e imágenes';
+
+  @override
+  String get storageSnapshots => 'Clasificación y última práctica';
+
+  @override
+  String get storageTemporaryAudio => 'Audio temporal de práctica';
+
+  @override
+  String get storageAiChats => 'Chats con IA y grabaciones';
+
+  @override
+  String get storageDm => 'Mensajes directos y grabaciones';
+
+  @override
+  String get storagePractice => 'Prácticas guardadas y descargas';
+
+  @override
+  String get storageOther => 'Ajustes y otros archivos locales';
+
+  @override
+  String get storageScope =>
+      'Solo se miden archivos accesibles de la app. No incluye la instalación ni los modelos de idiomas del sistema. Los archivos en uso pueden permanecer en caché.';
+
+  @override
+  String get storageClearExplanation =>
+      '¿Borrar archivos de caché recuperables? Las imágenes y prácticas se pueden descargar de nuevo. Se conservarán tus grabaciones, conversaciones, prácticas guardadas, descargas y ajustes.';
+
+  @override
+  String get storagePrivacy =>
+      'Guardamos datos en tu dispositivo cuando es posible. Las solicitudes de IA, mensajes, cargas y sincronización del progreso siguen enviando los datos necesarios para esas funciones. Borrar la caché no elimina tu cuenta ni los datos del servidor.';
+
+  @override
+  String get storageError =>
+      'No se pudieron leer o borrar algunos datos. Inténtalo de nuevo.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Para borrarlos, abre el menú del chat con IA y elige «$action».';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Para eliminarlos, abre el menú de la conversación y elige «$action».';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Para eliminar prácticas guardadas o descargas, borra los elementos guardados correspondientes.';
+
+  @override
+  String get aiClearAudioTitle => 'Solo audio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Elimina tus grabaciones y el audio de IA. Conserva mensajes, transcripciones e imágenes.';
+
+  @override
+  String get aiClearAllTitle => 'Todos los mensajes y audios';
+
+  @override
+  String get aiClearAllBody =>
+      'Elimina mensajes, transcripciones, grabaciones y archivos adjuntos de este chat.';
+
+  @override
+  String get aiKeepSummary => 'Conservar el último resumen';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Conserva el último resumen guardado como memoria de IA. Puede no incluir mensajes recientes.';
+
+  @override
+  String get aiNoSummary => 'Aún no hay un resumen guardado.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Espacio estimado liberado: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Se finalizará cualquier llamada de IA en curso. El vocabulario y los recordatorios programados no cambian.';
+
+  @override
+  String get clearAllLabel => 'Borrar todo';
+
+  @override
+  String get aiRemindersClearBody =>
+      '¿Eliminar todos los recordatorios, incluidos los programados? Los pendientes se cancelarán en el servidor.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Algunos recordatorios no se pudieron eliminar y siguen aquí. Las llamadas que ya están sonando no se pueden cancelar aquí.';
+
+  @override
+  String get vocabClearBody =>
+      '¿Borrar todo el vocabulario guardado y su progreso, incluso las palabras ocultas por el filtro? No se puede deshacer.';
+
+  @override
+  String get vocabReviewHelpTitle => '¿Por qué hay palabras para repasar?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera usa repetición espaciada: repasar después de una pausa puede ayudarte a recordar durante más tiempo. Se relaciona con la curva del olvido, que describe cómo se debilita la memoria con el tiempo.\n\nNuestro calendario:\n• Primer repaso: 1 día después de guardar.\n• Tras los siguientes repasos: 3, 7, 14 y luego 30 días.\n• Después, cada 30 días.\n\nUna palabra queda pendiente al llegar su fecha. Marcarla como repasada inicia el siguiente intervalo desde ese repaso. Es un calendario fijo, no una medición de tu memoria ni una predicción de que la has olvidado.';
 }

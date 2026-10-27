@@ -1,3 +1,4 @@
+import '../../infrastructure/local_audio_storage.dart';
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -116,7 +117,7 @@ class _RecordCompareSheetState extends State<RecordCompareSheet> {
       return;
     }
 
-    await _audioPlayer.play(DeviceFileSource(path));
+    await _audioPlayer.play(DeviceFileSource(LocalAudioStorage.resolve(path)));
   }
 
   @override

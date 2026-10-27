@@ -1912,7 +1912,7 @@ class AppLocalizationsPl extends AppLocalizations {
       'Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii.';
 
   @override
-  String get aiClearHistory => 'Wyczyść historię';
+  String get aiClearHistory => 'Wyczyść czat';
 
   @override
   String get aiClearHistoryBody =>
@@ -2581,4 +2581,125 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Zaczynasz od A0. Co najmniej 10 poprawnych odpowiedzi w ostatnich 12 ocenianych ćwiczeniach zalicza poziom i odblokowuje następny. Dotarcie do C2 tylko go odblokowuje; do ukończenia nadal potrzeba 10 poprawnych odpowiedzi na 12. Zaliczone poziomy pozostają zaliczone, nawet gdy zalecana jest powtórka łatwiejszego poziomu.';
+
+  @override
+  String get storageTitle => 'Pamięć i pamięć podręczna';
+
+  @override
+  String get storageMeasured => 'Zapisane na tym urządzeniu';
+
+  @override
+  String get storageClearable => 'Można bezpiecznie usunąć';
+
+  @override
+  String get storageClear => 'Wyczyść pamięć podręczną';
+
+  @override
+  String get storageKeep => 'Pozostaje na urządzeniu';
+
+  @override
+  String get storageImages => 'Zdjęcia i obrazy';
+
+  @override
+  String get storageSnapshots => 'Ranking i ostatnie ćwiczenie';
+
+  @override
+  String get storageTemporaryAudio => 'Tymczasowe nagrania ćwiczeń';
+
+  @override
+  String get storageAiChats => 'Czaty AI i nagrania';
+
+  @override
+  String get storageDm => 'Wiadomości prywatne i nagrania';
+
+  @override
+  String get storagePractice => 'Zapisane ćwiczenia i pobrane pliki';
+
+  @override
+  String get storageOther => 'Ustawienia i inne pliki lokalne';
+
+  @override
+  String get storageScope =>
+      'Liczone są tylko dostępne pliki aplikacji. Instalacja aplikacji i modele językowe systemu nie są uwzględnione. Używane pliki mogą pozostać w pamięci podręcznej.';
+
+  @override
+  String get storageClearExplanation =>
+      'Usunąć pliki pamięci podręcznej, które można odzyskać? Obrazy i ćwiczenia można pobrać ponownie. Nagrania, rozmowy, zapisane ćwiczenia, pobrane pliki i ustawienia pozostaną.';
+
+  @override
+  String get storagePrivacy =>
+      'W miarę możliwości zapisujemy dane na urządzeniu. Żądania AI, wiadomości, przesyłanie i synchronizacja postępów nadal wysyłają dane niezbędne dla tych funkcji. Czyszczenie pamięci podręcznej nie usuwa konta ani danych z serwera.';
+
+  @override
+  String get storageError =>
+      'Nie można odczytać lub usunąć części danych. Spróbuj ponownie.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Aby je wyczyścić, otwórz menu czatu AI i wybierz „$action”.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Aby je usunąć, otwórz menu rozmowy i wybierz „$action”.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Aby usunąć zapisane ćwiczenia lub pobrane pliki, usuń odpowiednie zapisane elementy.';
+
+  @override
+  String get aiClearAudioTitle => 'Tylko audio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Usuń swoje nagrania i dźwięk AI. Zachowaj wiadomości, transkrypcje i obrazy.';
+
+  @override
+  String get aiClearAllTitle => 'Wszystkie wiadomości i audio';
+
+  @override
+  String get aiClearAllBody =>
+      'Usuń wiadomości, transkrypcje, nagrania i załączniki tego czatu.';
+
+  @override
+  String get aiKeepSummary => 'Zachowaj ostatnie podsumowanie';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Zachowaj ostatnie podsumowanie jako pamięć AI. Może nie obejmować najnowszych wiadomości.';
+
+  @override
+  String get aiNoSummary => 'Brak zapisanego podsumowania.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Szacowane zwolnione miejsce: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Trwająca rozmowa z AI zostanie zakończona. Słownictwo i zaplanowane przypomnienia pozostaną bez zmian.';
+
+  @override
+  String get clearAllLabel => 'Usuń wszystko';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Usunąć wszystkie przypomnienia, także zaplanowane? Oczekujące przypomnienia zostaną anulowane na serwerze.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Niektórych przypomnień nie usunięto. Nie można tu anulować połączenia, które już dzwoni.';
+
+  @override
+  String get vocabClearBody =>
+      'Usunąć wszystkie zapisane słowa i postępy powtórek, również słowa ukryte filtrem? Tej czynności nie można cofnąć.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Dlaczego słowa czekają na powtórkę?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera stosuje powtórki w odstępach: powrót do słowa po przerwie pomaga pamiętać je dłużej. Wiąże się to z krzywą zapominania, opisującą osłabianie pamięci z czasem.\n\nNasz harmonogram:\n• Pierwsza powtórka: 1 dzień po zapisaniu.\n• Po kolejnych powtórkach: 3, 7, 14, a potem 30 dni.\n• Następnie co 30 dni.\n\nSłowo czeka na powtórkę, gdy nadejdzie termin. Oznaczenie jako powtórzone rozpoczyna kolejny odstęp od tej powtórki. To stały harmonogram, a nie pomiar pamięci lub stwierdzenie, że słowo zostało zapomniane.';
 }

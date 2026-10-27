@@ -16,3 +16,8 @@
 "practice.widget.listened" = "リスニング";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "サインイン";
+
+"practice.widget.level" = "レベル";
+"practice.widget.language" = "学習言語";
+"practice.widget.position" = "あなたの順位";
+"practice.widget.period" = "過去30日間";

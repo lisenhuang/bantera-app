@@ -97,6 +97,16 @@ void main() {
     expect(find.text('Display Language'), findsOneWidget);
     expect(find.text('My Native Language'), findsNothing);
     expect(find.text('Learning Language'), findsNothing);
+    final languageY = tester.getTopLeft(find.text('Languages')).dy;
+    final rateY = tester.getTopLeft(find.text('Rate & Share')).dy;
+    final appearanceY = tester.getTopLeft(find.text('Appearance')).dy;
+    expect(languageY, lessThan(rateY));
+    expect(rateY, lessThan(appearanceY));
+    expect(
+      tester.getTopLeft(find.text('Account')).dy,
+      lessThan(tester.getTopLeft(find.text('Support')).dy),
+    );
+
     expect(
       tester.getTopLeft(find.text('Languages')).dy,
       inInclusiveRange(50, 100),

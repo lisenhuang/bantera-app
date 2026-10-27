@@ -16,3 +16,8 @@
 "practice.widget.listened" = "듣기";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "로그인";
+
+"practice.widget.level" = "수준";
+"practice.widget.language" = "학습 언어";
+"practice.widget.position" = "내 순위";
+"practice.widget.period" = "최근 30일";

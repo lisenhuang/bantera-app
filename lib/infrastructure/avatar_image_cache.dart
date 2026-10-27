@@ -34,6 +34,13 @@ class AvatarImageCache {
     )).file.readAsBytes(),
   );
 
+  static Future<void> clearDiskCache() async {
+    await _disk.emptyCache();
+    instance._entries.removeWhere(
+      (_, entry) => !entry.isObserved && entry._pending == null,
+    );
+  }
+
   final Future<Uint8List?> Function(String) readCached;
   final Future<Uint8List> Function(String) download;
   final Future<void> Function(String, Uint8List)? restoreCached;

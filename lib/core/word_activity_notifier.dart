@@ -47,6 +47,7 @@ class WordActivityNotifier extends ChangeNotifier {
   final Set<String> _deletedUserIds = {};
   Future<void> _queue = Future.value();
   bool _syncing = false;
+  Completer<void>? _syncCompletion;
   bool _disposed = false;
   Timer? _timer;
   int _activeScreens = 0;
@@ -64,6 +65,8 @@ class WordActivityNotifier extends ChangeNotifier {
       PracticeWidgetService.instance.update(
         signedIn: _userId != null && !_deletedUserIds.contains(_userId),
         today: summaryFor(language).today,
+        owner: _session()?.cacheKey,
+        learningLanguage: language,
       ),
     );
     unawaited(
@@ -266,9 +269,19 @@ class WordActivityNotifier extends ChangeNotifier {
     unawaited(sync());
   }
 
+  /// A Goal-tab refresh must wait for any older sync, then upload the latest
+  /// local speech before reading the server's shared ranking.
+  Future<void> syncForLeaderboard() async {
+    while (_syncCompletion != null) {
+      await _syncCompletion!.future;
+    }
+    await sync(fetchIfClean: false);
+  }
+
   Future<void> sync({bool fetchIfClean = true}) async {
     if (_disposed || _syncing) return;
     _syncing = true;
+    final completion = _syncCompletion = Completer<void>();
     String? userId;
     try {
       userId = _userId;
@@ -336,6 +349,8 @@ class WordActivityNotifier extends ChangeNotifier {
       // Offline or backend not upgraded: keep all local counts for the next retry.
     } finally {
       _syncing = false;
+      _syncCompletion = null;
+      completion.complete();
       _updateReminders();
       if (!_disposed && userId != _userId) unawaited(sync());
     }

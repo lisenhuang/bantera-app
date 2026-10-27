@@ -105,6 +105,7 @@ import UserNotifications
       do { try self?.prepareMediaPlayback(); result(nil) }
       catch { result(FlutterError(code: "playback_route", message: "Could not start playback.", details: nil)) }
     }
+    BanteraLocalAudioStorage.register(callEngine.binaryMessenger)
     waveformBridge = BanteraWaveformBridge(messenger: callEngine.binaryMessenger)
     practiceWidgetBridge = BanteraPracticeWidgetBridge(messenger: callEngine.binaryMessenger)
     aiAudioBridge = BanteraAiAudioBridge(messenger: callEngine.binaryMessenger)

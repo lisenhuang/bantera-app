@@ -1758,7 +1758,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceHistoryUnavailable => '此媒体已不在本设备上，你可以将其从历史记录中移除。';
 
   @override
-  String get aiClearHistory => '清空聊天记录';
+  String get aiClearHistory => '清除聊天';
 
   @override
   String get aiClearHistoryBody =>
@@ -1790,7 +1790,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPrivacyNotice => '隐私说明';
 
   @override
-  String get aiUsageTitle => '使用指南';
+  String get aiUsageTitle => '使用方法';
 
   @override
   String get aiUsageBody =>
@@ -2380,6 +2380,117 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       '从 A0 开始。最近 12 道计分练习中至少答对 10 道，即可通过当前级别并解锁下一级。达到 C2 只是解锁，还需同样答对至少 10 道才能完成 C2。即使系统建议复习较低级别，已通过的级别仍保留。';
+
+  @override
+  String get storageTitle => '存储与缓存';
+
+  @override
+  String get storageMeasured => '此设备上的数据';
+
+  @override
+  String get storageClearable => '可安全清理';
+
+  @override
+  String get storageClear => '清理缓存';
+
+  @override
+  String get storageKeep => '保留在设备上';
+
+  @override
+  String get storageImages => '照片与图片';
+
+  @override
+  String get storageSnapshots => '排行榜与最近一次练习';
+
+  @override
+  String get storageTemporaryAudio => '临时练习音频';
+
+  @override
+  String get storageAiChats => 'AI 聊天与录音';
+
+  @override
+  String get storageDm => '私信与录音';
+
+  @override
+  String get storagePractice => '已保存的练习与下载';
+
+  @override
+  String get storageOther => '设置与其他本地文件';
+
+  @override
+  String get storageScope => '仅统计应用可访问的文件，不包括应用安装文件和系统管理的语言模型。使用中的文件可能继续保留缓存。';
+
+  @override
+  String get storageClearExplanation =>
+      '清理可重新获取的缓存文件？图片和练习内容可再次下载。你的录音、聊天、已保存的练习、下载和设置将被保留。';
+
+  @override
+  String get storagePrivacy =>
+      '我们尽可能将数据存储在你的设备上。AI 请求、消息、上传和进度同步仍需发送相应的数据。清理缓存不会删除你的账号或服务器上的数据。';
+
+  @override
+  String get storageError => '部分存储无法读取或清理，请重试。';
+
+  @override
+  String storageManageAi(String action) {
+    return '如需清理，请打开 AI 聊天菜单，选择“$action”。';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return '如需移除，请打开对应聊天的菜单，选择“$action”。';
+  }
+
+  @override
+  String get storageManagePractice => '如需移除已保存的练习或下载内容，请删除对应的已保存项目。';
+
+  @override
+  String get aiClearAudioTitle => '仅清除音频';
+
+  @override
+  String get aiClearAudioBody => '删除你的录音和 AI 音频，保留消息、转写和图片。';
+
+  @override
+  String get aiClearAllTitle => '清除全部消息和音频';
+
+  @override
+  String get aiClearAllBody => '删除此聊天的消息、转写、录音和附件。';
+
+  @override
+  String get aiKeepSummary => '保留最近一次摘要';
+
+  @override
+  String get aiKeepSummaryBody => '保留最近保存的摘要作为 AI 记忆，可能不包含最新消息。';
+
+  @override
+  String get aiNoSummary => '尚无已保存的摘要。';
+
+  @override
+  String aiClearFreed(String size) {
+    return '预计释放空间：$size';
+  }
+
+  @override
+  String get aiClearNotice => '这会结束当前 AI 通话。词汇和已安排的提醒不会改变。';
+
+  @override
+  String get clearAllLabel => '清除全部';
+
+  @override
+  String get aiRemindersClearBody => '清除全部提醒，包括已安排的提醒？待执行的提醒将从服务器取消。';
+
+  @override
+  String get aiRemindersRetained => '部分提醒未能移除，仍保留在此。已响铃的通话无法在此取消。';
+
+  @override
+  String get vocabClearBody => '删除所有已保存词汇及其复习进度，包括当前筛选隐藏的词汇？此操作无法撤销。';
+
+  @override
+  String get vocabReviewHelpTitle => '为什么需要复习？';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera 使用间隔重复：隔一段时间再复习，有助于更长久地记住词汇。这与描述记忆随时间减弱的遗忘曲线有关。\n\n我们的安排：\n• 保存后 1 天首次复习。\n• 后续每次复习后分别间隔 3、7、14、30 天。\n• 之后保持每 30 天复习一次。\n\n到达安排的日期后，词汇就会显示为待复习。标记已复习后，从该次复习开始计算下一次间隔。这是固定安排，并非对你的记忆进行测量，也不表示你已经忘记该词。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4140,7 +4251,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get practiceHistoryUnavailable => '此媒體已不在本裝置上，你可以將其從歷史記錄中移除。';
 
   @override
-  String get aiClearHistory => '清空聊天記錄';
+  String get aiClearHistory => '清除聊天';
 
   @override
   String get aiClearHistoryBody =>
@@ -4172,7 +4283,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiPrivacyNotice => '私隱說明';
 
   @override
-  String get aiUsageTitle => '使用指南';
+  String get aiUsageTitle => '使用方法';
 
   @override
   String get aiUsageBody =>
@@ -4762,4 +4873,115 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get quickLevelStatesExplanation =>
       '從 A0 開始。最近 12 道計分練習中至少答對 10 道，即可通過目前級別並解鎖下一級。達到 C2 只是解鎖，還需同樣答對至少 10 道才能完成 C2。即使系統建議複習較低級別，已通過的級別仍保留。';
+
+  @override
+  String get storageTitle => '儲存空間與快取';
+
+  @override
+  String get storageMeasured => '此裝置上的資料';
+
+  @override
+  String get storageClearable => '可安全清除';
+
+  @override
+  String get storageClear => '清除快取';
+
+  @override
+  String get storageKeep => '保留在裝置上';
+
+  @override
+  String get storageImages => '照片與圖片';
+
+  @override
+  String get storageSnapshots => '排行榜與最近一次練習';
+
+  @override
+  String get storageTemporaryAudio => '暫存練習音訊';
+
+  @override
+  String get storageAiChats => 'AI 聊天與錄音';
+
+  @override
+  String get storageDm => '私訊與錄音';
+
+  @override
+  String get storagePractice => '已儲存的練習與下載';
+
+  @override
+  String get storageOther => '設定與其他本機檔案';
+
+  @override
+  String get storageScope => '僅計算應用程式可存取的檔案，不包括安裝檔案和系統管理的語言模型。使用中的檔案可能繼續保留快取。';
+
+  @override
+  String get storageClearExplanation =>
+      '清除可重新取得的快取檔案？圖片和練習內容可再次下載。你的錄音、對話、已儲存的練習、下載和設定將被保留。';
+
+  @override
+  String get storagePrivacy =>
+      '我們盡可能將資料儲存在你的裝置上。AI 請求、訊息、上傳和進度同步仍需傳送相應的資料。清除快取不會刪除你的帳號或伺服器上的資料。';
+
+  @override
+  String get storageError => '部分儲存空間無法讀取或清除，請重試。';
+
+  @override
+  String storageManageAi(String action) {
+    return '如需清除，請開啟 AI 聊天選單，選擇「$action」。';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return '如需移除，請開啟對應對話的選單，選擇「$action」。';
+  }
+
+  @override
+  String get storageManagePractice => '如需移除已儲存的練習或下載內容，請刪除對應的已儲存項目。';
+
+  @override
+  String get aiClearAudioTitle => '僅清除音訊';
+
+  @override
+  String get aiClearAudioBody => '刪除你的錄音及 AI 音訊，保留訊息、轉寫和圖片。';
+
+  @override
+  String get aiClearAllTitle => '清除全部訊息及音訊';
+
+  @override
+  String get aiClearAllBody => '刪除此聊天的訊息、轉寫、錄音和附件。';
+
+  @override
+  String get aiKeepSummary => '保留最近一次摘要';
+
+  @override
+  String get aiKeepSummaryBody => '保留最近儲存的摘要作為 AI 記憶，可能不包含最新訊息。';
+
+  @override
+  String get aiNoSummary => '尚無已儲存的摘要。';
+
+  @override
+  String aiClearFreed(String size) {
+    return '預計釋放空間：$size';
+  }
+
+  @override
+  String get aiClearNotice => '這會結束目前的 AI 通話。詞彙及已安排的提醒不會改變。';
+
+  @override
+  String get clearAllLabel => '清除全部';
+
+  @override
+  String get aiRemindersClearBody => '清除全部提醒，包括已安排的提醒？待執行的提醒將從伺服器取消。';
+
+  @override
+  String get aiRemindersRetained => '部分提醒未能移除，仍保留在此。已響鈴的通話無法在此取消。';
+
+  @override
+  String get vocabClearBody => '刪除所有已儲存詞彙及其複習進度，包括目前篩選隱藏的詞彙？此操作無法復原。';
+
+  @override
+  String get vocabReviewHelpTitle => '為甚麼需要複習？';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera 使用間隔重複：隔一段時間再複習，有助於更長久地記住詞彙。這與描述記憶隨時間減弱的遺忘曲線有關。\n\n我們的安排：\n• 儲存後 1 天首次複習。\n• 後續每次複習後分別間隔 3、7、14、30 天。\n• 之後保持每 30 天複習一次。\n\n到達安排的日期後，詞彙就會顯示為待複習。標記已複習後，從該次複習開始計算下一次間隔。這是固定安排，並非測量你的記憶，也不表示你已經忘記該詞。';
 }

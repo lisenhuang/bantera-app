@@ -1,3 +1,4 @@
+import 'local_audio_storage.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -42,7 +43,9 @@ class PracticeAudioCache {
     final safeId = _safeFilePart(mediaId);
     final uri = Uri.parse(url);
     final extension = _extensionFromUri(uri);
-    final mediaFile = File('${directory.path}/$safeId$extension');
+    var mediaFile = File(
+      LocalAudioStorage.resolve('${directory.path}/$safeId$extension'),
+    );
     final metadataFile = File('${directory.path}/$safeId.json');
 
     if (await _isValidCachedFile(
@@ -51,9 +54,11 @@ class PracticeAudioCache {
       url: url,
     )) {
       onProgress?.call(const PracticeAudioCacheProgress(received: 1, total: 1));
+      mediaFile = File(await LocalAudioStorage.compress(mediaFile.path));
       return PracticeAudioCacheResult(file: mediaFile, cacheHit: true);
     }
 
+    mediaFile = File('${directory.path}/$safeId$extension');
     final partFile = File('${mediaFile.path}.part');
     await _download(
       uri: uri,
@@ -62,10 +67,9 @@ class PracticeAudioCache {
       onProgress: onProgress,
     );
 
-    if (await mediaFile.exists()) {
-      await mediaFile.delete();
-    }
+    await LocalAudioStorage.delete(mediaFile.path);
     await partFile.rename(mediaFile.path);
+    mediaFile = File(await LocalAudioStorage.compress(mediaFile.path));
     await metadataFile.writeAsString(
       jsonEncode(<String, dynamic>{
         'url': url,

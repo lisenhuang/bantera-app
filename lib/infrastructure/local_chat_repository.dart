@@ -1,3 +1,4 @@
+import 'local_audio_storage.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -568,8 +569,9 @@ class LocalChatRepository {
     final file = File(p.join(directory.path, '$messageId.$extension'));
     final pendingFile = File('${file.path}.pending');
     await pendingFile.writeAsBytes(bytes, flush: true);
+    await LocalAudioStorage.delete(file.path);
     await pendingFile.rename(file.path);
-    return _storedReferenceForPath(file.path);
+    return _storedReferenceForPath(await LocalAudioStorage.compress(file.path));
   }
 
   Future<String?> resolveAudioPath(String? storedReference) async {
@@ -583,22 +585,24 @@ class LocalChatRepository {
       final absolute = p.normalize(
         p.join(supportDirectory.path, normalizedReference),
       );
-      return absolute;
+      return LocalAudioStorage.resolve(absolute);
     }
 
-    if (File(normalizedReference).existsSync()) {
-      return normalizedReference;
+    if (File(LocalAudioStorage.resolve(normalizedReference)).existsSync()) {
+      return LocalAudioStorage.resolve(normalizedReference);
     }
 
     final supportDirectory = await getApplicationSupportDirectory();
     final marker = '${p.separator}chat_audio${p.separator}';
     final markerIndex = normalizedReference.indexOf(marker);
     if (markerIndex < 0) {
-      return normalizedReference;
+      return LocalAudioStorage.resolve(normalizedReference);
     }
 
     final suffix = normalizedReference.substring(markerIndex + marker.length);
-    return p.normalize(p.join(supportDirectory.path, 'chat_audio', suffix));
+    return LocalAudioStorage.resolve(
+      p.normalize(p.join(supportDirectory.path, 'chat_audio', suffix)),
+    );
   }
 
   ChatThreadSummary _threadFromRow(ChatThreadEntry row) {

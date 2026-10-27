@@ -23,6 +23,8 @@ import '../../infrastructure/ai/ai_word_explanation.dart';
 import '../../infrastructure/translation_service.dart';
 import '../chats/chat_audio_waveform.dart';
 import '../../infrastructure/quick_practice_audio_cache.dart';
+import '../../infrastructure/last_snapshot_cache.dart';
+import 'dart:convert';
 import '../../domain/practice/practice_playback_intent.dart';
 import 'dart:async';
 import 'dart:io';
@@ -89,7 +91,6 @@ class QuickPracticeScreen extends StatefulWidget {
 class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final _player = widget.previewPlayer ?? AudioPlayer();
-  static const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5];
   double _playbackSpeed = 1.0;
   bool _paused = false, _audioCommandBusy = false;
   late final _recorder = AudioRecorder();
@@ -187,6 +188,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   ({Object exercise, String part, SubtitleWordToken token})? _selectedWord;
   bool _loading = false, _recording = false, _busy = false, _allowed = false;
   bool _pinRecordingLayout = false;
+  bool _validatingCachedPractice = false;
   int _epoch = 0;
   DateTime? _waitingSince;
   AppLocalizations get l => AppLocalizations.of(context)!;
@@ -197,6 +199,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   bool get _canUseAudio =>
       mounted &&
       widget.active &&
+      !_validatingCachedPractice &&
       !_callActive &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
@@ -287,7 +290,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       unawaited(_refreshCompleted());
       if (_exercise == null && _allowed) {
         _waitingSince = null;
-        unawaited(_load());
+        unawaited(_restoreAndLoad());
       }
       _requestTranslations();
       unawaited(_showPendingLevelUp());
@@ -334,6 +337,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _savedLoaded = false;
       _locale = locale;
       _exercise = null;
+      _validatingCachedPractice = false;
       _selectedWord = null;
       _translationRevealed = false;
       _feedback = null;
@@ -447,6 +451,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _translations.clear();
       setState(() {
         _savedSource = entry;
+        _validatingCachedPractice = false;
         _exercise = response;
         _feedback = null;
         _selectedWord = null;
@@ -513,13 +518,66 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
+  String? get _practiceCacheScope =>
+      _owner == null || _locale == null ? null : jsonEncode([_owner, _locale]);
+
+  Future<void> _restoreLastPractice() async {
+    final scope = _practiceCacheScope, epoch = _epoch;
+    if (scope == null ||
+        !_allowed ||
+        _exercise != null ||
+        widget.previewExercise != null) {
+      return;
+    }
+    final cached =
+        LastSnapshotCache.practice.peek(scope) ??
+        await LastSnapshotCache.practice.read(scope);
+    if (!mounted ||
+        epoch != _epoch ||
+        scope != _practiceCacheScope ||
+        !_allowed ||
+        _exercise != null ||
+        cached == null) {
+      return;
+    }
+    setState(() {
+      _exercise = cached;
+      _validatingCachedPractice = true;
+      _readLevelStates(cached);
+      _currentLevel =
+          cached['currentLevel'] as String? ?? cached['level'] as String?;
+      _practiceLevel =
+          cached['practiceLevel'] as String? ?? cached['level'] as String?;
+      _translationRevealed =
+          cached['level'] == 'A0' || cached['translationUsed'] == true;
+    });
+  }
+
+  void _cachePractice(Map<String, dynamic> exercise) {
+    final scope = _practiceCacheScope;
+    if (scope != null &&
+        _savedSource == null &&
+        widget.previewExercise == null) {
+      unawaited(LastSnapshotCache.practice.save(scope, exercise));
+    }
+  }
+
+  Future<void> _restoreAndLoad() async {
+    final epoch = _epoch;
+    await _restoreLastPractice();
+    if (mounted && epoch == _epoch && _allowed) await _load();
+  }
+
   Future<void> _checkConsent() async {
     final epoch = _epoch, owner = _owner;
     if (owner == null) return;
     final allowed = await AiConsent.instance.isAllowed(owner);
     if (!mounted || epoch != _epoch) return;
     setState(() => _allowed = allowed);
-    if (allowed && widget.active && _exercise == null) await _load();
+    if (allowed && widget.active && _exercise == null) {
+      await _restoreLastPractice();
+      if (mounted && epoch == _epoch && _allowed) await _load();
+    }
   }
 
   void _consentChanged() {
@@ -568,7 +626,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _waitingSince = null;
       _error = null;
     });
-    await _load();
+    await _restoreLastPractice();
+    if (mounted && _allowed) await _load();
   }
 
   Future<Map<String, dynamic>> _api(
@@ -588,7 +647,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   Future<void> _load() async {
     if (widget.previewExercise != null) return;
     if (_loading || !_allowed || _locale == null || !widget.active) return;
-    final epoch = _epoch;
+    final epoch = _epoch, requestId = _requestId;
     _waitingSince ??= DateTime.now();
     setState(() {
       _loading = true;
@@ -596,14 +655,14 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     });
     try {
       final response = await _api('next', {
-        'requestId': _requestId,
+        'requestId': requestId,
         'locale': _locale,
         'previousId': _previousId,
         'deferLevelScoring': true,
         'useSelectedLevel': true,
         'supportsA0': true,
       });
-      if (!mounted || epoch != _epoch) return;
+      if (!mounted || epoch != _epoch || requestId != _requestId) return;
       final earnedLevel =
           response['currentLevel'] as String? ?? response['level'] as String?;
       if (_savedSource == null &&
@@ -615,6 +674,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _practiceLevel =
           response['practiceLevel'] as String? ?? response['level'] as String?;
       if (response['status'] == 'ready') {
+        _cachePractice(response);
         unawaited(_audioCache?.dispose());
         final cache = _audioCache = QuickPracticeAudioCache();
         _cueProgress.value = 0;
@@ -626,6 +686,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         }
         setState(() {
           _exercise = response;
+          _validatingCachedPractice = false;
           _selectedWord = null;
           _translationRevealed =
               (response['level'] == 'A0' ||
@@ -641,6 +702,14 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           unawaited(_play('cue', response['cueAudioUrl'] as String));
         }
       } else {
+        if (_validatingCachedPractice) {
+          final scope = _practiceCacheScope;
+          if (scope != null) unawaited(LastSnapshotCache.practice.clear(scope));
+          setState(() {
+            _exercise = null;
+            _validatingCachedPractice = false;
+          });
+        }
         setState(() => _loading = false);
         if (DateTime.now().difference(_waitingSince!) >
             const Duration(minutes: 3)) {
@@ -651,7 +720,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       }
       unawaited(_showPendingLevelUp());
     } catch (_) {
-      if (mounted && epoch == _epoch) {
+      if (mounted && epoch == _epoch && requestId == _requestId) {
         setState(() {
           _loading = false;
           _error = l.quickUnavailable;
@@ -744,10 +813,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
-  Future<void> _cyclePlaybackSpeed() async {
+  Future<void> _selectPlaybackSpeed(double next) async {
     if (_audioCommandBusy || _recording || _busy || !_canUseAudio) return;
-    final next =
-        _speeds[(_speeds.indexOf(_playbackSpeed) + 1) % _speeds.length];
+    if (!PracticeHeader.speeds.contains(next) || next == _playbackSpeed) return;
     setState(() => _audioCommandBusy = true);
     try {
       if (_playing != null) await _player.setPlaybackRate(next);
@@ -1148,12 +1216,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       }
       final directory = await getTemporaryDirectory();
       if (!current()) return;
-      final path = '${directory.path}/practice-${const Uuid().v4()}.wav';
+      final path = '${directory.path}/practice-${const Uuid().v4()}.m4a';
       _recordPath = path;
       await _recorder.start(
         const RecordConfig(
-          encoder: AudioEncoder.wav,
-          sampleRate: 16000,
+          encoder: AudioEncoder.aacLc,
+          bitRate: 64000,
+          sampleRate: 44100,
           numChannels: 1,
         ),
         path: path,
@@ -1499,7 +1568,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       if (_exercise == null) await _load();
       return;
     }
+    final scope = _practiceCacheScope;
+    if (scope != null) unawaited(LastSnapshotCache.practice.clear(scope));
     setState(() {
+      _loading = false;
+      _validatingCachedPractice = false;
       _previousId = _exercise?['id'] as String?;
       _requestId = const Uuid().v4();
       if (autoplay) _autoplay.next(_requestId);
@@ -1576,9 +1649,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     return Scaffold(
       appBar: PracticeHeader(
         playbackSpeed: _playbackSpeed,
-        onCycleSpeed: _recording || _busy || _audioCommandBusy || _callActive
+        onSpeedSelected: _recording || _busy || _audioCommandBusy || _callActive
             ? null
-            : _cyclePlaybackSpeed,
+            : _selectPlaybackSpeed,
         isSaved: _savedIds.contains((_savedSource ?? exercise)?['id']),
         onSavePractice:
             exercise == null ||
@@ -1952,6 +2025,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Text(_error!, style: TextStyle(color: c.error)),
                       ),
+                    if (_validatingCachedPractice && _error != null)
+                      TextButton(
+                        onPressed: _loading ? null : _load,
+                        child: Text(l.compareTryAgain),
+                      ),
                     if (_error == l.compareMicrophoneDeniedPermanent)
                       TextButton(
                         onPressed: openAppSettings,
@@ -2085,6 +2163,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       active:
           widget.active &&
           _allowed &&
+          !_validatingCachedPractice &&
           (widget.previewExercise != null ||
               WidgetsBinding.instance.lifecycleState ==
                   AppLifecycleState.resumed),

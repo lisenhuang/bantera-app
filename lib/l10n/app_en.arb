@@ -807,7 +807,7 @@
       }
     }
   },
-  "aiClearHistory": "Clear history",
+  "aiClearHistory": "Clear chat",
   "aiClearHistoryBody": "Delete this device’s AI messages, audio and conversation memory? This ends the current call. Your learning library, profile and scheduled callbacks stay unchanged.",
   "aiLocalHistory": "Received AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.",
   "aiSayingGoodbye": "Saying goodbye",
@@ -817,7 +817,7 @@
   "aiChatSubtitle": "Voice messages and audio calls",
   "aiRecordVoiceMessage": "Record a voice message",
   "aiPrivacyNotice": "Privacy notice",
-  "aiUsageTitle": "Usage",
+  "aiUsageTitle": "How to Use",
   "aiUsageBody": "Hold the voice button and release to send, or tap the microphone to record. Recordings send automatically after 3 minutes. Bantera AI helps you practise speaking and listening in your learning language and accent.\n\nTap the phone for a 9-minute audio call. AI greets you first. Tap Translate on a message whenever you need help.\n\nAsk “Call me in 10 minutes to remind me to practise English,” or give a specific time. Include what you want to be reminded about. If you only give a time, AI will ask what the reminder is for before scheduling.\n\nFor callbacks, enable call notifications on your iPhone and keep an internet connection. Answer the incoming call to hear your reminder; delivery may be delayed.\n\nAsk “Remind me in 10 minutes to practise” for a voice message. Say “Call me” only if you want a call. Times below use your current timezone. Recent reminders stay here for seven days.\n\nReceived AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.",
   "aiCallConfirmTitle": "Start an audio call?",
   "aiCallConfirmBody": "Talk with Bantera AI for up to 9 minutes. It will greet you first.",
@@ -1010,7 +1010,13 @@
   "leaderboardLoadMore": "Load more",
   "quickLevelUpTitle": "You reached {level}",
   "quickLevelUpBody": "Your listening and speaking practice is paying off. Keep building your confidence, one conversation at a time.",
-  "@quickLevelUpTitle": {"placeholders": {"level": {"type": "String"}}},
+  "@quickLevelUpTitle": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
   "quickTranslationLanguageLabel": "Translation language",
   "quickTranslationLanguageBody": "Choose the translation language for this learning language. We’ll remember your choice on this device.",
   "quickTranslationFallbackBody": "Translation into your native language is unavailable for this learning language. Choose another language. We’ll remember it for this learning language on this device.",
@@ -1067,5 +1073,60 @@
   "quickLevelStateLocked": "Locked",
   "quickLevelPracticing": "Practicing",
   "quickLevelPassed": "Passed",
-  "quickLevelStatesExplanation": "Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review."
+  "quickLevelStatesExplanation": "Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review.",
+  "storageTitle": "Storage & Cache",
+  "storageMeasured": "Stored on this device",
+  "storageClearable": "Safe to clear",
+  "storageClear": "Clear cache",
+  "storageKeep": "Kept on device",
+  "storageImages": "Photos & images",
+  "storageSnapshots": "Leaderboard & last Practice",
+  "storageTemporaryAudio": "Temporary Practice audio",
+  "storageAiChats": "AI chats & recordings",
+  "storageDm": "Direct messages & recordings",
+  "storagePractice": "Saved Practice & downloads",
+  "storageOther": "Settings & other local files",
+  "storageScope": "Measured app files only. App installation and system-managed language models are not included. Files in use may remain cached.",
+  "storageClearExplanation": "Remove replaceable cached files? Images and Practice content can download again. Your recordings, conversations, saved practices, downloads and settings will be kept.",
+  "storagePrivacy": "We store data on your device where possible. AI requests, messaging, uploads and progress sync still send the data needed for those features. Clearing cache does not delete your account or server data.",
+  "storageError": "Some storage could not be read or cleared. Please try again.",
+  "storageManageAi": "To clear these, open the AI chat menu and choose “{action}”.",
+  "storageManageDm": "To remove these, open the conversation menu and choose “{action}”.",
+  "storageManagePractice": "To remove saved practices or downloads, delete the corresponding saved items.",
+  "@storageManageAi": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "@storageManageDm": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "aiClearAudioTitle": "Audio only",
+  "aiClearAudioBody": "Remove your recordings and AI audio. Keep messages, transcripts and images.",
+  "aiClearAllTitle": "All messages and audio",
+  "aiClearAllBody": "Remove this chat’s messages, transcripts, recordings and attachments.",
+  "aiKeepSummary": "Keep the last summary",
+  "aiKeepSummaryBody": "Keep the latest saved summary as AI memory. Recent messages may not be included.",
+  "aiNoSummary": "No saved summary yet.",
+  "aiClearFreed": "Estimated space freed: {size}",
+  "aiClearNotice": "This ends any current AI call. Vocabulary and scheduled reminders stay unchanged.",
+  "clearAllLabel": "Clear all",
+  "aiRemindersClearBody": "Remove all reminders, including scheduled ones? Pending reminders will be cancelled on the server.",
+  "aiRemindersRetained": "Some reminders could not be removed and remain here. A call already ringing cannot be cancelled here.",
+  "vocabClearBody": "Delete all saved vocabulary words and their review progress, including words hidden by your current filter? This cannot be undone.",
+  "vocabReviewHelpTitle": "Why are words due for review?",
+  "vocabReviewHelpBody": "Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.",
+  "@aiClearFreed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  }
 }

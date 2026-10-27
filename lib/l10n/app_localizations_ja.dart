@@ -1751,7 +1751,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceHistoryUnavailable => 'このメディアは端末にありません。履歴から削除できます。';
 
   @override
-  String get aiClearHistory => '履歴を削除';
+  String get aiClearHistory => 'チャットを削除';
 
   @override
   String get aiClearHistoryBody =>
@@ -2383,4 +2383,121 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'A0から始めます。直近12問の採点対象の練習で10問以上正解すると合格し、次のレベルが解放されます。C2到達は解放を意味し、修了には同じく12問中10問以上の正解が必要です。復習のために低いレベルを勧められても、合格は取り消されません。';
+
+  @override
+  String get storageTitle => 'ストレージとキャッシュ';
+
+  @override
+  String get storageMeasured => 'この端末のデータ';
+
+  @override
+  String get storageClearable => '安全に削除可能';
+
+  @override
+  String get storageClear => 'キャッシュを削除';
+
+  @override
+  String get storageKeep => '端末に保持';
+
+  @override
+  String get storageImages => '写真と画像';
+
+  @override
+  String get storageSnapshots => 'ランキングと直近の練習';
+
+  @override
+  String get storageTemporaryAudio => '練習の一時音声';
+
+  @override
+  String get storageAiChats => 'AI チャットと録音';
+
+  @override
+  String get storageDm => 'ダイレクトメッセージと録音';
+
+  @override
+  String get storagePractice => '保存した練習とダウンロード';
+
+  @override
+  String get storageOther => '設定とその他のローカルファイル';
+
+  @override
+  String get storageScope =>
+      'アプリがアクセスできるファイルのみを集計します。アプリ本体とシステム管理の言語モデルは含みません。使用中のキャッシュは残る場合があります。';
+
+  @override
+  String get storageClearExplanation =>
+      '再取得できるキャッシュを削除しますか？画像や練習内容は再ダウンロードできます。録音、会話、保存した練習、ダウンロード、設定は保持されます。';
+
+  @override
+  String get storagePrivacy =>
+      '可能な限り端末にデータを保存します。AI リクエスト、メッセージ、アップロード、進捗の同期には必要なデータを送信します。キャッシュを削除してもアカウントやサーバー上のデータは削除されません。';
+
+  @override
+  String get storageError => '一部のデータを読み取り、または削除できませんでした。再試行してください。';
+
+  @override
+  String storageManageAi(String action) {
+    return '削除するには、AI チャットのメニューで「$action」を選択してください。';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return '削除するには、該当する会話のメニューで「$action」を選択してください。';
+  }
+
+  @override
+  String get storageManagePractice =>
+      '保存した練習やダウンロードを削除するには、該当する保存済みの項目を削除してください。';
+
+  @override
+  String get aiClearAudioTitle => '音声のみ';
+
+  @override
+  String get aiClearAudioBody => '自分の録音と AI の音声を削除します。メッセージ、文字起こし、画像は残ります。';
+
+  @override
+  String get aiClearAllTitle => 'すべてのメッセージと音声';
+
+  @override
+  String get aiClearAllBody => 'このチャットのメッセージ、文字起こし、録音、添付ファイルを削除します。';
+
+  @override
+  String get aiKeepSummary => '最後の要約を残す';
+
+  @override
+  String get aiKeepSummaryBody =>
+      '最後に保存した要約を AI の記憶として残します。最近のメッセージは含まれない場合があります。';
+
+  @override
+  String get aiNoSummary => '保存済みの要約はありません。';
+
+  @override
+  String aiClearFreed(String size) {
+    return '解放される容量の目安：$size';
+  }
+
+  @override
+  String get aiClearNotice => '現在の AI 通話は終了します。単語帳と予約済みのリマインダーは変わりません。';
+
+  @override
+  String get clearAllLabel => 'すべて削除';
+
+  @override
+  String get aiRemindersClearBody =>
+      '予約済みを含め、すべてのリマインダーを削除しますか？未実行のリマインダーはサーバーでキャンセルされます。';
+
+  @override
+  String get aiRemindersRetained =>
+      '削除できなかったリマインダーは残っています。すでに着信中の通話はここではキャンセルできません。';
+
+  @override
+  String get vocabClearBody =>
+      '現在の絞り込みで非表示の単語も含め、すべての保存済み単語と復習履歴を削除しますか？元に戻せません。';
+
+  @override
+  String get vocabReviewHelpTitle => 'なぜ復習が必要なの？';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera は間隔を空けた反復学習を使います。時間を置いて復習すると、長く覚える助けになります。これは、時間とともに記憶が薄れることを示す忘却曲線に関連します。\n\n復習の間隔：\n• 保存から 1 日後に初回。\n• その後、復習するたびに 3、7、14、30 日後。\n• 以降は 30 日ごと。\n\n予定日になると復習対象になります。復習済みにすると、その日から次の間隔が始まります。固定のスケジュールであり、記憶力の測定や、忘れたという判定ではありません。';
 }

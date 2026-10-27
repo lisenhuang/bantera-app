@@ -1761,7 +1761,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceHistoryUnavailable => '이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다.';
 
   @override
-  String get aiClearHistory => '기록 지우기';
+  String get aiClearHistory => '채팅 삭제';
 
   @override
   String get aiClearHistoryBody =>
@@ -2400,4 +2400,120 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'A0부터 시작합니다. 최근 채점 대상 연습 12개 중 10개 이상을 맞히면 해당 레벨을 통과하고 다음 레벨이 열립니다. C2에 도달해도 완료한 것은 아니며, 동일하게 12개 중 10개 이상을 맞혀야 합니다. 낮은 레벨의 복습을 추천받아도 통과 기록은 유지됩니다.';
+
+  @override
+  String get storageTitle => '저장 공간 및 캐시';
+
+  @override
+  String get storageMeasured => '이 기기의 데이터';
+
+  @override
+  String get storageClearable => '안전하게 삭제 가능';
+
+  @override
+  String get storageClear => '캐시 삭제';
+
+  @override
+  String get storageKeep => '기기에 보관';
+
+  @override
+  String get storageImages => '사진 및 이미지';
+
+  @override
+  String get storageSnapshots => '순위표 및 마지막 연습';
+
+  @override
+  String get storageTemporaryAudio => '임시 연습 오디오';
+
+  @override
+  String get storageAiChats => 'AI 채팅 및 녹음';
+
+  @override
+  String get storageDm => '다이렉트 메시지 및 녹음';
+
+  @override
+  String get storagePractice => '저장한 연습 및 다운로드';
+
+  @override
+  String get storageOther => '설정 및 기타 로컬 파일';
+
+  @override
+  String get storageScope =>
+      '앱이 접근할 수 있는 파일만 집계합니다. 앱 설치 파일과 시스템이 관리하는 언어 모델은 포함하지 않습니다. 사용 중인 캐시는 남을 수 있습니다.';
+
+  @override
+  String get storageClearExplanation =>
+      '다시 받을 수 있는 캐시를 삭제할까요? 이미지와 연습 내용은 다시 다운로드할 수 있습니다. 녹음, 대화, 저장한 연습, 다운로드 및 설정은 유지됩니다.';
+
+  @override
+  String get storagePrivacy =>
+      '가능한 한 기기에 데이터를 저장합니다. AI 요청, 메시지, 업로드 및 진행 상황 동기화에는 필요한 데이터를 전송합니다. 캐시를 삭제해도 계정이나 서버 데이터는 삭제되지 않습니다.';
+
+  @override
+  String get storageError => '일부 데이터를 읽거나 삭제할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String storageManageAi(String action) {
+    return '삭제하려면 AI 채팅 메뉴에서 “$action”을 선택하세요.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return '삭제하려면 해당 대화 메뉴에서 “$action”을 선택하세요.';
+  }
+
+  @override
+  String get storageManagePractice => '저장한 연습이나 다운로드를 삭제하려면 해당 저장 항목을 삭제하세요.';
+
+  @override
+  String get aiClearAudioTitle => '음성만 삭제';
+
+  @override
+  String get aiClearAudioBody => '내 녹음과 AI 음성을 삭제합니다. 메시지, 받아쓰기와 이미지는 유지됩니다.';
+
+  @override
+  String get aiClearAllTitle => '모든 메시지와 음성';
+
+  @override
+  String get aiClearAllBody => '이 채팅의 메시지, 받아쓰기, 녹음과 첨부 파일을 삭제합니다.';
+
+  @override
+  String get aiKeepSummary => '마지막 요약 유지';
+
+  @override
+  String get aiKeepSummaryBody =>
+      '최근 저장된 요약을 AI 기억으로 유지합니다. 최신 메시지는 포함되지 않을 수 있습니다.';
+
+  @override
+  String get aiNoSummary => '저장된 요약이 없습니다.';
+
+  @override
+  String aiClearFreed(String size) {
+    return '예상 확보 공간: $size';
+  }
+
+  @override
+  String get aiClearNotice => '진행 중인 AI 통화가 종료됩니다. 단어장과 예약된 알림은 그대로 유지됩니다.';
+
+  @override
+  String get clearAllLabel => '모두 삭제';
+
+  @override
+  String get aiRemindersClearBody =>
+      '예약된 알림을 포함한 모든 알림을 삭제할까요? 대기 중인 알림은 서버에서 취소됩니다.';
+
+  @override
+  String get aiRemindersRetained =>
+      '삭제하지 못한 알림은 그대로 남습니다. 이미 울리는 전화는 여기서 취소할 수 없습니다.';
+
+  @override
+  String get vocabClearBody =>
+      '현재 필터로 숨겨진 단어를 포함한 모든 저장 단어와 복습 기록을 삭제할까요? 되돌릴 수 없습니다.';
+
+  @override
+  String get vocabReviewHelpTitle => '왜 복습할 단어가 표시되나요?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera는 간격 반복을 사용합니다. 시간을 두고 복습하면 더 오래 기억하는 데 도움이 됩니다. 이는 시간이 지나며 기억이 약해지는 망각 곡선과 관련이 있습니다.\n\n복습 일정:\n• 저장 후 1일 뒤 첫 복습.\n• 이후 복습할 때마다 3일, 7일, 14일, 30일 간격.\n• 그다음부터는 30일 간격.\n\n예정일이 되면 복습 대상으로 표시됩니다. 복습 완료로 표시하면 그날부터 다음 간격이 시작됩니다. 고정 일정이며 기억력을 측정하거나 단어를 잊었다고 판단하는 것은 아닙니다.';
 }

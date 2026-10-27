@@ -31,6 +31,7 @@ void main() {
   late int requests;
   late int remoteListened;
   late int remoteSpoken;
+  late int latestSpeaking;
   late Map<String, WordTotals> languageDays;
   Completer<void>? requestReached;
   Completer<void>? releaseRequest;
@@ -50,6 +51,7 @@ void main() {
     requests = 0;
     remoteListened = 0;
     remoteSpoken = 0;
+    latestSpeaking = 0;
     languageDays = {};
     requestReached = null;
     releaseRequest = null;
@@ -58,6 +60,10 @@ void main() {
         final payload =
             jsonDecode(await utf8.decoder.bind(request).join()) as Map;
         expect(payload['days'], isA<List>());
+        latestSpeaking = (payload['days'] as List).fold<int>(
+          0,
+          (sum, day) => sum + (day['spokenWords'] as int),
+        );
         request.response.statusCode = offline ? 503 : 200;
         request.response.write(jsonEncode({'saved': !offline}));
         await request.response.close();
@@ -140,6 +146,30 @@ void main() {
     await server.close(force: true);
     await dir.delete(recursive: true);
   });
+
+  test(
+    'Goal refresh waits for an older sync and uploads speech recorded meanwhile',
+    () async {
+      offline = false;
+      await notifier.ensureLoaded();
+      requestReached = Completer<void>();
+      releaseRequest = Completer<void>();
+      final oldSync = notifier.sync();
+      await requestReached!.future;
+      await notifier.record(spoken: 13, language: 'en-US', at: day);
+      var refreshed = false;
+      final refresh = notifier.syncForLeaderboard().then(
+        (_) => refreshed = true,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(refreshed, isFalse);
+      requestReached = null;
+      releaseRequest!.complete();
+      await oldSync;
+      await refresh;
+      expect(latestSpeaking, 13);
+    },
+  );
 
   test(
     'AI speech events count once across retries, restart and account switches',

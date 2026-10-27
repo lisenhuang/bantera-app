@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Nghe";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Đăng nhập";
+
+"practice.widget.level" = "Trình độ";
+"practice.widget.language" = "Ngôn ngữ đang học";
+"practice.widget.position" = "Vị trí của bạn";
+"practice.widget.period" = "30 ngày qua";

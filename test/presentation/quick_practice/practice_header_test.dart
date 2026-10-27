@@ -49,7 +49,7 @@ void main() {
         ),
         home: Scaffold(
           appBar: PracticeHeader(
-            onCycleSpeed: () {},
+            onSpeedSelected: (_) {},
             onLongerDialogues: onDialogues ?? () {},
             onSavePractice: () {},
             onSavedPractice: () {},

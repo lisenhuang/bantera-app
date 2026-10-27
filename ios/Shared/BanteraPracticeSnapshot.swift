@@ -1,6 +1,6 @@
 import Foundation
 
-/// Only aggregate counts and UI labels are shared. No credentials or chat history.
+/// Only aggregate progress and UI labels are shared. No credentials or chat history.
 struct BanteraPracticeSnapshot: Codable, Equatable {
   static let appGroup = "group.bantera.lisenhuang.com"
   static let kind = "BanteraPracticeWidget"
@@ -11,6 +11,10 @@ struct BanteraPracticeSnapshot: Codable, Equatable {
   var listened: Int
   var locale: String
   var labels: [String: String]
+  var learningLanguage: String? = nil
+  var level: String? = nil
+  var rank: Int? = nil
+  var rankingDate: String? = nil
 
   static func dayKey(_ date: Date, calendar: Calendar = .current) -> String {
     // Flutter's ledger keys are Gregorian even when the device uses another calendar.
@@ -30,6 +34,12 @@ struct BanteraPracticeSnapshot: Codable, Equatable {
       value.spoken = 0
       value.listened = 0
     }
+    if !signedIn {
+      value.learningLanguage = nil; value.level = nil; value.rank = nil; value.rankingDate = nil
+    }
+    var utc = Calendar(identifier: .gregorian)
+    utc.timeZone = TimeZone(secondsFromGMT: 0)!
+    if rankingDate != Self.dayKey(date, calendar: utc) || (rank ?? 0) < 1 { value.rank = nil }
     value.spoken = max(0, value.spoken)
     value.listened = max(0, value.listened)
     return value

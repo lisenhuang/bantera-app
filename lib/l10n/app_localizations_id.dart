@@ -1840,7 +1840,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.';
 
   @override
-  String get aiClearHistory => 'Hapus riwayat';
+  String get aiClearHistory => 'Hapus percakapan';
 
   @override
   String get aiClearHistoryBody =>
@@ -2505,4 +2505,125 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Mulai dari A0. Jawab benar minimal 10 dari 12 latihan terakhir yang dinilai untuk lulus dan membuka level berikutnya. Mencapai C2 hanya membukanya; Anda tetap perlu menjawab benar 10 dari 12 untuk menyelesaikannya. Level yang lulus tetap lulus meskipun level lebih mudah disarankan untuk mengulang.';
+
+  @override
+  String get storageTitle => 'Penyimpanan & Cache';
+
+  @override
+  String get storageMeasured => 'Tersimpan di perangkat ini';
+
+  @override
+  String get storageClearable => 'Aman untuk dihapus';
+
+  @override
+  String get storageClear => 'Hapus cache';
+
+  @override
+  String get storageKeep => 'Tetap di perangkat';
+
+  @override
+  String get storageImages => 'Foto & gambar';
+
+  @override
+  String get storageSnapshots => 'Papan peringkat & latihan terakhir';
+
+  @override
+  String get storageTemporaryAudio => 'Audio latihan sementara';
+
+  @override
+  String get storageAiChats => 'Chat AI & rekaman';
+
+  @override
+  String get storageDm => 'Pesan langsung & rekaman';
+
+  @override
+  String get storagePractice => 'Latihan tersimpan & unduhan';
+
+  @override
+  String get storageOther => 'Pengaturan & file lokal lainnya';
+
+  @override
+  String get storageScope =>
+      'Hanya file aplikasi yang dapat diakses. Instalasi aplikasi dan model bahasa yang dikelola sistem tidak termasuk. File yang sedang digunakan dapat tetap tersimpan dalam cache.';
+
+  @override
+  String get storageClearExplanation =>
+      'Hapus file cache yang bisa diunduh ulang? Gambar dan latihan dapat diunduh kembali. Rekaman, percakapan, latihan tersimpan, unduhan, dan pengaturan akan tetap ada.';
+
+  @override
+  String get storagePrivacy =>
+      'Kami menyimpan data di perangkat jika memungkinkan. Permintaan AI, pesan, unggahan, dan sinkronisasi kemajuan tetap mengirim data yang diperlukan fitur tersebut. Menghapus cache tidak menghapus akun atau data server.';
+
+  @override
+  String get storageError =>
+      'Sebagian data tidak dapat dibaca atau dihapus. Silakan coba lagi.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Untuk menghapusnya, buka menu chat AI dan pilih “$action”.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Untuk menghapusnya, buka menu percakapan dan pilih “$action”.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Untuk menghapus latihan tersimpan atau unduhan, hapus item tersimpan yang terkait.';
+
+  @override
+  String get aiClearAudioTitle => 'Hanya audio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Hapus rekaman Anda dan audio AI. Pesan, transkrip, dan gambar tetap ada.';
+
+  @override
+  String get aiClearAllTitle => 'Semua pesan dan audio';
+
+  @override
+  String get aiClearAllBody =>
+      'Hapus pesan, transkrip, rekaman, dan lampiran percakapan ini.';
+
+  @override
+  String get aiKeepSummary => 'Simpan ringkasan terakhir';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Simpan ringkasan terbaru sebagai ingatan AI. Pesan terbaru mungkin belum tercakup.';
+
+  @override
+  String get aiNoSummary => 'Belum ada ringkasan tersimpan.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Perkiraan ruang yang dibebaskan: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Panggilan AI yang sedang berlangsung akan berakhir. Kosakata dan pengingat terjadwal tidak berubah.';
+
+  @override
+  String get clearAllLabel => 'Hapus semua';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Hapus semua pengingat, termasuk yang terjadwal? Pengingat tertunda akan dibatalkan di server.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Beberapa pengingat gagal dihapus dan tetap ditampilkan. Panggilan yang sudah berdering tidak dapat dibatalkan di sini.';
+
+  @override
+  String get vocabClearBody =>
+      'Hapus semua kosakata tersimpan dan kemajuan ulasannya, termasuk kata yang tersembunyi oleh filter? Ini tidak dapat dibatalkan.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Mengapa kata perlu diulas?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera memakai pengulangan berjarak: mengulas setelah jeda dapat membantu Anda mengingat lebih lama. Ini terkait kurva lupa, yang menggambarkan melemahnya ingatan seiring waktu.\n\nJadwal kami:\n• Ulasan pertama: 1 hari setelah disimpan.\n• Setelah ulasan berikutnya: 3, 7, 14, lalu 30 hari.\n• Selanjutnya setiap 30 hari.\n\nKata jatuh tempo saat tanggalnya tiba. Menandainya sudah diulas memulai interval berikutnya dari ulasan itu. Ini jadwal tetap, bukan pengukuran ingatan atau prediksi bahwa Anda telah melupakan kata tersebut.';
 }

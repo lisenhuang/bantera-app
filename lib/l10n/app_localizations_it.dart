@@ -1902,7 +1902,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Questo contenuto non è più sul dispositivo. Puoi rimuoverlo dalla cronologia.';
 
   @override
-  String get aiClearHistory => 'Cancella cronologia';
+  String get aiClearHistory => 'Cancella chat';
 
   @override
   String get aiClearHistoryBody =>
@@ -2570,4 +2570,125 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Inizia da A0. Almeno 10 risposte corrette negli ultimi 12 esercizi valutati permettono di superare il livello e sbloccare il successivo. Raggiungere C2 lo sblocca soltanto: servono ancora 10 risposte corrette su 12 per completarlo. I livelli superati restano tali anche quando viene consigliato un livello più facile per ripassare.';
+
+  @override
+  String get storageTitle => 'Spazio e cache';
+
+  @override
+  String get storageMeasured => 'Salvato su questo dispositivo';
+
+  @override
+  String get storageClearable => 'Eliminabile in sicurezza';
+
+  @override
+  String get storageClear => 'Svuota cache';
+
+  @override
+  String get storageKeep => 'Conservato sul dispositivo';
+
+  @override
+  String get storageImages => 'Foto e immagini';
+
+  @override
+  String get storageSnapshots => 'Classifica e ultima pratica';
+
+  @override
+  String get storageTemporaryAudio => 'Audio temporaneo di pratica';
+
+  @override
+  String get storageAiChats => 'Chat IA e registrazioni';
+
+  @override
+  String get storageDm => 'Messaggi diretti e registrazioni';
+
+  @override
+  String get storagePractice => 'Pratiche salvate e download';
+
+  @override
+  String get storageOther => 'Impostazioni e altri file locali';
+
+  @override
+  String get storageScope =>
+      'Solo i file accessibili dell’app. Non include l’installazione e i modelli linguistici gestiti dal sistema. I file in uso possono rimanere nella cache.';
+
+  @override
+  String get storageClearExplanation =>
+      'Eliminare i file di cache recuperabili? Immagini e pratiche possono essere scaricate di nuovo. Registrazioni, conversazioni, pratiche salvate, download e impostazioni verranno conservati.';
+
+  @override
+  String get storagePrivacy =>
+      'Conserviamo i dati sul dispositivo quando possibile. Richieste IA, messaggi, caricamenti e sincronizzazione dei progressi inviano i dati necessari per tali funzioni. Svuotare la cache non elimina l’account o i dati sul server.';
+
+  @override
+  String get storageError =>
+      'Alcuni dati non possono essere letti o eliminati. Riprova.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Per eliminarli, apri il menu della chat IA e scegli “$action”.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Per rimuoverli, apri il menu della conversazione e scegli “$action”.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Per rimuovere pratiche salvate o download, elimina gli elementi salvati corrispondenti.';
+
+  @override
+  String get aiClearAudioTitle => 'Solo audio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Elimina le tue registrazioni e l’audio IA. Conserva messaggi, trascrizioni e immagini.';
+
+  @override
+  String get aiClearAllTitle => 'Tutti i messaggi e gli audio';
+
+  @override
+  String get aiClearAllBody =>
+      'Elimina messaggi, trascrizioni, registrazioni e allegati di questa chat.';
+
+  @override
+  String get aiKeepSummary => 'Conserva l’ultimo riepilogo';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Conserva l’ultimo riepilogo salvato come memoria IA. Potrebbe non includere i messaggi recenti.';
+
+  @override
+  String get aiNoSummary => 'Nessun riepilogo salvato.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Spazio liberato stimato: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'La chiamata IA in corso terminerà. Vocabolario e promemoria programmati restano invariati.';
+
+  @override
+  String get clearAllLabel => 'Elimina tutto';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Eliminare tutti i promemoria, anche quelli programmati? Quelli in attesa saranno annullati sul server.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Alcuni promemoria non sono stati rimossi. Le chiamate che stanno già squillando non si possono annullare qui.';
+
+  @override
+  String get vocabClearBody =>
+      'Eliminare tutte le parole salvate e i progressi, anche quelle nascoste dal filtro? Non si può annullare.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Perché alcune parole sono da ripassare?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera usa la ripetizione dilazionata: ripassare dopo una pausa può aiutare a ricordare più a lungo. È collegata alla curva dell’oblio, che descrive come i ricordi si attenuano nel tempo.\n\nIl nostro calendario:\n• Primo ripasso: 1 giorno dopo il salvataggio.\n• Dopo i ripassi successivi: 3, 7, 14 e poi 30 giorni.\n• In seguito, ogni 30 giorni.\n\nUna parola è da ripassare quando arriva la data prevista. Segnarla come ripassata avvia l’intervallo successivo da quel momento. È un calendario fisso, non una misura della memoria né una previsione che tu abbia dimenticato la parola.';
 }

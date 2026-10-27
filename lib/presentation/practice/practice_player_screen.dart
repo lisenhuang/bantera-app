@@ -1548,7 +1548,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     final directory = await getTemporaryDirectory();
     final path =
-        '${directory.path}/bantera_attempt_${DateTime.now().millisecondsSinceEpoch}.wav';
+        '${directory.path}/bantera_attempt_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
     final prev = _cueRecordingTempPath;
     if (prev != null && prev.isNotEmpty) {
@@ -1563,8 +1563,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     try {
       await _cueRecorder.start(
         const RecordConfig(
-          encoder: AudioEncoder.wav,
-          sampleRate: 16000,
+          encoder: AudioEncoder.aacLc,
+          bitRate: 64000,
+          sampleRate: 44100,
           numChannels: 1,
         ),
         path: path,

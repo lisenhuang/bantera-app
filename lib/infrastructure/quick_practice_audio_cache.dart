@@ -1,3 +1,4 @@
+import 'local_audio_storage.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -11,6 +12,8 @@ class QuickPracticeAudioCache {
     : _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
 
   final Future<Directory> Function() _temporaryDirectory;
+  static final activeDirectories = <String>{};
+
   final _downloads = <String, Future<String?>>{};
   final _clients = <HttpClient>{};
   Future<Directory>? _directory;
@@ -39,9 +42,13 @@ class QuickPracticeAudioCache {
     try {
       final uri = Uri.parse(url);
       if (uri.scheme != 'https' && uri.scheme != 'http') return null;
-      final directory = await (_directory ??= _temporaryDirectory().then(
-        (base) => base.createTemp('quick-practice-'),
-      ));
+      final directory = await (_directory ??= _temporaryDirectory().then((
+        base,
+      ) async {
+        final directory = await base.createTemp('quick-practice-');
+        activeDirectories.add(directory.path);
+        return directory;
+      }));
       if (_disposed) return null;
       final extension =
           RegExp(
@@ -69,7 +76,7 @@ class QuickPracticeAudioCache {
       if (size == 0 || _disposed) {
         throw const HttpException('Empty or cancelled clip');
       }
-      return file.path;
+      return await LocalAudioStorage.compress(file.path);
     } catch (_) {
       try {
         await sink?.close();
@@ -94,8 +101,9 @@ class QuickPracticeAudioCache {
     _downloads.clear();
     try {
       final directory = await _directory;
-      if (directory != null && await directory.exists()) {
-        await directory.delete(recursive: true);
+      if (directory != null) {
+        activeDirectories.remove(directory.path);
+        if (await directory.exists()) await directory.delete(recursive: true);
       }
     } catch (_) {
       /* The OS may already have removed temporary files. */

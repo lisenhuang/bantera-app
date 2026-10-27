@@ -1901,7 +1901,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce média n’est plus sur cet appareil. Vous pouvez le retirer de l’historique.';
 
   @override
-  String get aiClearHistory => 'Effacer l’historique';
+  String get aiClearHistory => 'Effacer le chat';
 
   @override
   String get aiClearHistoryBody =>
@@ -1934,7 +1934,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aiPrivacyNotice => 'Avis de confidentialité';
 
   @override
-  String get aiUsageTitle => 'Utilisation';
+  String get aiUsageTitle => 'Mode d’emploi';
 
   @override
   String get aiUsageBody =>
@@ -2575,4 +2575,125 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Commencez à A0. Réussissez au moins 10 des 12 derniers exercices évalués pour valider un niveau et débloquer le suivant. Atteindre C2 le débloque ; il faut aussi réussir 10 exercices sur 12 pour le terminer. Les niveaux validés le restent, même si un niveau plus facile est conseillé pour réviser.';
+
+  @override
+  String get storageTitle => 'Stockage et cache';
+
+  @override
+  String get storageMeasured => 'Stocké sur cet appareil';
+
+  @override
+  String get storageClearable => 'Peut être effacé sans risque';
+
+  @override
+  String get storageClear => 'Vider le cache';
+
+  @override
+  String get storageKeep => 'Conservé sur l’appareil';
+
+  @override
+  String get storageImages => 'Photos et images';
+
+  @override
+  String get storageSnapshots => 'Classement et dernier exercice';
+
+  @override
+  String get storageTemporaryAudio => 'Audio temporaire des exercices';
+
+  @override
+  String get storageAiChats => 'Discussions IA et enregistrements';
+
+  @override
+  String get storageDm => 'Messages directs et enregistrements';
+
+  @override
+  String get storagePractice => 'Exercices enregistrés et téléchargements';
+
+  @override
+  String get storageOther => 'Réglages et autres fichiers locaux';
+
+  @override
+  String get storageScope =>
+      'Seuls les fichiers accessibles de l’app sont mesurés. L’installation et les modèles de langue du système sont exclus. Les fichiers en cours d’utilisation peuvent rester en cache.';
+
+  @override
+  String get storageClearExplanation =>
+      'Supprimer les fichiers de cache récupérables ? Les images et exercices peuvent être téléchargés à nouveau. Vos enregistrements, conversations, exercices enregistrés, téléchargements et réglages seront conservés.';
+
+  @override
+  String get storagePrivacy =>
+      'Nous stockons les données sur votre appareil lorsque possible. Les requêtes IA, messages, envois et la synchronisation des progrès transmettent les données nécessaires à ces fonctions. Vider le cache ne supprime ni votre compte ni les données du serveur.';
+
+  @override
+  String get storageError =>
+      'Certaines données n’ont pas pu être lues ou effacées. Veuillez réessayer.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Pour les effacer, ouvrez le menu du chat IA et choisissez « $action ».';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Pour les supprimer, ouvrez le menu de la conversation et choisissez « $action ».';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Pour supprimer des exercices enregistrés ou des téléchargements, supprimez les éléments enregistrés correspondants.';
+
+  @override
+  String get aiClearAudioTitle => 'Audio uniquement';
+
+  @override
+  String get aiClearAudioBody =>
+      'Supprimez vos enregistrements et ceux de l’IA. Conservez messages, transcriptions et images.';
+
+  @override
+  String get aiClearAllTitle => 'Tous les messages et audios';
+
+  @override
+  String get aiClearAllBody =>
+      'Supprimez les messages, transcriptions, enregistrements et pièces jointes de ce chat.';
+
+  @override
+  String get aiKeepSummary => 'Garder le dernier résumé';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Gardez le dernier résumé enregistré comme mémoire de l’IA. Les messages récents peuvent en être absents.';
+
+  @override
+  String get aiNoSummary => 'Aucun résumé enregistré pour le moment.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Espace libéré estimé : $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Tout appel IA en cours sera terminé. Le vocabulaire et les rappels programmés restent inchangés.';
+
+  @override
+  String get clearAllLabel => 'Tout effacer';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Supprimer tous les rappels, même programmés ? Les rappels en attente seront annulés sur le serveur.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Certains rappels restent affichés car leur suppression a échoué. Un appel qui sonne déjà ne peut pas être annulé ici.';
+
+  @override
+  String get vocabClearBody =>
+      'Supprimer tout le vocabulaire enregistré et sa progression, y compris les mots masqués par le filtre ? Cette action est irréversible.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Pourquoi des mots sont-ils à réviser ?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera utilise la répétition espacée : réviser après une pause peut aider à retenir plus longtemps. Cela rejoint la courbe de l’oubli, qui décrit comment la mémoire s’estompe avec le temps.\n\nNotre calendrier :\n• Première révision : 1 jour après l’enregistrement.\n• Après les révisions suivantes : 3, 7, 14, puis 30 jours.\n• Ensuite, tous les 30 jours.\n\nUn mot est à réviser quand la date prévue arrive. Le marquer comme révisé lance le prochain intervalle à partir de cette révision. C’est un calendrier fixe, pas une mesure de votre mémoire ni une prédiction d’oubli.';
 }

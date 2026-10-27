@@ -68,6 +68,41 @@ void main() {
     ),
     home: AiVocabularyScreen(repository: store),
   );
+  testWidgets(
+    'AI-only additions, review explanation and confirmed bulk deletion',
+    (tester) async {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(page());
+        await settle(tester);
+        expect(find.byIcon(Icons.add), findsNothing);
+        await tester.tap(find.byTooltip('Why are words due for review?'));
+        await settle(tester);
+        expect(find.textContaining('1 day after saving'), findsOneWidget);
+        expect(
+          find.textContaining('not a measurement of your memory'),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Close'));
+        await settle(tester);
+        await tester.drag(
+          find.byType(CustomScrollView),
+          const Offset(0, -1600),
+        );
+        await settle(tester);
+        await tester.tap(find.text('Clear all'));
+        await settle(tester);
+        await tester.tap(find.text('Cancel'));
+        await settle(tester);
+        expect((await store.words()).length, 2);
+        await tester.tap(find.text('Clear all'));
+        await settle(tester);
+        await tester.tap(find.byType(FilledButton));
+        await settle(tester);
+        expect(await store.words(), isEmpty);
+        expect(find.text('Clear all'), findsNothing);
+      });
+    },
+  );
   testWidgets('vocabulary can be edited, reviewed and removed from its page', (
     tester,
   ) async {

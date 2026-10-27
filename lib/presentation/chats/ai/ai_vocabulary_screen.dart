@@ -1,3 +1,4 @@
+import 'ai_vocabulary_example.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +19,7 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
       AiVocabulary(AuthSessionNotifier.instance.session!.cacheKey);
   List<VocabularyWord>? _words;
   String _query = '';
+  bool _clearing = false, _reloadRequested = false;
   bool _dueOnly = false, _oldest = false, _failed = false, _loading = false;
   @override
   void initState() {
@@ -36,7 +38,10 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
 
   void _changed() => unawaited(_load());
   Future<void> _load() async {
-    if (_loading) return;
+    if (_loading) {
+      _reloadRequested = true;
+      return;
+    }
     _loading = true;
     try {
       final words = await _store.words();
@@ -55,6 +60,10 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
       }
     } finally {
       _loading = false;
+      if (_reloadRequested && mounted) {
+        _reloadRequested = false;
+        unawaited(_load());
+      }
     }
   }
 
@@ -118,6 +127,59 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
     }
   }
 
+  Future<void> _clearAll() async {
+    if (_clearing) return;
+    final l = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.clearAllLabel),
+        content: Text(l.vocabClearBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.clearAllLabel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _clearing = true);
+    try {
+      await _store.clear();
+      await _load();
+    } catch (_) {
+      _error();
+    } finally {
+      if (mounted) setState(() => _clearing = false);
+    }
+  }
+
+  void _reviewHelp() {
+    final l = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.vocabReviewHelpTitle),
+        scrollable: true,
+        content: Text(l.vocabReviewHelpBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l.closeLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _edit([VocabularyWord? entry]) async {
     await showDialog<void>(
       context: context,
@@ -148,11 +210,9 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
               if (word.example.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    word.example,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
+                  child: VocabularyExample(
+                    word: word.word,
+                    example: word.example,
                   ),
                 ),
               const SizedBox(height: 16),
@@ -215,16 +275,7 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
         .toList();
     if (_oldest) visible = visible.reversed.toList();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.vocabTitle),
-        actions: [
-          IconButton(
-            onPressed: _failed ? null : () => _edit(),
-            icon: const Icon(Icons.add),
-            tooltip: l.vocabAdd,
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(l.vocabTitle)),
       body: _failed
           ? Center(
               child: Column(
@@ -290,11 +341,25 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
                                       size: 32,
                                     ),
                                     const SizedBox(height: 12),
-                                    Text(
-                                      '$dueCount ${l.vocabDue}',
-                                      style: TextStyle(
-                                        color: colors.onPrimaryContainer,
-                                      ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '$dueCount ${l.vocabDue}',
+                                          style: TextStyle(
+                                            color: colors.onPrimaryContainer,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: _reviewHelp,
+                                          tooltip: l.vocabReviewHelpTitle,
+                                          icon: const Icon(
+                                            Icons.help_outline,
+                                            size: 18,
+                                          ),
+                                          color: colors.onPrimaryContainer,
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -429,6 +494,18 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
                       },
                     ),
                   ),
+                  if (all.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Center(
+                        child: TextButton(
+                          onPressed: _clearing ? null : _clearAll,
+                          style: TextButton.styleFrom(
+                            foregroundColor: colors.onSurfaceVariant,
+                          ),
+                          child: Text(l.clearAllLabel),
+                        ),
+                      ),
+                    ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),

@@ -10,6 +10,115 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final l = AppLocalizationsEn();
 
+  test(
+    'details are scoped to the account and current learning language',
+    () async {
+      final writes = <Map<String, Object>>[];
+      final service = PracticeWidgetService.forTesting(
+        send: (data) async {
+          writes.add(data);
+        },
+      );
+      Future<void> publish(String owner, String language, {DateTime? now}) =>
+          service.update(
+            signedIn: true,
+            owner: owner,
+            learningLanguage: language,
+            today: const WordTotals(spoken: 12),
+            localizations: l,
+            now: now,
+          );
+      await publish('alice', 'ja-JP');
+      service.setProgress(owner: 'alice', language: 'ja-JP', level: 'B2');
+      service.setLeaderboard(
+        owner: 'alice',
+        report: {
+          'you': {'rank': 7},
+          'throughDate': wordActivityDateKey(DateTime.now().toUtc()),
+        },
+      );
+      await publish('alice', 'ja-JP');
+      expect(writes.last['level'], 'B2');
+      expect(writes.last['rank'], 7);
+      expect(writes.last.containsKey('owner'), false);
+      service.setProgress(owner: 'alice', language: 'ko-KR', level: 'A1');
+      service.setLeaderboard(
+        owner: 'bob',
+        report: {
+          'you': {'rank': 1},
+        },
+      );
+      await publish('alice', 'ja-JP');
+      expect(writes.last['level'], 'B2');
+      expect(writes.last['rank'], 7);
+      await publish('alice', 'ko-KR');
+      expect(writes.last.containsKey('level'), false);
+      expect(
+        writes.last['rank'],
+        7,
+      ); // Ranking includes every learning language.
+      await publish('bob', 'ko-KR');
+      expect(writes.last.containsKey('rank'), false);
+      expect(writes.last.containsKey('level'), false);
+      service.setProgress(owner: 'alice', language: 'ko-KR', level: 'C1');
+      service.setProgress(owner: 'bob', language: 'ko-KR', level: 'A2');
+      await publish('bob', 'ko-KR');
+      expect(writes.last['level'], 'A2');
+      await service.update(
+        signedIn: false,
+        today: const WordTotals(),
+        localizations: l,
+      );
+      for (final key in ['learningLanguage', 'level', 'rank', 'rankingDate']) {
+        expect(writes.last.containsKey(key), false);
+      }
+    },
+  );
+
+  test(
+    'rank expires at UTC rollover while the current level remains',
+    () async {
+      final writes = <Map<String, Object>>[];
+      final service = PracticeWidgetService.forTesting(
+        send: (data) async {
+          writes.add(data);
+        },
+      );
+      Future<void> publish(DateTime date) => service.update(
+        signedIn: true,
+        owner: 'alice',
+        learningLanguage: 'ja-JP',
+        today: const WordTotals(),
+        now: date,
+        localizations: l,
+      );
+      final today = DateTime.now().toUtc();
+      await publish(today);
+      service.setProgress(owner: 'alice', language: 'ja-JP', level: 'C2');
+      service.setLeaderboard(
+        owner: 'alice',
+        report: {
+          'you': {'rank': 3},
+          'throughDate': wordActivityDateKey(today),
+        },
+      );
+      await publish(today);
+      expect(writes.last['rank'], 3);
+      await publish(today.add(const Duration(days: 1)));
+      expect(writes.last.containsKey('rank'), false);
+      expect(writes.last['level'], 'C2');
+      service.setLeaderboard(
+        owner: 'alice',
+        report: {
+          'you': {'rank': null},
+          'throughDate': wordActivityDateKey(today),
+        },
+      );
+      await publish(today);
+      expect(writes.last.containsKey('rank'), false);
+    },
+  );
+
   test('shares only aggregate counts and resets them on sign-out', () async {
     final writes = <Map<String, Object>>[];
     final service = PracticeWidgetService.forTesting(

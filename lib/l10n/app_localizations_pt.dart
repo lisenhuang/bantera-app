@@ -1897,7 +1897,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico.';
 
   @override
-  String get aiClearHistory => 'Limpar histórico';
+  String get aiClearHistory => 'Limpar conversa';
 
   @override
   String get aiClearHistoryBody =>
@@ -2565,4 +2565,125 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Comece no A0. Acerte pelo menos 10 dos últimos 12 exercícios avaliados para concluir o nível e desbloquear o próximo. Chegar ao C2 apenas o desbloqueia; também é preciso acertar 10 de 12 para concluí-lo. Os níveis concluídos permanecem assim, mesmo quando um nível mais fácil é recomendado para revisão.';
+
+  @override
+  String get storageTitle => 'Armazenamento e cache';
+
+  @override
+  String get storageMeasured => 'Guardado neste dispositivo';
+
+  @override
+  String get storageClearable => 'Pode ser limpo com segurança';
+
+  @override
+  String get storageClear => 'Limpar cache';
+
+  @override
+  String get storageKeep => 'Mantido no dispositivo';
+
+  @override
+  String get storageImages => 'Fotos e imagens';
+
+  @override
+  String get storageSnapshots => 'Classificação e última prática';
+
+  @override
+  String get storageTemporaryAudio => 'Áudio temporário de prática';
+
+  @override
+  String get storageAiChats => 'Conversas com IA e gravações';
+
+  @override
+  String get storageDm => 'Mensagens diretas e gravações';
+
+  @override
+  String get storagePractice => 'Práticas guardadas e transferências';
+
+  @override
+  String get storageOther => 'Definições e outros ficheiros locais';
+
+  @override
+  String get storageScope =>
+      'Apenas os ficheiros acessíveis da app. Não inclui a instalação nem os modelos de idiomas do sistema. Os ficheiros em uso podem permanecer em cache.';
+
+  @override
+  String get storageClearExplanation =>
+      'Remover ficheiros de cache recuperáveis? As imagens e práticas podem ser transferidas novamente. As gravações, conversas, práticas guardadas, transferências e definições serão mantidas.';
+
+  @override
+  String get storagePrivacy =>
+      'Guardamos os dados no dispositivo sempre que possível. Os pedidos de IA, mensagens, carregamentos e sincronização do progresso continuam a enviar os dados necessários para essas funções. Limpar a cache não elimina a conta nem os dados do servidor.';
+
+  @override
+  String get storageError =>
+      'Não foi possível ler ou limpar alguns dados. Tente novamente.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Para os limpar, abra o menu da conversa com IA e escolha «$action».';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Para os remover, abra o menu da conversa e escolha «$action».';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Para remover práticas guardadas ou transferências, elimine os itens guardados correspondentes.';
+
+  @override
+  String get aiClearAudioTitle => 'Só áudio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Remova as suas gravações e o áudio da IA. Mantenha mensagens, transcrições e imagens.';
+
+  @override
+  String get aiClearAllTitle => 'Todas as mensagens e áudios';
+
+  @override
+  String get aiClearAllBody =>
+      'Remova mensagens, transcrições, gravações e anexos desta conversa.';
+
+  @override
+  String get aiKeepSummary => 'Manter o último resumo';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Mantenha o último resumo guardado como memória da IA. Pode não incluir mensagens recentes.';
+
+  @override
+  String get aiNoSummary => 'Ainda não há um resumo guardado.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Espaço libertado estimado: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Qualquer chamada de IA em curso termina. O vocabulário e os lembretes agendados não mudam.';
+
+  @override
+  String get clearAllLabel => 'Limpar tudo';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Remover todos os lembretes, incluindo os agendados? Os pendentes serão cancelados no servidor.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Alguns lembretes não puderam ser removidos e continuam aqui. Chamadas que já estão a tocar não podem ser canceladas aqui.';
+
+  @override
+  String get vocabClearBody =>
+      'Apagar todo o vocabulário guardado e o seu progresso, incluindo palavras ocultadas pelo filtro? Não é possível desfazer.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Por que há palavras para rever?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'A Bantera usa repetição espaçada: rever após uma pausa pode ajudar a recordar por mais tempo. Isto relaciona-se com a curva do esquecimento, que descreve como a memória enfraquece com o tempo.\n\nO nosso calendário:\n• Primeira revisão: 1 dia após guardar.\n• Após as revisões seguintes: 3, 7, 14 e depois 30 dias.\n• A partir daí, a cada 30 dias.\n\nUma palavra fica pendente na data prevista. Marcá-la como revista inicia o próximo intervalo a partir dessa revisão. É um calendário fixo, não uma medição da memória nem uma previsão de que esqueceu a palavra.';
 }

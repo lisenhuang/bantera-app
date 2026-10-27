@@ -1,6 +1,7 @@
+import 'goal_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../core/word_activity_notifier.dart';
 import '../../core/goal_reminder_service.dart';
@@ -33,158 +34,181 @@ class DailyWordGoalSection extends StatelessWidget {
     final number = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: .6),
+    return GoalMotionBuilder(
+      builder: (context, progress, completion) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: .6),
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.flag_outlined,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n.dailyGoalTitle,
-                      style: Theme.of(context).textTheme.titleMedium,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.flag_outlined,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  ),
-                  if (target != null)
-                    IconButton(
-                      onPressed: onEdit,
-                      tooltip: l10n.dailyGoalEdit,
-                      icon: const Icon(Icons.edit_outlined),
-                    ),
-                ],
-              ),
-              if (target == null)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.add),
-                    label: Text(l10n.dailyGoalSet),
-                  ),
-                )
-              else ...[
-                for (final item in [
-                  (
-                    listening: true,
-                    summary: l10n.wordActivityListeningSummary,
-                    count: today.listened,
-                    target: target.listened,
-                  ),
-                  (
-                    listening: false,
-                    summary: l10n.wordActivitySpeakingSummary,
-                    count: today.spoken,
-                    target: target.spoken,
-                  ),
-                ].where((item) => item.target > 0)) ...[
-                  const SizedBox(height: 10),
-                  Semantics(
-                    label: item.summary(
-                      'today',
-                      '${number.format(item.count)}/${number.format(item.target)}',
-                      item.target,
-                    ),
-                    child: ExcludeSemantics(
-                      child: Row(
-                        children: [
-                          Tooltip(
-                            message: item.listening
-                                ? l10n.wordActivityListening
-                                : l10n.wordActivitySpeaking,
-                            child: ActivityIcon(listening: item.listening),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: number.format(item.count),
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w800,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: l10n.dailyGoalProgress(
-                                      '',
-                                      number.format(item.target),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ),
-                          if (item.count >= item.target) ...[
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.check_circle_rounded,
-                              color: activityColor(
-                                context,
-                                listening: item.listening,
-                              ),
-                              size: 22,
-                            ),
-                          ],
-                        ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.dailyGoalTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    color: activityColor(context, listening: item.listening),
-                    backgroundColor: activityColor(
-                      context,
-                      listening: item.listening,
-                    ).withValues(alpha: .10),
-                    semanticsLabel: item.listening
-                        ? l10n.wordActivityListening
-                        : l10n.wordActivitySpeaking,
-                    value: (item.count / item.target).clamp(0.0, 1.0),
-                    minHeight: 6,
-                    borderRadius: BorderRadius.circular(8),
+                    if (target != null)
+                      IconButton(
+                        onPressed: onEdit,
+                        tooltip: l10n.dailyGoalEdit,
+                        icon: const Icon(Icons.edit_outlined),
+                      ),
+                  ],
+                ),
+                if (target == null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.dailyGoalSet),
+                    ),
+                  )
+                else ...[
+                  for (final item in [
+                    (
+                      listening: true,
+                      summary: l10n.wordActivityListeningSummary,
+                      count: today.listened,
+                      target: target.listened,
+                    ),
+                    (
+                      listening: false,
+                      summary: l10n.wordActivitySpeakingSummary,
+                      count: today.spoken,
+                      target: target.spoken,
+                    ),
+                  ].where((item) => item.target > 0)) ...[
+                    const SizedBox(height: 10),
+                    Semantics(
+                      label: item.summary(
+                        'today',
+                        '${number.format(item.count)}/${number.format(item.target)}',
+                        item.target,
+                      ),
+                      child: ExcludeSemantics(
+                        child: Row(
+                          children: [
+                            Tooltip(
+                              message: item.listening
+                                  ? l10n.wordActivityListening
+                                  : l10n.wordActivitySpeaking,
+                              child: ActivityIcon(listening: item.listening),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: number.format(
+                                        (item.count * progress).round(),
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w800,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: l10n.dailyGoalProgress(
+                                        '',
+                                        number.format(item.target),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ),
+                            if (item.count >= item.target) ...[
+                              const SizedBox(width: 8),
+                              Opacity(
+                                opacity: completion,
+                                child: Transform.scale(
+                                  scale:
+                                      .7 +
+                                      .3 *
+                                          Curves.easeOutBack.transform(
+                                            completion,
+                                          ),
+                                  child: Icon(
+                                    Icons.check_circle_rounded,
+                                    color: activityColor(
+                                      context,
+                                      listening: item.listening,
+                                    ),
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: LinearProgressIndicator(
+                        color: activityColor(
+                          context,
+                          listening: item.listening,
+                        ),
+                        backgroundColor: activityColor(
+                          context,
+                          listening: item.listening,
+                        ).withValues(alpha: .10),
+                        semanticsLabel: item.listening
+                            ? l10n.wordActivityListening
+                            : l10n.wordActivitySpeaking,
+                        value:
+                            (item.count / item.target).clamp(0.0, 1.0) *
+                            progress,
+                        minHeight: 6,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Text(
+                    target.listened == 0 && target.spoken == 0
+                        ? l10n.dailyGoalNoRequirement
+                        : today.listened >= target.listened &&
+                              today.spoken >= target.spoken
+                        ? l10n.dailyGoalReached
+                        : l10n.dailyGoalTimeTotal(
+                            goalMinutes(context, target.totalMinutes),
+                          ),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
-                const SizedBox(height: 12),
-                Text(
-                  target.listened == 0 && target.spoken == 0
-                      ? l10n.dailyGoalNoRequirement
-                      : today.listened >= target.listened &&
-                            today.spoken >= target.spoken
-                      ? l10n.dailyGoalReached
-                      : l10n.dailyGoalTimeTotal(
-                          goalMinutes(context, target.totalMinutes),
-                        ),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -343,173 +367,192 @@ class _DailyWordGoalScreenState extends State<DailyWordGoalScreen> {
     final goal = _selection;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.dailyGoalTitle)),
-      body: Form(
-        key: _form,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Text(
-              l10n.dailyGoalChoose,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final minutes in [5, 10, 20, 30])
-                  ChoiceChip(
-                    showCheckmark: false,
-                    label: Text(l10n.dailyGoalPreset('$minutes')),
-                    selected: _preset == minutes,
-                    onSelected: _busy
-                        ? null
-                        : (_) => setState(() {
-                            _preset = minutes;
-                            final goal = DailyWordGoal.forMinutes(minutes);
-                            _listening.text = '${goal.listened}';
-                            _speaking.text = '${goal.spoken}';
-                          }),
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _form,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Text(
+                    l10n.dailyGoalChoose,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                ChoiceChip(
-                  showCheckmark: false,
-                  label: Text(l10n.dailyGoalCustom),
-                  selected: _preset == null,
-                  onSelected: _busy
-                      ? null
-                      : (_) => setState(() => _preset = null),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            for (final field in [
-              (
-                key: 'listening-goal',
-                controller: _listening,
-                label: l10n.dailyGoalListeningTarget,
-                minutes: goal?.listeningMinutes,
-                icon: Icons.headphones_outlined,
-              ),
-              (
-                key: 'speaking-goal',
-                controller: _speaking,
-                label: l10n.dailyGoalSpeakingTarget,
-                minutes: goal?.speakingMinutes,
-                icon: Icons.mic_none_outlined,
-              ),
-            ]) ...[
-              TextFormField(
-                key: ValueKey(field.key),
-                controller: field.controller,
-                enabled: !_busy,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
-                ],
-                decoration: InputDecoration(
-                  labelText: field.label,
-                  helperText: '${l10n.dailyGoalNoRequirement}: 0',
-                  helperMaxLines: 2,
-                  prefixIcon: Icon(field.icon),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (text) {
-                  final value = int.tryParse(text ?? '');
-                  return value == null ||
-                          value < 0 ||
-                          value > DailyWordGoal.maxWords
-                      ? l10n.dailyGoalValidation
-                      : null;
-                },
-                onChanged: (_) => setState(() => _preset = null),
-              ),
-              const SizedBox(height: 8),
-              if (field.minutes != null)
-                Text(
-                  field.minutes == 0
-                      ? l10n.dailyGoalNoRequirement
-                      : l10n.dailyGoalEstimate(
-                          goalMinutes(context, field.minutes!),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final minutes in [5, 10, 20, 30])
+                        ChoiceChip(
+                          showCheckmark: false,
+                          label: Text(l10n.dailyGoalPreset('$minutes')),
+                          selected: _preset == minutes,
+                          onSelected: _busy
+                              ? null
+                              : (_) => setState(() {
+                                  _preset = minutes;
+                                  final goal = DailyWordGoal.forMinutes(
+                                    minutes,
+                                  );
+                                  _listening.text = '${goal.listened}';
+                                  _speaking.text = '${goal.spoken}';
+                                }),
                         ),
-                ),
-              const SizedBox(height: 24),
-            ],
-            if (goal != null && goal.totalMinutes > 0)
-              Text(
-                l10n.dailyGoalTimeTotal(
-                  goalMinutes(context, goal.totalMinutes),
-                ),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.dailyGoalTimeHint,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 24),
-            SwitchListTile.adaptive(
-              key: const ValueKey('daily-goal-notifications'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.dailyGoalNotificationLabel),
-              subtitle: Text(l10n.dailyGoalNotificationHint),
-              value: _notificationsEnabled,
-              onChanged: _busy
-                  ? null
-                  : (value) => setState(() => _notificationsEnabled = value),
-            ),
-            if (_notificationsEnabled)
-              ListTile(
-                key: const ValueKey('daily-goal-notification-time'),
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.schedule_outlined),
-                title: Text(l10n.dailyGoalNotificationTime),
-                subtitle: Text(
-                  goalReminderRepeatSummary(context, _notificationWeekdays),
-                ),
-                trailing: Text(_notificationTime.format(context)),
-                onTap: _busy
-                    ? null
-                    : () async {
-                        final time = await showGoalReminderTimePicker(
-                          context,
-                          initialTime: _notificationTime,
-                          initialWeekdays: _notificationWeekdays,
-                        );
-                        if (mounted && time != null) {
-                          setState(() {
-                            if (_notificationTime != time.time ||
-                                !_notificationWeekdays.toSet().containsAll(
-                                  time.weekdays,
-                                ) ||
-                                _notificationWeekdays.length !=
-                                    time.weekdays.length) {
-                              _oneTimeReminderDate = null;
-                            }
-                            _notificationTime = time.time;
-                            _notificationWeekdays = time.weekdays;
-                          });
-                        }
+                      ChoiceChip(
+                        showCheckmark: false,
+                        label: Text(l10n.dailyGoalCustom),
+                        selected: _preset == null,
+                        onSelected: _busy
+                            ? null
+                            : (_) => setState(() => _preset = null),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  for (final field in [
+                    (
+                      key: 'listening-goal',
+                      controller: _listening,
+                      label: l10n.dailyGoalListeningTarget,
+                      minutes: goal?.listeningMinutes,
+                      icon: Icons.headphones_outlined,
+                    ),
+                    (
+                      key: 'speaking-goal',
+                      controller: _speaking,
+                      label: l10n.dailyGoalSpeakingTarget,
+                      minutes: goal?.speakingMinutes,
+                      icon: Icons.mic_none_outlined,
+                    ),
+                  ]) ...[
+                    TextFormField(
+                      key: ValueKey(field.key),
+                      controller: field.controller,
+                      enabled: !_busy,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: field.label,
+                        helperText: '${l10n.dailyGoalNoRequirement}: 0',
+                        helperMaxLines: 2,
+                        prefixIcon: Icon(field.icon),
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (text) {
+                        final value = int.tryParse(text ?? '');
+                        return value == null ||
+                                value < 0 ||
+                                value > DailyWordGoal.maxWords
+                            ? l10n.dailyGoalValidation
+                            : null;
                       },
+                      onChanged: (_) => setState(() => _preset = null),
+                    ),
+                    const SizedBox(height: 8),
+                    if (field.minutes != null)
+                      Text(
+                        field.minutes == 0
+                            ? l10n.dailyGoalNoRequirement
+                            : l10n.dailyGoalEstimate(
+                                goalMinutes(context, field.minutes!),
+                              ),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (goal != null && goal.totalMinutes > 0)
+                    Text(
+                      l10n.dailyGoalTimeTotal(
+                        goalMinutes(context, goal.totalMinutes),
+                      ),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.dailyGoalTimeHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 24),
+                  SwitchListTile.adaptive(
+                    key: const ValueKey('daily-goal-notifications'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.dailyGoalNotificationLabel),
+                    subtitle: Text(l10n.dailyGoalNotificationHint),
+                    value: _notificationsEnabled,
+                    onChanged: _busy
+                        ? null
+                        : (value) =>
+                              setState(() => _notificationsEnabled = value),
+                  ),
+                  if (_notificationsEnabled)
+                    ListTile(
+                      key: const ValueKey('daily-goal-notification-time'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.schedule_outlined),
+                      title: Text(l10n.dailyGoalNotificationTime),
+                      subtitle: Text(
+                        goalReminderRepeatSummary(
+                          context,
+                          _notificationWeekdays,
+                        ),
+                      ),
+                      trailing: Text(_notificationTime.format(context)),
+                      onTap: _busy
+                          ? null
+                          : () async {
+                              final time = await showGoalReminderTimePicker(
+                                context,
+                                initialTime: _notificationTime,
+                                initialWeekdays: _notificationWeekdays,
+                              );
+                              if (mounted && time != null) {
+                                setState(() {
+                                  if (_notificationTime != time.time ||
+                                      !_notificationWeekdays
+                                          .toSet()
+                                          .containsAll(time.weekdays) ||
+                                      _notificationWeekdays.length !=
+                                          time.weekdays.length) {
+                                    _oneTimeReminderDate = null;
+                                  }
+                                  _notificationTime = time.time;
+                                  _notificationWeekdays = time.weekdays;
+                                });
+                              }
+                            },
+                    ),
+                  const SizedBox(height: 16),
+                  if (_notifier.dailyGoal != null)
+                    TextButton(
+                      onPressed: _busy ? null : _confirmRemoveGoal,
+                      child: Text(l10n.dailyGoalRemove),
+                    ),
+                ],
               ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _busy ? null : () => _save(),
-              child: _busy
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.doneLabel),
             ),
-            if (_notifier.dailyGoal != null)
-              TextButton(
-                onPressed: _busy ? null : _confirmRemoveGoal,
-                child: Text(l10n.dailyGoalRemove),
+          ),
+          SafeArea(
+            top: false,
+            minimum: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _busy ? null : () => _save(),
+                child: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.doneLabel),
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

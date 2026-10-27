@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Mendengarkan";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Masuk";
+
+"practice.widget.level" = "Tingkat";
+"practice.widget.language" = "Bahasa yang Dipelajari";
+"practice.widget.position" = "Posisimu";
+"practice.widget.period" = "30 hari terakhir";

@@ -1902,7 +1902,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Цього матеріалу більше немає на пристрої. Його можна видалити з історії.';
 
   @override
-  String get aiClearHistory => 'Очистити історію';
+  String get aiClearHistory => 'Очистити чат';
 
   @override
   String get aiClearHistoryBody =>
@@ -2568,4 +2568,125 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Почніть з A0. Дайте щонайменше 10 правильних відповідей в останніх 12 оцінюваних вправах, щоб пройти рівень і відкрити наступний. Досягнення C2 лише відкриває його: для завершення також потрібно 10 правильних відповідей із 12. Пройдені рівні зберігаються, навіть якщо для повторення рекомендовано простіший рівень.';
+
+  @override
+  String get storageTitle => 'Сховище та кеш';
+
+  @override
+  String get storageMeasured => 'На цьому пристрої';
+
+  @override
+  String get storageClearable => 'Можна безпечно видалити';
+
+  @override
+  String get storageClear => 'Очистити кеш';
+
+  @override
+  String get storageKeep => 'Залишиться на пристрої';
+
+  @override
+  String get storageImages => 'Фото та зображення';
+
+  @override
+  String get storageSnapshots => 'Рейтинг і остання вправа';
+
+  @override
+  String get storageTemporaryAudio => 'Тимчасове аудіо вправ';
+
+  @override
+  String get storageAiChats => 'Чати зі ШІ та записи';
+
+  @override
+  String get storageDm => 'Особисті повідомлення та записи';
+
+  @override
+  String get storagePractice => 'Збережені вправи та завантаження';
+
+  @override
+  String get storageOther => 'Налаштування та інші локальні файли';
+
+  @override
+  String get storageScope =>
+      'Враховано лише доступні файли застосунку. Інсталяція та системні мовні моделі не включені. Файли, що використовуються, можуть залишитися в кеші.';
+
+  @override
+  String get storageClearExplanation =>
+      'Видалити відновлювані файли кешу? Зображення та вправи можна завантажити знову. Записи, розмови, збережені вправи, завантаження та налаштування залишаться.';
+
+  @override
+  String get storagePrivacy =>
+      'Ми за можливості зберігаємо дані на вашому пристрої. Запити до ШІ, повідомлення, завантаження та синхронізація прогресу передають дані, необхідні для цих функцій. Очищення кешу не видаляє обліковий запис або дані на сервері.';
+
+  @override
+  String get storageError =>
+      'Не вдалося прочитати або видалити частину даних. Спробуйте ще раз.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Щоб очистити їх, відкрийте меню чату зі ШІ та виберіть «$action».';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Щоб видалити їх, відкрийте меню розмови та виберіть «$action».';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Щоб видалити збережені вправи або завантаження, видаліть відповідні збережені елементи.';
+
+  @override
+  String get aiClearAudioTitle => 'Лише аудіо';
+
+  @override
+  String get aiClearAudioBody =>
+      'Видалити ваші записи й аудіо ШІ. Повідомлення, транскрипції та зображення залишаться.';
+
+  @override
+  String get aiClearAllTitle => 'Усі повідомлення й аудіо';
+
+  @override
+  String get aiClearAllBody =>
+      'Видалити повідомлення, транскрипції, записи й вкладення цього чату.';
+
+  @override
+  String get aiKeepSummary => 'Зберегти останній підсумок';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Зберегти останній підсумок як пам’ять ШІ. Нові повідомлення можуть бути відсутні.';
+
+  @override
+  String get aiNoSummary => 'Збереженого підсумку ще немає.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Приблизно звільниться: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Поточний виклик ШІ завершиться. Словник і заплановані нагадування не зміняться.';
+
+  @override
+  String get clearAllLabel => 'Видалити все';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Видалити всі нагадування, зокрема заплановані? Очікувані нагадування буде скасовано на сервері.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Деякі нагадування не вдалося видалити. Виклик, що вже дзвонить, тут скасувати не можна.';
+
+  @override
+  String get vocabClearBody =>
+      'Видалити всі збережені слова й прогрес повторення, зокрема приховані фільтром? Це неможливо скасувати.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Чому час повторити слова?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera використовує інтервальне повторення: повторення після перерви допомагає пам’ятати довше. Це пов’язано з кривою забування, яка описує ослаблення пам’яті з часом.\n\nНаш розклад:\n• Перше повторення: через 1 день після збереження.\n• Після наступних повторень: через 3, 7, 14, потім 30 днів.\n• Надалі кожні 30 днів.\n\nСлово потребує повторення, коли настає запланована дата. Позначення як повтореного запускає наступний інтервал від цієї миті. Це фіксований розклад, а не вимірювання пам’яті чи прогноз, що ви забули слово.';
 }

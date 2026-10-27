@@ -1904,7 +1904,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Этого материала больше нет на устройстве. Его можно удалить из истории.';
 
   @override
-  String get aiClearHistory => 'Очистить историю';
+  String get aiClearHistory => 'Очистить чат';
 
   @override
   String get aiClearHistoryBody =>
@@ -2570,4 +2570,125 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Начните с A0. Ответьте правильно минимум на 10 из последних 12 оцениваемых упражнений, чтобы пройти уровень и открыть следующий. Достижение C2 лишь открывает его: для завершения также нужны 10 правильных ответов из 12. Пройденные уровни сохраняются, даже если для повторения рекомендован более простой уровень.';
+
+  @override
+  String get storageTitle => 'Хранилище и кэш';
+
+  @override
+  String get storageMeasured => 'На этом устройстве';
+
+  @override
+  String get storageClearable => 'Можно безопасно удалить';
+
+  @override
+  String get storageClear => 'Очистить кэш';
+
+  @override
+  String get storageKeep => 'Останется на устройстве';
+
+  @override
+  String get storageImages => 'Фото и изображения';
+
+  @override
+  String get storageSnapshots => 'Рейтинг и последнее упражнение';
+
+  @override
+  String get storageTemporaryAudio => 'Временное аудио упражнений';
+
+  @override
+  String get storageAiChats => 'Чаты с ИИ и записи';
+
+  @override
+  String get storageDm => 'Личные сообщения и записи';
+
+  @override
+  String get storagePractice => 'Сохранённые упражнения и загрузки';
+
+  @override
+  String get storageOther => 'Настройки и другие локальные файлы';
+
+  @override
+  String get storageScope =>
+      'Учитываются только доступные файлы приложения. Установка приложения и системные языковые модели не включены. Используемые файлы могут остаться в кэше.';
+
+  @override
+  String get storageClearExplanation =>
+      'Удалить восстанавливаемые файлы кэша? Изображения и упражнения можно загрузить снова. Записи, разговоры, сохранённые упражнения, загрузки и настройки останутся.';
+
+  @override
+  String get storagePrivacy =>
+      'Мы по возможности храним данные на вашем устройстве. Запросы к ИИ, сообщения, загрузки и синхронизация прогресса передают данные, необходимые для этих функций. Очистка кэша не удаляет аккаунт или данные на сервере.';
+
+  @override
+  String get storageError =>
+      'Не удалось прочитать или удалить часть данных. Попробуйте ещё раз.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Чтобы очистить их, откройте меню чата с ИИ и выберите «$action».';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Чтобы удалить их, откройте меню беседы и выберите «$action».';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Чтобы удалить сохранённые упражнения или загрузки, удалите соответствующие сохранённые элементы.';
+
+  @override
+  String get aiClearAudioTitle => 'Только аудио';
+
+  @override
+  String get aiClearAudioBody =>
+      'Удалить ваши записи и аудио ИИ. Сообщения, расшифровки и изображения останутся.';
+
+  @override
+  String get aiClearAllTitle => 'Все сообщения и аудио';
+
+  @override
+  String get aiClearAllBody =>
+      'Удалить сообщения, расшифровки, записи и вложения этого чата.';
+
+  @override
+  String get aiKeepSummary => 'Сохранить последнее резюме';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Сохранить последнее резюме как память ИИ. Последние сообщения могут в него не входить.';
+
+  @override
+  String get aiNoSummary => 'Сохранённого резюме пока нет.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Освободится примерно: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Текущий звонок ИИ завершится. Словарь и запланированные напоминания не изменятся.';
+
+  @override
+  String get clearAllLabel => 'Удалить всё';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Удалить все напоминания, включая запланированные? Ожидающие напоминания будут отменены на сервере.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Некоторые напоминания не удалось удалить. Уже поступающий звонок нельзя отменить здесь.';
+
+  @override
+  String get vocabClearBody =>
+      'Удалить все сохранённые слова и прогресс повторения, включая скрытые фильтром? Это нельзя отменить.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Почему пора повторить слова?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera использует интервальное повторение: повторение после перерыва помогает запоминать надолго. Это связано с кривой забывания, описывающей ослабление памяти со временем.\n\nНаш график:\n• Первое повторение: через 1 день после сохранения.\n• После следующих повторений: через 3, 7, 14, затем 30 дней.\n• Далее каждые 30 дней.\n\nСлово пора повторить, когда наступит назначенная дата. Отметка о повторении запускает следующий интервал с этого момента. Это фиксированный график, а не измерение памяти или утверждение, что вы забыли слово.';
 }

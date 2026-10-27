@@ -1,3 +1,4 @@
+import 'goal_motion.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -16,7 +17,9 @@ import 'daily_word_goal_section.dart';
 import 'word_activity_share_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.active = true, this.refreshTick = 0});
+  final bool active;
+  final int refreshTick;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -52,144 +55,151 @@ class _ProfileScreenState extends State<ProfileScreen> {
           profile.learningLanguage,
         );
 
-        return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          appBar: AppBar(
-            centerTitle: true,
-            title: const FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text('Bantera App'),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                tooltip: l10n.settingsTitle,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                },
+        return GoalMotion(
+          active: widget.active,
+          replayTick: widget.refreshTick,
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            appBar: AppBar(
+              centerTitle: true,
+              title: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('Bantera App'),
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Semantics(
-                    button: true,
-                    label: l10n.editProfile,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const EditProfileScreen(),
-                        ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  tooltip: l10n.settingsTitle,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            ProfileAvatar(
-                              radius: 32,
-                              imageUrl: profile.avatarUrl,
-                              imagePath: profile.avatarImagePath,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    profile.displayName,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleLarge,
-                                  ),
-                                  if (language.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Semantics(
+                      button: true,
+                      label: l10n.editProfile,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const EditProfileScreen(),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              ProfileAvatar(
+                                radius: 32,
+                                imageUrl: profile.avatarUrl,
+                                imagePath: profile.avatarImagePath,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      l10n.wordActivityLearningLanguage(
-                                        language,
-                                      ),
+                                      profile.displayName,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                            wordSpacing: 0,
-                                          ),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleLarge,
                                     ),
+                                    if (language.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        l10n.wordActivityLearningLanguage(
+                                          language,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
+                                              wordSpacing: 0,
+                                            ),
+                                      ),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Icon(
-                              Icons.chevron_right,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Icon(
+                                Icons.chevron_right,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: SpeakingLeaderboardCard(),
-                ),
-                const SizedBox(height: 24),
-                DailyWordGoalSection(
-                  goal: WordActivityNotifier.instance.dailyGoal,
-                  today: activity.today,
-                  onEdit: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DailyWordGoalScreen(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SpeakingLeaderboardCard(
+                      active: widget.active,
+                      refreshTick: widget.refreshTick,
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                WordActivitySection(
-                  history: WordActivityNotifier.instance.historyFor(
-                    profile.learningLanguage,
-                  ),
-                  today: activity.today,
-                  week: activity.week,
-                  total: activity.total,
-                  onShare: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => WordActivityShareScreen(
-                        name: profile.displayName,
-                        learningLanguage: profile.learningLanguage,
-                        avatarUrl: profile.avatarUrl,
-                        avatarPath: profile.avatarImagePath,
-                        today: activity.today,
-                        week: activity.week,
-                        total: activity.total,
+                  const SizedBox(height: 24),
+                  DailyWordGoalSection(
+                    goal: WordActivityNotifier.instance.dailyGoal,
+                    today: activity.today,
+                    onEdit: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DailyWordGoalScreen(),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                  const SizedBox(height: 24),
+                  WordActivitySection(
+                    history: WordActivityNotifier.instance.historyFor(
+                      profile.learningLanguage,
+                    ),
+                    today: activity.today,
+                    week: activity.week,
+                    total: activity.total,
+                    onShare: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WordActivityShareScreen(
+                          name: profile.displayName,
+                          learningLanguage: profile.learningLanguage,
+                          avatarUrl: profile.avatarUrl,
+                          avatarPath: profile.avatarImagePath,
+                          today: activity.today,
+                          week: activity.week,
+                          total: activity.total,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         );

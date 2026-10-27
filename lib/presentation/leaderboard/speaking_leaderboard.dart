@@ -1,3 +1,4 @@
+import '../profile/goal_motion.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -5,9 +6,23 @@ import 'package:intl/intl.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/last_snapshot_cache.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/learning_language_label.dart';
 import '../shared/profile_avatar.dart';
+import 'leaderboard_motion.dart';
+
+/// Use the first space-separated name without guessing name order or splitting
+/// continuous-script names. The full profile value remains untouched.
+String? leaderboardFirstName(String? name) {
+  final value = name?.trim();
+  if (value == null || value.isEmpty) return null;
+  return value
+      .split(
+        RegExp(r'[\s\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+'),
+      )
+      .first;
+}
 
 class SpeakingReport {
   SpeakingReport(this.data);
@@ -29,7 +44,14 @@ class SpeakingReport {
 }
 
 class SpeakingLeaderboardCard extends StatefulWidget {
-  const SpeakingLeaderboardCard({super.key, this.preview});
+  const SpeakingLeaderboardCard({
+    super.key,
+    this.preview,
+    this.active = true,
+    this.refreshTick = 0,
+  });
+  final bool active;
+  final int refreshTick;
   final SpeakingReport? preview;
   @override
   State<SpeakingLeaderboardCard> createState() =>
@@ -46,17 +68,37 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
   @override
   void initState() {
     super.initState();
-    _report = widget.preview;
+    _owner = AuthSessionNotifier.instance.session?.cacheKey;
+    final cached = _owner == null
+        ? null
+        : LastSnapshotCache.leaderboard.peek(_owner!);
+    _report =
+        widget.preview ?? (cached == null ? null : SpeakingReport(cached));
     if (widget.preview == null) {
       AuthSessionNotifier.instance.addListener(_accountChanged);
       WordActivityNotifier.instance.addListener(_activityChanged);
       WidgetsBinding.instance.addObserver(this);
-      unawaited(_load());
+      if (widget.active) unawaited(_load(sync: true));
+    }
+  }
+
+  @override
+  void didUpdateWidget(SpeakingLeaderboardCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.preview != null) {
+      _report = widget.preview;
+      return;
+    }
+    if (!widget.active) _refresh?.cancel();
+    if (widget.active &&
+        (!oldWidget.active || widget.refreshTick != oldWidget.refreshTick)) {
+      _refresh?.cancel();
+      unawaited(_load(sync: true));
     }
   }
 
   void _activityChanged() {
-    if (_refresh?.isActive == true) return;
+    if (!widget.active || _refresh?.isActive == true) return;
     final elapsed = _lastLoad == null
         ? const Duration(minutes: 1)
         : DateTime.now().difference(_lastLoad!);
@@ -73,7 +115,10 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _activityChanged();
+    if (state == AppLifecycleState.resumed && widget.active) {
+      _refresh?.cancel();
+      unawaited(_load(sync: true));
+    }
   }
 
   String? _owner;
@@ -87,13 +132,16 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
     unawaited(_load());
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool sync = false}) async {
     final session = AuthSessionNotifier.instance.session;
     final epoch = ++_epoch;
     _owner = session?.cacheKey;
     if (session == null) return;
     _lastLoad = DateTime.now();
+    unawaited(_restoreCache(session.cacheKey, epoch));
     try {
+      if (sync) await WordActivityNotifier.instance.syncForLeaderboard();
+      if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
       final report = SpeakingReport(
         await AuthApiClient.instance.speakingLeaderboard(
           accessToken: session.accessToken,
@@ -102,6 +150,9 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
       if (mounted &&
           epoch == _epoch &&
           _owner == AuthSessionNotifier.instance.session?.cacheKey) {
+        unawaited(
+          LastSnapshotCache.leaderboard.save(session.cacheKey, report.data),
+        );
         setState(() {
           _report = report;
           _failed = false;
@@ -109,6 +160,17 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
       }
     } catch (_) {
       if (mounted && epoch == _epoch) setState(() => _failed = true);
+    }
+  }
+
+  Future<void> _restoreCache(String owner, int epoch) async {
+    final cached = await LastSnapshotCache.leaderboard.read(owner);
+    if (mounted &&
+        epoch == _epoch &&
+        _report == null &&
+        cached != null &&
+        owner == AuthSessionNotifier.instance.session?.cacheKey) {
+      setState(() => _report = SpeakingReport(cached));
     }
   }
 
@@ -154,7 +216,7 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.graphic_eq_rounded, color: c.primary),
+                    Icon(Icons.emoji_events_outlined, color: c.primary),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -167,11 +229,6 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
                     ),
                     Icon(Icons.chevron_right, color: c.primary),
                   ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l.leaderboardScope,
-                  style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
                 if (own != null)
@@ -190,6 +247,7 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
                         ).format(own['spokenWords']),
                         l.leaderboardSpokenWords,
                         c.onSurface,
+                        count: own['spokenWords'] as num,
                       ),
                     ],
                   )
@@ -213,27 +271,47 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
     );
   }
 
-  Widget _metric(String value, String label, Color color) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        value,
-        style: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w700,
-          color: color,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-      ),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    ],
-  );
+  Widget _metric(String value, String label, Color color, {num? count}) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (count != null)
+            AnimatedSpokenCount(
+              key: ValueKey((
+                _owner,
+                widget.refreshTick,
+                widget.active,
+                GoalMotion.revisionOf(context),
+              )),
+              fromZero: widget.active,
+              value: count,
+              locale: AppLocalizations.of(context)!.localeName,
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: color,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          if (count == null)
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: color,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      );
 }
 
 class SpeakingLeaderboardScreen extends StatefulWidget {
@@ -244,7 +322,7 @@ class SpeakingLeaderboardScreen extends StatefulWidget {
 }
 
 class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
-  SpeakingReport? _report, _pending;
+  SpeakingReport? _report;
   bool _busy = false, _failed = false;
   int _nextOffset = 100;
   Timer? _timer;
@@ -254,6 +332,13 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   void initState() {
     super.initState();
     _owner = AuthSessionNotifier.instance.session?.cacheKey;
+    final cached = _owner == null
+        ? null
+        : LastSnapshotCache.leaderboard.peek(_owner!);
+    if (cached != null) {
+      _report = SpeakingReport(cached);
+      _nextOffset = _report!.rows.length;
+    }
     AuthSessionNotifier.instance.addListener(_accountChanged);
     unawaited(_load());
     _timer = Timer.periodic(
@@ -269,7 +354,6 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     _epoch++;
     setState(() {
       _report = null;
-      _pending = null;
       _busy = false;
     });
     unawaited(_load());
@@ -286,32 +370,72 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     final session = AuthSessionNotifier.instance.session;
     if (session == null) return;
     final epoch = ++_epoch;
+    unawaited(_restoreCache(session.cacheKey, epoch));
     setState(() {
       _busy = true;
       if (!quiet) _failed = false;
     });
     try {
-      if (!quiet) await WordActivityNotifier.instance.sync();
-      final next = SpeakingReport(
+      if (!quiet) await WordActivityNotifier.instance.syncForLeaderboard();
+      if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
+      var next = SpeakingReport(
         await AuthApiClient.instance.speakingLeaderboard(
           accessToken: session.accessToken,
         ),
       );
       if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-      setState(() {
-        if (quiet && _report != null) {
-          _pending = next.fingerprint == _report!.fingerprint ? null : next;
-        } else {
-          _report = next;
-          _nextOffset = ((next.data['offset'] as int?) ?? 0) + next.rows.length;
-          _pending = null;
+      unawaited(
+        LastSnapshotCache.leaderboard.save(session.cacheKey, next.data),
+      );
+      final targetRows = _report?.rows.length ?? 0;
+      var offset = next.rows.length;
+      while (next.data['hasMore'] == true && offset < targetRows) {
+        final page = SpeakingReport(
+          await AuthApiClient.instance.speakingLeaderboard(
+            accessToken: session.accessToken,
+            offset: offset,
+          ),
+        );
+        if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
+        if (page.data['throughDate'] != next.data['throughDate'] ||
+            page.rows.isEmpty) {
+          break;
         }
+        offset += page.rows.length;
+        final keys = next.rows.map((row) => row['key']).toSet();
+        next = SpeakingReport({
+          ...next.data,
+          'rows': [
+            ...next.rows,
+            ...page.rows.where((row) => keys.add(row['key'])),
+          ],
+          'hasMore': page.data['hasMore'],
+        });
+      }
+      setState(() {
+        _report = next;
+        _nextOffset = offset;
         _failed = false;
       });
     } catch (_) {
       if (mounted && epoch == _epoch) setState(() => _failed = true);
     } finally {
       if (mounted && epoch == _epoch) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _restoreCache(String owner, int epoch) async {
+    final cached = await LastSnapshotCache.leaderboard.read(owner);
+    if (mounted &&
+        epoch == _epoch &&
+        _report == null &&
+        cached != null &&
+        owner == _owner &&
+        owner == AuthSessionNotifier.instance.session?.cacheKey) {
+      setState(() {
+        _report = SpeakingReport(cached);
+        _nextOffset = _report!.rows.length;
+      });
     }
   }
 
@@ -338,7 +462,12 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
             accessToken: session.accessToken,
           ),
         );
-        if (mounted && epoch == _epoch) setState(() => _pending = fresh);
+        if (mounted && epoch == _epoch) {
+          setState(() {
+            _report = fresh;
+            _nextOffset = fresh.rows.length;
+          });
+        }
         return;
       }
       final keys = _report!.rows.map((row) => row['key']).toSet();
@@ -370,23 +499,13 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) => SpeakingLeaderboardView(
+    key: ValueKey(_owner),
     report: _report,
     loading: _busy && _report == null,
     failed: _failed,
-    hasUpdate: _pending != null,
     loadingMore: _busy && _report != null,
     onLoadMore: _loadMore,
-    onRefresh: () async {
-      if (_pending != null) {
-        setState(() {
-          _report = _pending;
-          _nextOffset = _pending!.rows.length;
-          _pending = null;
-        });
-      } else {
-        await _load();
-      }
-    },
+    onRefresh: _load,
   );
 }
 
@@ -412,6 +531,24 @@ class SpeakingLeaderboardView extends StatefulWidget {
 
 class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   final _scroll = ScrollController();
+  final _rowKeys = <Object, GlobalKey<LeaderboardMotionRowState>>{};
+  Map<Object, double?> _fromTops = {};
+  int _motionRevision = 0;
+
+  @override
+  void didUpdateWidget(SpeakingLeaderboardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.report, oldWidget.report)) {
+      _fromTops = {
+        for (final entry in _rowKeys.entries)
+          entry.key: entry.value.currentState?.visualTop,
+      };
+      _motionRevision++;
+      final keys = widget.report?.rows.map((row) => row['key']).toSet() ?? {};
+      _rowKeys.removeWhere((key, _) => !keys.contains(key));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -496,10 +633,19 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                       if (report.you['rank'] == null)
                         _notice(l.leaderboardNoActivity),
                       for (final row in report.rows)
-                        Padding(
-                          key: ValueKey(row['key']),
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: SpeakingLeaderboardRow(row: row),
+                        LeaderboardMotionRow(
+                          key: _rowKeys.putIfAbsent(
+                            row['key'],
+                            () => GlobalKey<LeaderboardMotionRowState>(),
+                          ),
+                          revision: _motionRevision,
+                          fromTop: _fromTops[row['key']],
+                          scrollOffset: () =>
+                              _scroll.hasClients ? _scroll.offset : 0,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: SpeakingLeaderboardRow(row: row),
+                          ),
                         ),
                       if (report.data['hasMore'] == true)
                         Padding(
@@ -593,7 +739,7 @@ class SpeakingLeaderboardRow extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final c = Theme.of(context).colorScheme;
     final mine = row['isMe'] == true;
-    final name = (row['name'] as String?)?.trim();
+    final name = leaderboardFirstName(row['name'] as String?);
     final rank = row['rank'] as num?;
     final language = goalLearningLanguageLabel(
       row['learningLanguage'] as String?,
@@ -615,41 +761,53 @@ class SpeakingLeaderboardRow extends StatelessWidget {
                   : const Color(0xFF91603E),
             _ => c.onSurfaceVariant,
           };
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        LayoutBuilder(
-          builder: (context, bounds) {
-            final stacked =
-                MediaQuery.textScalerOf(context).scale(16) > 22 ||
-                bounds.maxWidth < 270;
-            final identity = Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 34,
-                  child: Text(
-                    rank == null
-                        ? '—'
-                        : NumberFormat.decimalPattern(
-                            l.localeName,
-                          ).format(rank),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: accent,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
+    final content = LayoutBuilder(
+      builder: (context, bounds) {
+        final stacked =
+            MediaQuery.textScalerOf(context).scale(16) > 22 ||
+            bounds.maxWidth < 270;
+        final total = AnimatedSpokenCount(
+          key: ValueKey('leaderboard-total-${row['key']}'),
+          fromZero: true,
+          value: row['spokenWords'] as num,
+          locale: l.localeName,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: mine ? c.primary : c.onSurface,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        );
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 34,
+              child: Text(
+                rank == null
+                    ? '—'
+                    : NumberFormat.decimalPattern(l.localeName).format(rank),
+                key: ValueKey('leaderboard-rank-${row['key']}'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: accent,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
                 ),
-                const SizedBox(width: 8),
-                ProfileAvatar(
-                  radius: 19,
-                  imageUrl: row['avatarUrl'] as String?,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
+              ),
+            ),
+            const SizedBox(width: 8),
+            ProfileAvatar(
+              key: ValueKey('leaderboard-avatar-${row['key']}'),
+              radius: 19,
+              imageUrl: row['avatarUrl'] as String?,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                     '${name == null || name.isEmpty ? l.leaderboardLearner : name}${mine ? ' · ${l.leaderboardYou}' : ''}',
                     maxLines: stacked ? null : 2,
                     overflow: stacked ? null : TextOverflow.ellipsis,
@@ -659,49 +817,29 @@ class SpeakingLeaderboardRow extends StatelessWidget {
                       color: c.onSurface,
                     ),
                   ),
-                ),
-              ],
-            );
-            final total = Text(
-              NumberFormat.decimalPattern(
-                l.localeName,
-              ).format(row['spokenWords']),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: mine ? c.primary : c.onSurface,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            );
-            return stacked
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      identity,
-                      Padding(
-                        padding: const EdgeInsets.only(left: 90, top: 8),
-                        child: total,
+                  if (language.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        language,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: c.onSurfaceVariant,
+                        ),
                       ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      Expanded(child: identity),
-                      const SizedBox(width: 8),
-                      total,
-                    ],
-                  );
-          },
-        ),
-        if (language.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 90, top: 6),
-            child: Text(
-              l.wordActivityLearningLanguage(language),
-              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+                    ),
+                  if (stacked)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: total,
+                    ),
+                ],
+              ),
             ),
-          ),
-      ],
+            if (!stacked) ...[const SizedBox(width: 8), total],
+          ],
+        );
+      },
     );
     return Material(
       color: mine ? c.primary.withValues(alpha: .09) : c.surface,

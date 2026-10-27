@@ -141,6 +141,12 @@ class AiVocabulary {
     changes.value++;
   }
 
+  /// UI-only bulk deletion, deliberately not an AI tool action.
+  Future<void> clear() => _serial(() async {
+    final file = await _file();
+    await _write(file, {'version': 1, 'items': <dynamic>[]});
+  });
+
   Future<List<VocabularyWord>> words() => _serial(() async {
     final data = await _read(await _file());
     _check();

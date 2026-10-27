@@ -142,7 +142,7 @@ void main() {
           find.byType(MaterialApp),
           'goldens/leaderboard-${dark ? 'dark' : 'light'}.png',
         );
-        expect(find.text('Learning Japanese 🇯🇵'), findsWidgets);
+        expect(find.text('Japanese 🇯🇵'), findsWidgets);
         expect(find.text('Language breakdown'), findsNothing);
         expect(find.text('Last 30 days'), findsOneWidget);
         expect(find.textContaining('All languages'), findsNothing);
@@ -214,12 +214,14 @@ void main() {
         find.byType(MaterialApp),
         'goldens/goal-${dark ? 'dark' : 'light'}.png',
       );
+      expect(find.text('Last 30 days'), findsNothing);
+      expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
     });
   }
   testWidgets(
     'own position stays in the normal list without visibility controls',
     (tester) async {
-      await mount(tester, view(report: sample(me: 8)));
+      await mount(tester, view(report: sample(me: 10)));
       expect(find.byKey(const ValueKey('your-position-dock')), findsNothing);
       expect(find.byIcon(Icons.visibility_outlined), findsNothing);
       expect(find.byIcon(Icons.visibility_off_outlined), findsNothing);
@@ -232,7 +234,7 @@ void main() {
       await tester.tap(find.textContaining('· You'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
-      expect(find.textContaining('Noah Williams · You'), findsOneWidget);
+      expect(find.textContaining('Noah · You'), findsOneWidget);
     },
   );
   testWidgets('more ranking pages are reachable from the normal list', (
@@ -260,7 +262,7 @@ void main() {
     tester,
   ) async {
     await mount(tester, view(report: sample(me: 2, hidden: true)));
-    expect(find.text('Oliver Bennett · You'), findsOneWidget);
+    expect(find.text('Oliver · You'), findsOneWidget);
     expect(find.text('Private learner · You'), findsNothing);
     expect(find.text('12,450'), findsOneWidget);
   });

@@ -1818,7 +1818,7 @@ class AppLocalizationsTh extends AppLocalizations {
       'สื่อนี้ไม่อยู่ในอุปกรณ์แล้ว คุณสามารถนำออกจากประวัติได้';
 
   @override
-  String get aiClearHistory => 'ล้างประวัติ';
+  String get aiClearHistory => 'ล้างแชต';
 
   @override
   String get aiClearHistoryBody =>
@@ -2479,4 +2479,125 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'เริ่มจาก A0 ตอบถูกอย่างน้อย 10 ข้อจากแบบฝึกหัดที่นับคะแนน 12 ข้อล่าสุดเพื่อผ่านระดับและปลดล็อกระดับถัดไป การถึง C2 เป็นเพียงการปลดล็อก ยังต้องตอบถูก 10 จาก 12 ข้อเพื่อจบ C2 ระดับที่ผ่านแล้วจะยังคงผ่าน แม้ระบบจะแนะนำให้ทบทวนระดับที่ง่ายกว่า';
+
+  @override
+  String get storageTitle => 'พื้นที่เก็บข้อมูลและแคช';
+
+  @override
+  String get storageMeasured => 'เก็บไว้ในอุปกรณ์นี้';
+
+  @override
+  String get storageClearable => 'ล้างได้อย่างปลอดภัย';
+
+  @override
+  String get storageClear => 'ล้างแคช';
+
+  @override
+  String get storageKeep => 'เก็บไว้ในอุปกรณ์';
+
+  @override
+  String get storageImages => 'รูปภาพ';
+
+  @override
+  String get storageSnapshots => 'อันดับและแบบฝึกล่าสุด';
+
+  @override
+  String get storageTemporaryAudio => 'เสียงแบบฝึกชั่วคราว';
+
+  @override
+  String get storageAiChats => 'แชต AI และเสียงบันทึก';
+
+  @override
+  String get storageDm => 'ข้อความส่วนตัวและเสียงบันทึก';
+
+  @override
+  String get storagePractice => 'แบบฝึกที่บันทึกและดาวน์โหลด';
+
+  @override
+  String get storageOther => 'การตั้งค่าและไฟล์ในเครื่องอื่น ๆ';
+
+  @override
+  String get storageScope =>
+      'นับเฉพาะไฟล์ที่แอปเข้าถึงได้ ไม่รวมตัวแอปและโมเดลภาษาที่ระบบจัดการ ไฟล์ที่กำลังใช้งานอาจยังอยู่ในแคช';
+
+  @override
+  String get storageClearExplanation =>
+      'ล้างไฟล์แคชที่ดาวน์โหลดใหม่ได้หรือไม่? รูปภาพและแบบฝึกสามารถดาวน์โหลดใหม่ได้ เสียงบันทึก การสนทนา แบบฝึกที่บันทึก ดาวน์โหลด และการตั้งค่าจะยังอยู่';
+
+  @override
+  String get storagePrivacy =>
+      'เราเก็บข้อมูลไว้ในอุปกรณ์เมื่อเป็นไปได้ คำขอ AI ข้อความ การอัปโหลด และการซิงค์ความคืบหน้ายังคงส่งข้อมูลที่จำเป็นสำหรับฟีเจอร์เหล่านั้น การล้างแคชไม่ลบบัญชีหรือข้อมูลบนเซิร์ฟเวอร์';
+
+  @override
+  String get storageError =>
+      'ไม่สามารถอ่านหรือล้างข้อมูลบางส่วนได้ โปรดลองอีกครั้ง';
+
+  @override
+  String storageManageAi(String action) {
+    return 'หากต้องการล้าง ให้เปิดเมนูแชต AI แล้วเลือก “$action”';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'หากต้องการลบ ให้เปิดเมนูการสนทนาแล้วเลือก “$action”';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'หากต้องการลบแบบฝึกที่บันทึกหรือดาวน์โหลด ให้ลบรายการที่บันทึกไว้ที่เกี่ยวข้อง';
+
+  @override
+  String get aiClearAudioTitle => 'เฉพาะเสียง';
+
+  @override
+  String get aiClearAudioBody =>
+      'ลบเสียงบันทึกของคุณและเสียง AI โดยเก็บข้อความ คำถอดเสียง และรูปภาพไว้';
+
+  @override
+  String get aiClearAllTitle => 'ข้อความและเสียงทั้งหมด';
+
+  @override
+  String get aiClearAllBody =>
+      'ลบข้อความ คำถอดเสียง เสียงบันทึก และไฟล์แนบของแชตนี้';
+
+  @override
+  String get aiKeepSummary => 'เก็บสรุปล่าสุด';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'เก็บสรุปที่บันทึกไว้ล่าสุดเป็นความจำของ AI ซึ่งอาจยังไม่มีข้อความล่าสุด';
+
+  @override
+  String get aiNoSummary => 'ยังไม่มีสรุปที่บันทึกไว้';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'พื้นที่ที่จะว่างโดยประมาณ: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'สาย AI ปัจจุบันจะสิ้นสุดลง คำศัพท์และการเตือนที่ตั้งเวลาไว้จะไม่เปลี่ยนแปลง';
+
+  @override
+  String get clearAllLabel => 'ล้างทั้งหมด';
+
+  @override
+  String get aiRemindersClearBody =>
+      'ลบการเตือนทั้งหมด รวมถึงที่ตั้งเวลาไว้หรือไม่? การเตือนที่รอดำเนินการจะถูกยกเลิกบนเซิร์ฟเวอร์';
+
+  @override
+  String get aiRemindersRetained =>
+      'ลบการเตือนบางรายการไม่ได้ จึงยังแสดงอยู่ สายที่กำลังดังไม่สามารถยกเลิกที่นี่ได้';
+
+  @override
+  String get vocabClearBody =>
+      'ลบคำศัพท์ที่บันทึกไว้ทั้งหมดและความคืบหน้าการทบทวน รวมถึงคำที่ตัวกรองซ่อนอยู่หรือไม่? ย้อนกลับไม่ได้';
+
+  @override
+  String get vocabReviewHelpTitle => 'ทำไมจึงถึงเวลาทบทวน?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera ใช้การทบทวนแบบเว้นระยะ การกลับมาทบทวนหลังเว้นช่วงช่วยให้จำได้นานขึ้น ซึ่งเกี่ยวข้องกับเส้นโค้งการลืมที่อธิบายว่าความจำอาจลดลงตามเวลา\n\nตารางของเรา:\n• ทบทวนครั้งแรกหลังบันทึก 1 วัน\n• หลังการทบทวนครั้งถัดไป เว้น 3, 7, 14 แล้ว 30 วัน\n• จากนั้นทุก 30 วัน\n\nคำจะถึงกำหนดเมื่อถึงวันที่ตั้งไว้ การทำเครื่องหมายว่าทบทวนแล้วจะเริ่มช่วงถัดไปจากครั้งนั้น นี่คือตารางคงที่ ไม่ใช่การวัดความจำหรือการคาดว่าคุณลืมคำแล้ว';
 }

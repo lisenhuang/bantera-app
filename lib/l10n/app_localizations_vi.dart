@@ -1837,7 +1837,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.';
 
   @override
-  String get aiClearHistory => 'Xóa lịch sử';
+  String get aiClearHistory => 'Xóa trò chuyện';
 
   @override
   String get aiClearHistoryBody =>
@@ -2500,4 +2500,125 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Bắt đầu từ A0. Trả lời đúng ít nhất 10 trong 12 bài tập được chấm điểm gần nhất để vượt qua cấp độ và mở cấp độ tiếp theo. Đạt C2 chỉ mở khóa cấp độ đó; bạn vẫn cần đúng 10 trên 12 để hoàn thành. Các cấp độ đã vượt qua được giữ nguyên, kể cả khi được đề xuất ôn tập cấp độ dễ hơn.';
+
+  @override
+  String get storageTitle => 'Bộ nhớ và bộ nhớ đệm';
+
+  @override
+  String get storageMeasured => 'Được lưu trên thiết bị này';
+
+  @override
+  String get storageClearable => 'Có thể xóa an toàn';
+
+  @override
+  String get storageClear => 'Xóa bộ nhớ đệm';
+
+  @override
+  String get storageKeep => 'Giữ lại trên thiết bị';
+
+  @override
+  String get storageImages => 'Ảnh và hình ảnh';
+
+  @override
+  String get storageSnapshots => 'Bảng xếp hạng và bài luyện gần nhất';
+
+  @override
+  String get storageTemporaryAudio => 'Âm thanh luyện tập tạm thời';
+
+  @override
+  String get storageAiChats => 'Trò chuyện AI và bản ghi âm';
+
+  @override
+  String get storageDm => 'Tin nhắn trực tiếp và bản ghi âm';
+
+  @override
+  String get storagePractice => 'Bài luyện đã lưu và nội dung tải về';
+
+  @override
+  String get storageOther => 'Cài đặt và tệp cục bộ khác';
+
+  @override
+  String get storageScope =>
+      'Chỉ tính các tệp ứng dụng có thể truy cập. Không gồm phần cài đặt ứng dụng và mô hình ngôn ngữ do hệ thống quản lý. Tệp đang dùng có thể vẫn được lưu đệm.';
+
+  @override
+  String get storageClearExplanation =>
+      'Xóa các tệp đệm có thể tải lại? Hình ảnh và bài luyện có thể được tải lại. Bản ghi âm, cuộc trò chuyện, bài luyện đã lưu, nội dung tải về và cài đặt sẽ được giữ lại.';
+
+  @override
+  String get storagePrivacy =>
+      'Chúng tôi lưu dữ liệu trên thiết bị khi có thể. Yêu cầu AI, tin nhắn, tải lên và đồng bộ tiến độ vẫn gửi dữ liệu cần thiết cho các tính năng đó. Xóa bộ nhớ đệm không xóa tài khoản hoặc dữ liệu trên máy chủ.';
+
+  @override
+  String get storageError =>
+      'Không thể đọc hoặc xóa một số dữ liệu. Vui lòng thử lại.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Để xóa, hãy mở menu trò chuyện AI và chọn “$action”.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Để xóa, hãy mở menu của cuộc trò chuyện và chọn “$action”.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Để xóa bài luyện đã lưu hoặc nội dung tải về, hãy xóa các mục đã lưu tương ứng.';
+
+  @override
+  String get aiClearAudioTitle => 'Chỉ âm thanh';
+
+  @override
+  String get aiClearAudioBody =>
+      'Xóa bản ghi của bạn và âm thanh AI. Giữ tin nhắn, bản chép lời và hình ảnh.';
+
+  @override
+  String get aiClearAllTitle => 'Tất cả tin nhắn và âm thanh';
+
+  @override
+  String get aiClearAllBody =>
+      'Xóa tin nhắn, bản chép lời, bản ghi và tệp đính kèm của cuộc trò chuyện này.';
+
+  @override
+  String get aiKeepSummary => 'Giữ bản tóm tắt cuối';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Giữ bản tóm tắt đã lưu gần nhất làm trí nhớ AI. Có thể chưa bao gồm tin nhắn mới.';
+
+  @override
+  String get aiNoSummary => 'Chưa có bản tóm tắt đã lưu.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Dung lượng dự kiến giải phóng: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Cuộc gọi AI hiện tại sẽ kết thúc. Từ vựng và lời nhắc đã lên lịch không thay đổi.';
+
+  @override
+  String get clearAllLabel => 'Xóa tất cả';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Xóa mọi lời nhắc, kể cả lời nhắc đã lên lịch? Các lời nhắc đang chờ sẽ được hủy trên máy chủ.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Một số lời nhắc chưa xóa được và vẫn hiển thị. Không thể hủy cuộc gọi đang đổ chuông ở đây.';
+
+  @override
+  String get vocabClearBody =>
+      'Xóa tất cả từ vựng đã lưu và tiến độ ôn tập, kể cả từ bị bộ lọc ẩn? Không thể hoàn tác.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Vì sao từ đến hạn ôn tập?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera dùng lặp lại ngắt quãng: ôn sau một khoảng nghỉ có thể giúp nhớ lâu hơn. Điều này liên quan đến đường cong quên lãng, mô tả trí nhớ suy giảm theo thời gian.\n\nLịch của chúng tôi:\n• Ôn lần đầu: 1 ngày sau khi lưu.\n• Sau các lần ôn tiếp theo: 3, 7, 14 rồi 30 ngày.\n• Sau đó cứ mỗi 30 ngày.\n\nTừ đến hạn khi tới ngày dự kiến. Đánh dấu đã ôn sẽ bắt đầu khoảng thời gian tiếp theo từ lần ôn đó. Đây là lịch cố định, không đo trí nhớ hay dự đoán rằng bạn đã quên từ.';
 }

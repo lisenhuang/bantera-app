@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Dinleme";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Giriş Yap";
+
+"practice.widget.level" = "Seviye";
+"practice.widget.language" = "Öğrendiğim Dil";
+"practice.widget.position" = "Konumun";
+"practice.widget.period" = "Son 30 gün";

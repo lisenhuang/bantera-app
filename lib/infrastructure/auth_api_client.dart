@@ -1,3 +1,4 @@
+import '../core/practice_widget_service.dart';
 import 'ai_operation_client.dart';
 import '../core/auth_session_notifier.dart';
 import '../core/ai_consent.dart';
@@ -1434,12 +1435,23 @@ class AuthApiClient {
   Future<Map<String, dynamic>> speakingLeaderboard({
     required String accessToken,
     int offset = 0,
-  }) => _sendJsonRequest(
-    method: 'GET',
-    path: '/api/speaking-leaderboard?offset=$offset&days=30',
-    accessToken: accessToken,
-    expectedUserId: _wordActivityTokenSubject(accessToken),
-  ).timeout(const Duration(seconds: 15));
+  }) async {
+    final data = await _sendJsonRequest(
+      method: 'GET',
+      path: '/api/speaking-leaderboard?offset=$offset&days=30',
+      accessToken: accessToken,
+      expectedUserId: _wordActivityTokenSubject(accessToken),
+    ).timeout(const Duration(seconds: 15));
+    final session = AuthSessionNotifier.instance.session;
+    if (session != null &&
+        session.userId == _wordActivityTokenSubject(accessToken)) {
+      PracticeWidgetService.instance.setLeaderboard(
+        owner: session.cacheKey,
+        report: data,
+      );
+    }
+    return data;
+  }
 
   Future<void> syncSpeakingActivity({
     required String accessToken,
@@ -1626,13 +1638,25 @@ class AuthApiClient {
     required String accessToken,
   }) async {
     await _requireAiConsent(accessToken);
-    return _sendJsonRequest(
+    final data = await _sendJsonRequest(
       method: 'POST',
       path: '/api/me/practice/$path',
       payload: payload,
       accessToken: accessToken,
       expectedUserId: _wordActivityTokenSubject(accessToken),
     ).timeout(const Duration(seconds: 100));
+    final session = AuthSessionNotifier.instance.session;
+    final language = data['locale'] as String? ?? payload['locale'] as String?;
+    if (session != null &&
+        language != null &&
+        session.userId == _wordActivityTokenSubject(accessToken)) {
+      PracticeWidgetService.instance.setProgress(
+        owner: session.cacheKey,
+        language: language,
+        level: data['currentLevel'] as String?,
+      );
+    }
+    return data;
   }
 
   Future<Map<String, dynamic>> _sendJsonRequest({

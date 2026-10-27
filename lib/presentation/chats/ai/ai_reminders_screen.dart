@@ -1,3 +1,4 @@
+import '../../shared/swipe_action_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/auth_session_notifier.dart';
@@ -5,16 +6,22 @@ import '../../../infrastructure/ai/ai_api_client.dart';
 import '../../../l10n/app_localizations.dart';
 
 class AiRemindersScreen extends StatefulWidget {
-  const AiRemindersScreen({super.key});
+  const AiRemindersScreen({super.key, this.api, this.owner});
+  final AiApiClient? api;
+  final String? owner;
   @override
   State<AiRemindersScreen> createState() => _AiRemindersScreenState();
 }
 
 class _AiRemindersScreenState extends State<AiRemindersScreen> {
-  final _api = AiApiClient();
-  final _owner = AuthSessionNotifier.instance.session!.cacheKey;
+  late final _api = widget.api ?? AiApiClient();
+  late final _owner =
+      widget.owner ?? AuthSessionNotifier.instance.session!.cacheKey;
   List<Map>? _items;
   bool _failed = false;
+  bool _clearing = false;
+  int _revision = 0;
+  String? _revealed;
   final _cancelling = <String>{};
   @override
   void initState() {
@@ -29,9 +36,12 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
   }
 
   Future<void> _load() async {
+    if (_clearing || _cancelling.isNotEmpty) return;
     try {
-      final items = await _api.reminderRequest(_owner, 'GET') as List;
-      if (mounted) {
+      final revision = _revision;
+      final items =
+          await _api.reminderRequest(_owner, 'GET', '/history') as List;
+      if (mounted && revision == _revision) {
         setState(() {
           _items = items.cast<Map>();
           _failed = false;
@@ -43,11 +53,12 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
   }
 
   Future<void> _cancel(Map item) async {
+    if (_clearing || _cancelling.isNotEmpty) return;
     final l = AppLocalizations.of(context)!;
     final yes = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l.aiReminderCancelTitle),
+        title: Text(l.deleteLabel),
         content: Text(item['reminder'] as String? ?? ''),
         actions: [
           TextButton(
@@ -56,17 +67,23 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l.cancel),
+            child: Text(l.deleteLabel),
           ),
         ],
       ),
     );
     if (yes != true || !mounted) return;
     final id = item['id'] as String;
+    _revision++;
     setState(() => _cancelling.add(id));
     try {
-      await _api.reminderRequest(_owner, 'DELETE', '/$id');
-      await _load();
+      await _api.reminderRequest(_owner, 'DELETE', '/history/$id');
+      if (mounted) {
+        setState(() {
+          _items?.removeWhere((row) => row['id'] == id);
+          _revealed = null;
+        });
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -75,6 +92,57 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
       }
     } finally {
       if (mounted) setState(() => _cancelling.remove(id));
+    }
+  }
+
+  Future<void> _clearAll() async {
+    if (_clearing || _cancelling.isNotEmpty) return;
+    final l = AppLocalizations.of(context)!;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.clearAllLabel),
+        content: Text(l.aiRemindersClearBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.clearAllLabel),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    _revision++;
+    setState(() => _clearing = true);
+    try {
+      final result =
+          await _api.reminderRequest(_owner, 'DELETE', '/history') as Map;
+      final remaining = (result['remaining'] as List).cast<Map>();
+      if (!mounted) return;
+      setState(() {
+        _items = remaining;
+        _revealed = null;
+      });
+      if (remaining.isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.aiRemindersRetained)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.onboardingLoadFailed)));
+      }
+    } finally {
+      if (mounted) setState(() => _clearing = false);
     }
   }
 
@@ -105,7 +173,25 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
             : (b['dueAt'] as String).compareTo(a['dueAt'] as String);
       });
     return Scaffold(
-      appBar: AppBar(title: Text(l.aiRemindersTitle)),
+      appBar: AppBar(
+        title: Text(l.aiRemindersTitle),
+        actions: [
+          IconButton(
+            tooltip: l.clearAllLabel,
+            onPressed:
+                _items?.isNotEmpty == true && !_clearing && _cancelling.isEmpty
+                ? _clearAll
+                : null,
+            icon: _clearing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.delete_outline),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: _failed && _items == null
             ? Center(
@@ -163,15 +249,15 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
   Widget _card(Map item, AppLocalizations l, ThemeData theme) {
     final call = item['delivery'] == 'call';
     final date = DateTime.parse(item['dueAt'] as String).toLocal();
-    final canCancel = [
-      'scheduled',
-      'queued',
-      'generating',
-      'ready',
-    ].contains(item['status']);
     final locale = Localizations.localeOf(context).toString();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    return SwipeActionCard(
+      key: ValueKey(item['id']),
+      revealed: _revealed == item['id'],
+      onReveal: (value) =>
+          setState(() => _revealed = value ? item['id'] as String : null),
+      onRemove: _clearing || _cancelling.isNotEmpty
+          ? null
+          : () => _cancel(item),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -209,17 +295,8 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
               '${DateFormat.yMMMd(locale).format(date)} · ${TimeOfDay.fromDateTime(date).format(context)}',
               style: theme.textTheme.bodyMedium,
             ),
-            if (canCancel)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _cancelling.contains(item['id'])
-                      ? null
-                      : () => _cancel(item),
-                  icon: const Icon(Icons.close, size: 18),
-                  label: Text(l.cancel),
-                ),
-              ),
+            if (_cancelling.contains(item['id']))
+              const LinearProgressIndicator(),
           ],
         ),
       ),

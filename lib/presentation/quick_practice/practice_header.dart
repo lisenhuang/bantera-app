@@ -12,7 +12,7 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.showTranslationLanguage = false,
     this.isSaved = false,
     this.playbackSpeed = 1.0,
-    this.onCycleSpeed,
+    this.onSpeedSelected,
   });
   final VoidCallback? onLongerDialogues;
   final VoidCallback? onSavePractice;
@@ -22,8 +22,9 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Capability controls visibility; temporary busy states only disable it.
   final bool showTranslationLanguage;
   final bool isSaved;
+  static const speeds = [0.5, 0.75, 1.0, 1.25, 1.5];
   final double playbackSpeed;
-  final VoidCallback? onCycleSpeed;
+  final ValueChanged<double>? onSpeedSelected;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -61,15 +62,58 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
               ),
               SizedBox.square(
                 dimension: buttonSize,
-                child: TextButton(
-                  key: const ValueKey('practice-playback-speed'),
-                  onPressed: onCycleSpeed,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(48, 48),
+                child: MenuAnchor(
+                  consumeOutsideTap: true,
+                  style: MenuStyle(
+                    minimumSize: const WidgetStatePropertyAll(Size(150, 0)),
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
-                  child: Tooltip(
+                  menuChildren: [
+                    for (final speed in speeds)
+                      Semantics(
+                        selected: speed == playbackSpeed,
+                        child: MenuItemButton(
+                          key: ValueKey('practice-speed-$speed'),
+                          onPressed: onSpeedSelected == null
+                              ? null
+                              : () => onSpeedSelected!(speed),
+                          leadingIcon: speed == playbackSpeed
+                              ? const Icon(
+                                  Icons.check,
+                                  key: ValueKey('practice-speed-selected'),
+                                )
+                              : const SizedBox(width: 24),
+                          child: Text(
+                            '${speed == speed.roundToDouble() ? speed.toInt() : speed}×',
+                          ),
+                        ),
+                      ),
+                  ],
+                  builder: (context, controller, child) => Tooltip(
                     message: l.quickPlaybackSpeed(speedLabel),
+                    child: TextButton(
+                      key: const ValueKey('practice-playback-speed'),
+                      onPressed: onSpeedSelected == null
+                          ? null
+                          : () {
+                              if (controller.isOpen) {
+                                controller.close();
+                              } else {
+                                controller.open();
+                              }
+                            },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(48, 48),
+                      ),
+                      child: child!,
+                    ),
+                  ),
+                  child: Center(
                     child: Container(
                       width: 48,
                       height: 30,
@@ -88,7 +132,16 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                       ),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text('$speedLabel×'),
+                        child: Text(
+                          '$speedLabel×',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: onSpeedSelected == null
+                                ? theme.colorScheme.onSurface.withValues(
+                                    alpha: .38,
+                                  )
+                                : theme.colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ),
                   ),

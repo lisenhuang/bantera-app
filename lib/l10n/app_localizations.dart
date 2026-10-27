@@ -3353,7 +3353,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiClearHistory.
   ///
   /// In en, this message translates to:
-  /// **'Clear history'**
+  /// **'Clear chat'**
   String get aiClearHistory;
 
   /// No description provided for @aiClearHistoryBody.
@@ -3413,7 +3413,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiUsageTitle.
   ///
   /// In en, this message translates to:
-  /// **'Usage'**
+  /// **'How to Use'**
   String get aiUsageTitle;
 
   /// No description provided for @aiUsageBody.
@@ -4531,6 +4531,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start at A0. Pass a level with at least 10 correct answers in your latest 12 scored exercises to unlock the next level. Reaching C2 unlocks it; pass the same 10-out-of-12 test to complete C2. Passed levels stay passed, even when an easier level is recommended for review.'**
   String get quickLevelStatesExplanation;
+
+  /// No description provided for @storageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Cache'**
+  String get storageTitle;
+
+  /// No description provided for @storageMeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'Stored on this device'**
+  String get storageMeasured;
+
+  /// No description provided for @storageClearable.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe to clear'**
+  String get storageClearable;
+
+  /// No description provided for @storageClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cache'**
+  String get storageClear;
+
+  /// No description provided for @storageKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept on device'**
+  String get storageKeep;
+
+  /// No description provided for @storageImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos & images'**
+  String get storageImages;
+
+  /// No description provided for @storageSnapshots.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard & last Practice'**
+  String get storageSnapshots;
+
+  /// No description provided for @storageTemporaryAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary Practice audio'**
+  String get storageTemporaryAudio;
+
+  /// No description provided for @storageAiChats.
+  ///
+  /// In en, this message translates to:
+  /// **'AI chats & recordings'**
+  String get storageAiChats;
+
+  /// No description provided for @storageDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct messages & recordings'**
+  String get storageDm;
+
+  /// No description provided for @storagePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Practice & downloads'**
+  String get storagePractice;
+
+  /// No description provided for @storageOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings & other local files'**
+  String get storageOther;
+
+  /// No description provided for @storageScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured app files only. App installation and system-managed language models are not included. Files in use may remain cached.'**
+  String get storageScope;
+
+  /// No description provided for @storageClearExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove replaceable cached files? Images and Practice content can download again. Your recordings, conversations, saved practices, downloads and settings will be kept.'**
+  String get storageClearExplanation;
+
+  /// No description provided for @storagePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'We store data on your device where possible. AI requests, messaging, uploads and progress sync still send the data needed for those features. Clearing cache does not delete your account or server data.'**
+  String get storagePrivacy;
+
+  /// No description provided for @storageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Some storage could not be read or cleared. Please try again.'**
+  String get storageError;
+
+  /// No description provided for @storageManageAi.
+  ///
+  /// In en, this message translates to:
+  /// **'To clear these, open the AI chat menu and choose “{action}”.'**
+  String storageManageAi(String action);
+
+  /// No description provided for @storageManageDm.
+  ///
+  /// In en, this message translates to:
+  /// **'To remove these, open the conversation menu and choose “{action}”.'**
+  String storageManageDm(String action);
+
+  /// No description provided for @storageManagePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'To remove saved practices or downloads, delete the corresponding saved items.'**
+  String get storageManagePractice;
+
+  /// No description provided for @aiClearAudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio only'**
+  String get aiClearAudioTitle;
+
+  /// No description provided for @aiClearAudioBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove your recordings and AI audio. Keep messages, transcripts and images.'**
+  String get aiClearAudioBody;
+
+  /// No description provided for @aiClearAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All messages and audio'**
+  String get aiClearAllTitle;
+
+  /// No description provided for @aiClearAllBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this chat’s messages, transcripts, recordings and attachments.'**
+  String get aiClearAllBody;
+
+  /// No description provided for @aiKeepSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the last summary'**
+  String get aiKeepSummary;
+
+  /// No description provided for @aiKeepSummaryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the latest saved summary as AI memory. Recent messages may not be included.'**
+  String get aiKeepSummaryBody;
+
+  /// No description provided for @aiNoSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved summary yet.'**
+  String get aiNoSummary;
+
+  /// No description provided for @aiClearFreed.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated space freed: {size}'**
+  String aiClearFreed(String size);
+
+  /// No description provided for @aiClearNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This ends any current AI call. Vocabulary and scheduled reminders stay unchanged.'**
+  String get aiClearNotice;
+
+  /// No description provided for @clearAllLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAllLabel;
+
+  /// No description provided for @aiRemindersClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all reminders, including scheduled ones? Pending reminders will be cancelled on the server.'**
+  String get aiRemindersClearBody;
+
+  /// No description provided for @aiRemindersRetained.
+  ///
+  /// In en, this message translates to:
+  /// **'Some reminders could not be removed and remain here. A call already ringing cannot be cancelled here.'**
+  String get aiRemindersRetained;
+
+  /// No description provided for @vocabClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all saved vocabulary words and their review progress, including words hidden by your current filter? This cannot be undone.'**
+  String get vocabClearBody;
+
+  /// No description provided for @vocabReviewHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are words due for review?'**
+  String get vocabReviewHelpTitle;
+
+  /// No description provided for @vocabReviewHelpBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.'**
+  String get vocabReviewHelpBody;
 }
 
 class _AppLocalizationsDelegate

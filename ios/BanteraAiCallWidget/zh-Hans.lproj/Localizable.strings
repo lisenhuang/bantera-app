@@ -16,3 +16,8 @@
 "practice.widget.listened" = "听力";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "登录";
+
+"practice.widget.level" = "级别";
+"practice.widget.language" = "学习语言";
+"practice.widget.position" = "你的位置";
+"practice.widget.period" = "最近30天";

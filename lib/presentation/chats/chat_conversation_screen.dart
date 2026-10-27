@@ -22,7 +22,7 @@ import '../../infrastructure/region_service.dart';
 import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
-import '../shared/locale_flag.dart';
+import 'chat_language_label.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_menu_item_row.dart';
@@ -369,8 +369,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       return badges.join(' • ');
     }
 
-    final learning = _partner?.learningLanguageDisplay;
-    final native = _partner?.nativeLanguageDisplay;
+    final learning = chatLanguageLabel(
+      _partner?.learningLanguage ?? widget.thread?.learningLanguage,
+    );
+    final native = chatLanguageLabel(
+      _partner?.nativeLanguage ?? widget.thread?.nativeLanguage,
+    );
     return [
       learning,
       native,
@@ -915,14 +919,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               const SizedBox(height: 8),
               Text(
                 [
-                  _languageLine(
-                    user.learningLanguage,
-                    user.learningLanguageDisplay,
-                  ),
-                  _languageLine(
-                    user.nativeLanguage,
-                    user.nativeLanguageDisplay,
-                  ),
+                  chatLanguageLabel(user.learningLanguage),
+                  chatLanguageLabel(user.nativeLanguage),
                 ].whereType<String>().join('\n'),
                 textAlign: TextAlign.center,
               ),
@@ -1037,17 +1035,6 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         ).showSnackBar(SnackBar(content: Text(l10n.chatBlockUserFailed)));
       }
     }
-  }
-
-  String? _languageLine(String? identifier, String? display) {
-    final value = display ?? identifier;
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-    final flag = identifier == null || identifier.trim().isEmpty
-        ? '🌐'
-        : flagEmojiForLocale(identifier);
-    return '$flag  $value';
   }
 
   Future<bool?> _confirmAction({required String title, required String body}) {

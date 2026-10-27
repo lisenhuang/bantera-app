@@ -1,3 +1,4 @@
+import 'local_audio_storage.dart';
 import 'dart:io';
 
 import 'package:drift/drift.dart' as drift;
@@ -723,7 +724,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       // Leave temporary recorder files alone if iOS is still holding them.
     }
 
-    return copied;
+    return File(await LocalAudioStorage.compress(copied.path));
   }
 
   Future<String> _storedVideoReferenceFor(File file) async {
@@ -779,15 +780,19 @@ class LocalPracticeRepository extends ChangeNotifier {
   Future<String> _resolveAttemptPath(String storedReference) async {
     final normalizedReference = p.normalize(storedReference.trim());
     if (normalizedReference.isEmpty) {
-      return normalizedReference;
+      return LocalAudioStorage.resolve(normalizedReference);
     }
 
     if (!p.isAbsolute(normalizedReference)) {
       final supportDirectory = await getApplicationSupportDirectory();
-      return p.normalize(p.join(supportDirectory.path, normalizedReference));
+      return LocalAudioStorage.resolve(
+        p.normalize(p.join(supportDirectory.path, normalizedReference)),
+      );
     }
 
-    final existingAbsolute = File(normalizedReference);
+    final existingAbsolute = File(
+      LocalAudioStorage.resolve(normalizedReference),
+    );
     if (await existingAbsolute.exists()) {
       return existingAbsolute.path;
     }
@@ -799,7 +804,7 @@ class LocalPracticeRepository extends ChangeNotifier {
       return remapped;
     }
 
-    return normalizedReference;
+    return LocalAudioStorage.resolve(normalizedReference);
   }
 
   Future<String?> _remapManagedAbsolutePath(String absolutePath) async {
@@ -832,7 +837,11 @@ class LocalPracticeRepository extends ChangeNotifier {
       markerIndex + _managedAttemptMarker.length,
     );
     final directory = await _attemptAudioDirectory;
-    final candidate = File(p.normalize(p.join(directory.path, relativeSuffix)));
+    final candidate = File(
+      LocalAudioStorage.resolve(
+        p.normalize(p.join(directory.path, relativeSuffix)),
+      ),
+    );
     if (await candidate.exists()) {
       return candidate.path;
     }

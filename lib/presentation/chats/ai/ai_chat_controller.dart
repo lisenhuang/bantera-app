@@ -1,3 +1,4 @@
+import '../../../infrastructure/local_audio_storage.dart';
 import '../../../core/apple_system_version.dart';
 import '../../../core/ai_consent.dart';
 import '../../../infrastructure/ai/ai_image_input.dart';
@@ -924,8 +925,9 @@ class AiChatController extends ChangeNotifier {
         await stream.close();
         stream = _openVoiceStream(job);
         if (message.audio != null) {
-          final wave = await File(store.path(message.audio!)).readAsBytes();
-          stream.add(Uint8List.sublistView(wave, 44));
+          stream.add(
+            await LocalAudioStorage.readVoicePcm(store.path(message.audio!)),
+          );
         }
         reply = await send();
       }
@@ -1088,12 +1090,9 @@ class AiChatController extends ChangeNotifier {
     try {
       final stream = _openVoiceStream(job);
       if (message.audio != null && message.textRequest == null) {
-        final wave = await File(store.path(message.audio!)).readAsBytes();
-        if (wave.length < 44 ||
-            String.fromCharCodes(wave.sublist(0, 4)) != 'RIFF') {
-          throw const FormatException('Invalid recording');
-        }
-        stream.add(Uint8List.sublistView(wave, 44));
+        stream.add(
+          await LocalAudioStorage.readVoicePcm(store.path(message.audio!)),
+        );
       }
       await _receiveReply(job);
     } catch (_) {
@@ -1989,29 +1988,39 @@ class AiChatController extends ChangeNotifier {
     }
   }
 
-  Future<void> clear() async {
-    _playbackRequest = null;
-    _epoch++;
-    _webSearch.cancel();
-    _imageSearch.cancel();
-    _api.close();
-    _api = AiApiClient()..conversationId = () => store.conversationId;
-    final replies = _replies.toList();
-    await _closeReplies();
-    await Future.wait(replies.map((job) => job.finished.future));
-    await cancelRecording();
-    await endCall();
-    await _events.catchError((Object _) {});
-    _draftImages.clear();
-    await store.clear();
-    failed = false;
-    busy = false;
-    draftUser = '';
-    draftModel = '';
-    visibleTranslations.clear();
-    translating.clear();
-    translationFailed.clear();
+  Future<void> clear({
+    AiHistoryClearMode mode = AiHistoryClearMode.all,
+    bool keepSummary = false,
+  }) async {
+    if (_deletingMessage) return;
+    _deletingMessage = true;
     changed();
+    try {
+      _playbackRequest = null;
+      _epoch++;
+      _webSearch.cancel();
+      _imageSearch.cancel();
+      _api.close();
+      _api = AiApiClient()..conversationId = () => store.conversationId;
+      final replies = _replies.toList();
+      await _closeReplies();
+      await Future.wait(replies.map((job) => job.finished.future));
+      await cancelRecording();
+      await endCall();
+      await _events.catchError((Object _) {});
+      _draftImages.clear();
+      await store.clear(mode: mode, keepSummary: keepSummary);
+      failed = false;
+      busy = false;
+      draftUser = '';
+      draftModel = '';
+      visibleTranslations.clear();
+      translating.clear();
+      translationFailed.clear();
+    } finally {
+      _deletingMessage = false;
+      changed();
+    }
   }
 
   void _clearDraftImages() {

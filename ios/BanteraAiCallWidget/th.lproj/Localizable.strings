@@ -16,3 +16,8 @@
 "practice.widget.listened" = "การฟัง";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "ลงชื่อเข้า";
+
+"practice.widget.level" = "ระดับ";
+"practice.widget.language" = "ภาษาที่เรียน";
+"practice.widget.position" = "อันดับของคุณ";
+"practice.widget.period" = "30 วันที่ผ่านมา";

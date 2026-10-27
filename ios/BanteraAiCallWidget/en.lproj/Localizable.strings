@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Listening";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Sign In";
+
+"practice.widget.level" = "Level";
+"practice.widget.language" = "Learning Language";
+"practice.widget.position" = "Your position";
+"practice.widget.period" = "Last 30 days";

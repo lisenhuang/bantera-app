@@ -1,3 +1,4 @@
+import '../local_audio_storage.dart';
 import 'ai_image_search.dart';
 import 'ai_video_search.dart';
 import 'ai_public_transcript.dart';
@@ -150,6 +151,23 @@ class AiMessage {
   );
 }
 
+enum AiHistoryClearMode { audioOnly, all }
+
+class AiHistoryStorageUsage {
+  const AiHistoryStorageUsage({
+    required this.audioBytes,
+    required this.totalBytes,
+    required this.summaryBytes,
+    required this.hasSummary,
+  });
+  final int audioBytes, totalBytes, summaryBytes;
+  final bool hasSummary;
+  int reclaimable(AiHistoryClearMode mode, bool keepSummary) =>
+      (mode == AiHistoryClearMode.audioOnly ? audioBytes : totalBytes) -
+      (mode == AiHistoryClearMode.all && keepSummary ? summaryBytes : 0) +
+      (mode == AiHistoryClearMode.audioOnly && !keepSummary ? summaryBytes : 0);
+}
+
 class AiHistoryStore {
   AiHistoryStore(this.owner);
   final String owner;
@@ -260,6 +278,10 @@ class AiHistoryStore {
     }
     if (migrated) await save();
     if (_hasModelReply) await markMet();
+    LocalAudioStorage.migrate([
+      for (final message in messages)
+        if (message.audio != null) '${_directory!.path}/${message.audio!}',
+    ]).ignore();
   }
 
   String path(String filename) {
@@ -268,7 +290,7 @@ class AiHistoryStore {
         filename.contains('..')) {
       throw ArgumentError('Invalid local audio');
     }
-    return '${_directory!.path}/$filename';
+    return LocalAudioStorage.resolve('${_directory!.path}/$filename');
   }
 
   Future<String> saveAudio(Uint8List audio, {String extension = 'wav'}) async {
@@ -278,6 +300,9 @@ class AiHistoryStore {
     });
     final duration = aiWaveDurationMs(audio);
     if (duration != null) _audioDurations[name] = duration;
+    // Do not hold a voice-message commit behind conversion of an older lesson.
+    // The stable reference resolves to its M4A as soon as compaction completes.
+    LocalAudioStorage.compress(path(name)).ignore();
     return name;
   }
 
@@ -351,6 +376,9 @@ class AiHistoryStore {
       final file = File('${_directory!.path}/history.json.tmp');
       await file.writeAsString(contents, flush: true);
       await file.rename('${_directory!.path}/history.json');
+      if (audioName != null) {
+        LocalAudioStorage.compress(path(audioName)).ignore();
+      }
       onSaved?.call().ignore();
       if (met && !hasMetBanteraAi) {
         await _hasMetFile!.writeAsString('met', flush: true);
@@ -391,26 +419,95 @@ class AiHistoryStore {
           if (image.file != null) image.file!,
       };
       for (final name in attachments.difference(retained)) {
-        final file = File(path(name));
-        if (await file.exists()) await file.delete();
+        await LocalAudioStorage.delete('${_directory!.path}/$name');
         _audioDurations.remove(name);
       }
     });
   }
 
-  Future<void> clear() {
+  bool _isAudioFile(String name) => RegExp(
+    r'\.(wav|m4a|mp3|aac|ogg|opus|caf)$',
+    caseSensitive: false,
+  ).hasMatch(name);
+
+  Future<AiHistoryStorageUsage> storageUsage() async {
+    await _pendingWrites[owner];
+    var audio = 0, total = 0, summary = 0;
+    await for (final entry in _directory!.list(followLinks: false)) {
+      if (entry is! File) continue;
+      final name = entry.uri.pathSegments.last;
+      if (name == 'conversation-id' || name.contains('.compressing.')) continue;
+      try {
+        final size = await entry.length();
+        total += size;
+        if (_isAudioFile(name)) audio += size;
+        if (name == 'memory.json') summary = size;
+      } on FileSystemException {
+        // A background encoder may have replaced this file during the scan.
+      }
+    }
+    return AiHistoryStorageUsage(
+      audioBytes: audio,
+      totalBytes: total,
+      summaryBytes: summary,
+      hasSummary: _memory != null,
+    );
+  }
+
+  Future<void> clear({
+    AiHistoryClearMode mode = AiHistoryClearMode.all,
+    bool keepSummary = false,
+  }) {
     _memoryEpoch++;
     conversationId = const Uuid().v4();
-    _memory = null;
+    final identity = conversationId;
+    _memory = keepSummary && _memory != null ? Map.of(_memory!) : null;
+    if (_memory != null && mode == AiHistoryClearMode.all) {
+      // The old checkpoint no longer exists. New messages can extend this seed.
+      _memory!['retainedAfterClear'] = true;
+    }
+    final retainedMemory = _memory == null ? null : jsonEncode(_memory);
     _memoryRetryAt = null;
-    messages.clear();
     _audioDurations.clear();
+    if (mode == AiHistoryClearMode.all) {
+      messages.clear();
+    } else {
+      for (final message in messages) {
+        message.audio = null;
+        message.durationMs = null;
+      }
+    }
+    final contents = jsonEncode(messages.map((m) => m.toJson()).toList());
     return _enqueue(() async {
-      if (await _directory!.exists()) await _directory!.delete(recursive: true);
-      await _directory!.create(recursive: true);
-      await File(
-        path('conversation-id'),
-      ).writeAsString(conversationId, flush: true);
+      if (mode == AiHistoryClearMode.all) {
+        if (await _directory!.exists()) {
+          await _directory!.delete(recursive: true);
+        }
+        await _directory!.create(recursive: true);
+      } else {
+        // Persist cleared references before unlinking recordings. Include WAV
+        // sources as well as compressed companions so conversion cannot revive them.
+        final temporary = File('${_directory!.path}/history.json.tmp');
+        await temporary.writeAsString(contents, flush: true);
+        await temporary.rename('${_directory!.path}/history.json');
+        await for (final entry in _directory!.list(followLinks: false)) {
+          if (entry is File && _isAudioFile(entry.path)) {
+            try {
+              await entry.delete();
+            } on FileSystemException catch (_) {
+              if (await entry.exists()) rethrow;
+            }
+          }
+        }
+      }
+      final memoryFile = File(path('memory.json'));
+      if (retainedMemory != null) {
+        await memoryFile.writeAsString(retainedMemory, flush: true);
+      } else if (await memoryFile.exists()) {
+        await memoryFile.delete();
+      }
+      await File(path('conversation-id')).writeAsString(identity, flush: true);
+      onSaved?.call().ignore();
     });
   }
 
@@ -537,7 +634,10 @@ class AiHistoryStore {
       var at = _memory == null
           ? 0
           : fragments.indexWhere((p) => p['id'] == _memory!['through']) + 1;
-      if (_memory != null && at == 0 && fragments.isNotEmpty) {
+      if (_memory != null &&
+          _memory!['retainedAfterClear'] != true &&
+          at == 0 &&
+          fragments.isNotEmpty) {
         return; // Do not merge duplicate/unknown history.
       }
       while (at < fragments.length && active() && epoch == _memoryEpoch) {

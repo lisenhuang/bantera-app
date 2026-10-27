@@ -16,3 +16,8 @@
 "practice.widget.listened" = "Аудирование";
 "practice.widget.chat" = "Bantera AI";
 "practice.widget.signIn" = "Войти";
+
+"practice.widget.level" = "Уровень";
+"practice.widget.language" = "Изучаемый язык";
+"practice.widget.position" = "Ваша позиция";
+"practice.widget.period" = "Последние 30 дней";

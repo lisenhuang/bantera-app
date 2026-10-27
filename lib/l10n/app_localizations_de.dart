@@ -1897,7 +1897,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen.';
 
   @override
-  String get aiClearHistory => 'Verlauf löschen';
+  String get aiClearHistory => 'Chat löschen';
 
   @override
   String get aiClearHistoryBody =>
@@ -1930,7 +1930,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiPrivacyNotice => 'Datenschutzhinweis';
 
   @override
-  String get aiUsageTitle => 'Anleitung';
+  String get aiUsageTitle => 'So funktioniert’s';
 
   @override
   String get aiUsageBody =>
@@ -2569,4 +2569,125 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get quickLevelStatesExplanation =>
       'Beginne bei A0. Mindestens 10 richtige Antworten in den letzten 12 gewerteten Übungen schalten die nächste Stufe frei. C2 zu erreichen schaltet die Stufe nur frei; auch hier sind 10 von 12 richtigen Antworten zum Bestehen nötig. Bestandene Stufen bleiben bestanden, auch wenn eine leichtere Stufe zur Wiederholung empfohlen wird.';
+
+  @override
+  String get storageTitle => 'Speicher & Cache';
+
+  @override
+  String get storageMeasured => 'Auf diesem Gerät gespeichert';
+
+  @override
+  String get storageClearable => 'Sicher löschbar';
+
+  @override
+  String get storageClear => 'Cache leeren';
+
+  @override
+  String get storageKeep => 'Bleibt auf dem Gerät';
+
+  @override
+  String get storageImages => 'Fotos & Bilder';
+
+  @override
+  String get storageSnapshots => 'Rangliste & letzte Übung';
+
+  @override
+  String get storageTemporaryAudio => 'Temporäre Übungsaudios';
+
+  @override
+  String get storageAiChats => 'KI-Chats & Aufnahmen';
+
+  @override
+  String get storageDm => 'Direktnachrichten & Aufnahmen';
+
+  @override
+  String get storagePractice => 'Gespeicherte Übungen & Downloads';
+
+  @override
+  String get storageOther => 'Einstellungen & weitere lokale Dateien';
+
+  @override
+  String get storageScope =>
+      'Nur zugängliche App-Dateien. App-Installation und vom System verwaltete Sprachmodelle sind nicht enthalten. Verwendete Dateien können im Cache bleiben.';
+
+  @override
+  String get storageClearExplanation =>
+      'Ersetzbare Cache-Dateien entfernen? Bilder und Übungen können erneut geladen werden. Aufnahmen, Gespräche, gespeicherte Übungen, Downloads und Einstellungen bleiben erhalten.';
+
+  @override
+  String get storagePrivacy =>
+      'Wir speichern Daten nach Möglichkeit auf deinem Gerät. KI-Anfragen, Nachrichten, Uploads und Fortschrittssynchronisierung senden weiterhin die dafür nötigen Daten. Das Leeren des Cache löscht weder dein Konto noch Serverdaten.';
+
+  @override
+  String get storageError =>
+      'Einige Daten konnten nicht gelesen oder gelöscht werden. Bitte versuche es erneut.';
+
+  @override
+  String storageManageAi(String action) {
+    return 'Öffne zum Löschen das Menü im KI-Chat und wähle „$action“.';
+  }
+
+  @override
+  String storageManageDm(String action) {
+    return 'Öffne zum Entfernen das Menü der Unterhaltung und wähle „$action“.';
+  }
+
+  @override
+  String get storageManagePractice =>
+      'Um gespeicherte Übungen oder Downloads zu entfernen, lösche die entsprechenden gespeicherten Elemente.';
+
+  @override
+  String get aiClearAudioTitle => 'Nur Audio';
+
+  @override
+  String get aiClearAudioBody =>
+      'Eigene Aufnahmen und KI-Audio entfernen. Nachrichten, Transkripte und Bilder bleiben erhalten.';
+
+  @override
+  String get aiClearAllTitle => 'Alle Nachrichten und Audios';
+
+  @override
+  String get aiClearAllBody =>
+      'Nachrichten, Transkripte, Aufnahmen und Anhänge dieses Chats entfernen.';
+
+  @override
+  String get aiKeepSummary => 'Letzte Zusammenfassung behalten';
+
+  @override
+  String get aiKeepSummaryBody =>
+      'Die zuletzt gespeicherte Zusammenfassung bleibt als KI-Erinnerung. Neueste Nachrichten fehlen möglicherweise.';
+
+  @override
+  String get aiNoSummary => 'Noch keine Zusammenfassung gespeichert.';
+
+  @override
+  String aiClearFreed(String size) {
+    return 'Geschätzter freier Speicher: $size';
+  }
+
+  @override
+  String get aiClearNotice =>
+      'Ein laufendes KI-Gespräch wird beendet. Vokabeln und geplante Erinnerungen bleiben unverändert.';
+
+  @override
+  String get clearAllLabel => 'Alles löschen';
+
+  @override
+  String get aiRemindersClearBody =>
+      'Alle Erinnerungen einschließlich geplanter entfernen? Ausstehende Erinnerungen werden auf dem Server abgesagt.';
+
+  @override
+  String get aiRemindersRetained =>
+      'Einige Erinnerungen konnten nicht entfernt werden. Bereits klingelnde Anrufe lassen sich hier nicht absagen.';
+
+  @override
+  String get vocabClearBody =>
+      'Alle gespeicherten Vokabeln und ihren Lernfortschritt löschen, auch die vom Filter ausgeblendeten? Dies kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get vocabReviewHelpTitle => 'Warum ist eine Wiederholung fällig?';
+
+  @override
+  String get vocabReviewHelpBody =>
+      'Bantera nutzt verteilte Wiederholungen: Lernen mit Pausen kann das langfristige Erinnern fördern. Das hängt mit der Vergessenskurve zusammen, die beschreibt, wie Erinnerungen mit der Zeit verblassen.\n\nUnser Zeitplan:\n• Erste Wiederholung: 1 Tag nach dem Speichern.\n• Nach weiteren Wiederholungen: 3, 7, 14 und dann 30 Tage.\n• Danach bleiben es 30 Tage.\n\nAm geplanten Datum wird ein Wort fällig. Als wiederholt markieren startet das nächste Intervall ab diesem Zeitpunkt. Das ist ein fester Zeitplan, keine Messung deines Gedächtnisses oder Aussage, dass du das Wort vergessen hast.';
 }

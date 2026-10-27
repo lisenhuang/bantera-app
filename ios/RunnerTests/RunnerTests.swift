@@ -9,6 +9,47 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testLocalAudioCompressionAndVoiceRetry() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    for rate in [16000.0, 24000.0, 44100.0] {
+      for channels: AVAudioChannelCount in [1, 2] {
+        let source = directory.appendingPathComponent("source-\(rate)-\(channels).wav")
+        let target = source.appendingPathExtension("m4a")
+        let format = AVAudioFormat(standardFormatWithSampleRate: rate, channels: channels)!
+        let frames = AVAudioFrameCount(rate * 3)
+        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames)!
+        buffer.frameLength = frames
+        for channel in 0..<Int(channels) {
+          for i in 0..<Int(frames) {
+            buffer.floatChannelData![channel][i] = Float(sin(Double(i) * 2 * .pi * 440 / rate) * 0.5)
+          }
+        }
+        try autoreleasepool {
+          let file = try AVAudioFile(forWriting: source, settings: [
+            AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: rate,
+            AVNumberOfChannelsKey: channels, AVLinearPCMBitDepthKey: 16,
+            AVLinearPCMIsFloatKey: false, AVLinearPCMIsBigEndianKey: false,
+          ])
+          try file.write(from: buffer)
+        }
+        let original = try Data(contentsOf: source)
+        try LocalAudioCodec.compress(source, to: target)
+        XCTAssertEqual(try Data(contentsOf: source), original)
+        XCTAssertLessThan(try Data(contentsOf: target).count, original.count)
+        let decoded = try LocalAudioCodec.voicePcm(target)
+        XCTAssertEqual(Double(decoded.count) / 32000, 3, accuracy: 0.15)
+        XCTAssertTrue(decoded.contains { $0 != 0 })
+        // Native verification must reject corrupt inputs without replacing them.
+        let bad = directory.appendingPathComponent("bad.wav")
+        try Data([1, 2, 3]).write(to: bad)
+        XCTAssertThrowsError(try LocalAudioCodec.compress(bad, to: directory.appendingPathComponent("bad.m4a")))
+        XCTAssertEqual(try Data(contentsOf: bad), Data([1, 2, 3]))
+      }
+    }
+  }
+
   @MainActor
   func testTranslationCancellationRemovesOnlyItsChildHost() throws {
     guard #available(iOS 18.0, *) else { throw XCTSkip("Translation requires iOS 18") }
@@ -473,6 +514,24 @@ class PracticeWidgetTests: XCTestCase {
     XCTAssertEqual(snapshot.forDate(today, calendar: calendar).spoken, 0)
   }
 
+  func testLegacySnapshotAndProgressPrivacy() throws {
+    let raw = #"{"dateKey":"2026-10-08","signedIn":true,"spoken":12,"listened":34,"locale":"en","labels":{}}"#
+    var snapshot = try JSONDecoder().decode(BanteraPracticeSnapshot.self, from: Data(raw.utf8))
+    XCTAssertNil(snapshot.level)
+    XCTAssertNil(snapshot.rank)
+    snapshot.learningLanguage = "ja-JP"; snapshot.level = "B2"; snapshot.rank = 7; snapshot.rankingDate = "2026-10-08"
+    let date = ISO8601DateFormatter().date(from: "2026-10-08T23:59:00Z")!
+    XCTAssertEqual(snapshot.forDate(date).rank, 7)
+    let nextDay = snapshot.forDate(date.addingTimeInterval(120))
+    XCTAssertNil(nextDay.rank)
+    XCTAssertEqual(nextDay.level, "B2")
+    snapshot.signedIn = false
+    let signedOut = snapshot.forDate(date)
+    XCTAssertNil(signedOut.level)
+    XCTAssertNil(signedOut.learningLanguage)
+    XCTAssertNil(signedOut.rank)
+  }
+
   func testWidgetDeepLinkOnlyAcceptsChatDestination() {
     XCTAssertTrue(BanteraPracticeSnapshot.isChatURL(URL(string: "bantera://ai-chat")!))
     for raw in ["https://ai-chat", "bantera://other", "bantera://ai-chat/call", "bantera://ai-chat?call=true", "bantera://user@ai-chat"] {
@@ -481,18 +540,31 @@ class PracticeWidgetTests: XCTestCase {
   }
 
   @MainActor
-  func testRenderSmallAndMediumPracticeWidgets() throws {
+  func testRenderPracticeWidgetSizes() throws {
     guard #available(iOS 16.0, *) else { throw XCTSkip("ImageRenderer requires iOS 16; the widget itself supports iOS 15.") }
     let snapshot = BanteraPracticeSnapshot(dateKey: BanteraPracticeSnapshot.dayKey(Date()),
       signedIn: true, spoken: 1278, listened: 3257, locale: "en", labels: [
-        "today": "Today", "words": "Words", "spoken": "Speaking", "listened": "Listening", "chat": "Bantera AI"
-      ])
-    for (name, family, size) in [
+        "today": "Today", "words": "Words", "spoken": "Speaking", "listened": "Listening", "chat": "Bantera AI",
+        "language": "Learning language", "level": "Level", "position": "Your position", "period": "Last 30 days"
+      ], learningLanguage: "ja-JP", level: "B2", rank: 7)
+    var sizes: [(String, WidgetFamily, CGSize)] = [
       ("small", WidgetFamily.systemSmall, CGSize(width: 170, height: 170)),
-      ("medium", WidgetFamily.systemMedium, CGSize(width: 364, height: 170))
-    ] {
+      ("medium", WidgetFamily.systemMedium, CGSize(width: 364, height: 170)),
+      ("small-stress", WidgetFamily.systemSmall, CGSize(width: 158, height: 158)),
+      ("medium-stress", WidgetFamily.systemMedium, CGSize(width: 338, height: 158)),
+      ("large", WidgetFamily.systemLarge, CGSize(width: 364, height: 382)),
+      ("extra-large", WidgetFamily.systemExtraLarge, CGSize(width: 748, height: 382))
+    ]
+    if #available(iOS 27.0, *) { sizes.append(("extra-large-portrait", .systemExtraLargePortrait, CGSize(width: 364, height: 748))) }
+    for (name, family, size) in sizes {
+      var sample = snapshot
+      if name.hasSuffix("stress") {
+        sample.spoken = 987654; sample.listened = 321098; sample.rank = 123456
+        sample.locale = "de"
+        sample.labels.merge(["today": "Heute", "words": "Wörter", "spoken": "Sprechen", "listened": "Hören", "position": "Dein Platz", "period": "Letzte 30 Tage"]) { _, value in value }
+      }
       for dark in [false, true] {
-        let view = BanteraPracticeWidgetView(snapshot: snapshot, family: family)
+        let view = BanteraPracticeWidgetView(snapshot: sample, family: family)
           .environment(\.colorScheme, dark ? .dark : .light)
           .padding(16)
           .frame(width: size.width, height: size.height)
