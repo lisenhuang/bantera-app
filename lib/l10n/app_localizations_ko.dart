@@ -2516,4 +2516,30 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera는 간격 반복을 사용합니다. 시간을 두고 복습하면 더 오래 기억하는 데 도움이 됩니다. 이는 시간이 지나며 기억이 약해지는 망각 곡선과 관련이 있습니다.\n\n복습 일정:\n• 저장 후 1일 뒤 첫 복습.\n• 이후 복습할 때마다 3일, 7일, 14일, 30일 간격.\n• 그다음부터는 30일 간격.\n\n예정일이 되면 복습 대상으로 표시됩니다. 복습 완료로 표시하면 그날부터 다음 간격이 시작됩니다. 고정 일정이며 기억력을 측정하거나 단어를 잊었다고 판단하는 것은 아닙니다.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      '기간은 마지막 새로고침 시점까지입니다. 시간은 현지 시간입니다. 오프라인 단어 수는 동기화 후 표시됩니다. 이전 앱 버전은 정확한 시간을 기록하지 않아 기간 시작과 끝 부근의 활동이 누락될 수 있습니다.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      '합계가 같으면 같은 순위입니다. 날짜는 UTC 기준입니다. 오프라인 단어 수는 동기화 후 표시됩니다.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '$name님과의 개인 채팅을 여시겠어요?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody => '이 메시지는 이 기기에서만 삭제됩니다. 상대방의 사본은 유지됩니다.';
+
+  @override
+  String get adminDeletePractice => '연습 삭제';
+
+  @override
+  String get adminDeleteDialogue => '대화 삭제';
+
+  @override
+  String get adminDeleteContentBody =>
+      '서버에서 이 콘텐츠를 모두에게 삭제할까요? 되돌릴 수 없습니다. 이미 다운로드한 사본은 기기에 남아 있을 수 있습니다.';
 }

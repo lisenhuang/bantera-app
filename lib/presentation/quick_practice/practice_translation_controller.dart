@@ -105,6 +105,10 @@ class PracticeTranslationController extends ChangeNotifier {
     );
     if (!current()) return false;
     if (options.isEmpty) {
+      issue = PracticeTranslationIssue.noLanguages;
+      failed = true;
+      loading = false;
+      notifyListeners();
       throw const TranslationException(
         code: 'no_languages',
         message: 'No supported translation languages.',
@@ -310,10 +314,19 @@ class PracticeTranslationController extends ChangeNotifier {
             if ((result[id]?.trim() ?? '').isNotEmpty) id: result[id]!.trim(),
         };
         failed = translations.length != texts.length;
-      } catch (_) {
+      } catch (error) {
         if (current()) {
           failed = true;
-          issue ??= PracticeTranslationIssue.unavailable;
+          issue ??=
+              error is TranslationException &&
+                  const {
+                    'no_languages',
+                    'unsupported_language_pair',
+                    'unsupported_pair',
+                    'unsupported_locale',
+                  }.contains(error.code)
+              ? PracticeTranslationIssue.noLanguages
+              : PracticeTranslationIssue.unavailable;
         }
       } finally {
         if (identical(_job, job)) _job = null;

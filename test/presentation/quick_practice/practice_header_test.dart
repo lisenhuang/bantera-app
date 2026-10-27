@@ -29,6 +29,7 @@ void main() {
     VoidCallback? onDialogues,
     VoidCallback? onTranslation,
     bool showTranslation = false,
+    String? learningLocale,
     TargetPlatform platform = TargetPlatform.iOS,
   }) async {
     await tester.binding.setSurfaceSize(Size(width, 400));
@@ -49,6 +50,7 @@ void main() {
         ),
         home: Scaffold(
           appBar: PracticeHeader(
+            learningLocale: learningLocale,
             onSpeedSelected: (_) {},
             onLongerDialogues: onDialogues ?? () {},
             onSavePractice: () {},
@@ -61,6 +63,25 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('language flag and code fit left of the centred title', (
+    tester,
+  ) async {
+    for (final width in [320.0, 393.0, 744.0]) {
+      await mount(tester, width: width, scale: 2, learningLocale: 'mi-NZ');
+      expect(find.text('🇳🇿'), findsOneWidget);
+      expect(find.text('mi-nz'), findsOneWidget);
+      expect(
+        tester
+            .getRect(find.byKey(const ValueKey('practice-language-label')))
+            .right,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const ValueKey('practice-title'))).left,
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
     'translation stays visible while busy and works again when ready',

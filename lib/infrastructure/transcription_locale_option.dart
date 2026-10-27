@@ -54,3 +54,6 @@ String normalizeLegacyLearningLanguageIdentifier(String identifier) {
     _ => identifier.trim().replaceAll('_', '-'),
   };
 }
+
+bool isMaoriLanguage(String? locale) =>
+    primaryLanguageCodeForLocaleIdentifier(locale ?? "") == "mi";

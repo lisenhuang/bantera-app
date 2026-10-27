@@ -1,3 +1,4 @@
+import '../../infrastructure/transcription_locale_option.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -23,6 +24,7 @@ import '../../infrastructure/translation_service.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import 'chat_language_label.dart';
+import 'swipe_message_action.dart';
 import '../shared/profile_avatar.dart';
 import 'blocked_users_screen.dart';
 import 'chat_menu_item_row.dart';
@@ -332,9 +334,17 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               onTapSender: _isGroup && !message.isMine
                   ? () => _showUserSheet(message.senderUser)
                   : null,
-              onLongPress: message.isMine
-                  ? () => _deleteOwnMessage(message)
+              onDelete:
+                  message.canDelete(
+                    isAdmin:
+                        AuthSessionNotifier.instance.session?.isAdmin == true,
+                  )
+                  ? () => _deleteMessage(message)
                   : null,
+              adminAction:
+                  !message.isMine &&
+                  _isGroup &&
+                  AuthSessionNotifier.instance.session?.isAdmin == true,
             );
           },
         );
@@ -969,18 +979,29 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     );
   }
 
-  Future<void> _deleteOwnMessage(ChatMessageItem message) async {
+  Future<void> _deleteMessage(ChatMessageItem message) async {
+    if (!message.canDelete(
+      isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+    ))
+      return;
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await _confirmAction(
       title: l10n.chatDeleteMessageTitle,
-      body: l10n.chatDeleteMessageBody,
+      body: !message.isMine && message.isDirectMessage
+          ? l10n.chatDeleteReceivedBody
+          : l10n.chatDeleteMessageBody,
+      adminAction: !message.isMine && _isGroup,
     );
     if (!mounted || confirmed != true) {
       return;
     }
 
     try {
-      await _chat.deleteOwnMessage(message);
+      await _chat.deleteMessage(message);
+      if (_currentPlayingMessageId == message.messageId) {
+        await _player.stop();
+        if (mounted) setState(() => _currentPlayingMessageId = null);
+      }
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -1037,12 +1058,19 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     }
   }
 
-  Future<bool?> _confirmAction({required String title, required String body}) {
+  Future<bool?> _confirmAction({
+    required String title,
+    required String body,
+    bool adminAction = false,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         alignment: Alignment.center,
+        icon: adminAction
+            ? const Icon(Icons.admin_panel_settings_outlined)
+            : null,
         title: Text(title),
         content: Text(body),
         actions: [
@@ -1076,7 +1104,8 @@ class _MessageBubble extends StatelessWidget {
     required this.onTranscribe,
     required this.onTranslate,
     required this.onTapSender,
-    required this.onLongPress,
+    required this.onDelete,
+    required this.adminAction,
   });
 
   final ChatMessageItem message;
@@ -1091,7 +1120,8 @@ class _MessageBubble extends StatelessWidget {
   final VoidCallback onTranscribe;
   final VoidCallback onTranslate;
   final VoidCallback? onTapSender;
-  final VoidCallback? onLongPress;
+  final Future<void> Function()? onDelete;
+  final bool adminAction;
 
   @override
   Widget build(BuildContext context) {
@@ -1104,9 +1134,13 @@ class _MessageBubble extends StatelessWidget {
     final progress = isPlaying && durationMs > 0
         ? (playbackPosition.inMilliseconds / durationMs).clamp(0.0, 1.0)
         : 0.0;
+    final systemLanguageSupported =
+        !isMaoriLanguage(message.spokenLanguageCode) &&
+        !isMaoriLanguage(message.localTranscriptLanguageCode);
     final sourceLanguageCode = message.localTranscriptLanguageCode;
     final targetLanguageCode = (viewerNativeLanguageCode ?? '').trim();
     final canTranslate =
+        systemLanguageSupported &&
         supportsBuiltInTranslation &&
         message.hasTranscript &&
         sourceLanguageCode != null &&
@@ -1115,18 +1149,20 @@ class _MessageBubble extends StatelessWidget {
         !chatLocalesEquivalent(sourceLanguageCode, targetLanguageCode);
     final hasReadyTranscript = message.localTranscriptStatus == 'ready';
     final hasReadyTranslation = message.localTranslationStatus == 'ready';
-    final showTranscribeButton = !hasReadyTranscript;
-    final showRetranscribeButton = hasReadyTranscript;
+    final showTranscribeButton = systemLanguageSupported && !hasReadyTranscript;
+    final showRetranscribeButton =
+        systemLanguageSupported && hasReadyTranscript;
     final showTranslateButton =
         hasReadyTranscript && !hasReadyTranslation && canTranslate;
 
     return Align(
       alignment: message.isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: GestureDetector(
-        onLongPress: onLongPress,
+      child: SwipeMessageAction(
+        key: ValueKey(message.messageId),
+        onDelete: onDelete,
+        adminAction: adminAction,
         child: Container(
           constraints: const BoxConstraints(maxWidth: 340),
-          margin: const EdgeInsets.only(bottom: 14),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: bubbleColor,
@@ -1203,12 +1239,14 @@ class _MessageBubble extends StatelessWidget {
                   ],
                 ),
               ],
-              if (message.localTranscriptStatus == 'processing')
+              if (systemLanguageSupported &&
+                  message.localTranscriptStatus == 'processing')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(l10n.chatTranscribingOnDevice),
                 ),
-              if (message.localTranscriptStatus == 'failed')
+              if (systemLanguageSupported &&
+                  message.localTranscriptStatus == 'failed')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
@@ -1218,7 +1256,7 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (message.hasTranscript)
+              if (systemLanguageSupported && message.hasTranscript)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: SelectableText(
@@ -1226,13 +1264,15 @@ class _MessageBubble extends StatelessWidget {
                     style: theme.textTheme.bodyLarge,
                   ),
                 ),
-              if (supportsBuiltInTranslation &&
+              if (systemLanguageSupported &&
+                  supportsBuiltInTranslation &&
                   message.localTranslationStatus == 'processing')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(l10n.chatTranslating),
                 ),
-              if (supportsBuiltInTranslation &&
+              if (systemLanguageSupported &&
+                  supportsBuiltInTranslation &&
                   message.localTranslationStatus == 'failed')
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
@@ -1243,7 +1283,8 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (supportsBuiltInTranslation &&
+              if (systemLanguageSupported &&
+                  supportsBuiltInTranslation &&
                   message.localTranslationText != null &&
                   message.localTranslationText!.trim().isNotEmpty)
                 Padding(

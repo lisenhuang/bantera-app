@@ -455,13 +455,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openPractice(BuildContext context, UploadedVideo video) {
-    Navigator.push(
+  Future<void> _openPractice(BuildContext context, UploadedVideo video) async {
+    final deleted = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<bool>(
         builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
       ),
     );
+    if (deleted == true && mounted) await _loadVideos();
   }
 
   /// Converts a public [UploadedVideo] from the backend into the [MediaItem]

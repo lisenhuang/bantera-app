@@ -776,5 +776,12 @@
   "aiRemindersRetained": "Một số lời nhắc chưa xóa được và vẫn hiển thị. Không thể hủy cuộc gọi đang đổ chuông ở đây.",
   "vocabClearBody": "Xóa tất cả từ vựng đã lưu và tiến độ ôn tập, kể cả từ bị bộ lọc ẩn? Không thể hoàn tác.",
   "vocabReviewHelpTitle": "Vì sao từ đến hạn ôn tập?",
-  "vocabReviewHelpBody": "Bantera dùng lặp lại ngắt quãng: ôn sau một khoảng nghỉ có thể giúp nhớ lâu hơn. Điều này liên quan đến đường cong quên lãng, mô tả trí nhớ suy giảm theo thời gian.\n\nLịch của chúng tôi:\n• Ôn lần đầu: 1 ngày sau khi lưu.\n• Sau các lần ôn tiếp theo: 3, 7, 14 rồi 30 ngày.\n• Sau đó cứ mỗi 30 ngày.\n\nTừ đến hạn khi tới ngày dự kiến. Đánh dấu đã ôn sẽ bắt đầu khoảng thời gian tiếp theo từ lần ôn đó. Đây là lịch cố định, không đo trí nhớ hay dự đoán rằng bạn đã quên từ."
+  "vocabReviewHelpBody": "Bantera dùng lặp lại ngắt quãng: ôn sau một khoảng nghỉ có thể giúp nhớ lâu hơn. Điều này liên quan đến đường cong quên lãng, mô tả trí nhớ suy giảm theo thời gian.\n\nLịch của chúng tôi:\n• Ôn lần đầu: 1 ngày sau khi lưu.\n• Sau các lần ôn tiếp theo: 3, 7, 14 rồi 30 ngày.\n• Sau đó cứ mỗi 30 ngày.\n\nTừ đến hạn khi tới ngày dự kiến. Đánh dấu đã ôn sẽ bắt đầu khoảng thời gian tiếp theo từ lần ôn đó. Đây là lịch cố định, không đo trí nhớ hay dự đoán rằng bạn đã quên từ.",
+  "leaderboardRollingFootnote": "Khoảng thời gian kết thúc ở lần làm mới gần nhất. Giờ được hiển thị theo địa phương. Số từ ngoại tuyến sẽ xuất hiện sau khi đồng bộ. Phiên bản cũ có thể thiếu hoạt động ở đầu và cuối khoảng thời gian vì không lưu thời điểm chính xác.",
+  "leaderboardPeriodFootnote": "Tổng bằng nhau có cùng thứ hạng. Ngày tính theo UTC. Từ ngoại tuyến xuất hiện sau khi đồng bộ.",
+  "leaderboardOpenChat": "Mở cuộc trò chuyện riêng với {name}?",
+  "chatDeleteReceivedBody": "Tin nhắn này chỉ bị xóa khỏi thiết bị này. Bản sao của người kia vẫn còn.",
+  "adminDeletePractice": "Xóa bài luyện tập",
+  "adminDeleteDialogue": "Xóa hội thoại",
+  "adminDeleteContentBody": "Xóa nội dung này khỏi máy chủ cho tất cả mọi người? Không thể hoàn tác. Các bản đã tải xuống có thể vẫn còn trên thiết bị."
 }

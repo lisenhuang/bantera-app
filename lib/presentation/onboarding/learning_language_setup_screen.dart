@@ -1,3 +1,5 @@
+import '../shared/selected_language_list.dart';
+import '../../core/auth_session_notifier.dart';
 import '../shared/language_picker_totals.dart';
 import 'dart:io';
 
@@ -7,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/profile_image_optimizer.dart';
 import '../../infrastructure/region_service.dart';
+import '../../infrastructure/learning_language_catalog.dart';
 import '../../infrastructure/video_processing_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/locale_flag.dart';
@@ -232,7 +235,11 @@ class _LearningLanguageSetupScreenState
     final options = learning ? _learningLocales : _nativeLocales;
     if (options == null || options.isEmpty) return;
     final visibleOptions = await RegionService.instance.filterLanguageOptions(
-      options,
+      profileLanguageOptionsForRole(
+        options,
+        isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+        nativeLanguage: !learning,
+      ),
     );
     if (!mounted) return;
     final selected = await showModalBottomSheet<TranscriptionLocaleOption>(
@@ -629,9 +636,10 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
             Expanded(
               child: _filtered.isEmpty
                   ? Center(child: Text(l10n.onboardingNoMatching))
-                  : ListView.builder(
+                  : SelectedLanguageList(
                       controller: scrollController,
-                      itemCount: _filtered.length,
+                      identifiers: _filtered.map((o) => o.identifier).toList(),
+                      selectedIdentifier: widget.currentIdentifier,
                       itemBuilder: (context, index) {
                         final option = _filtered[index];
                         final selected =
@@ -641,7 +649,16 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                             option.effectiveFlagEmoji,
                             style: const TextStyle(fontSize: 28),
                           ),
-                          title: Text(option.displayName),
+                          title: Row(
+                            children: [
+                              Expanded(child: Text(option.displayName)),
+                              if (option.identifier == 'mi-NZ')
+                                const Icon(
+                                  Icons.admin_panel_settings_outlined,
+                                  size: 18,
+                                ),
+                            ],
+                          ),
                           subtitle: Text(option.identifier),
                           trailing: selected
                               ? Icon(

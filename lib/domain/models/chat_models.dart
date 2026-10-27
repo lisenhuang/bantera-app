@@ -181,6 +181,8 @@ class ChatMessageItem {
   final bool isServerVisible;
 
   bool get isDirectMessage => threadType == 'dm';
+  bool canDelete({bool isAdmin = false}) =>
+      isMine || isDirectMessage || (isAdmin && threadType == 'group');
   bool get hasTranscript =>
       localTranscriptText != null && localTranscriptText!.trim().isNotEmpty;
 

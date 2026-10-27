@@ -776,5 +776,12 @@
   "aiRemindersRetained": "Bazı hatırlatmalar silinemedi ve burada kalıyor. Çalmaya başlamış bir arama buradan iptal edilemez.",
   "vocabClearBody": "Filtreyle gizlenenler dahil tüm kayıtlı kelimeler ve tekrar ilerlemesi silinsin mi? Bu işlem geri alınamaz.",
   "vocabReviewHelpTitle": "Kelimelerin tekrar zamanı neden geldi?",
-  "vocabReviewHelpBody": "Bantera aralıklı tekrarı kullanır: bir aradan sonra tekrar etmek daha uzun süre hatırlamaya yardımcı olabilir. Bu, belleğin zamanla zayıflamasını anlatan unutma eğrisiyle ilişkilidir.\n\nProgramımız:\n• İlk tekrar: kaydettikten 1 gün sonra.\n• Sonraki tekrarların ardından: 3, 7, 14, ardından 30 gün.\n• Daha sonra her 30 günde bir.\n\nPlanlanan tarihte kelimenin tekrar zamanı gelir. Tekrar edildi olarak işaretlemek, sonraki aralığı o andan başlatır. Bu sabit bir programdır; belleğinizin ölçümü veya kelimeyi unuttuğunuzun tahmini değildir."
+  "vocabReviewHelpBody": "Bantera aralıklı tekrarı kullanır: bir aradan sonra tekrar etmek daha uzun süre hatırlamaya yardımcı olabilir. Bu, belleğin zamanla zayıflamasını anlatan unutma eğrisiyle ilişkilidir.\n\nProgramımız:\n• İlk tekrar: kaydettikten 1 gün sonra.\n• Sonraki tekrarların ardından: 3, 7, 14, ardından 30 gün.\n• Daha sonra her 30 günde bir.\n\nPlanlanan tarihte kelimenin tekrar zamanı gelir. Tekrar edildi olarak işaretlemek, sonraki aralığı o andan başlatır. Bu sabit bir programdır; belleğinizin ölçümü veya kelimeyi unuttuğunuzun tahmini değildir.",
+  "leaderboardRollingFootnote": "Dönemler son yenileme anında biter. Saatler yereldir. Çevrimdışı kelimeler eşitlemeden sonra görünür. Eski uygulama sürümleri kesin saatleri kaydetmediğinden dönemin başındaki ve sonundaki etkinlikler eksik olabilir.",
+  "leaderboardPeriodFootnote": "Eşit toplamlar aynı sırayı paylaşır. Tarihler UTC esaslıdır. Çevrimdışı kelimeler eşitlemeden sonra görünür.",
+  "leaderboardOpenChat": "{name} ile özel sohbet açılsın mı?",
+  "chatDeleteReceivedBody": "Bu mesaj yalnızca bu cihazdan kaldırılacak. Diğer kişinin kopyası kalacak.",
+  "adminDeletePractice": "Alıştırmayı sil",
+  "adminDeleteDialogue": "Diyaloğu sil",
+  "adminDeleteContentBody": "Bu içerik sunucudan herkes için silinsin mi? Bu işlem geri alınamaz. İndirilen kopyalar cihazlarda kalabilir."
 }

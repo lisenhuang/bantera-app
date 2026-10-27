@@ -5,6 +5,7 @@ import '../../infrastructure/transcription_locale_option.dart';
 /// corresponding Unicode regional indicator pair. Falls back to a
 /// language-to-flag map for identifiers without a region subtag.
 String flagEmojiForLocale(String identifier) {
+  if (isMaoriLanguage(identifier)) return '🇳🇿';
   final parts = identifier.split(RegExp(r'[-_]'));
 
   // Try each part from the end for a 2-letter alpha region code.
@@ -79,5 +80,7 @@ String _countryCodeToFlag(String countryCode) {
 
 extension TranscriptionLocaleFlag on TranscriptionLocaleOption {
   /// Server/catalog [flagEmoji] when present; otherwise derived from [identifier].
-  String get effectiveFlagEmoji => flagEmoji ?? flagEmojiForLocale(identifier);
+  String get effectiveFlagEmoji => isMaoriLanguage(identifier)
+      ? '🇳🇿'
+      : flagEmoji ?? flagEmojiForLocale(identifier);
 }

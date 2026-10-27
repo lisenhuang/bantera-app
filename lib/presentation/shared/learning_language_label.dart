@@ -5,6 +5,7 @@ import 'locale_flag.dart';
 
 /// Language name without accent/region, paired with the selected locale's flag.
 ({String name, String flag}) learningLanguageLabel(String? identifier) {
+  if (isMaoriLanguage(identifier)) return (name: 'Māori', flag: '🇳🇿');
   final language = identifier?.trim();
   final normalized = language == null
       ? ''

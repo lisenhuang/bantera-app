@@ -604,6 +604,20 @@ private final class BanteraVideoProcessingBridge {
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "supportsPracticeTranscription":
+      let arguments = call.arguments as? [String: Any]
+      let identifier = arguments?["localeIdentifier"] as? String ?? ""
+      Task {
+        var supported = false
+        if #available(iOS 26.0, *), SpeechTranscriber.isAvailable {
+          supported = await SpeechTranscriber.supportedLocale(equivalentTo: Locale(identifier: identifier)) != nil
+        }
+        if !supported {
+          supported = BanteraLegacySpeechRecognitionService.supportsLocale(identifier)
+        }
+        let available = supported
+        DispatchQueue.main.async { result(available) }
+      }
     case "getSupportedTranscriptionLocales":
       handleGetSupportedTranscriptionLocales(result: result)
     case "prepareVideoForUpload":
@@ -1588,6 +1602,14 @@ private final class BanteraLegacySpeechRecognitionService {
     }
   }
 
+  static func supportsLocale(_ identifier: String) -> Bool {
+    let normalized = normalizeIdentifier(identifier)
+    return SFSpeechRecognizer.supportedLocales().contains {
+      normalizeIdentifier(bcp47Identifier(for: $0)) == normalized ||
+        languageCode(for: $0) == languageCode(fromIdentifier: identifier)
+    }
+  }
+
   private func resolveRecognizer(localeIdentifier: String) throws -> (
     locale: Locale,
     recognizer: SFSpeechRecognizer
@@ -1715,6 +1737,72 @@ private final class BanteraLegacySpeechRecognitionService {
     Locale.current.localizedString(forIdentifier: bcp47Identifier(for: locale))
       ?? locale.localizedString(forIdentifier: locale.identifier)
       ?? bcp47Identifier(for: locale)
+  }
+}
+
+/// File conversion must use the pull-input API: the buffer-to-buffer overload
+/// raises an Objective-C exception when sample rates differ (not a Swift Error).
+/// Feed each source frame once and drain the resampler through end-of-stream.
+enum BanteraTranscriptionAudioConverter {
+  static func convert(from sourceURL: URL, to targetFormat: AVAudioFormat) throws -> URL {
+    let source = try AVAudioFile(forReading: sourceURL)
+    let sourceFormat = source.processingFormat
+    guard sourceFormat.sampleRate > 0, targetFormat.sampleRate > 0,
+          let converter = AVAudioConverter(from: sourceFormat, to: targetFormat),
+          let output = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: 4096) else {
+      throw NSError(domain: "BanteraAudioConversion", code: 1)
+    }
+    let url = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bantera_audio_\(UUID().uuidString).caf")
+    var succeeded = false
+    defer { if !succeeded { try? FileManager.default.removeItem(at: url) } }
+    let destination = try AVAudioFile(forWriting: url, settings: targetFormat.settings,
+      commonFormat: targetFormat.commonFormat, interleaved: targetFormat.isInterleaved)
+    var readError: Error?
+    var totalFrames: Int64 = 0
+    while true {
+      var conversionError: NSError?
+      let status = converter.convert(to: output, error: &conversionError) { requested, inputStatus in
+        guard source.framePosition < source.length else {
+          inputStatus.pointee = .endOfStream
+          return nil
+        }
+        let count = AVAudioFrameCount(min(Int64(max(1, requested)), source.length - source.framePosition))
+        guard let input = AVAudioPCMBuffer(pcmFormat: sourceFormat, frameCapacity: count) else {
+          readError = NSError(domain: "BanteraAudioConversion", code: 2)
+          inputStatus.pointee = .endOfStream
+          return nil
+        }
+        do {
+          try source.read(into: input, frameCount: count)
+          guard input.frameLength > 0 else {
+            inputStatus.pointee = .endOfStream
+            return nil
+          }
+          inputStatus.pointee = .haveData
+          return input
+        } catch {
+          readError = error
+          inputStatus.pointee = .endOfStream
+          return nil
+        }
+      }
+      if let readError { throw readError }
+      if let conversionError { throw conversionError }
+      if status == .error { throw NSError(domain: "BanteraAudioConversion", code: 3) }
+      if output.frameLength > 0 {
+        try destination.write(from: output)
+        totalFrames += Int64(output.frameLength)
+      }
+      if status == .endOfStream { break }
+      // A file source never waits for future input. Avoid spinning on a broken file.
+      if status == .inputRanDry && output.frameLength == 0 {
+        throw NSError(domain: "BanteraAudioConversion", code: 4)
+      }
+    }
+    guard totalFrames > 0 else { throw NSError(domain: "BanteraAudioConversion", code: 5) }
+    succeeded = true
+    return url
   }
 }
 
@@ -2198,85 +2286,7 @@ private final class BanteraVideoPreparationService {
     from sourceURL: URL,
     to targetFormat: AVAudioFormat
   ) async throws -> URL {
-    let outputURL = FileManager.default.temporaryDirectory
-      .appendingPathComponent("bantera_audio_\(UUID().uuidString)")
-      .appendingPathExtension("caf")
-
-    let sourceFile: AVAudioFile
-    do {
-      sourceFile = try AVAudioFile(forReading: sourceURL)
-    } catch {
-      throw BanteraVideoProcessingError.fileAccessFailed(
-        "Bantera could not open the extracted audio for conversion."
-      )
-    }
-
-    let sourceFormat = sourceFile.processingFormat
-    guard let converter = AVAudioConverter(from: sourceFormat, to: targetFormat) else {
-      return sourceURL
-    }
-
-    let outputFile: AVAudioFile
-    do {
-      outputFile = try AVAudioFile(
-        forWriting: outputURL,
-        settings: targetFormat.settings,
-        commonFormat: targetFormat.commonFormat,
-        interleaved: targetFormat.isInterleaved
-      )
-    } catch {
-      throw BanteraVideoProcessingError.fileAccessFailed(
-        "Bantera could not create a compatible transcription audio file."
-      )
-    }
-
-    let bufferSize: AVAudioFrameCount = 4096
-    var totalFrames: Int64 = 0
-
-    while sourceFile.framePosition < sourceFile.length {
-      let remainingFrames = AVAudioFrameCount(sourceFile.length - sourceFile.framePosition)
-      let framesToRead = min(bufferSize, remainingFrames)
-      guard let sourceBuffer = AVAudioPCMBuffer(
-        pcmFormat: sourceFormat,
-        frameCapacity: framesToRead
-      ) else {
-        continue
-      }
-
-      do {
-        try sourceFile.read(into: sourceBuffer, frameCount: framesToRead)
-      } catch {
-        break
-      }
-
-      let ratio = targetFormat.sampleRate / sourceFormat.sampleRate
-      let outputCapacity = AVAudioFrameCount(Double(framesToRead) * ratio * 1.2)
-      guard let outputBuffer = AVAudioPCMBuffer(
-        pcmFormat: targetFormat,
-        frameCapacity: outputCapacity
-      ) else {
-        continue
-      }
-
-      do {
-        try converter.convert(to: outputBuffer, from: sourceBuffer)
-        if outputBuffer.frameLength > 0 {
-          try outputFile.write(from: outputBuffer)
-          totalFrames += Int64(outputBuffer.frameLength)
-        }
-      } catch {
-        break
-      }
-    }
-
-    if totalFrames == 0 {
-      try? FileManager.default.removeItem(at: outputURL)
-      throw BanteraVideoProcessingError.transcriptionFailed(
-        "Bantera could not convert the selected video audio for transcription."
-      )
-    }
-
-    return outputURL
+    try BanteraTranscriptionAudioConverter.convert(from: sourceURL, to: targetFormat)
   }
 
   private func openTranscriptionAudioFile(

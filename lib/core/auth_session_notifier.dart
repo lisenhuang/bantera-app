@@ -72,6 +72,9 @@ class AuthSession {
 
   String? get userId => _jwtSubject(accessToken);
 
+  /// UI hint only. The server independently authorizes privileged actions.
+  bool get isAdmin => _jwtClaim(accessToken, 'role') == 'admin';
+
   String get cacheKey {
     final subject = _jwtSubject(accessToken);
     if (subject != null && subject.isNotEmpty) {
@@ -81,7 +84,9 @@ class AuthSession {
     return '${provider.name}:${accountLabel.trim().toLowerCase()}';
   }
 
-  static String? _jwtSubject(String token) {
+  static String? _jwtSubject(String token) => _jwtClaim(token, 'sub');
+
+  static String? _jwtClaim(String token, String claim) {
     final parts = token.split('.');
     if (parts.length < 2) {
       return null;
@@ -92,7 +97,7 @@ class AuthSession {
       final decoded = utf8.decode(base64Url.decode(normalized));
       final payload = jsonDecode(decoded);
       if (payload is Map<String, dynamic>) {
-        return payload['sub']?.toString();
+        return payload[claim]?.toString();
       }
     } catch (_) {
       return null;

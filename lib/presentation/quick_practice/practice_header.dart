@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../shared/learning_language_label.dart';
+import '../shared/locale_flag.dart';
 
 class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
   const PracticeHeader({
     super.key,
     this.onLongerDialogues,
+    this.showLongerDialogues = true,
     this.onSavePractice,
     this.onSavedPractice,
     this.onTranslationLanguage,
+    this.showAdminDelete = false,
+    this.onAdminDelete,
     this.showTranslationLanguage = false,
     this.isSaved = false,
     this.playbackSpeed = 1.0,
     this.onSpeedSelected,
+    this.learningLocale,
   });
+  final String? learningLocale;
   final VoidCallback? onLongerDialogues;
+  final bool showLongerDialogues;
   final VoidCallback? onSavePractice;
   final VoidCallback? onSavedPractice;
   final VoidCallback? onTranslationLanguage;
+  final bool showAdminDelete;
+  final VoidCallback? onAdminDelete;
 
   /// Capability controls visibility; temporary busy states only disable it.
   final bool showTranslationLanguage;
@@ -54,7 +64,40 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
           height: buttonSize,
           child: Row(
             children: [
-              const SizedBox(width: buttonSize * 2),
+              SizedBox(
+                width: buttonSize * 2,
+                child: learningLocale == null || learningLocale!.isEmpty
+                    ? null
+                    : Align(
+                        alignment: Alignment.centerLeft,
+                        child: Tooltip(
+                          message: learningLanguageLabel(learningLocale).name,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              key: const ValueKey('practice-language-label'),
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  flagEmojiForLocale(learningLocale!),
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  learningLocale!
+                                      .replaceAll('_', '-')
+                                      .toLowerCase(),
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
               Expanded(
                 child: Center(
                   child: FittedBox(fit: BoxFit.scaleDown, child: title),
@@ -155,7 +198,8 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                   enabled:
                       onLongerDialogues != null ||
                       onSavedPractice != null ||
-                      onTranslationLanguage != null,
+                      onTranslationLanguage != null ||
+                      showAdminDelete,
                   tooltip: l.more,
                   icon: const Icon(Icons.more_horiz),
                   position: PopupMenuPosition.under,
@@ -170,6 +214,8 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                         onSavedPractice?.call();
                       case 'dialogues':
                         onLongerDialogues?.call();
+                      case 'admin-delete':
+                        onAdminDelete?.call();
                       case 'translation':
                         onTranslationLanguage?.call();
                     }
@@ -190,14 +236,24 @@ class PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
                       enabled: onSavedPractice != null,
                       child: _menuLabel(Icons.bookmarks_outlined, l.quickSaved),
                     ),
-                    PopupMenuItem(
-                      value: 'dialogues',
-                      enabled: onLongerDialogues != null,
-                      child: _menuLabel(
-                        Icons.forum_outlined,
-                        l.longerDialogues,
+                    if (showLongerDialogues)
+                      PopupMenuItem(
+                        value: 'dialogues',
+                        enabled: onLongerDialogues != null,
+                        child: _menuLabel(
+                          Icons.forum_outlined,
+                          l.longerDialogues,
+                        ),
                       ),
-                    ),
+                    if (showAdminDelete)
+                      PopupMenuItem(
+                        value: 'admin-delete',
+                        enabled: onAdminDelete != null,
+                        child: _menuLabel(
+                          Icons.admin_panel_settings_outlined,
+                          l.adminDeletePractice,
+                        ),
+                      ),
                     if (showTranslationLanguage ||
                         onTranslationLanguage != null)
                       PopupMenuItem(

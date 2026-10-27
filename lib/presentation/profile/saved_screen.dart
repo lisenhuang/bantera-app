@@ -132,12 +132,15 @@ class _SavedScreenState extends State<SavedScreen> {
     final title = _titleFromFileName(video.originalFileName);
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
-        ),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute<bool>(
+            builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
+          ),
+        );
+        if (deleted == true && mounted) await _load();
+      },
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

@@ -11,6 +11,16 @@ String groupChatEmoji(ChatThreadSummary thread) {
   // Group summaries currently provide a display title, but no language code.
   // Match that title to the app's language catalog until the API supplies one.
   final title = thread.title.trim();
+  final normalizedTitle = title.toLowerCase().replaceAll('ā', 'a');
+  if (const {
+    'maori',
+    'maori (new zealand)',
+    'te reo maori',
+    'mi',
+    'mi-nz',
+  }.contains(normalizedTitle)) {
+    return '🇳🇿';
+  }
   // These group titles use learning-catalog names absent from the smaller
   // embedded fallback list. Keep their regions distinct.
   const chineseGroupLocales = <String, String>{

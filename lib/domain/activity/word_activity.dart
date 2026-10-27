@@ -1,4 +1,5 @@
 import 'daily_word_goal.dart';
+import 'package:uuid/uuid.dart';
 
 class WordTotals {
   const WordTotals({this.listened = 0, this.spoken = 0});
@@ -64,6 +65,14 @@ class WordActivityLedger {
   Map<String, WordTotals> remote = {};
   Map<String, WordTotals> speakingUtc = {};
   String? speakingLegacyThrough;
+  List<Map<String, dynamic>> speakingEvents = [];
+
+  void pruneSpeakingEvents(DateTime now) {
+    final cutoff = now.toUtc().subtract(const Duration(days: 32));
+    speakingEvents.removeWhere(
+      (e) => DateTime.parse(e['occurredAt'] as String).isBefore(cutoff),
+    );
+  }
 
   void record(DateTime date, WordTotals words, {String? language}) {
     final day = wordActivityBucketKey(wordActivityDateKey(date), language);
@@ -73,10 +82,40 @@ class WordActivityLedger {
       language,
     );
     if (words.spoken > 0) {
+      pruneSpeakingEvents(date);
+      speakingEvents.add({
+        'eventId': const Uuid().v4(),
+        'occurredAt': date.toUtc().toIso8601String(),
+        'language': wordActivityLanguageKey(language),
+        'spokenWords': words.spoken,
+      });
       speakingUtc[utcDay] =
           (speakingUtc[utcDay] ?? const WordTotals()) +
           WordTotals(spoken: words.spoken);
     }
+  }
+
+  /// Only this device's totals: remote/acknowledged totals may include other
+  /// devices and must never be uploaded as another copy of their activity.
+  Map<String, dynamic> speakingLocalDaySnapshot(DateTime now) {
+    final key = wordActivityDateKey(now);
+    final start = DateTime(now.year, now.month, now.day);
+    return {
+      'date': key,
+      'fromUtc': start.toUtc().toIso8601String(),
+      'throughUtc': now.toUtc().toIso8601String(),
+      'days': [
+        for (final entry in local.entries)
+          if (wordActivityBucketDate(entry.key) == key &&
+              entry.value.spoken > 0)
+            {
+              'date': key,
+              'language': wordActivityBucketLanguage(entry.key),
+              'spokenWords': entry.value.spoken,
+              'listenedWords': 0,
+            },
+      ],
+    };
   }
 
   Map<String, WordTotals> get pendingSnapshots => {
@@ -160,6 +199,9 @@ class WordActivityLedger {
       (key, value) => MapEntry(key, value.toJson()),
     ),
     'speakingLegacyThrough': speakingLegacyThrough,
+    'speakingEvents': speakingEvents
+        .map((e) => Map<String, dynamic>.of(e))
+        .toList(),
   };
 
   factory WordActivityLedger.fromJson(Map<String, dynamic> json) {
@@ -174,6 +216,9 @@ class WordActivityLedger {
       ..recordedSpeechEvents = (json['recordedSpeechEvents'] as List? ?? [])
           .whereType<String>()
           .toSet()
+      ..speakingEvents = (json['speakingEvents'] as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList()
       ..local = read('local')
       ..acknowledged = read('acknowledged')
       ..remote = read('remote')

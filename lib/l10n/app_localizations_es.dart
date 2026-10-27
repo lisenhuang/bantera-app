@@ -2690,4 +2690,31 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera usa repetición espaciada: repasar después de una pausa puede ayudarte a recordar durante más tiempo. Se relaciona con la curva del olvido, que describe cómo se debilita la memoria con el tiempo.\n\nNuestro calendario:\n• Primer repaso: 1 día después de guardar.\n• Tras los siguientes repasos: 3, 7, 14 y luego 30 días.\n• Después, cada 30 días.\n\nUna palabra queda pendiente al llegar su fecha. Marcarla como repasada inicia el siguiente intervalo desde ese repaso. Es un calendario fijo, no una medición de tu memoria ni una predicción de que la has olvidado.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Los períodos terminan en la última actualización. Las horas son locales. Las palabras sin conexión aparecen tras sincronizar. Las versiones anteriores pueden omitir actividad al principio y al final del período porque no registraban horas exactas.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Los totales iguales comparten puesto. Las fechas están en UTC. Las palabras sin conexión aparecen después de sincronizar.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '¿Abrir un chat directo con $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Este mensaje se eliminará solo de este dispositivo. La otra persona conservará su copia.';
+
+  @override
+  String get adminDeletePractice => 'Eliminar práctica';
+
+  @override
+  String get adminDeleteDialogue => 'Eliminar diálogo';
+
+  @override
+  String get adminDeleteContentBody =>
+      '¿Eliminar este contenido del servidor para todos? No se puede deshacer. Las copias descargadas pueden permanecer en los dispositivos.';
 }

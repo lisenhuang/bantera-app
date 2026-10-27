@@ -2491,6 +2491,32 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera 使用间隔重复：隔一段时间再复习，有助于更长久地记住词汇。这与描述记忆随时间减弱的遗忘曲线有关。\n\n我们的安排：\n• 保存后 1 天首次复习。\n• 后续每次复习后分别间隔 3、7、14、30 天。\n• 之后保持每 30 天复习一次。\n\n到达安排的日期后，词汇就会显示为待复习。标记已复习后，从该次复习开始计算下一次间隔。这是固定安排，并非对你的记忆进行测量，也不表示你已经忘记该词。';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      '统计截至最近一次刷新，显示本地时间。离线词数会在同步后显示。旧版应用未记录准确时间，因此可能不包含统计时段开始和结束附近的活动。';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      '总数相同则排名相同。日期按 UTC 计算。离线练习的单词数将在同步后显示。';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '要打开与$name的私聊吗？';
+  }
+
+  @override
+  String get chatDeleteReceivedBody => '此消息只会从这台设备删除。对方的副本将保留。';
+
+  @override
+  String get adminDeletePractice => '删除练习';
+
+  @override
+  String get adminDeleteDialogue => '删除长对话';
+
+  @override
+  String get adminDeleteContentBody =>
+      '要从服务器为所有人删除此内容吗？此操作无法撤销。已下载的副本可能仍保留在设备上。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4984,4 +5010,30 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get vocabReviewHelpBody =>
       'Bantera 使用間隔重複：隔一段時間再複習，有助於更長久地記住詞彙。這與描述記憶隨時間減弱的遺忘曲線有關。\n\n我們的安排：\n• 儲存後 1 天首次複習。\n• 後續每次複習後分別間隔 3、7、14、30 天。\n• 之後保持每 30 天複習一次。\n\n到達安排的日期後，詞彙就會顯示為待複習。標記已複習後，從該次複習開始計算下一次間隔。這是固定安排，並非測量你的記憶，也不表示你已經忘記該詞。';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      '統計截至最近一次重新整理，顯示本地時間。離線詞數會在同步後顯示。舊版應用程式未記錄準確時間，因此可能不包含統計時段開始和結束附近的活動。';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      '總數相同則排名相同。日期按 UTC 計算。離線練習的單字數將在同步後顯示。';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '要開啟與$name的私聊嗎？';
+  }
+
+  @override
+  String get chatDeleteReceivedBody => '此訊息只會從這台裝置刪除。對方的副本將保留。';
+
+  @override
+  String get adminDeletePractice => '刪除練習';
+
+  @override
+  String get adminDeleteDialogue => '刪除長對話';
+
+  @override
+  String get adminDeleteContentBody =>
+      '要從伺服器為所有人刪除此內容嗎？此操作無法復原。已下載的副本可能仍保留在裝置上。';
 }

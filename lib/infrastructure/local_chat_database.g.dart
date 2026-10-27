@@ -4186,6 +4186,236 @@ class ChatBlockEntriesCompanion extends UpdateCompanion<ChatBlockEntry> {
   }
 }
 
+class $ChatHiddenMessageEntriesTable extends ChatHiddenMessageEntries
+    with TableInfo<$ChatHiddenMessageEntriesTable, ChatHiddenMessageEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatHiddenMessageEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _ownerCacheKeyMeta = const VerificationMeta(
+    'ownerCacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> ownerCacheKey = GeneratedColumn<String>(
+    'owner_cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _messageIdMeta = const VerificationMeta(
+    'messageId',
+  );
+  @override
+  late final GeneratedColumn<String> messageId = GeneratedColumn<String>(
+    'message_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [ownerCacheKey, messageId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chat_hidden_message_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChatHiddenMessageEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('owner_cache_key')) {
+      context.handle(
+        _ownerCacheKeyMeta,
+        ownerCacheKey.isAcceptableOrUnknown(
+          data['owner_cache_key']!,
+          _ownerCacheKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerCacheKeyMeta);
+    }
+    if (data.containsKey('message_id')) {
+      context.handle(
+        _messageIdMeta,
+        messageId.isAcceptableOrUnknown(data['message_id']!, _messageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {ownerCacheKey, messageId};
+  @override
+  ChatHiddenMessageEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChatHiddenMessageEntry(
+      ownerCacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_cache_key'],
+      )!,
+      messageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message_id'],
+      )!,
+    );
+  }
+
+  @override
+  $ChatHiddenMessageEntriesTable createAlias(String alias) {
+    return $ChatHiddenMessageEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class ChatHiddenMessageEntry extends DataClass
+    implements Insertable<ChatHiddenMessageEntry> {
+  final String ownerCacheKey;
+  final String messageId;
+  const ChatHiddenMessageEntry({
+    required this.ownerCacheKey,
+    required this.messageId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['owner_cache_key'] = Variable<String>(ownerCacheKey);
+    map['message_id'] = Variable<String>(messageId);
+    return map;
+  }
+
+  ChatHiddenMessageEntriesCompanion toCompanion(bool nullToAbsent) {
+    return ChatHiddenMessageEntriesCompanion(
+      ownerCacheKey: Value(ownerCacheKey),
+      messageId: Value(messageId),
+    );
+  }
+
+  factory ChatHiddenMessageEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChatHiddenMessageEntry(
+      ownerCacheKey: serializer.fromJson<String>(json['ownerCacheKey']),
+      messageId: serializer.fromJson<String>(json['messageId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'ownerCacheKey': serializer.toJson<String>(ownerCacheKey),
+      'messageId': serializer.toJson<String>(messageId),
+    };
+  }
+
+  ChatHiddenMessageEntry copyWith({String? ownerCacheKey, String? messageId}) =>
+      ChatHiddenMessageEntry(
+        ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+        messageId: messageId ?? this.messageId,
+      );
+  ChatHiddenMessageEntry copyWithCompanion(
+    ChatHiddenMessageEntriesCompanion data,
+  ) {
+    return ChatHiddenMessageEntry(
+      ownerCacheKey: data.ownerCacheKey.present
+          ? data.ownerCacheKey.value
+          : this.ownerCacheKey,
+      messageId: data.messageId.present ? data.messageId.value : this.messageId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatHiddenMessageEntry(')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('messageId: $messageId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(ownerCacheKey, messageId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChatHiddenMessageEntry &&
+          other.ownerCacheKey == this.ownerCacheKey &&
+          other.messageId == this.messageId);
+}
+
+class ChatHiddenMessageEntriesCompanion
+    extends UpdateCompanion<ChatHiddenMessageEntry> {
+  final Value<String> ownerCacheKey;
+  final Value<String> messageId;
+  final Value<int> rowid;
+  const ChatHiddenMessageEntriesCompanion({
+    this.ownerCacheKey = const Value.absent(),
+    this.messageId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ChatHiddenMessageEntriesCompanion.insert({
+    required String ownerCacheKey,
+    required String messageId,
+    this.rowid = const Value.absent(),
+  }) : ownerCacheKey = Value(ownerCacheKey),
+       messageId = Value(messageId);
+  static Insertable<ChatHiddenMessageEntry> custom({
+    Expression<String>? ownerCacheKey,
+    Expression<String>? messageId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (ownerCacheKey != null) 'owner_cache_key': ownerCacheKey,
+      if (messageId != null) 'message_id': messageId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ChatHiddenMessageEntriesCompanion copyWith({
+    Value<String>? ownerCacheKey,
+    Value<String>? messageId,
+    Value<int>? rowid,
+  }) {
+    return ChatHiddenMessageEntriesCompanion(
+      ownerCacheKey: ownerCacheKey ?? this.ownerCacheKey,
+      messageId: messageId ?? this.messageId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (ownerCacheKey.present) {
+      map['owner_cache_key'] = Variable<String>(ownerCacheKey.value);
+    }
+    if (messageId.present) {
+      map['message_id'] = Variable<String>(messageId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatHiddenMessageEntriesCompanion(')
+          ..write('ownerCacheKey: $ownerCacheKey, ')
+          ..write('messageId: $messageId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LocalChatDatabase extends GeneratedDatabase {
   _$LocalChatDatabase(QueryExecutor e) : super(e);
   $LocalChatDatabaseManager get managers => $LocalChatDatabaseManager(this);
@@ -4199,6 +4429,8 @@ abstract class _$LocalChatDatabase extends GeneratedDatabase {
   late final $ChatBlockEntriesTable chatBlockEntries = $ChatBlockEntriesTable(
     this,
   );
+  late final $ChatHiddenMessageEntriesTable chatHiddenMessageEntries =
+      $ChatHiddenMessageEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4208,6 +4440,7 @@ abstract class _$LocalChatDatabase extends GeneratedDatabase {
     chatUserEntries,
     chatMessageEntries,
     chatBlockEntries,
+    chatHiddenMessageEntries,
   ];
 }
 
@@ -6041,6 +6274,170 @@ typedef $$ChatBlockEntriesTableProcessedTableManager =
       ChatBlockEntry,
       PrefetchHooks Function()
     >;
+typedef $$ChatHiddenMessageEntriesTableCreateCompanionBuilder =
+    ChatHiddenMessageEntriesCompanion Function({
+      required String ownerCacheKey,
+      required String messageId,
+      Value<int> rowid,
+    });
+typedef $$ChatHiddenMessageEntriesTableUpdateCompanionBuilder =
+    ChatHiddenMessageEntriesCompanion Function({
+      Value<String> ownerCacheKey,
+      Value<String> messageId,
+      Value<int> rowid,
+    });
+
+class $$ChatHiddenMessageEntriesTableFilterComposer
+    extends Composer<_$LocalChatDatabase, $ChatHiddenMessageEntriesTable> {
+  $$ChatHiddenMessageEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get messageId => $composableBuilder(
+    column: $table.messageId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ChatHiddenMessageEntriesTableOrderingComposer
+    extends Composer<_$LocalChatDatabase, $ChatHiddenMessageEntriesTable> {
+  $$ChatHiddenMessageEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get messageId => $composableBuilder(
+    column: $table.messageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ChatHiddenMessageEntriesTableAnnotationComposer
+    extends Composer<_$LocalChatDatabase, $ChatHiddenMessageEntriesTable> {
+  $$ChatHiddenMessageEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get ownerCacheKey => $composableBuilder(
+    column: $table.ownerCacheKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get messageId =>
+      $composableBuilder(column: $table.messageId, builder: (column) => column);
+}
+
+class $$ChatHiddenMessageEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$LocalChatDatabase,
+          $ChatHiddenMessageEntriesTable,
+          ChatHiddenMessageEntry,
+          $$ChatHiddenMessageEntriesTableFilterComposer,
+          $$ChatHiddenMessageEntriesTableOrderingComposer,
+          $$ChatHiddenMessageEntriesTableAnnotationComposer,
+          $$ChatHiddenMessageEntriesTableCreateCompanionBuilder,
+          $$ChatHiddenMessageEntriesTableUpdateCompanionBuilder,
+          (
+            ChatHiddenMessageEntry,
+            BaseReferences<
+              _$LocalChatDatabase,
+              $ChatHiddenMessageEntriesTable,
+              ChatHiddenMessageEntry
+            >,
+          ),
+          ChatHiddenMessageEntry,
+          PrefetchHooks Function()
+        > {
+  $$ChatHiddenMessageEntriesTableTableManager(
+    _$LocalChatDatabase db,
+    $ChatHiddenMessageEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChatHiddenMessageEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ChatHiddenMessageEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ChatHiddenMessageEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> ownerCacheKey = const Value.absent(),
+                Value<String> messageId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ChatHiddenMessageEntriesCompanion(
+                ownerCacheKey: ownerCacheKey,
+                messageId: messageId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String ownerCacheKey,
+                required String messageId,
+                Value<int> rowid = const Value.absent(),
+              }) => ChatHiddenMessageEntriesCompanion.insert(
+                ownerCacheKey: ownerCacheKey,
+                messageId: messageId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ChatHiddenMessageEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalChatDatabase,
+      $ChatHiddenMessageEntriesTable,
+      ChatHiddenMessageEntry,
+      $$ChatHiddenMessageEntriesTableFilterComposer,
+      $$ChatHiddenMessageEntriesTableOrderingComposer,
+      $$ChatHiddenMessageEntriesTableAnnotationComposer,
+      $$ChatHiddenMessageEntriesTableCreateCompanionBuilder,
+      $$ChatHiddenMessageEntriesTableUpdateCompanionBuilder,
+      (
+        ChatHiddenMessageEntry,
+        BaseReferences<
+          _$LocalChatDatabase,
+          $ChatHiddenMessageEntriesTable,
+          ChatHiddenMessageEntry
+        >,
+      ),
+      ChatHiddenMessageEntry,
+      PrefetchHooks Function()
+    >;
 
 class $LocalChatDatabaseManager {
   final _$LocalChatDatabase _db;
@@ -6053,4 +6450,9 @@ class $LocalChatDatabaseManager {
       $$ChatMessageEntriesTableTableManager(_db, _db.chatMessageEntries);
   $$ChatBlockEntriesTableTableManager get chatBlockEntries =>
       $$ChatBlockEntriesTableTableManager(_db, _db.chatBlockEntries);
+  $$ChatHiddenMessageEntriesTableTableManager get chatHiddenMessageEntries =>
+      $$ChatHiddenMessageEntriesTableTableManager(
+        _db,
+        _db.chatHiddenMessageEntries,
+      );
 }

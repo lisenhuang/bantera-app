@@ -89,6 +89,7 @@ void main() {
     WidgetTester tester,
     Widget home, {
     bool dark = false,
+    bool settle = true,
     double width = 393,
     double height = 852,
     double scale = 1,
@@ -118,7 +119,10 @@ void main() {
         home: home,
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle)
+      await tester.pumpAndSettle();
+    else
+      await tester.pump();
   }
 
   Widget view({
@@ -131,6 +135,107 @@ void main() {
     failed: failed,
     onRefresh: () async {},
   );
+
+  testWidgets('admin periods have shield and remain selectable while loading', (
+    tester,
+  ) async {
+    var selected = 30;
+    await mount(
+      tester,
+      SpeakingLeaderboardView(
+        loading: true,
+        days: 7,
+        onPeriodChanged: (days) => selected = days,
+        onRefresh: () async {},
+      ),
+      settle: false,
+    );
+    expect(find.byIcon(Icons.admin_panel_settings_outlined), findsOneWidget);
+    expect(find.text('30 days'), findsOneWidget);
+    expect(find.text('7 days'), findsOneWidget);
+    expect(find.text('24H'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('leaderboard-period-1')));
+    expect(selected, 1);
+    await tester.tap(find.byKey(const ValueKey('leaderboard-period-30')));
+    expect(selected, 30);
+  });
+
+  testWidgets('ordinary leaderboard has no admin choices or row action', (
+    tester,
+  ) async {
+    final report = sample();
+    (report.data['rows'] as List).first['adminUserId'] = 'person';
+    await mount(tester, view(report: report));
+    expect(find.byType(ChoiceChip), findsNothing);
+    expect(find.byIcon(Icons.admin_panel_settings_outlined), findsNothing);
+    await tester.tap(find.text('Maya'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets(
+    'admin chat opens only after shield confirmation, never for self',
+    (tester) async {
+      final report = sample(me: 2);
+      for (final row in report.data['rows'] as List) {
+        row['adminUserId'] = row['key'];
+      }
+      final opened = <String>[];
+      await mount(
+        tester,
+        SpeakingLeaderboardView(
+          report: report,
+          onPeriodChanged: (_) {},
+          onOpenChat: (row) async => opened.add(row['adminUserId'] as String),
+          onRefresh: () async {},
+        ),
+      );
+      await tester.tap(find.text('Oliver · You'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      await tester.tap(find.text('Maya'));
+      await tester.pumpAndSettle();
+      expect(find.text('Open a direct chat with Maya?'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byIcon(Icons.admin_panel_settings_outlined),
+        ),
+        findsOneWidget,
+      );
+      expect(opened, isEmpty);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(opened, isEmpty);
+      await tester.tap(find.text('Maya'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Message'));
+      await tester.pumpAndSettle();
+      expect(opened, ['1']);
+    },
+  );
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('admin controls wrap at 320px with large text $locale', (
+      tester,
+    ) async {
+      await mount(
+        tester,
+        SpeakingLeaderboardView(
+          report: sample(),
+          days: 1,
+          onPeriodChanged: (_) {},
+          onRefresh: () async {},
+        ),
+        width: 320,
+        height: 700,
+        scale: 2,
+        locale: locale,
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ChoiceChip), findsNWidgets(3));
+    });
+  }
 
   for (final dark in [false, true]) {
     testWidgets(

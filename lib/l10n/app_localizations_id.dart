@@ -2626,4 +2626,31 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera memakai pengulangan berjarak: mengulas setelah jeda dapat membantu Anda mengingat lebih lama. Ini terkait kurva lupa, yang menggambarkan melemahnya ingatan seiring waktu.\n\nJadwal kami:\n• Ulasan pertama: 1 hari setelah disimpan.\n• Setelah ulasan berikutnya: 3, 7, 14, lalu 30 hari.\n• Selanjutnya setiap 30 hari.\n\nKata jatuh tempo saat tanggalnya tiba. Menandainya sudah diulas memulai interval berikutnya dari ulasan itu. Ini jadwal tetap, bukan pengukuran ingatan atau prediksi bahwa Anda telah melupakan kata tersebut.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Periode berakhir saat pembaruan terakhir. Waktu ditampilkan secara lokal. Kata offline muncul setelah sinkronisasi. Versi aplikasi lama mungkin tidak menyertakan aktivitas di awal dan akhir periode karena waktu tepatnya tidak dicatat.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Jumlah yang sama berbagi peringkat. Tanggal menggunakan UTC. Kata saat offline muncul setelah sinkronisasi.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Buka chat langsung dengan $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Pesan ini hanya akan dihapus dari perangkat ini. Salinan orang lain tetap ada.';
+
+  @override
+  String get adminDeletePractice => 'Hapus latihan';
+
+  @override
+  String get adminDeleteDialogue => 'Hapus dialog';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Hapus konten ini dari server untuk semua orang? Tindakan ini tidak dapat dibatalkan. Salinan yang sudah diunduh mungkin tetap ada di perangkat.';
 }

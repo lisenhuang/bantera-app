@@ -17,6 +17,7 @@ class WordActivitySection extends StatelessWidget {
     this.now,
     this.onShare,
     this.afterTotals,
+    this.showSpeaking = true,
   });
   final WordTotals today;
   final WordTotals week;
@@ -25,6 +26,7 @@ class WordActivitySection extends StatelessWidget {
   final DateTime? now;
   final VoidCallback? onShare;
   final Widget? afterTotals;
+  final bool showSpeaking;
 
   @override
   Widget build(BuildContext context) {
@@ -141,13 +143,20 @@ class WordActivitySection extends StatelessWidget {
                       .map((p) => width(p.label, theme.textTheme.labelLarge!))
                       .reduce((a, b) => a > b ? a : b);
                   final countWidth = periods
-                      .expand((p) => [p.totals.listened, p.totals.spoken])
+                      .expand(
+                        (p) => [
+                          p.totals.listened,
+                          if (showSpeaking) p.totals.spoken,
+                        ],
+                      )
                       .map((v) => width(number.format(v), countStyle))
                       .reduce((a, b) => a > b ? a : b);
                   // Keep exact numbers legible at large accessibility sizes. The
                   // table becomes labeled rows instead of shrinking or truncating.
                   final tableFits =
-                      labelWidth + 24 + (countWidth + 16) * 2 <=
+                      labelWidth +
+                          24 +
+                          (countWidth + 16) * (showSpeaking ? 2 : 1) <=
                       constraints.maxWidth;
                   if (!tableFits) {
                     return Column(
@@ -159,7 +168,10 @@ class WordActivitySection extends StatelessWidget {
                             style: theme.textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
-                          for (final listening in [true, false])
+                          for (final listening in [
+                            true,
+                            if (showSpeaking) false,
+                          ])
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Row(
@@ -197,7 +209,7 @@ class WordActivitySection extends StatelessWidget {
                     columnWidths: {
                       0: FixedColumnWidth(labelWidth + 24),
                       1: const FlexColumnWidth(),
-                      2: const FlexColumnWidth(),
+                      if (showSpeaking) 2: const FlexColumnWidth(),
                     },
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: [
@@ -208,7 +220,7 @@ class WordActivitySection extends StatelessWidget {
                             style: theme.textTheme.labelSmall,
                           ),
                           heading(true),
-                          heading(false),
+                          if (showSpeaking) heading(false),
                         ],
                       ),
                       for (final period in periods)
@@ -233,7 +245,8 @@ class WordActivitySection extends StatelessWidget {
                               ),
                             ),
                             value(period.id, period.totals, true),
-                            value(period.id, period.totals, false),
+                            if (showSpeaking)
+                              value(period.id, period.totals, false),
                           ],
                         ),
                     ],
@@ -247,7 +260,11 @@ class WordActivitySection extends StatelessWidget {
             afterTotals!,
             const SizedBox(height: 20),
           ],
-          WordActivityTrend(history: history, now: now ?? DateTime.now()),
+          WordActivityTrend(
+            showSpeaking: showSpeaking,
+            history: history,
+            now: now ?? DateTime.now(),
+          ),
           const SizedBox(height: 12),
           Text(l10n.wordActivityHint, style: theme.textTheme.bodySmall),
         ],

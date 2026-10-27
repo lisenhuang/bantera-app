@@ -2702,4 +2702,31 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera stosuje powtórki w odstępach: powrót do słowa po przerwie pomaga pamiętać je dłużej. Wiąże się to z krzywą zapominania, opisującą osłabianie pamięci z czasem.\n\nNasz harmonogram:\n• Pierwsza powtórka: 1 dzień po zapisaniu.\n• Po kolejnych powtórkach: 3, 7, 14, a potem 30 dni.\n• Następnie co 30 dni.\n\nSłowo czeka na powtórkę, gdy nadejdzie termin. Oznaczenie jako powtórzone rozpoczyna kolejny odstęp od tej powtórki. To stały harmonogram, a nie pomiar pamięci lub stwierdzenie, że słowo zostało zapomniane.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Okresy kończą się w chwili ostatniego odświeżenia. Godziny są lokalne. Słowa offline pojawią się po synchronizacji. Starsze wersje aplikacji mogą pomijać aktywność na początku i końcu okresu, ponieważ nie zapisywały dokładnego czasu.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Równe wyniki zajmują to samo miejsce. Daty są w UTC. Słowa offline pojawiają się po synchronizacji.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Otworzyć prywatny czat z $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Ta wiadomość zostanie usunięta tylko z tego urządzenia. Kopia drugiej osoby pozostanie.';
+
+  @override
+  String get adminDeletePractice => 'Usuń ćwiczenie';
+
+  @override
+  String get adminDeleteDialogue => 'Usuń dialog';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Usunąć tę treść z serwera dla wszystkich? Nie można tego cofnąć. Pobrane kopie mogą pozostać na urządzeniach.';
 }

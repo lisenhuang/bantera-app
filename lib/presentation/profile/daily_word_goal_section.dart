@@ -22,10 +22,12 @@ class DailyWordGoalSection extends StatelessWidget {
     required this.goal,
     required this.today,
     required this.onEdit,
+    this.showSpeaking = true,
   });
   final DailyWordGoal? goal;
   final WordTotals today;
   final VoidCallback onEdit;
+  final bool showSpeaking;
 
   @override
   Widget build(BuildContext context) {
@@ -84,20 +86,24 @@ class DailyWordGoalSection extends StatelessWidget {
                     ),
                   )
                 else ...[
-                  for (final item in [
-                    (
-                      listening: true,
-                      summary: l10n.wordActivityListeningSummary,
-                      count: today.listened,
-                      target: target.listened,
-                    ),
-                    (
-                      listening: false,
-                      summary: l10n.wordActivitySpeakingSummary,
-                      count: today.spoken,
-                      target: target.spoken,
-                    ),
-                  ].where((item) => item.target > 0)) ...[
+                  for (final item
+                      in [
+                        (
+                          listening: true,
+                          summary: l10n.wordActivityListeningSummary,
+                          count: today.listened,
+                          target: target.listened,
+                        ),
+                        (
+                          listening: false,
+                          summary: l10n.wordActivitySpeakingSummary,
+                          count: today.spoken,
+                          target: target.spoken,
+                        ),
+                      ].where(
+                        (item) =>
+                            item.target > 0 && (item.listening || showSpeaking),
+                      )) ...[
                     const SizedBox(height: 10),
                     Semantics(
                       label: item.summary(
@@ -196,13 +202,19 @@ class DailyWordGoalSection extends StatelessWidget {
                   ],
                   const SizedBox(height: 12),
                   Text(
-                    target.listened == 0 && target.spoken == 0
+                    target.listened == 0 &&
+                            (!showSpeaking || target.spoken == 0)
                         ? l10n.dailyGoalNoRequirement
                         : today.listened >= target.listened &&
-                              today.spoken >= target.spoken
+                              (!showSpeaking || today.spoken >= target.spoken)
                         ? l10n.dailyGoalReached
                         : l10n.dailyGoalTimeTotal(
-                            goalMinutes(context, target.totalMinutes),
+                            goalMinutes(
+                              context,
+                              showSpeaking
+                                  ? target.totalMinutes
+                                  : target.listeningMinutes,
+                            ),
                           ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../domain/models/models.dart';
 import '../core/settings_notifier.dart';
+import '../core/auth_session_notifier.dart';
 import 'auth_api_client.dart';
 import 'learning_language_catalog.dart';
 import 'region_service.dart';
@@ -148,6 +149,20 @@ class VideoProcessingService {
     }
   }
 
+  Future<bool?> supportsPracticeTranscription(String locale) async {
+    if (isMaoriLanguage(locale)) return false;
+    try {
+      return await _channel
+          .invokeMethod<bool>('supportsPracticeTranscription', {
+            'localeIdentifier': locale,
+          })
+          .timeout(const Duration(seconds: 8));
+    } catch (_) {
+      // A failed capability lookup is not evidence of an unsupported language.
+      return null;
+    }
+  }
+
   Future<List<TranscriptionLocaleOption>>
   _fetchNativeTranscriptionLocales() async {
     final raw =
@@ -272,7 +287,10 @@ class VideoProcessingService {
   Future<List<TranscriptionLocaleOption>>
   fetchLearningLanguageOptions() async =>
       RegionService.instance.filterLanguageOptions(
-        availableProfileLanguages(await _fetchAllLearningLanguageOptions()),
+        profileLanguageOptionsForRole(
+          await _fetchAllLearningLanguageOptions(),
+          isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+        ),
       );
 
   Future<List<TranscriptionLocaleOption>>
@@ -428,6 +446,13 @@ class VideoProcessingService {
     required String localeIdentifier,
     bool allowAutoCorrection = true,
   }) async {
+    if (isMaoriLanguage(localeIdentifier)) {
+      return RecordedAttemptTranscription(
+        transcriptText: '',
+        transcriptLanguage: 'Māori',
+        transcriptLanguageCode: 'mi',
+      );
+    }
     // Supported on iOS (Apple Speech) and Android 13+ (system SpeechRecognizer,
     // file-based via EXTRA_AUDIO_SOURCE). The native bridge handles each platform.
     try {

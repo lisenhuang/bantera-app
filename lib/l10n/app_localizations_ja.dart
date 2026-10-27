@@ -2500,4 +2500,30 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera は間隔を空けた反復学習を使います。時間を置いて復習すると、長く覚える助けになります。これは、時間とともに記憶が薄れることを示す忘却曲線に関連します。\n\n復習の間隔：\n• 保存から 1 日後に初回。\n• その後、復習するたびに 3、7、14、30 日後。\n• 以降は 30 日ごと。\n\n予定日になると復習対象になります。復習済みにすると、その日から次の間隔が始まります。固定のスケジュールであり、記憶力の測定や、忘れたという判定ではありません。';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      '期間は最後に更新した時点までです。時刻は現地時間です。オフラインの単語数は同期後に反映されます。旧バージョンでは正確な時刻を記録していないため、期間の開始・終了付近の活動が含まれない場合があります。';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      '合計が同じ場合は同じ順位になります。日付はUTCです。オフラインの単語数は同期後に反映されます。';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '$nameさんとのダイレクトチャットを開きますか？';
+  }
+
+  @override
+  String get chatDeleteReceivedBody => 'このメッセージはこの端末からのみ削除されます。相手のコピーは残ります。';
+
+  @override
+  String get adminDeletePractice => '練習を削除';
+
+  @override
+  String get adminDeleteDialogue => '会話を削除';
+
+  @override
+  String get adminDeleteContentBody =>
+      'このコンテンツをサーバーから削除し、全員が利用できなくなるようにしますか？元に戻せません。ダウンロード済みのコピーは端末に残る場合があります。';
 }

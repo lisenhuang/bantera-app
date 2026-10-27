@@ -2684,4 +2684,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Periods end at the latest refresh. Times are local. Offline words appear after syncing. Older app versions may omit activity near the start and end of the period because exact times were not recorded.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Equal totals share a rank. Dates are in UTC. Offline words appear after syncing.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Open a direct chat with $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'This message will be removed from this device only. The other person’s copy will stay.';
+
+  @override
+  String get adminDeletePractice => 'Delete practice';
+
+  @override
+  String get adminDeleteDialogue => 'Delete dialogue';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Delete this content from the server for everyone? This cannot be undone. Previously downloaded copies may remain on devices.';
 }

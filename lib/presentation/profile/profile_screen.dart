@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../infrastructure/video_processing_service.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../core/app_resume_notifier.dart';
 import '../../core/user_profile_notifier.dart';
@@ -26,15 +27,39 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String? _checkedLanguage;
+  bool? _speechSupported;
+
+  void _refreshSpeechSupport() {
+    final language = UserProfileNotifier.instance.learningLanguage;
+    if (_checkedLanguage == language) return;
+    _checkedLanguage = language;
+    if (language == null || language.isEmpty) {
+      _speechSupported = null;
+      return;
+    }
+    _speechSupported = isMaoriLanguage(language) ? false : null;
+    unawaited(() async {
+      final supported = await VideoProcessingService.instance
+          .supportsPracticeTranscription(language);
+      if (mounted && _checkedLanguage == language) {
+        setState(() => _speechSupported = supported);
+      }
+    }());
+  }
+
   @override
   void initState() {
     super.initState();
     WordActivityNotifier.instance.retain();
+    UserProfileNotifier.instance.addListener(_refreshSpeechSupport);
+    _refreshSpeechSupport();
     unawaited(WordActivityNotifier.instance.sync());
   }
 
   @override
   void dispose() {
+    UserProfileNotifier.instance.removeListener(_refreshSpeechSupport);
     WordActivityNotifier.instance.release();
     super.dispose();
   }
@@ -50,6 +75,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, _) {
         final profile = UserProfileNotifier.instance;
         final language = goalLearningLanguageLabel(profile.learningLanguage);
+        final showSpeaking =
+            !isMaoriLanguage(profile.learningLanguage) &&
+            _speechSupported != false;
         final l10n = AppLocalizations.of(context)!;
         final activity = WordActivityNotifier.instance.summaryFor(
           profile.learningLanguage,
@@ -165,6 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
                   DailyWordGoalSection(
+                    showSpeaking: showSpeaking,
                     goal: WordActivityNotifier.instance.dailyGoal,
                     today: activity.today,
                     onEdit: () => Navigator.push(
@@ -176,26 +205,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
                   WordActivitySection(
+                    showSpeaking: showSpeaking,
                     history: WordActivityNotifier.instance.historyFor(
                       profile.learningLanguage,
                     ),
                     today: activity.today,
                     week: activity.week,
                     total: activity.total,
-                    onShare: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => WordActivityShareScreen(
-                          name: profile.displayName,
-                          learningLanguage: profile.learningLanguage,
-                          avatarUrl: profile.avatarUrl,
-                          avatarPath: profile.avatarImagePath,
-                          today: activity.today,
-                          week: activity.week,
-                          total: activity.total,
-                        ),
-                      ),
-                    ),
+                    onShare: !showSpeaking
+                        ? null
+                        : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => WordActivityShareScreen(
+                                name: profile.displayName,
+                                learningLanguage: profile.learningLanguage,
+                                avatarUrl: profile.avatarUrl,
+                                avatarPath: profile.avatarImagePath,
+                                today: activity.today,
+                                week: activity.week,
+                                total: activity.total,
+                              ),
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 32),
                 ],

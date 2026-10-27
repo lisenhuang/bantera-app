@@ -50,6 +50,7 @@ List<AudioLanguageGroup> groupAudioLanguages(
       ...entry.value,
     ].map((locale) => locale.flagEmoji ?? '🌐').toSet();
     final flag = switch (code) {
+      'mi' => '🇳🇿',
       'yue' => '🇭🇰',
       'zh-cn' => '🇨🇳',
       'zh-tw' => '🇹🇼',

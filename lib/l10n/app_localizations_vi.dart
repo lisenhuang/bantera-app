@@ -2621,4 +2621,31 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera dùng lặp lại ngắt quãng: ôn sau một khoảng nghỉ có thể giúp nhớ lâu hơn. Điều này liên quan đến đường cong quên lãng, mô tả trí nhớ suy giảm theo thời gian.\n\nLịch của chúng tôi:\n• Ôn lần đầu: 1 ngày sau khi lưu.\n• Sau các lần ôn tiếp theo: 3, 7, 14 rồi 30 ngày.\n• Sau đó cứ mỗi 30 ngày.\n\nTừ đến hạn khi tới ngày dự kiến. Đánh dấu đã ôn sẽ bắt đầu khoảng thời gian tiếp theo từ lần ôn đó. Đây là lịch cố định, không đo trí nhớ hay dự đoán rằng bạn đã quên từ.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Khoảng thời gian kết thúc ở lần làm mới gần nhất. Giờ được hiển thị theo địa phương. Số từ ngoại tuyến sẽ xuất hiện sau khi đồng bộ. Phiên bản cũ có thể thiếu hoạt động ở đầu và cuối khoảng thời gian vì không lưu thời điểm chính xác.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Tổng bằng nhau có cùng thứ hạng. Ngày tính theo UTC. Từ ngoại tuyến xuất hiện sau khi đồng bộ.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Mở cuộc trò chuyện riêng với $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Tin nhắn này chỉ bị xóa khỏi thiết bị này. Bản sao của người kia vẫn còn.';
+
+  @override
+  String get adminDeletePractice => 'Xóa bài luyện tập';
+
+  @override
+  String get adminDeleteDialogue => 'Xóa hội thoại';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Xóa nội dung này khỏi máy chủ cho tất cả mọi người? Không thể hoàn tác. Các bản đã tải xuống có thể vẫn còn trên thiết bị.';
 }

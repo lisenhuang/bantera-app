@@ -1,3 +1,4 @@
+import '../../../infrastructure/transcription_locale_option.dart';
 import 'ai_clear_history_dialog.dart';
 import '../../../core/apple_system_version.dart';
 import '../../../core/practice_review_service.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/services.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../l10n/app_localizations.dart';
 import 'ai_chat_controller.dart';
+import '../swipe_message_action.dart';
 import 'ai_avatar.dart';
 import 'ai_reminders_screen.dart';
 import '../../../domain/activity/listening_word_tracker.dart';
@@ -319,46 +321,6 @@ class _AiChatScreenState extends State<AiChatScreen>
     _player.dispose();
     _scroll.dispose();
     super.dispose();
-  }
-
-  Future<void> _messageActions(AiMessage message) async {
-    final l = AppLocalizations.of(context)!;
-    final remove = await showModalBottomSheet<bool>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (message.text.isNotEmpty || message.emojis.isNotEmpty)
-              ListTile(
-                leading: const Icon(Icons.copy_outlined),
-                title: Text(MaterialLocalizations.of(context).copyButtonLabel),
-                onTap: () {
-                  Clipboard.setData(
-                    ClipboardData(
-                      text: [
-                        message.text,
-                        if (message.emojis.isNotEmpty) message.emojis.join(' '),
-                      ].where((text) => text.isNotEmpty).join('\n'),
-                    ),
-                  );
-                  Navigator.pop(context, false);
-                },
-              ),
-            ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(l.chatDeleteMessage),
-              enabled: _chat.canDeleteMessage(message),
-              onTap: () => Navigator.pop(context, true),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (remove == true && mounted) await _deleteMessage(message);
   }
 
   Future<void> _deleteMessage(AiMessage message) async {
@@ -960,6 +922,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         : 0.0;
     final translationAction =
         supportsBuiltInTranslation &&
+            !isMaoriLanguage(m.language) &&
             defaultTargetPlatform == TargetPlatform.iOS &&
             m.displayText.isNotEmpty &&
             !receiving
@@ -988,13 +951,13 @@ class _AiChatScreenState extends State<AiChatScreen>
     return Align(
       key: ValueKey(m.id),
       alignment: user ? Alignment.centerRight : Alignment.centerLeft,
-      child: GestureDetector(
-        onLongPress: () => _messageActions(m),
+      child: SwipeMessageAction(
+        key: ValueKey('ai-message-swipe-${m.id}'),
+        onDelete: _chat.canDeleteMessage(m) ? () => _deleteMessage(m) : null,
         child: Container(
           key: ValueKey('ai-message-content-${m.id}'),
           constraints: user ? const BoxConstraints(maxWidth: 340) : null,
           width: user ? null : double.infinity,
-          margin: const EdgeInsets.only(bottom: 14),
           padding: user
               ? const EdgeInsets.all(14)
               : const EdgeInsets.symmetric(vertical: 8),
@@ -1045,7 +1008,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: user
-                      ? Text(
+                      ? SelectableText(
                           m.text,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: colors.onSurface,
@@ -1053,7 +1016,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                         )
                       : AiMessageMarkdown(
                           text: m.displayText,
-                          selectable: false,
+                          selectable: true,
                         ),
                 ),
               if (m.emojis.isNotEmpty)
@@ -1065,20 +1028,22 @@ class _AiChatScreenState extends State<AiChatScreen>
                   ),
                 ),
               if (supportsBuiltInTranslation &&
+                  !isMaoriLanguage(m.language) &&
                   _chat.visibleTranslations.contains(m.id) &&
                   m.translation.isNotEmpty) ...[
                 const Divider(height: 20),
                 if (user)
-                  Text(
+                  SelectableText(
                     m.translation,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: colors.onSurface,
                     ),
                   )
                 else
-                  AiMessageMarkdown(text: m.translation, selectable: false),
+                  AiMessageMarkdown(text: m.translation, selectable: true),
               ],
               if (supportsBuiltInTranslation &&
+                  !isMaoriLanguage(m.language) &&
                   _chat.translating.contains(m.id))
                 Padding(
                   padding: const EdgeInsets.only(top: 8),

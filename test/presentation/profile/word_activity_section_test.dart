@@ -6,6 +6,38 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 
 void main() {
+  testWidgets(
+    'listening-only achievements and chart hide speaking and sharing',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: WordActivitySection(
+                showSpeaking: false,
+                today: const WordTotals(listened: 300, spoken: 999),
+                week: const WordTotals(listened: 300, spoken: 999),
+                total: const WordTotals(listened: 300, spoken: 999),
+                now: DateTime(2026, 10, 27),
+                history: {
+                  '2026-10-27': const WordTotals(listened: 300, spoken: 999),
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Speaking'), findsNothing);
+      expect(find.textContaining('999'), findsNothing);
+      expect(find.text('Share'), findsNothing);
+      expect(find.textContaining('Listening'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('word activity fits 320px and enlarged text in $locale', (
       tester,

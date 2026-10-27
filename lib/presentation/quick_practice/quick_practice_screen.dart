@@ -61,7 +61,9 @@ class QuickPracticeScreen extends StatefulWidget {
        previewSavedStore = null,
        previewApi = null,
        previewPronunciation = null,
-       previewTranslation = null;
+       previewTranslation = null,
+       previewTranscriptionSupported = null,
+       previewIsAdmin = false;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
@@ -73,7 +75,11 @@ class QuickPracticeScreen extends StatefulWidget {
     this.previewApi,
     this.previewPronunciation,
     this.previewTranslation,
+    this.previewTranscriptionSupported,
+    this.previewIsAdmin = false,
   }) : goalTabAnchor = null;
+  final bool? previewTranscriptionSupported;
+  final bool previewIsAdmin;
   final PracticePronunciationController? previewPronunciation;
   final PracticeTranslationController? previewTranslation;
   final bool active;
@@ -137,9 +143,40 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   _beforeSaved;
   String? get _exerciseLocale {
     final locale = _exercise?['locale'] as String? ?? _locale;
-    return locale != null && supportsAudioDialogueLanguage(locale)
+    return locale != null &&
+            supportsQuickPracticeLanguage(
+              locale,
+              isAdmin: widget.previewIsAdmin || AuthSessionNotifier.instance.session?.isAdmin == true,
+            )
         ? locale
         : null;
+  }
+
+  final Map<String, bool> _speechSupport = {};
+  final Set<String> _checkingSpeechSupport = {};
+  bool get _isMaori =>
+      isMaoriLanguage(_exercise?['locale'] as String? ?? _locale);
+  bool get _listeningOnly =>
+      _isMaori ||
+      (widget.previewTranscriptionSupported ??
+              _speechSupport[_exerciseLocale]) ==
+          false;
+
+  Future<void> _refreshSpeechSupport() async {
+    final locale = _exerciseLocale;
+    if (widget.previewExercise != null ||
+        locale == null ||
+        _speechSupport.containsKey(locale) ||
+        !_checkingSpeechSupport.add(locale))
+      return;
+    try {
+      final supported = await VideoProcessingService.instance
+          .supportsPracticeTranscription(locale);
+      if (mounted && supported != null)
+        setState(() => _speechSupport[locale] = supported);
+    } finally {
+      _checkingSpeechSupport.remove(locale);
+    }
   }
 
   Set<String> _savedIds = {};
@@ -226,7 +263,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _exercise?['translationUsed'] == true);
       _feedback = widget.previewFeedback;
       final previewLocale = _exercise?['locale'] as String? ?? 'en-NZ';
-      _locale = supportsAudioDialogueLanguage(previewLocale)
+      _locale =
+          supportsQuickPracticeLanguage(
+            previewLocale,
+            isAdmin:
+                widget.previewIsAdmin ||
+                AuthSessionNotifier.instance.session?.isAdmin == true,
+          )
           ? previewLocale
           : null;
       _allowed = true;
@@ -283,6 +326,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   void didUpdateWidget(covariant QuickPracticeScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncPronunciation();
+    unawaited(_refreshSpeechSupport());
     if (!widget.active) {
       _poll?.cancel();
       unawaited(_stopAudio());
@@ -301,7 +345,13 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final owner = AuthSessionNotifier.instance.session?.cacheKey;
     final savedLocale = UserProfileNotifier.instance.learningLanguage;
     final locale =
-        savedLocale != null && supportsAudioDialogueLanguage(savedLocale)
+        savedLocale != null &&
+            supportsQuickPracticeLanguage(
+              savedLocale,
+              isAdmin:
+                  widget.previewIsAdmin ||
+                  AuthSessionNotifier.instance.session?.isAdmin == true,
+            )
         ? savedLocale
         : null;
     final profile = UserProfileNotifier.instance;
@@ -350,6 +400,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       _allowed = false;
     });
     _syncPronunciation();
+    unawaited(_refreshSpeechSupport());
     unawaited(_checkConsent());
     unawaited(_refreshCompleted());
     unawaited(_refreshSaved());
@@ -592,6 +643,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _busy = false;
       });
       _syncPronunciation();
+      unawaited(_refreshSpeechSupport());
     }
   }
 
@@ -606,6 +658,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _syncPronunciation();
+    unawaited(_refreshSpeechSupport());
     if (state != AppLifecycleState.resumed) {
       _poll?.cancel();
       unawaited(_stopAudio());
@@ -661,6 +714,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         'deferLevelScoring': true,
         'useSelectedLevel': true,
         'supportsA0': true,
+        if (_listeningOnly) 'listeningLevel': _practiceLevel ?? 'A0',
       });
       if (!mounted || epoch != _epoch || requestId != _requestId) return;
       final earnedLevel =
@@ -874,7 +928,12 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   void _requestTranslations({bool retry = false}) {
     _syncPronunciation();
+    unawaited(_refreshSpeechSupport());
     final exercise = _exercise;
+    if (_isMaori) {
+      unawaited(_requestMaoriEnglish());
+      return;
+    }
     if (!supportsBuiltInTranslation ||
         widget.previewExercise != null ||
         exercise == null ||
@@ -966,15 +1025,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         },
       );
     } catch (error) {
-      if (mounted && current()) {
+      if (mounted &&
+          current() &&
+          !(error is TranslationException && error.code == 'no_languages')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              error is TranslationException && error.code == 'no_languages'
-                  ? l.practiceNoTranslationLanguagesFound
-                  : l.practiceCouldNotSaveTranslationLanguage,
-            ),
-          ),
+          SnackBar(content: Text(l.practiceCouldNotSaveTranslationLanguage)),
         );
       }
     } finally {
@@ -1006,11 +1061,51 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     return confirmed == true;
   }
 
+  String? _maoriTranslationRequest;
+  Future<void> _requestMaoriEnglish() async {
+    final exercise = _exercise;
+    final id = exercise?['id'] as String?;
+    if (!_isMaori ||
+        id == null ||
+        exercise?['translations'] != null ||
+        widget.previewExercise != null ||
+        _maoriTranslationRequest == id)
+      return;
+    _maoriTranslationRequest = id;
+    final epoch = _epoch;
+    try {
+      for (var attempt = 0; attempt < 90; attempt++) {
+        if (!mounted ||
+            epoch != _epoch ||
+            _exercise?['id'] != id ||
+            !widget.active)
+          return;
+        final result = await _api('$id/english-translation', {});
+        if (!mounted || epoch != _epoch || _exercise?['id'] != id) return;
+        if (result['translations'] is Map) {
+          setState(
+            () => _exercise = {
+              ..._exercise!,
+              'translations': result['translations'],
+              'translationLocale': 'en-NZ',
+            },
+          );
+          _cachePractice(_exercise!);
+          return;
+        }
+        await Future<void>.delayed(const Duration(seconds: 4));
+      }
+    } catch (_) {
+      // Retry on the next visit; no unsupported-language warning is shown.
+    } finally {
+      if (_maoriTranslationRequest == id) _maoriTranslationRequest = null;
+    }
+  }
+
   String get _translationStatus => _translations.preparing
       ? l.quickTranslationPreparing
       : switch (_translations.issue) {
-          PracticeTranslationIssue.noLanguages =>
-            l.practiceNoTranslationLanguagesFound,
+          PracticeTranslationIssue.noLanguages => '',
           PracticeTranslationIssue.selectionCancelled =>
             l.quickTranslationChoosePrompt,
           PracticeTranslationIssue.downloadCancelled =>
@@ -1022,16 +1117,22 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         };
 
   Widget _translationLine(String id) {
-    if (!supportsBuiltInTranslation || !_translationRevealed) {
+    if ((!_isMaori && (!supportsBuiltInTranslation || !_translationRevealed)) ||
+        _translations.issue == PracticeTranslationIssue.noLanguages) {
       return const SizedBox.shrink();
     }
     final text =
-        widget.previewExercise?['translations']?[id] as String? ??
+        (_isMaori
+                ? _exercise?['translations']?[id]
+                : widget.previewExercise?['translations']?[id])
+            as String? ??
         _translations.translations[id];
-    final target = (_translations.targetLocale ?? _translationTarget)
-        .toLowerCase()
-        .split(RegExp('[-_]'))
-        .first;
+    if (_isMaori && text == null) return const SizedBox.shrink();
+    final target =
+        (_isMaori ? 'en-NZ' : _translations.targetLocale ?? _translationTarget)
+            .toLowerCase()
+            .split(RegExp('[-_]'))
+            .first;
     return Padding(
       padding: const EdgeInsets.only(top: 7),
       child: Row(
@@ -1176,7 +1277,12 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _startRecording(bool Function() stillWanted) async {
-    if (_busy || _recording || _exercise == null || !stillWanted()) return;
+    if (_listeningOnly ||
+        _busy ||
+        _recording ||
+        _exercise == null ||
+        !stillWanted())
+      return;
     if (!_canUseAudio) {
       _notice(l.quickCallActive);
       return;
@@ -1445,6 +1551,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         selected: selected,
         current: _currentLevel!,
         highestUnlockedLevel: _highestUnlockedLevel,
+        freeSelection: _listeningOnly,
       );
       if (!confirmed || !mounted || epoch != _epoch) return;
       await WidgetsBinding.instance.endOfFrame;
@@ -1460,6 +1567,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _translationRevealed = selected == 'A0';
           _feedback = null;
         });
+        return;
+      }
+      if (_listeningOnly) {
+        _practiceLevel = selected;
+        await _advance(autoplay: true);
         return;
       }
       final state = await _api('level', {
@@ -1494,6 +1606,69 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     }
   }
 
+  Future<void> _deleteCurrentPractice() async {
+    final session = AuthSessionNotifier.instance.session;
+    final exercise = _exercise;
+    if (session?.isAdmin != true ||
+        exercise == null ||
+        _busy ||
+        _recording ||
+        _confirmingNext)
+      return;
+    final epoch = _epoch;
+    setState(() => _confirmingNext = true);
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          title: Text(l.adminDeletePractice),
+          content: Text(l.adminDeleteContentBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.deleteLabel),
+            ),
+          ],
+        ),
+      );
+      await WidgetsBinding.instance.endOfFrame;
+      if (confirmed != true ||
+          !mounted ||
+          epoch != _epoch ||
+          AuthSessionNotifier.instance.session?.cacheKey != session!.cacheKey)
+        return;
+      await AuthApiClient.instance.deleteAdminContent(
+        accessToken: session.accessToken,
+        practiceExposureId: exercise['id'] as String,
+      );
+      if (!mounted || epoch != _epoch) return;
+      await _stopAudio();
+      try {
+        await _savedStore.setSaved(
+          owner: session.cacheKey,
+          exercise: _savedSource ?? exercise,
+          saved: false,
+        );
+      } catch (_) {
+        /* The server deletion succeeded; continue to fresh content. */
+      }
+      if (!mounted || epoch != _epoch) return;
+      _beforeSaved = null;
+      _savedSource = null;
+      _savedIds.remove(exercise['id']);
+      await _advance();
+    } catch (_) {
+      if (mounted && epoch == _epoch) _notice(l.onboardingLoadFailed);
+    } finally {
+      if (mounted) setState(() => _confirmingNext = false);
+    }
+  }
+
   Future<void> _next() async {
     if (_confirmingNext || _busy || _recording || _exercise == null) return;
     final epoch = _epoch, exercise = _exercise;
@@ -1501,7 +1676,9 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _stopAudio();
       if (!mounted || epoch != _epoch) return;
-      if (_savedSource == null && _feedback?['outcome'] != 'correct') {
+      if (!_listeningOnly &&
+          _savedSource == null &&
+          _feedback?['outcome'] != 'correct') {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -1648,6 +1825,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     ].contains(level);
     return Scaffold(
       appBar: PracticeHeader(
+        learningLocale: _exerciseLocale,
         playbackSpeed: _playbackSpeed,
         onSpeedSelected: _recording || _busy || _audioCommandBusy || _callActive
             ? null
@@ -1666,12 +1844,24 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             _owner == null || _saving || _recording || _busy || _confirmingNext
             ? null
             : _openSavedPractice,
-        onLongerDialogues: _recording || _busy || _confirmingNext
+        showLongerDialogues: !_isMaori,
+        onLongerDialogues: _isMaori || _recording || _busy || _confirmingNext
             ? null
             : _openLongerDialogues,
-        showTranslationLanguage: supportsBuiltInTranslation,
+        showAdminDelete: AuthSessionNotifier.instance.session?.isAdmin == true,
+        onAdminDelete:
+            exercise != null &&
+                !_loading &&
+                !_busy &&
+                !_recording &&
+                !_confirmingNext &&
+                !_callActive
+            ? _deleteCurrentPractice
+            : null,
+        showTranslationLanguage: !_isMaori && supportsBuiltInTranslation,
         onTranslationLanguage:
-            supportsBuiltInTranslation &&
+            !_isMaori &&
+                supportsBuiltInTranslation &&
                 _owner != null &&
                 _exerciseLocale != null &&
                 !_callActive &&
@@ -1758,6 +1948,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                           level: level as String,
                           currentLevel: _currentLevel ?? level,
                           levelStates: _levelStates,
+                          freeSelection: _listeningOnly,
                           highestUnlockedLevel: _highestUnlockedLevel,
                           onSelected:
                               _savedSource != null ||
@@ -1829,7 +2020,8 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         child: Text(l.compareTryAgain),
                       ),
                     ),
-                  if (exercise?['reviewMode'] == true &&
+                  if (!_listeningOnly &&
+                      exercise?['reviewMode'] == true &&
                       _currentLevel != null) ...[
                     const SizedBox(height: 8),
                     Text(
@@ -1965,7 +2157,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       ),
                     ),
                     const SizedBox(height: 25),
-                    if (supportsBuiltInTranslation && !_translationRevealed)
+                    if (!_isMaori &&
+                        supportsBuiltInTranslation &&
+                        !_translationRevealed &&
+                        _translations.issue !=
+                            PracticeTranslationIssue.noLanguages)
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: TextButton.icon(
@@ -1977,7 +2173,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                           label: Text(l.quickShowTranslation),
                         ),
                       ),
-                    if (level == 'A0')
+                    if (!_listeningOnly && level == 'A0')
                       Padding(
                         padding: const EdgeInsets.only(bottom: 20),
                         child: Text(
@@ -2008,16 +2204,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                       const SizedBox(height: 12),
                     ],
                     const SizedBox(height: 10),
-                    PracticeRecordControl(
-                      enabled: _canUseAudio && !_confirmingNext,
-                      recording: _recording,
-                      busy: _busy,
-                      pulse: _pulse,
-                      microphoneAnchor: _microphoneAnchor,
-                      onStart: _startRecording,
-                      onCheck: _submit,
-                      onCancel: _stopAudio,
-                    ),
+                    if (!_listeningOnly)
+                      PracticeRecordControl(
+                        enabled: _canUseAudio && !_confirmingNext,
+                        recording: _recording,
+                        busy: _busy,
+                        pulse: _pulse,
+                        microphoneAnchor: _microphoneAnchor,
+                        onStart: _startRecording,
+                        onCheck: _submit,
+                        onCancel: _stopAudio,
+                      ),
                     const SizedBox(height: 18),
                     if (_feedback != null) _result(),
                     if (_error != null)

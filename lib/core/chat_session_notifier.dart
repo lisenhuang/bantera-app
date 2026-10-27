@@ -1,3 +1,4 @@
+import '../infrastructure/transcription_locale_option.dart';
 import 'apple_system_version.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -395,7 +396,11 @@ class ChatSessionNotifier extends ChangeNotifier {
   Future<File> ensureLocalAudio(ChatMessageItem message) async {
     final owner = AuthSessionNotifier.instance.session?.cacheKey;
     if (owner == null) throw const SessionExpiredException();
-    if (_deletedMessageIds.contains(message.messageId)) {
+    if (_deletedMessageIds.contains(message.messageId) ||
+        await _localRepository.isMessageHidden(
+          message.messageId,
+          ownerCacheKey: owner,
+        )) {
       throw const AuthApiException(
         code: 'chat_not_found',
         message: 'This message was deleted.',
@@ -572,12 +577,14 @@ class ChatSessionNotifier extends ChangeNotifier {
   Future<ChatMessageItem?> ensureMessageTranscript(
     ChatMessageItem message,
   ) async {
+    if (isMaoriLanguage(message.spokenLanguageCode)) return null;
     final cached = await _localRepository.getMessage(message.messageId);
     if (cached?.localTranscriptStatus == 'ready') return cached;
     return transcribeMessage(cached ?? message);
   }
 
   Future<ChatMessageItem?> transcribeMessage(ChatMessageItem message) async {
+    if (isMaoriLanguage(message.spokenLanguageCode)) return null;
     final key =
         '${AuthSessionNotifier.instance.session?.cacheKey}:${message.messageId}';
     final existing = _transcriptions[key];
@@ -653,7 +660,10 @@ class ChatSessionNotifier extends ChangeNotifier {
   }
 
   Future<ChatMessageItem?> translateMessage(ChatMessageItem message) async {
-    if (!supportsBuiltInTranslation) return null;
+    if (!supportsBuiltInTranslation ||
+        isMaoriLanguage(message.spokenLanguageCode) ||
+        isMaoriLanguage(message.localTranscriptLanguageCode))
+      return null;
     final source = (message.localTranscriptLanguageCode ?? '').trim();
     final transcript = (message.localTranscriptText ?? '').trim();
     if (source.isEmpty || transcript.isEmpty) {
@@ -821,11 +831,25 @@ class ChatSessionNotifier extends ChangeNotifier {
     await refreshBlockedUsers();
   }
 
-  Future<void> deleteOwnMessage(ChatMessageItem message) async {
-    if (!message.isMine) return;
-    _cacheEpoch++;
-    _deletedMessageIds.add(message.messageId);
-    await _localRepository.deleteMessage(message.messageId);
+  Future<void> deleteMessage(ChatMessageItem message) async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session == null || !message.canDelete(isAdmin: session.isAdmin)) return;
+    final owner = session.cacheKey;
+    if (!message.isMine && message.isDirectMessage) {
+      _cacheEpoch++;
+      _deletedMessageIds.add(message.messageId);
+      try {
+        await _localRepository.hideReceivedDirectMessage(
+          message,
+          ownerCacheKey: owner,
+        );
+      } catch (_) {
+        _deletedMessageIds.remove(message.messageId);
+        rethrow;
+      }
+      return;
+    }
+    // Keep the bubble and its audio until the server accepts the deletion.
     try {
       await _withRetry<void>(
         (token) => _apiClient.deleteOwnMessage(
@@ -833,13 +857,19 @@ class ChatSessionNotifier extends ChangeNotifier {
           messageId: message.messageId,
         ),
       );
-      await refreshBootstrap(showLoadingState: false);
     } on AuthApiException catch (error) {
+      if (error.statusCode != 404 && error.code != 'chat_not_found') rethrow;
+    }
+    if (AuthSessionNotifier.instance.session?.cacheKey == owner) {
+      _cacheEpoch++;
+      _deletedMessageIds.add(message.messageId);
+    }
+    await _localRepository.deleteMessage(
+      message.messageId,
+      ownerCacheKey: owner,
+    );
+    if (AuthSessionNotifier.instance.session?.cacheKey == owner) {
       await refreshBootstrap(showLoadingState: false);
-      if (error.code != 'chat_not_found') {
-        _deletedMessageIds.remove(message.messageId);
-        rethrow;
-      }
     }
   }
 

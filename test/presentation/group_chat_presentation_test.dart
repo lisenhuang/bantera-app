@@ -22,6 +22,12 @@ void main() {
     sectionOrder: 0,
   );
 
+  test('Maori group always uses New Zealand flag, including cached titles', () {
+    for (final title in ['Maori', 'Māori', 'Māori (New Zealand)', 'te reo Māori', 'mi-NZ']) {
+      expect(groupChatEmoji(group(title)), '🇳🇿');
+    }
+  });
+
   test('group chat icons distinguish mainland and Taiwan Mandarin', () {
     expect(groupChatEmoji(group('Chinese')), '🇨🇳');
     expect(groupChatEmoji(group('Chinese, Mandarin (Taiwan)')), '🇹🇼');

@@ -104,6 +104,7 @@ void main() {
     TargetPlatform platform = TargetPlatform.iOS,
     Map<String, dynamic>? feedback,
     Map<String, dynamic> material = exercise,
+    bool isAdmin = false,
   }) async {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.binding.setSurfaceSize(Size(width, height));
@@ -125,6 +126,7 @@ void main() {
         home: Scaffold(
           body: QuickPracticeScreen.preview(
             previewExercise: material,
+            previewIsAdmin: isAdmin,
             previewFeedback: feedback,
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -164,6 +166,47 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'Maori shows English automatically without microphone or translation menus',
+    (tester) async {
+      await mount(
+        tester,
+        height: 1600,
+        isAdmin: true,
+        material: {
+          ...exercise,
+          'locale': 'mi-NZ',
+          'translations': {
+            'cue': 'Where is the station?',
+            'option0': 'It is next to the bank.',
+            'option1': 'It opens at nine.',
+          },
+        },
+      );
+      expect(find.text('It is next to the bank.'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('practice-show-translation')),
+        findsNothing,
+      );
+      expect(find.text('Tap or hold to speak'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
+      await tester.pumpAndSettle();
+      expect(find.text('Longer dialogues'), findsNothing);
+      expect(find.text('Translation language'), findsNothing);
+      await tester.tapAt(const Offset(20, 300));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('practice-level-menu')));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.lock_outline), findsNothing);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('practice-level-option-C2')),
+      );
+      await tester.tap(find.byKey(const ValueKey('practice-level-option-C2')));
+      await tester.pumpAndSettle();
+      expect(find.text('Continue'), findsOneWidget);
+    },
+  );
 
   testWidgets('practice survives Duo folding, rotation and narrow windows', (
     tester,

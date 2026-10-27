@@ -4,7 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/auth_session_notifier.dart';
+import '../../core/chat_session_notifier.dart';
+import '../../domain/models/chat_models.dart';
+import '../chats/chat_conversation_screen.dart';
 import '../../core/word_activity_notifier.dart';
+import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/last_snapshot_cache.dart';
 import '../../l10n/app_localizations.dart';
@@ -38,6 +42,10 @@ class SpeakingReport {
     data['throughDate'],
   ]);
   String range(String locale) {
+    if (data['fromUtc'] is String && data['throughUtc'] is String) {
+      final format = DateFormat.yMMMd(locale).add_Hms();
+      return '${format.format(DateTime.parse(data['fromUtc']).toLocal())} – ${format.format(DateTime.parse(data['throughUtc']).toLocal())}';
+    }
     final format = DateFormat.yMMMd(locale);
     return '${format.format(DateTime.parse(data['fromDate']))} – ${format.format(DateTime.parse(data['throughDate']))} · UTC';
   }
@@ -325,6 +333,8 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   SpeakingReport? _report;
   bool _busy = false, _failed = false;
   int _nextOffset = 100;
+  int _days = 30;
+  bool _canChoosePeriod = false;
   Timer? _timer;
   String? _owner;
   int _epoch = 0;
@@ -355,6 +365,9 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     setState(() {
       _report = null;
       _busy = false;
+      _days = 30;
+      _canChoosePeriod = false;
+      _nextOffset = 100;
     });
     unawaited(_load());
   }
@@ -370,7 +383,8 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     final session = AuthSessionNotifier.instance.session;
     if (session == null) return;
     final epoch = ++_epoch;
-    unawaited(_restoreCache(session.cacheKey, epoch));
+    final days = _days;
+    if (days == 30) unawaited(_restoreCache(session.cacheKey, epoch));
     setState(() {
       _busy = true;
       if (!quiet) _failed = false;
@@ -381,19 +395,24 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
       var next = SpeakingReport(
         await AuthApiClient.instance.speakingLeaderboard(
           accessToken: session.accessToken,
+          days: days,
         ),
       );
       if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-      unawaited(
-        LastSnapshotCache.leaderboard.save(session.cacheKey, next.data),
-      );
+      if (days == 30) {
+        unawaited(
+          LastSnapshotCache.leaderboard.save(session.cacheKey, next.data),
+        );
+      }
       final targetRows = _report?.rows.length ?? 0;
       var offset = next.rows.length;
       while (next.data['hasMore'] == true && offset < targetRows) {
         final page = SpeakingReport(
           await AuthApiClient.instance.speakingLeaderboard(
             accessToken: session.accessToken,
+            days: days,
             offset: offset,
+            until: next.data['throughUtc'] as String?,
           ),
         );
         if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
@@ -413,10 +432,20 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
         });
       }
       setState(() {
+        _canChoosePeriod = next.data['canChoosePeriod'] == true;
         _report = next;
         _nextOffset = offset;
         _failed = false;
       });
+    } on AuthApiException catch (error) {
+      if (mounted && epoch == _epoch) {
+        if (days != 30 && error.statusCode == 403) {
+          _canChoosePeriod = false;
+          _selectPeriod(30, force: true);
+        } else {
+          setState(() => _failed = true);
+        }
+      }
     } catch (_) {
       if (mounted && epoch == _epoch) setState(() => _failed = true);
     } finally {
@@ -443,7 +472,17 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     if (_busy || _report?.data['hasMore'] != true) return;
     final session = AuthSessionNotifier.instance.session;
     if (session == null || session.cacheKey != _owner) return;
+    final cutoff = DateTime.tryParse(
+      _report?.data['throughUtc'] as String? ?? '',
+    );
+    if (cutoff != null &&
+        DateTime.now().toUtc().difference(cutoff) >
+            const Duration(minutes: 14)) {
+      await _load();
+      return;
+    }
     final epoch = ++_epoch;
+    final days = _days;
     setState(() {
       _busy = true;
       _failed = false;
@@ -452,7 +491,9 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
       final next = SpeakingReport(
         await AuthApiClient.instance.speakingLeaderboard(
           accessToken: session.accessToken,
+          days: days,
           offset: _nextOffset,
+          until: _report?.data['throughUtc'] as String?,
         ),
       );
       if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
@@ -460,6 +501,7 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
         final fresh = SpeakingReport(
           await AuthApiClient.instance.speakingLeaderboard(
             accessToken: session.accessToken,
+            days: days,
           ),
         );
         if (mounted && epoch == _epoch) {
@@ -482,11 +524,56 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
         });
         _nextOffset = (next.data['offset'] as int) + next.rows.length;
       });
+    } on AuthApiException catch (error) {
+      if (mounted && epoch == _epoch) {
+        if (days != 30 && error.statusCode == 403) {
+          _canChoosePeriod = false;
+          _selectPeriod(30, force: true);
+        } else {
+          setState(() => _failed = true);
+        }
+      }
     } catch (_) {
       if (mounted && epoch == _epoch) setState(() => _failed = true);
     } finally {
       if (mounted && epoch == _epoch) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _openChat(Map<String, dynamic> row) async {
+    if (!_canChoosePeriod ||
+        row['isMe'] == true ||
+        row['adminUserId'] is! String)
+      return;
+    final owner = _owner;
+    final id = row['adminUserId'] as String;
+    final existing = await ChatSessionNotifier.instance
+        .directMessageThreadForUser(id);
+    if (!mounted || owner != _owner || !_canChoosePeriod) return;
+    final partner = ChatUserSummary.fromJson({...row, 'id': id});
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => existing == null
+            ? ChatConversationScreen.directUser(partner: partner)
+            : ChatConversationScreen.thread(thread: existing),
+      ),
+    );
+  }
+
+  void _selectPeriod(int days, {bool force = false}) {
+    if ((!force && !_canChoosePeriod) ||
+        days == _days ||
+        ![1, 7, 30].contains(days))
+      return;
+    _epoch++; // Discard old refresh and pagination responses, even during loading.
+    setState(() {
+      _days = days;
+      _report = null;
+      _nextOffset = 100;
+      _busy = false;
+      _failed = false;
+    });
+    unawaited(_load());
   }
 
   @override
@@ -499,7 +586,10 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) => SpeakingLeaderboardView(
-    key: ValueKey(_owner),
+    key: ValueKey('$_owner/$_days'),
+    days: _days,
+    onPeriodChanged: _canChoosePeriod ? _selectPeriod : null,
+    onOpenChat: _canChoosePeriod ? _openChat : null,
     report: _report,
     loading: _busy && _report == null,
     failed: _failed,
@@ -518,10 +608,16 @@ class SpeakingLeaderboardView extends StatefulWidget {
     this.hasUpdate = false,
     this.loadingMore = false,
     this.onLoadMore,
+    this.days = 30,
+    this.onPeriodChanged,
+    this.onOpenChat,
     required this.onRefresh,
   });
   final SpeakingReport? report;
   final bool loading, failed, hasUpdate, loadingMore;
+  final int days;
+  final ValueChanged<int>? onPeriodChanged;
+  final Future<void> Function(Map<String, dynamic>)? onOpenChat;
   final Future<void> Function()? onLoadMore;
   final Future<void> Function() onRefresh;
   @override
@@ -596,14 +692,51 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   children: [
-                    Text(
-                      l.leaderboardScope,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: c.primary,
+                    if (widget.onPeriodChanged != null)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12, right: 10),
+                            child: Icon(
+                              Icons.admin_panel_settings_outlined,
+                              size: 20,
+                              color: c.primary,
+                            ),
+                          ),
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                for (final days in [30, 7, 1])
+                                  ChoiceChip(
+                                    key: ValueKey('leaderboard-period-$days'),
+                                    label: Text(
+                                      days == 30
+                                          ? l.wordActivityThirtyDays
+                                          : days == 7
+                                          ? l.wordActivitySevenDays
+                                          : '24H',
+                                    ),
+                                    selected: widget.days == days,
+                                    onSelected: (_) =>
+                                        widget.onPeriodChanged!(days),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Text(
+                        l.leaderboardScope,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: c.primary,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 6),
                     if (report != null)
                       Text(
@@ -644,7 +777,15 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                               _scroll.hasClients ? _scroll.offset : 0,
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: SpeakingLeaderboardRow(row: row),
+                            child: SpeakingLeaderboardRow(
+                              row: row,
+                              onTap:
+                                  widget.onOpenChat != null &&
+                                      row['isMe'] != true &&
+                                      row['adminUserId'] is String
+                                  ? () => _confirmChat(row)
+                                  : null,
+                            ),
                           ),
                         ),
                       if (report.data['hasMore'] == true)
@@ -670,7 +811,11 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                         ),
                       const SizedBox(height: 8),
                       Text(
-                        l.leaderboardFootnote,
+                        report.data['throughUtc'] != null
+                            ? l.leaderboardRollingFootnote
+                            : widget.days == 30
+                            ? l.leaderboardFootnote
+                            : l.leaderboardPeriodFootnote,
                         style: TextStyle(
                           fontSize: 12,
                           color: c.onSurfaceVariant,
@@ -715,6 +860,53 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
     );
   }
 
+  bool _openingChat = false;
+  Future<void> _confirmChat(Map<String, dynamic> row) async {
+    if (_openingChat || widget.onOpenChat == null) return;
+    _openingChat = true;
+    final l = AppLocalizations.of(context)!;
+    final name =
+        leaderboardFirstName(row['name'] as String?) ?? l.leaderboardLearner;
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: Icon(
+            Icons.admin_panel_settings_outlined,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          title: Text(l.chatMessageAction),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ProfileAvatar(radius: 28, imageUrl: row['avatarUrl'] as String?),
+              const SizedBox(height: 16),
+              Text(l.leaderboardOpenChat(name)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.chatMessageAction),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true && mounted) await widget.onOpenChat?.call(row);
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.onboardingLoadFailed)));
+    } finally {
+      _openingChat = false;
+    }
+  }
+
   Widget _notice(String text, {String? action}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 12),
     child: Column(
@@ -732,17 +924,30 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
 }
 
 class SpeakingLeaderboardRow extends StatelessWidget {
-  const SpeakingLeaderboardRow({super.key, required this.row});
+  const SpeakingLeaderboardRow({super.key, required this.row, this.onTap});
   final Map<String, dynamic> row;
+  final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: UserProfileNotifier.instance,
+    builder: (context, _) => _buildRow(context),
+  );
+
+  Widget _buildRow(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final c = Theme.of(context).colorScheme;
     final mine = row['isMe'] == true;
     final name = leaderboardFirstName(row['name'] as String?);
     final rank = row['rank'] as num?;
+    final profile = UserProfileNotifier.instance;
+    final ownProfile =
+        mine &&
+        profile.profile != null &&
+        profile.profile!.id == AuthSessionNotifier.instance.session?.userId;
     final language = goalLearningLanguageLabel(
-      row['learningLanguage'] as String?,
+      ownProfile
+          ? profile.learningLanguage
+          : row['learningLanguage'] as String?,
     );
     final accent = mine
         ? c.primary
@@ -851,9 +1056,13 @@ class SpeakingLeaderboardRow extends StatelessWidget {
               : c.outlineVariant.withValues(alpha: .6),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 14, 14, 14),
-        child: content,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 14, 14, 14),
+          child: content,
+        ),
       ),
     );
   }

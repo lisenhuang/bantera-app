@@ -10,6 +10,18 @@ import 'package:app/presentation/chats/ai/ai_chat_screen.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/core/theme.dart';
 
+class _ScreenHistoryStore extends AiHistoryStore {
+  _ScreenHistoryStore() : super('test');
+  @override
+  Future<AiHistoryStorageUsage> storageUsage() async =>
+      const AiHistoryStorageUsage(
+        audioBytes: 1000,
+        totalBytes: 1500,
+        summaryBytes: 0,
+        hasSummary: false,
+      );
+}
+
 class _TranslationController extends AiChatController {
   _TranslationController(super.store) : super.forTesting();
   AiMessage? automaticReply;
@@ -28,6 +40,12 @@ class _TranslationController extends AiChatController {
 
   final translationRequests = <bool>[];
   Future<void>? deletion;
+  Future<void>? clearing;
+  @override
+  Future<void> clear({
+    AiHistoryClearMode mode = AiHistoryClearMode.all,
+    bool keepSummary = false,
+  }) => clearing = super.clear(mode: mode, keepSummary: keepSummary);
   @override
   Future<void> deleteMessage(AiMessage message) =>
       deletion = super.deleteMessage(message);
@@ -154,7 +172,7 @@ void main() {
         const MethodChannel('bantera/ai_audio'),
         (call) async => call.method == 'storagePath' ? dir.path : null,
       );
-      final store = AiHistoryStore('test');
+      final store = _ScreenHistoryStore();
       final controller = _TranslationController(store);
       await tester.runAsync(controller.initialize);
       store.messages.add(
@@ -315,9 +333,9 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final transcript = tester.widget<Text>(
+        final transcript = tester.widget<SelectableText>(
           find.byWidgetPredicate(
-            (w) => w is Text && w.data == 'I live in Auckland.',
+            (w) => w is SelectableText && w.data == 'I live in Auckland.',
           ),
         );
         expect(transcript.style!.color, theme.colorScheme.onSurface);
@@ -365,7 +383,7 @@ void main() {
       expect(notice, findsNothing);
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Usage'));
+      await tester.tap(find.text('How to Use'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(
@@ -494,7 +512,11 @@ void main() {
       await tester.pump();
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear history'));
+      await tester.tap(find.text('Clear chat'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      });
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(store.messages.length, 1);
@@ -503,16 +525,36 @@ void main() {
       expect(store.messages.length, 1);
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear history'));
+      await tester.tap(find.text('Clear chat'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      });
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Clear history'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All messages and audio'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear chat'));
+      await tester.pump();
+      var clearDone = false;
+      controller.clearing!.then((_) => clearDone = true);
+      for (var attempt = 0; attempt < 100 && !clearDone; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(clearDone, isTrue);
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       });
       await tester.pumpAndSettle();
       expect(store.messages, isEmpty);
       expect(tester.takeException(), isNull);
-      // Long-pressing either side exposes deletion, while cancellation keeps it.
+      // Swiping either side reveals deletion, while cancellation keeps it.
       for (final role in ['user', 'model']) {
         final message = AiMessage(role: role, text: 'Delete $role bubble');
         store.messages.add(message);
@@ -527,16 +569,22 @@ void main() {
           reason:
               'loaded=${controller.loaded} available=${controller.available} calling=${controller.calling} recording=${controller.recording}',
         );
-        await tester.longPress(find.text('Delete $role bubble'));
+        await tester.drag(
+          find.byKey(ValueKey('ai-message-swipe-${message.id}')),
+          const Offset(-150, 0),
+        );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Delete message'));
+        await tester.tap(find.byTooltip('Delete'));
         await tester.pumpAndSettle();
         await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
         await tester.pumpAndSettle();
         expect(store.messages, contains(message));
-        await tester.longPress(find.text('Delete $role bubble'));
+        await tester.drag(
+          find.byKey(ValueKey('ai-message-swipe-${message.id}')),
+          const Offset(-150, 0),
+        );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Delete message'));
+        await tester.tap(find.byTooltip('Delete'));
         await tester.pumpAndSettle();
         await tester.tap(find.widgetWithText(TextButton, 'Delete'));
         await tester.pump();

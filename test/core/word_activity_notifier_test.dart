@@ -56,10 +56,22 @@ void main() {
     requestReached = null;
     releaseRequest = null;
     server.listen((request) async {
+      if (request.uri.path == '/api/me/speaking-events') {
+        final payload =
+            jsonDecode(await utf8.decoder.bind(request).join()) as Map;
+        expect(payload['events'], isA<List>());
+        request.response.headers.contentType = ContentType.json;
+        request.response.statusCode = offline ? 503 : 200;
+        request.response.write(jsonEncode({'saved': !offline}));
+        await request.response.close();
+        return;
+      }
       if (request.uri.path == '/api/me/speaking-activity') {
         final payload =
             jsonDecode(await utf8.decoder.bind(request).join()) as Map;
         expect(payload['days'], isA<List>());
+        expect(payload['localDay']['date'], dateKey);
+        expect(payload['localDay']['days'], isA<List>());
         latestSpeaking = (payload['days'] as List).fold<int>(
           0,
           (sum, day) => sum + (day['spokenWords'] as int),

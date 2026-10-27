@@ -2696,4 +2696,31 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera utilise la répétition espacée : réviser après une pause peut aider à retenir plus longtemps. Cela rejoint la courbe de l’oubli, qui décrit comment la mémoire s’estompe avec le temps.\n\nNotre calendrier :\n• Première révision : 1 jour après l’enregistrement.\n• Après les révisions suivantes : 3, 7, 14, puis 30 jours.\n• Ensuite, tous les 30 jours.\n\nUn mot est à réviser quand la date prévue arrive. Le marquer comme révisé lance le prochain intervalle à partir de cette révision. C’est un calendrier fixe, pas une mesure de votre mémoire ni une prédiction d’oubli.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Les périodes se terminent à la dernière actualisation. Les heures sont locales. Les mots hors ligne apparaissent après synchronisation. Les anciennes versions peuvent omettre des activités au début et à la fin de la période, faute d’horaires précis.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Les totaux identiques partagent le même rang. Les dates sont en UTC. Les mots hors ligne apparaissent après la synchronisation.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Ouvrir une conversation privée avec $name ?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Ce message sera supprimé uniquement de cet appareil. L’autre personne conservera sa copie.';
+
+  @override
+  String get adminDeletePractice => 'Supprimer l’exercice';
+
+  @override
+  String get adminDeleteDialogue => 'Supprimer le dialogue';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Supprimer ce contenu du serveur pour tout le monde ? Cette action est irréversible. Des copies téléchargées peuvent rester sur les appareils.';
 }

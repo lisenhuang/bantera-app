@@ -42,9 +42,11 @@ class WordActivityTrend extends StatefulWidget {
     super.key,
     required this.history,
     required this.now,
+    this.showSpeaking = true,
   });
   final Map<String, WordTotals> history;
   final DateTime now;
+  final bool showSpeaking;
   @override
   State<WordActivityTrend> createState() => _WordActivityTrendState();
 }
@@ -75,7 +77,10 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
     );
     final maximum = points.fold<int>(
       0,
-      (max, p) => math.max(max, math.max(p.totals.listened, p.totals.spoken)),
+      (max, p) => math.max(
+        max,
+        math.max(p.totals.listened, widget.showSpeaking ? p.totals.spoken : 0),
+      ),
     );
     void select(int index) =>
         setState(() => _selectedDate = wordActivityDateKey(points[index].date));
@@ -137,7 +142,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
           Wrap(
             spacing: 20,
             runSpacing: 8,
-            children: [metric(true), metric(false)],
+            children: [metric(true), if (widget.showSpeaking) metric(false)],
           ),
           const SizedBox(height: 14),
           Text(
@@ -170,6 +175,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
                   builder: (context, reveal, _) => CustomPaint(
                     size: Size(constraints.maxWidth, 140),
                     painter: _TrendPainter(
+                      showSpeaking: widget.showSpeaking,
                       reveal: MediaQuery.disableAnimationsOf(context)
                           ? 1
                           : reveal,
@@ -190,7 +196,7 @@ class _WordActivityTrendState extends State<WordActivityTrend> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                '${DateFormat.yMMMd(locale).format(current.date)} · ${l10n.wordActivityListening} ${number.format(current.totals.listened)} · ${l10n.wordActivitySpeaking} ${number.format(current.totals.spoken)}',
+                '${DateFormat.yMMMd(locale).format(current.date)} · ${l10n.wordActivityListening} ${number.format(current.totals.listened)}${widget.showSpeaking ? ' · ${l10n.wordActivitySpeaking} ${number.format(current.totals.spoken)}' : ''}',
                 style: theme.textTheme.bodySmall,
               ),
             ),
@@ -226,8 +232,10 @@ class _TrendPainter extends CustomPainter {
     required this.listening,
     required this.speaking,
     required this.grid,
+    required this.showSpeaking,
   });
   final double reveal;
+  final bool showSpeaking;
   final List<WordTotals> values;
   final int maximum;
   final int selected;
@@ -258,7 +266,7 @@ class _TrendPainter extends CustomPainter {
     );
     canvas.save();
     canvas.clipRect(Rect.fromLTRB(0, 0, size.width * reveal, size.height));
-    for (final isListening in [true, false]) {
+    for (final isListening in [true, if (showSpeaking) false]) {
       final paint = Paint()
         ..color = isListening ? listening : speaking
         ..strokeWidth = 2.5

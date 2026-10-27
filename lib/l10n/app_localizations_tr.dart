@@ -2622,4 +2622,31 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera aralıklı tekrarı kullanır: bir aradan sonra tekrar etmek daha uzun süre hatırlamaya yardımcı olabilir. Bu, belleğin zamanla zayıflamasını anlatan unutma eğrisiyle ilişkilidir.\n\nProgramımız:\n• İlk tekrar: kaydettikten 1 gün sonra.\n• Sonraki tekrarların ardından: 3, 7, 14, ardından 30 gün.\n• Daha sonra her 30 günde bir.\n\nPlanlanan tarihte kelimenin tekrar zamanı gelir. Tekrar edildi olarak işaretlemek, sonraki aralığı o andan başlatır. Bu sabit bir programdır; belleğinizin ölçümü veya kelimeyi unuttuğunuzun tahmini değildir.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Dönemler son yenileme anında biter. Saatler yereldir. Çevrimdışı kelimeler eşitlemeden sonra görünür. Eski uygulama sürümleri kesin saatleri kaydetmediğinden dönemin başındaki ve sonundaki etkinlikler eksik olabilir.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Eşit toplamlar aynı sırayı paylaşır. Tarihler UTC esaslıdır. Çevrimdışı kelimeler eşitlemeden sonra görünür.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return '$name ile özel sohbet açılsın mı?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Bu mesaj yalnızca bu cihazdan kaldırılacak. Diğer kişinin kopyası kalacak.';
+
+  @override
+  String get adminDeletePractice => 'Alıştırmayı sil';
+
+  @override
+  String get adminDeleteDialogue => 'Diyaloğu sil';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Bu içerik sunucudan herkes için silinsin mi? Bu işlem geri alınamaz. İndirilen kopyalar cihazlarda kalabilir.';
 }

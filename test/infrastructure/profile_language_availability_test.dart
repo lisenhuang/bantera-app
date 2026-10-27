@@ -8,6 +8,29 @@ void main() {
     displayName: code,
     isInstalled: true,
   );
+  test('Māori is restricted to admin learning, even with cached options', () {
+    final initial = ['en-NZ', 'mi-NZ', 'MI_nz'].map(option);
+    final admin = profileLanguageOptionsForRole(initial, isAdmin: true);
+    expect(admin.map((o) => o.identifier), ['mi-NZ', 'en-NZ']);
+    expect(admin.first.flagEmoji, '🇳🇿');
+    expect(
+      profileLanguageOptionsForRole(
+        admin,
+        isAdmin: false,
+      ).map((o) => o.identifier),
+      ['en-NZ'],
+    );
+    expect(
+      profileLanguageOptionsForRole(
+        admin,
+        isAdmin: true,
+        nativeLanguage: true,
+      ).map((o) => o.identifier),
+      ['en-NZ'],
+    );
+    expect(supportsQuickPracticeLanguage('mi-NZ', isAdmin: true), isTrue);
+    expect(supportsQuickPracticeLanguage('mi-NZ', isAdmin: false), isFalse);
+  });
   test('retired Māori is excluded from every picker source', () {
     final options = ['mi', 'mi-NZ', 'MI_nz', 'en-NZ'].map(option);
     for (final native in [true, false]) {

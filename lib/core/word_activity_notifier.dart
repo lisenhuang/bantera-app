@@ -301,7 +301,7 @@ class WordActivityNotifier extends ChangeNotifier {
       {
         try {
           final oldest = wordActivityDateKey(
-            DateTime.now().toUtc().subtract(const Duration(days: 8)),
+            DateTime.now().toUtc().subtract(const Duration(days: 32)),
           );
           await _apiClient.syncSpeakingActivity(
             accessToken: session!.accessToken,
@@ -312,10 +312,34 @@ class WordActivityNotifier extends ChangeNotifier {
                   e.key: e.value,
             },
             legacyThrough: ledger.speakingLegacyThrough,
+            localDay: ledger.speakingLocalDaySnapshot(DateTime.now()),
           );
         } catch (_) {
           /* Existing personal progress sync remains available. */
         }
+      }
+      if (_userId != userId) return;
+      try {
+        ledger.pruneSpeakingEvents(DateTime.now());
+        final eventSnapshot = List<Map<String, dynamic>>.of(
+          ledger.speakingEvents,
+        );
+        await _apiClient.syncSpeakingEvents(
+          accessToken: session!.accessToken,
+          deviceId: ledger.deviceId,
+          events: eventSnapshot,
+        );
+        await _serial(() async {
+          if (_userId != userId ||
+              _ledger != ledger ||
+              _deletedUserIds.contains(userId))
+            return;
+          final sent = eventSnapshot.map((e) => e['eventId']).toSet();
+          ledger.speakingEvents.removeWhere((e) => sent.contains(e['eventId']));
+          await _save(userId!, ledger);
+        });
+      } catch (_) {
+        // Timestamped events remain on disk for a later idempotent retry.
       }
       if (!fetchIfClean && pending.isEmpty) return;
       // Bounded batches, cumulative values safe to retry in any order.

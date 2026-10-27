@@ -2668,7 +2668,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       setState(() {
-        _translationErrorMessage = error.message;
+        _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
       });
     } finally {
       if (mounted && _foregroundTranslationToken == myToken) {
@@ -2845,7 +2845,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = error.message;
+          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
         });
       }
       return null;
@@ -2854,7 +2854,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     if (locales.isEmpty) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = _l10n.practiceNoTranslationLanguagesFound;
+          _translationErrorMessage = null;
         });
       }
       return null;
@@ -2871,7 +2871,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       } on TranslationException catch (error) {
         if (mounted) {
           setState(() {
-            _translationErrorMessage = error.message;
+            _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
           });
         }
         return null;
@@ -2904,7 +2904,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = error.message;
+          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
         });
       }
       return null;
@@ -2956,7 +2956,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
       setState(() {
-        _translationErrorMessage = error.message;
+        _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
       });
       return;
     }
@@ -3000,7 +3000,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     } on TranslationException catch (error) {
       if (mounted) {
         setState(() {
-          _translationErrorMessage = error.message;
+          _translationErrorMessage = const {'unsupported_language_pair', 'no_languages', 'unsupported_language'}.contains(error.code) ? null : error.message;
         });
       }
       return;

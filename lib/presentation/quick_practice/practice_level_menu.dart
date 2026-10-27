@@ -13,19 +13,23 @@ class PracticeLevelMenu extends StatelessWidget {
     required this.currentLevel,
     required this.onSelected,
     this.levelStates,
+    this.freeSelection = false,
     this.highestUnlockedLevel,
   });
   final String level, currentLevel;
+  final bool freeSelection;
   final Map<String, dynamic>? levelStates;
   final String? highestUnlockedLevel;
 
-  String _state(String candidate) =>
-      levelStates?[candidate] as String? ??
-      (practiceLevels.indexOf(candidate) < practiceLevels.indexOf(currentLevel)
-          ? 'passed'
-          : candidate == currentLevel
-          ? 'practicing'
-          : 'locked');
+  String _state(String candidate) => freeSelection
+      ? 'practicing'
+      : levelStates?[candidate] as String? ??
+            (practiceLevels.indexOf(candidate) <
+                    practiceLevels.indexOf(currentLevel)
+                ? 'passed'
+                : candidate == currentLevel
+                ? 'practicing'
+                : 'locked');
   final ValueChanged<String>? onSelected;
 
   @override
@@ -99,7 +103,7 @@ class PracticeLevelMenu extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    l.quickCurrentLevel(currentLevel),
+                    l.quickCurrentLevel(freeSelection ? level : currentLevel),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: c.onSurfaceVariant,
                     ),
@@ -133,11 +137,14 @@ class PracticeLevelMenu extends StatelessWidget {
                       subtitle: Text(
                         [
                           if (candidate == 'A0') l.quickA0Label,
-                          practiceLevelStateLabel(l, _state(candidate)),
+                          if (!freeSelection)
+                            practiceLevelStateLabel(l, _state(candidate)),
                         ].join(' · '),
                       ),
                       leading: Icon(
-                        practiceLevelStateIcon(_state(candidate)),
+                        freeSelection
+                            ? Icons.headphones_outlined
+                            : practiceLevelStateIcon(_state(candidate)),
                         color: _state(candidate) == 'locked'
                             ? c.onSurfaceVariant
                             : c.primary,
@@ -149,12 +156,16 @@ class PracticeLevelMenu extends StatelessWidget {
                     ),
                   const SizedBox(height: 8),
                   const Divider(),
-                  TextButton.icon(
-                    key: const ValueKey('practice-level-help-link'),
-                    onPressed: () => Navigator.pop(sheetContext, '_help'),
-                    icon: const Icon(Icons.help_outline_rounded, size: 20),
-                    label: Text(l.quickLevelsLink, textAlign: TextAlign.center),
-                  ),
+                  if (!freeSelection)
+                    TextButton.icon(
+                      key: const ValueKey('practice-level-help-link'),
+                      onPressed: () => Navigator.pop(sheetContext, '_help'),
+                      icon: const Icon(Icons.help_outline_rounded, size: 20),
+                      label: Text(
+                        l.quickLevelsLink,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -176,11 +187,13 @@ Future<bool> confirmPracticeLevel(
   required String selected,
   required String current,
   String? highestUnlockedLevel,
+  bool freeSelection = false,
 }) async {
   final l = AppLocalizations.of(context)!;
   final locked =
+      !freeSelection &&
       practiceLevels.indexOf(selected) >
-      practiceLevels.indexOf(highestUnlockedLevel ?? current);
+          practiceLevels.indexOf(highestUnlockedLevel ?? current);
   return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -188,7 +201,9 @@ Future<bool> confirmPracticeLevel(
             locked ? l.quickLevelLocked : l.quickSwitchLevel(selected),
           ),
           content: Text(
-            locked
+            freeSelection
+                ? l.quickChooseLevel
+                : locked
                 ? l.quickLevelLockedBody(selected, current)
                 : selected == current
                 ? l.quickReturnLevelBody

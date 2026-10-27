@@ -2691,4 +2691,31 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera usa la ripetizione dilazionata: ripassare dopo una pausa può aiutare a ricordare più a lungo. È collegata alla curva dell’oblio, che descrive come i ricordi si attenuano nel tempo.\n\nIl nostro calendario:\n• Primo ripasso: 1 giorno dopo il salvataggio.\n• Dopo i ripassi successivi: 3, 7, 14 e poi 30 giorni.\n• In seguito, ogni 30 giorni.\n\nUna parola è da ripassare quando arriva la data prevista. Segnarla come ripassata avvia l’intervallo successivo da quel momento. È un calendario fisso, non una misura della memoria né una previsione che tu abbia dimenticato la parola.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'I periodi terminano all’ultimo aggiornamento. Gli orari sono locali. Le parole offline appaiono dopo la sincronizzazione. Le versioni precedenti possono omettere attività all’inizio e alla fine del periodo perché non registravano orari precisi.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'I totali uguali condividono la posizione. Le date sono in UTC. Le parole offline appaiono dopo la sincronizzazione.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Aprire una chat diretta con $name?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Questo messaggio verrà rimosso solo da questo dispositivo. La copia dell’altra persona rimarrà.';
+
+  @override
+  String get adminDeletePractice => 'Elimina esercizio';
+
+  @override
+  String get adminDeleteDialogue => 'Elimina dialogo';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Eliminare questo contenuto dal server per tutti? Non è possibile annullare. Le copie già scaricate possono rimanere sui dispositivi.';
 }

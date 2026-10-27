@@ -1128,5 +1128,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "leaderboardRollingFootnote": "Periods end at the latest refresh. Times are local. Offline words appear after syncing. Older app versions may omit activity near the start and end of the period because exact times were not recorded.",
+  "leaderboardPeriodFootnote": "Equal totals share a rank. Dates are in UTC. Offline words appear after syncing.",
+  "leaderboardOpenChat": "Open a direct chat with {name}?",
+  "@leaderboardOpenChat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatDeleteReceivedBody": "This message will be removed from this device only. The other person’s copy will stay.",
+  "adminDeletePractice": "Delete practice",
+  "adminDeleteDialogue": "Delete dialogue",
+  "adminDeleteContentBody": "Delete this content from the server for everyone? This cannot be undone. Previously downloaded copies may remain on devices."
 }

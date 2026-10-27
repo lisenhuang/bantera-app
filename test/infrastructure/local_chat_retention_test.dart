@@ -34,6 +34,56 @@ void main() {
       });
 
   test(
+    'received DM deletion persists across reload and sync, scoped to owner',
+    () async {
+      final item = message('hidden');
+      await repository.replaceMessages(
+        ownerCacheKey: 'alice',
+        threadId: 'thread',
+        messages: [item],
+      );
+      await repository.hideReceivedDirectMessage(item, ownerCacheKey: 'alice');
+      final reloaded = LocalChatRepository.forTesting(database, () => owner);
+      await reloaded.replaceMessages(
+        ownerCacheKey: 'alice',
+        threadId: 'thread',
+        messages: [item],
+      );
+      expect(await reloaded.getMessage('hidden'), isNull);
+      expect(
+        await reloaded.isMessageHidden('hidden', ownerCacheKey: 'alice'),
+        isTrue,
+      );
+      expect(
+        await reloaded.isMessageHidden('hidden', ownerCacheKey: 'bob'),
+        isFalse,
+      );
+      expect(await reloaded.watchMessages('thread').first, isEmpty);
+      await reloaded.replaceMessages(
+        ownerCacheKey: 'bob',
+        threadId: 'thread',
+        messages: [item],
+      );
+      owner = 'bob';
+      expect(await reloaded.getMessage('hidden'), isNotNull);
+      final group = message('group-message', type: 'group');
+      await reloaded.replaceMessages(
+        ownerCacheKey: 'bob',
+        threadId: 'thread',
+        messages: [group],
+      );
+      await reloaded.hideReceivedDirectMessage(group, ownerCacheKey: 'bob');
+      expect(await reloaded.getMessage('group-message'), isNotNull);
+    },
+  );
+
+  test('delete permissions distinguish group moderation and DM cleanup', () {
+    expect(message('dm').canDelete(), isTrue);
+    expect(message('group', type: 'group').canDelete(), isFalse);
+    expect(message('group', type: 'group').canDelete(isAdmin: true), isTrue);
+  });
+
+  test(
     'cached DMs remain visible after expiry and empty server refresh',
     () async {
       await repository.replaceMessages(

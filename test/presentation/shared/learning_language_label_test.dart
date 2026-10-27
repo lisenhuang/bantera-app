@@ -53,6 +53,11 @@ void main() {
     },
   );
 
+  test('Maori profile label includes its name and New Zealand flag', () {
+    expect(goalLearningLanguageLabel('mi-NZ'), 'Māori 🇳🇿');
+    expect(goalLearningLanguageLabel('MI_nz'), 'Māori 🇳🇿');
+  });
+
   test('share label stays language-only', () {
     expect(learningLanguageLabel('en-US'), (name: 'English', flag: '🇺🇸'));
   });

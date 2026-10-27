@@ -1,3 +1,4 @@
+import '../../../infrastructure/transcription_locale_option.dart';
 import '../../../infrastructure/local_audio_storage.dart';
 import '../../../core/apple_system_version.dart';
 import '../../../core/ai_consent.dart';
@@ -1194,6 +1195,7 @@ class AiChatController extends ChangeNotifier {
 
   void translate(AiMessage message, {bool force = false}) {
     if (!supportsBuiltInTranslation ||
+        isMaoriLanguage(message.language) ||
         !Platform.isIOS ||
         message.displayText.trim().isEmpty ||
         translating.contains(message.id)) {

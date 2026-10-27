@@ -5,6 +5,67 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
+    'local-day snapshot rescues historical counts without copying remote devices',
+    () {
+      final now = DateTime(2026, 10, 27, 16, 24);
+      final ledger = WordActivityLedger(deviceId: 'local')
+        ..local = {
+          '2026-10-27|en': const WordTotals(spoken: 200),
+          '2026-10-27|ja': const WordTotals(spoken: 11),
+          '2026-10-27|yue': const WordTotals(spoken: 47),
+          '2026-10-26|en': const WordTotals(spoken: 999),
+        }
+        ..remote = {'2026-10-27|en': const WordTotals(spoken: 800)};
+      final snapshot = ledger.speakingLocalDaySnapshot(now);
+      expect(
+        snapshot['fromUtc'],
+        DateTime(2026, 10, 27).toUtc().toIso8601String(),
+      );
+      expect(snapshot['throughUtc'], now.toUtc().toIso8601String());
+      expect(
+        (snapshot['days'] as List).fold<int>(
+          0,
+          (sum, row) => sum + row['spokenWords'] as int,
+        ),
+        258,
+      );
+      expect(
+        ledger.speakingEvents,
+        isEmpty,
+      ); // No invented recording timestamps.
+    },
+  );
+
+  test(
+    'timestamped speech survives restart without inventing old timestamps',
+    () {
+      final ledger = WordActivityLedger(deviceId: 'device');
+      final now = DateTime.parse('2026-10-27T15:13:10+13:00');
+      ledger.record(now, const WordTotals(spoken: 51), language: 'en-NZ');
+      final restored = WordActivityLedger.fromJson(ledger.toJson());
+      expect(
+        restored.speakingEvents.single['occurredAt'],
+        '2026-10-27T02:13:10.000Z',
+      );
+      expect(
+        restored.speakingEvents.single['eventId'],
+        ledger.speakingEvents.single['eventId'],
+      );
+      final previous = ledger.toJson();
+      ledger.record(now, const WordTotals(spoken: 2));
+      expect(WordActivityLedger.fromJson(previous).speakingEvents.length, 1);
+      final old = WordActivityLedger.fromJson({
+        'deviceId': 'old',
+        'speakingUtc': {
+          '2026-10-27': {'spokenWords': 51},
+        },
+      });
+      expect(old.speakingEvents, isEmpty);
+      expect(old.speakingUtc.values.single.spoken, 51);
+    },
+  );
+
+  test(
     'chart history uses acknowledged totals and the selected language only',
     () {
       final ledger = WordActivityLedger(deviceId: 'device')

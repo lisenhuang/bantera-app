@@ -69,6 +69,9 @@ class TranslationService {
     required String targetLocaleIdentifier,
     String? requestId,
   }) async {
+    if (isMaoriLanguage(sourceLocaleIdentifier) ||
+        isMaoriLanguage(targetLocaleIdentifier))
+      return;
     _requireSupport();
     // iOS: Apple Translation framework. Android: Google ML Kit (both on-device).
     try {
@@ -119,6 +122,7 @@ class TranslationService {
   Future<List<TranslationLocaleOption>> fetchSupportedLocales({
     required String sourceLocaleIdentifier,
   }) async {
+    if (isMaoriLanguage(sourceLocaleIdentifier)) return const [];
     _requireSupport();
     try {
       final locales =
@@ -154,6 +158,9 @@ class TranslationService {
     required List<Cue> cues,
     String? requestId,
   }) async {
+    if (isMaoriLanguage(sourceLocaleIdentifier) ||
+        isMaoriLanguage(targetLocaleIdentifier))
+      return const {};
     _requireSupport();
     final inputCues = cues
         .where((cue) => cue.originalText.trim().isNotEmpty)

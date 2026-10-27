@@ -455,12 +455,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final dateLabel = _formatDateLabel(context, video.createdAt);
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
-        ),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute<bool>(
+            builder: (_) => MediaDetailScreen(mediaItem: _toMediaItem(video)),
+          ),
+        );
+        if (deleted == true && mounted) await _load(reset: true);
+      },
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

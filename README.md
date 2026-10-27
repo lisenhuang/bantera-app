@@ -145,6 +145,18 @@ lib/
 
 ## 🔑 Technical Deep Dives
 
+### Practice recording conversion and admin controls
+
+Practice recordings are AAC `.m4a` at 44.1 kHz. On iOS 26+, the speech analyzer can require a different PCM sample rate. `BanteraTranscriptionAudioConverter` uses AVAudioConverter's input-block API, feeds each frame once, and drains the converter to end-of-stream. The buffer-to-buffer overload must not be used for resampling: it raises a native exception that Swift `catch` cannot intercept. Native regression tests cover 44.1/48 kHz AAC to 16/24 kHz PCM, duration and retained final samples.
+
+Chat deletion uses a left swipe, an explicit Delete action and confirmation. AI message text supports native selection instead of a long-press action sheet. Received DMs are hidden locally with account-scoped tombstones; sent messages and admin group moderation use server deletion. The local Drift schema is version 3.
+
+Admins can choose rolling 24H, 7-day or 30-day periods on the speaking leaderboard, open a participant's DM after confirmation, and delete current Practice content or a long dialogue with shield-marked controls. Ordinary users retain the 30-day leaderboard. Each response ends at its refresh timestamp; pagination shares that cutoff. New speaking counts sync as idempotent timestamped events. Historical daily totals remain usable for whole interior days and the current UTC day inside a window. Exact counts from the first partial historical day cannot be recovered. Totals always combine all spoken languages, regardless of the current learning language.
+
+Māori is available first in the learning-language list for admins only, never in native-language selection or ordinary onboarding. Practice uses listening mode without a microphone, allows every level without awarding test passes, and automatically displays saved en-NZ translations. The backend generates these English meanings only for Māori, including background preparation of older exercises. Māori has no system transcription/translation actions in chat. Goal displays Māori with 🇳🇿; languages without system transcription hide achievement sharing and speaking metrics in Daily Goal, My Achievements and the trend chart. Language pickers initially scroll to the saved selection.
+
+This app requires backend 1.47.2 to be deployed and verified before installation. Two additive migrations create timestamped speaking events and a nullable Māori English field. No new environment variables are required. Existing calendar-day endpoints and published clients remain compatible.
+
 ### Local audio storage
 
 Completed AI recordings and replies are saved on-device as AAC in M4A at 64 kbps
@@ -797,3 +809,16 @@ progress. Existing words remain editable; the manual Add button is removed.
 Speaking leaderboard names use only the first whitespace-separated component,
 including Unicode spaces. Names without spaces remain intact; profile data is
 not rewritten.
+
+Practice shows the current exercise language flag and code at the top left. Māori group labels use the New Zealand flag, including legacy unaccented group titles.
+
+The device also syncs its own current local-day speaking totals with the UTC
+start and snapshot time. Rolling rankings use these only if the complete interval
+fits the requested window, combining overlapping sources with a per-device,
+per-language maximum rather than summing duplicates. Exact recordings outside
+that interval still count. No individual timestamps are invented for older speech.
+This requires the additive `SpeakingLocalDayWindows` migration before app rollout.
+Open the updated app online to sync these local bounds; installation alone does
+not upload them. Own leaderboard language labels follow current profile changes.
+New Zealand English is first among English learning accents, with Māori still
+first only for admins; native-language ordering is unchanged.

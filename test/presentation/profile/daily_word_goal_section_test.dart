@@ -7,6 +7,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 
 void main() {
+  testWidgets(
+    'listening-only goal hides speaking and completes from listening',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DailyWordGoalSection(
+              showSpeaking: false,
+              goal: const DailyWordGoal(listened: 300, spoken: 999),
+              today: const WordTotals(listened: 300, spoken: 0),
+              onEdit: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.textContaining('999', findRichText: true), findsNothing);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(DailyWordGoalSection)),
+      )!;
+      expect(find.text(l10n.dailyGoalReached), findsOneWidget);
+    },
+  );
+
   for (final goal in [
     const DailyWordGoal(listened: 600, spoken: 300),
     const DailyWordGoal(listened: 0, spoken: 300),

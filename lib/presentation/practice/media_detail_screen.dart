@@ -23,6 +23,7 @@ class MediaDetailScreen extends StatefulWidget {
 class _MediaDetailScreenState extends State<MediaDetailScreen> {
   bool? _isSaved;
   bool _savePending = false;
+  bool _deleting = false;
 
   bool get _showsBanteraAiBranding =>
       widget.mediaItem.isAudioOnly &&
@@ -74,6 +75,51 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     }
   }
 
+  Future<void> _deleteDialogue() async {
+    final session = AuthSessionNotifier.instance.session;
+    if (session?.isAdmin != true || _deleting) return;
+    final l = AppLocalizations.of(context)!;
+    setState(() => _deleting = true);
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          title: Text(l.adminDeleteDialogue),
+          content: Text(l.adminDeleteContentBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.deleteLabel),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true ||
+          !mounted ||
+          AuthSessionNotifier.instance.session?.cacheKey != session!.cacheKey)
+        return;
+      await AuthApiClient.instance.deleteAdminContent(
+        accessToken: session.accessToken,
+        videoId: widget.mediaItem.id,
+      );
+      if (!mounted) return;
+      unawaited(ProfileStatsNotifier.instance.refresh());
+      Navigator.pop(context, true);
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.onboardingLoadFailed)));
+    } finally {
+      if (mounted) setState(() => _deleting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -82,6 +128,25 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.lessonDetailsTitle),
         actions: [
+          if (AuthSessionNotifier.instance.session?.isAdmin == true &&
+              widget.mediaItem.localVideoPath == null)
+            PopupMenuButton<String>(
+              enabled: !_deleting,
+              tooltip: l10n.more,
+              onSelected: (_) => _deleteDialogue(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.admin_panel_settings_outlined),
+                      const SizedBox(width: 12),
+                      Text(l10n.adminDeleteDialogue),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           if (_savePending)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 12),

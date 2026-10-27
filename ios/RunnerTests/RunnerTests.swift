@@ -9,6 +9,42 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testPracticeTranscriptionResamplesAacWithoutCrashingOrTruncating() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    for sourceRate in [44100.0, 48000.0] {
+      for targetRate in [16000.0, 24000.0] {
+        let source = directory.appendingPathComponent("practice-\(sourceRate)-\(targetRate).m4a")
+        let format = AVAudioFormat(standardFormatWithSampleRate: sourceRate, channels: 1)!
+        let frames = AVAudioFrameCount(sourceRate * 2.35)
+        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames)!
+        buffer.frameLength = frames
+        for i in 0..<Int(frames) {
+          buffer.floatChannelData![0][i] = Float(sin(Double(i) * 2 * .pi * 440 / sourceRate) * 0.3)
+        }
+        do {
+          let file = try AVAudioFile(forWriting: source, settings: [
+            AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: sourceRate,
+            AVNumberOfChannelsKey: 1, AVEncoderBitRateKey: 64000
+          ], commonFormat: .pcmFormatFloat32, interleaved: false)
+          try file.write(from: buffer)
+        }
+        let target = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: targetRate, channels: 1, interleaved: true)!
+        let converted = try BanteraTranscriptionAudioConverter.convert(from: source, to: target)
+        defer { try? FileManager.default.removeItem(at: converted) }
+        let file = try AVAudioFile(forReading: converted)
+        XCTAssertEqual(file.processingFormat.sampleRate, targetRate)
+        XCTAssertEqual(Double(file.length) / targetRate, 2.35, accuracy: 0.08)
+        let samples = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length))!
+        try file.read(into: samples)
+        // The final portion must survive converter draining, not merely the first chunk.
+        let tail = Int(samples.frameLength) - 500
+        XCTAssertGreaterThan((tail..<Int(samples.frameLength)).map { abs(samples.floatChannelData![0][$0]) }.max()!, 0.1)
+      }
+    }
+  }
+
   func testLocalAudioCompressionAndVoiceRetry() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

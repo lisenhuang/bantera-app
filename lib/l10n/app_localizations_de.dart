@@ -2690,4 +2690,31 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get vocabReviewHelpBody =>
       'Bantera nutzt verteilte Wiederholungen: Lernen mit Pausen kann das langfristige Erinnern fördern. Das hängt mit der Vergessenskurve zusammen, die beschreibt, wie Erinnerungen mit der Zeit verblassen.\n\nUnser Zeitplan:\n• Erste Wiederholung: 1 Tag nach dem Speichern.\n• Nach weiteren Wiederholungen: 3, 7, 14 und dann 30 Tage.\n• Danach bleiben es 30 Tage.\n\nAm geplanten Datum wird ein Wort fällig. Als wiederholt markieren startet das nächste Intervall ab diesem Zeitpunkt. Das ist ein fester Zeitplan, keine Messung deines Gedächtnisses oder Aussage, dass du das Wort vergessen hast.';
+
+  @override
+  String get leaderboardRollingFootnote =>
+      'Die Zeiträume enden bei der letzten Aktualisierung. Zeiten sind lokal. Offline-Wörter erscheinen nach der Synchronisierung. Bei älteren App-Versionen können Aktivitäten am Anfang und Ende des Zeitraums fehlen, da keine genauen Zeiten erfasst wurden.';
+
+  @override
+  String get leaderboardPeriodFootnote =>
+      'Gleiche Summen teilen sich einen Rang. Datumsangaben sind in UTC. Offline gezählte Wörter erscheinen nach der Synchronisierung.';
+
+  @override
+  String leaderboardOpenChat(String name) {
+    return 'Einen privaten Chat mit $name öffnen?';
+  }
+
+  @override
+  String get chatDeleteReceivedBody =>
+      'Diese Nachricht wird nur von diesem Gerät entfernt. Die Kopie der anderen Person bleibt erhalten.';
+
+  @override
+  String get adminDeletePractice => 'Übung löschen';
+
+  @override
+  String get adminDeleteDialogue => 'Dialog löschen';
+
+  @override
+  String get adminDeleteContentBody =>
+      'Diesen Inhalt für alle vom Server löschen? Dies kann nicht rückgängig gemacht werden. Bereits heruntergeladene Kopien können auf Geräten verbleiben.';
 }

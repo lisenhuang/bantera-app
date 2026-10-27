@@ -647,3 +647,48 @@ List<TranscriptionLocaleOption> availableProfileLanguages(
 /// Full audio dialogues require supported transcription/timing as well as TTS.
 bool supportsAudioDialogueLanguage(String identifier) =>
     primaryLanguageCodeForLocaleIdentifier(identifier) != 'mi';
+
+/// Admins may evaluate Māori in Practice without enabling it for the public
+/// catalog or the native-language picker. Reapply when opening cached pickers.
+List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
+  Iterable<TranscriptionLocaleOption> options, {
+  required bool isAdmin,
+  bool nativeLanguage = false,
+}) {
+  final visible = availableProfileLanguages(
+    options,
+    nativeLanguage: nativeLanguage,
+  );
+  if (!nativeLanguage) {
+    final firstEnglish = visible.indexWhere(
+      (option) =>
+          primaryLanguageCodeForLocaleIdentifier(option.identifier) == 'en',
+    );
+    final newZealand = visible.indexWhere(
+      (option) =>
+          normalizeLocaleIdentifierForLookup(option.identifier) == 'en-nz',
+    );
+    if (firstEnglish >= 0 && newZealand > firstEnglish) {
+      visible.insert(firstEnglish, visible.removeAt(newZealand));
+    }
+  }
+  if (isAdmin && !nativeLanguage) {
+    visible.insert(
+      0,
+      const TranscriptionLocaleOption(
+        identifier: 'mi-NZ',
+        displayName: 'Māori (New Zealand)',
+        isInstalled: false,
+        flagEmoji: '🇳🇿',
+      ),
+    );
+  }
+  return visible;
+}
+
+bool supportsQuickPracticeLanguage(
+  String identifier, {
+  required bool isAdmin,
+}) =>
+    supportsAudioDialogueLanguage(identifier) ||
+    (isAdmin && normalizeLocaleIdentifierForLookup(identifier) == 'mi-nz');

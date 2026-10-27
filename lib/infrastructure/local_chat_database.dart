@@ -92,6 +92,13 @@ class ChatMessageEntries extends Table {
   Set<Column<Object>> get primaryKey => {ownerCacheKey, messageId};
 }
 
+class ChatHiddenMessageEntries extends Table {
+  TextColumn get ownerCacheKey => text()();
+  TextColumn get messageId => text()();
+  @override
+  Set<Column<Object>> get primaryKey => {ownerCacheKey, messageId};
+}
+
 class ChatBlockEntries extends Table {
   @override
   String get tableName => 'chat_block_entries';
@@ -125,6 +132,7 @@ LazyDatabase _openConnection() {
     ChatUserEntries,
     ChatMessageEntries,
     ChatBlockEntries,
+    ChatHiddenMessageEntries,
   ],
 )
 class LocalChatDatabase extends _$LocalChatDatabase {
@@ -135,7 +143,7 @@ class LocalChatDatabase extends _$LocalChatDatabase {
   static final LocalChatDatabase instance = LocalChatDatabase._internal();
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -143,6 +151,7 @@ class LocalChatDatabase extends _$LocalChatDatabase {
       await migrator.createAll();
     },
     onUpgrade: (migrator, from, to) async {
+      if (from < 3) await migrator.createTable(chatHiddenMessageEntries);
       if (from < 2) {
         await migrator.addColumn(
           chatMessageEntries,

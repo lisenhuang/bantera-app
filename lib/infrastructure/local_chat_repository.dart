@@ -280,7 +280,14 @@ class LocalChatRepository {
             );
       }
 
+      final hidden =
+          (await (_database.select(
+                _database.chatHiddenMessageEntries,
+              )..where((t) => t.ownerCacheKey.equals(ownerCacheKey))).get())
+              .map((r) => r.messageId)
+              .toSet();
       for (final message in messages) {
+        if (hidden.contains(message.messageId)) continue;
         final previous = existingById[message.messageId];
         await _database
             .into(_database.chatMessageEntries)
@@ -388,6 +395,36 @@ class LocalChatRepository {
         /* Already removed. */
       }
     }
+  }
+
+  Future<bool> isMessageHidden(
+    String messageId, {
+    required String ownerCacheKey,
+  }) async =>
+      await (_database.select(_database.chatHiddenMessageEntries)..where(
+            (t) =>
+                t.ownerCacheKey.equals(ownerCacheKey) &
+                t.messageId.equals(messageId),
+          ))
+          .getSingleOrNull() !=
+      null;
+
+  Future<void> hideReceivedDirectMessage(
+    ChatMessageItem message, {
+    required String ownerCacheKey,
+  }) async {
+    if (!message.isDirectMessage || message.isMine) return;
+    await _database.transaction(() async {
+      await _database
+          .into(_database.chatHiddenMessageEntries)
+          .insertOnConflictUpdate(
+            ChatHiddenMessageEntriesCompanion.insert(
+              ownerCacheKey: ownerCacheKey,
+              messageId: message.messageId,
+            ),
+          );
+      await deleteMessage(message.messageId, ownerCacheKey: ownerCacheKey);
+    });
   }
 
   Future<void> deleteLocalThread(String threadId) async {
@@ -575,10 +612,9 @@ class LocalChatRepository {
   }
 
   Future<String?> resolveAudioPath(String? storedReference) async {
-    final normalizedReference = p.normalize((storedReference ?? '').trim());
-    if (normalizedReference.isEmpty) {
-      return null;
-    }
+    final reference = (storedReference ?? '').trim();
+    if (reference.isEmpty) return null;
+    final normalizedReference = p.normalize(reference);
 
     if (!p.isAbsolute(normalizedReference)) {
       final supportDirectory = await getApplicationSupportDirectory();

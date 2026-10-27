@@ -982,6 +982,43 @@ class AuthApiClient {
     );
   }
 
+  Future<void> deleteAdminContent({
+    required String accessToken,
+    String? videoId,
+    String? practiceExposureId,
+  }) async {
+    if ((videoId == null) == (practiceExposureId == null))
+      throw ArgumentError('Choose one content item');
+    final route = videoId != null
+        ? '/api/admin/videos/$videoId'
+        : '/api/admin/practice/exposures/$practiceExposureId';
+    return _retryWithRefresh(accessToken, (token) async {
+      try {
+        final request = await _httpClient.openUrl('DELETE', _resolve(route));
+        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+        request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+        final response = await request.close().timeout(
+          const Duration(seconds: 30),
+        );
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          await response.drain<void>();
+          return;
+        }
+        final json = await _parseJsonResponse(response);
+        _throwApiException(json, response.statusCode);
+      } on AuthApiException {
+        rethrow;
+      } on SocketException {
+        await _throwNetworkFailure();
+      } on HandshakeException {
+        throw const AuthApiException(
+          code: 'tls_error',
+          message: 'The app could not establish a secure connection.',
+        );
+      }
+    });
+  }
+
   Future<void> deleteVideo({
     required String accessToken,
     required String videoId,
@@ -1435,15 +1472,23 @@ class AuthApiClient {
   Future<Map<String, dynamic>> speakingLeaderboard({
     required String accessToken,
     int offset = 0,
+    int days = 30,
+    String? until,
   }) async {
+    if (![1, 7, 30].contains(days)) throw ArgumentError.value(days, 'days');
+    final route = days == 30
+        ? '/api/speaking-leaderboard'
+        : '/api/admin/speaking-leaderboard';
     final data = await _sendJsonRequest(
       method: 'GET',
-      path: '/api/speaking-leaderboard?offset=$offset&days=30',
+      path:
+          '$route?offset=$offset&hours=${days * 24}${until == null ? '' : '&until=${Uri.encodeQueryComponent(until)}'}',
       accessToken: accessToken,
       expectedUserId: _wordActivityTokenSubject(accessToken),
     ).timeout(const Duration(seconds: 15));
     final session = AuthSessionNotifier.instance.session;
-    if (session != null &&
+    if (days == 30 &&
+        session != null &&
         session.userId == _wordActivityTokenSubject(accessToken)) {
       PracticeWidgetService.instance.setLeaderboard(
         owner: session.cacheKey,
@@ -1453,11 +1498,31 @@ class AuthApiClient {
     return data;
   }
 
+  Future<void> syncSpeakingEvents({
+    required String accessToken,
+    required String deviceId,
+    required List<Map<String, dynamic>> events,
+  }) async {
+    for (var offset = 0; offset < events.length; offset += 256) {
+      await _sendJsonRequest(
+        method: 'POST',
+        path: '/api/me/speaking-events',
+        accessToken: accessToken,
+        expectedUserId: _wordActivityTokenSubject(accessToken),
+        payload: {
+          'deviceId': deviceId,
+          'events': events.skip(offset).take(256).toList(),
+        },
+      ).timeout(const Duration(seconds: 15));
+    }
+  }
+
   Future<void> syncSpeakingActivity({
     required String accessToken,
     required String deviceId,
     required Map<String, WordTotals> days,
     String? legacyThrough,
+    Map<String, dynamic>? localDay,
   }) async {
     await _sendJsonRequest(
       method: 'POST',
@@ -1467,6 +1532,7 @@ class AuthApiClient {
       payload: {
         'deviceId': deviceId,
         'legacyThroughDate': legacyThrough,
+        'localDay': localDay,
         'days': [
           for (final entry in days.entries)
             {
