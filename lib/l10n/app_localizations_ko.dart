@@ -2097,7 +2097,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '탭하여 시작하고 다시 탭하여 확인하세요. 길게 누른 채 말하고 손을 떼어 확인할 수도 있어요.';
 
   @override
-  String get quickSpeak => '탭하거나 길게 눌러 말하기';
+  String get quickSpeak => '탭하거나 길게 눌러 답하기';
 
   @override
   String get quickChecking => '답을 확인하고 있어요…';
@@ -2649,4 +2649,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IP 국가';
+
+  @override
+  String get practiceSpeakCorrectReply => '2단계 · 올바른 답을 말하세요';
+
+  @override
+  String get practiceFirstAnswerHint => '올바른 답을 소리 내어 말해 보세요.';
 }

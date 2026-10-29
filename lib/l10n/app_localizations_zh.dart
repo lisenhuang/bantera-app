@@ -2088,7 +2088,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickSpeakHint => '轻点开始，再次轻点检查；或按住说话，松开检查。';
 
   @override
-  String get quickSpeak => '轻点或按住说话';
+  String get quickSpeak => '轻点或长按作答';
 
   @override
   String get quickChecking => '正在听你的回答…';
@@ -2623,6 +2623,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IP 国家';
+
+  @override
+  String get practiceSpeakCorrectReply => '第 2 部分 · 说出正确回答';
+
+  @override
+  String get practiceFirstAnswerHint => '请大声说出正确的回答。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -4713,7 +4719,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickSpeakHint => '輕點開始，再次輕點檢查；或按住說話，放開檢查。';
 
   @override
-  String get quickSpeak => '輕點或按住說話';
+  String get quickSpeak => '輕點或長按作答';
 
   @override
   String get quickChecking => '正在聽你的回答…';
@@ -5249,4 +5255,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get leaderboardIpCountry => 'IP 國家';
+
+  @override
+  String get practiceSpeakCorrectReply => '第 2 部分 · 說出正確回答';
+
+  @override
+  String get practiceFirstAnswerHint => '請大聲說出正確的回答。';
 }

@@ -2248,7 +2248,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Tocca per iniziare e di nuovo per verificare, oppure tieni premuto mentre parli e rilascia per verificare.';
 
   @override
-  String get quickSpeak => 'Tocca o tieni premuto per parlare';
+  String get quickSpeak => 'Tocca o tieni premuto per rispondere';
 
   @override
   String get quickChecking => 'Verifica della risposta…';
@@ -2839,4 +2839,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Paese IP';
+
+  @override
+  String get practiceSpeakCorrectReply => 'Parte 2 · Di’ la risposta corretta';
+
+  @override
+  String get practiceFirstAnswerHint =>
+      'Di’ la risposta corretta ad alta voce.';
 }

@@ -652,7 +652,7 @@
   "quickCue1": "Replik 1 · Dinle",
   "quickCue2": "Replik 2 · Yanıtın",
   "quickSpeakHint": "Başlamak için dokunun, kontrol etmek için tekrar dokunun. Ya da konuşurken basılı tutup kontrol etmek için bırakın.",
-  "quickSpeak": "Konuşmak için dokunun veya basılı tutun",
+  "quickSpeak": "Yanıtlamak için dokun veya basılı tut",
   "quickChecking": "Yanıtın kontrol ediliyor…",
   "quickCorrect": "Bu yanıt uygun. Güzel iş.",
   "quickIncorrect": "Diğer yanıtı dene.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "Son {days} gün",
   "leaderboardNativeLanguage": "Ana dil",
   "leaderboardLearningLanguage": "Öğrenilen dil",
-  "leaderboardIpCountry": "IP ülkesi"
+  "leaderboardIpCountry": "IP ülkesi",
+  "practiceSpeakCorrectReply": "Bölüm 2 · Doğru yanıtı söyle",
+  "practiceFirstAnswerHint": "Doğru yanıtı sesli söyle."
 }

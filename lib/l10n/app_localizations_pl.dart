@@ -2258,7 +2258,7 @@ class AppLocalizationsPl extends AppLocalizations {
       'Dotknij, aby rozpocząć, i ponownie, aby sprawdzić. Możesz też przytrzymać podczas mówienia i puścić, aby sprawdzić.';
 
   @override
-  String get quickSpeak => 'Dotknij lub przytrzymaj, aby mówić';
+  String get quickSpeak => 'Dotknij lub przytrzymaj, aby odpowiedzieć';
 
   @override
   String get quickChecking => 'Sprawdzamy odpowiedź…';
@@ -2852,4 +2852,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Kraj adresu IP';
+
+  @override
+  String get practiceSpeakCorrectReply =>
+      'Część 2 · Powiedz poprawną odpowiedź';
+
+  @override
+  String get practiceFirstAnswerHint => 'Powiedz poprawną odpowiedź na głos.';
 }

@@ -652,7 +652,7 @@
   "quickCue1": "Ucapan 1 · Dengarkan",
   "quickCue2": "Ucapan 2 · Jawabanmu",
   "quickSpeakHint": "Ketuk untuk mulai dan ketuk lagi untuk memeriksa, atau tahan saat berbicara dan lepaskan untuk memeriksa.",
-  "quickSpeak": "Ketuk atau tahan untuk berbicara",
+  "quickSpeak": "Ketuk atau tahan untuk menjawab",
   "quickChecking": "Memeriksa jawabanmu…",
   "quickCorrect": "Jawaban itu cocok. Bagus.",
   "quickIncorrect": "Coba jawaban lainnya.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days} hari terakhir",
   "leaderboardNativeLanguage": "Bahasa ibu",
   "leaderboardLearningLanguage": "Bahasa yang dipelajari",
-  "leaderboardIpCountry": "Negara IP"
+  "leaderboardIpCountry": "Negara IP",
+  "practiceSpeakCorrectReply": "Bagian 2 · Ucapkan jawaban yang benar",
+  "practiceFirstAnswerHint": "Ucapkan jawaban yang benar dengan lantang."
 }

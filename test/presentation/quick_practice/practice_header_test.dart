@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:app/core/theme.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/practice_header.dart';
+import 'package:app/presentation/quick_practice/practice_level_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -51,6 +52,14 @@ void main() {
         home: Scaffold(
           appBar: PracticeHeader(
             learningLocale: learningLocale,
+            levelMenu: learningLocale == null
+                ? null
+                : PracticeLevelMenu(
+                    level: 'C2',
+                    currentLevel: 'C2',
+                    learningLocale: learningLocale,
+                    onSelected: (_) {},
+                  ),
             onSpeedSelected: (_) {},
             onLongerDialogues: onDialogues ?? () {},
             onSavePractice: () {},
@@ -145,7 +154,7 @@ void main() {
         find.byKey(const ValueKey('practice-title')),
       );
       expect(title.dx, closeTo(393 / 2, .1));
-      expect(find.text('Bantera App'), findsOneWidget);
+      expect(find.text('Bantera'), findsOneWidget);
       final speed = find.byKey(const ValueKey('practice-playback-speed'));
       expect(tester.getSize(speed), const Size(48, 48));
       expect(tester.getCenter(speed).dx, greaterThan(title.dx));
@@ -235,7 +244,7 @@ void main() {
 
   testWidgets('Practice header light and dark design captures', (tester) async {
     for (final dark in [false, true]) {
-      await mount(tester, dark: dark);
+      await mount(tester, dark: dark, learningLocale: 'en-NZ');
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile(

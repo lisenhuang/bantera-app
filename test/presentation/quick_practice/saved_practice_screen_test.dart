@@ -153,7 +153,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Saved practice'));
       await tester.pumpAndSettle();
@@ -168,7 +168,7 @@ void main() {
       expect(find.text('Hello'), findsOneWidget);
       expect(find.text('Original practice'), findsNothing);
       // Removing from the Practice menu also asks first.
-      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Remove from saved'));
       await tester.pumpAndSettle();
@@ -187,7 +187,7 @@ void main() {
         find.byKey(const ValueKey('practice-pinned-next')),
         findsOneWidget,
       );
-      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Saved practice'));
       await tester.pumpAndSettle();

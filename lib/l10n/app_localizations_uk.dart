@@ -2247,7 +2247,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Натисніть, щоб почати, і ще раз, щоб перевірити. Або утримуйте під час мовлення й відпустіть для перевірки.';
 
   @override
-  String get quickSpeak => 'Натисніть або утримуйте, щоб говорити';
+  String get quickSpeak => 'Натисніть або утримуйте, щоб відповісти';
 
   @override
   String get quickChecking => 'Перевіряємо відповідь…';
@@ -2837,4 +2837,11 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Країна IP';
+
+  @override
+  String get practiceSpeakCorrectReply =>
+      'Частина 2 · Промовте правильну відповідь';
+
+  @override
+  String get practiceFirstAnswerHint => 'Промовте правильну відповідь уголос.';
 }

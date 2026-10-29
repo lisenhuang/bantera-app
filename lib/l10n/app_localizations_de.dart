@@ -2243,7 +2243,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zum Starten tippen und zum Prüfen erneut tippen. Oder beim Sprechen halten und zum Prüfen loslassen.';
 
   @override
-  String get quickSpeak => 'Tippen oder halten zum Sprechen';
+  String get quickSpeak => 'Tippen oder halten zum Antworten';
 
   @override
   String get quickChecking => 'Deine Antwort wird geprüft…';
@@ -2839,4 +2839,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IP-Land';
+
+  @override
+  String get practiceSpeakCorrectReply =>
+      'Teil 2 · Sprich die richtige Antwort';
+
+  @override
+  String get practiceFirstAnswerHint => 'Sprich die richtige Antwort laut aus.';
 }

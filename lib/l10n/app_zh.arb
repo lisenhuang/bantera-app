@@ -687,7 +687,7 @@
   "quickCue1": "对话 1 · 听一听",
   "quickCue2": "对话 2 · 你的回答",
   "quickSpeakHint": "轻点开始，再次轻点检查；或按住说话，松开检查。",
-  "quickSpeak": "轻点或按住说话",
+  "quickSpeak": "轻点或长按作答",
   "quickChecking": "正在听你的回答…",
   "quickCorrect": "回答合适，做得不错。",
   "quickIncorrect": "试试另一个回答。",
@@ -852,5 +852,7 @@
   "leaderboardPeriodScope": "最近{days}天",
   "leaderboardNativeLanguage": "母语",
   "leaderboardLearningLanguage": "学习语言",
-  "leaderboardIpCountry": "IP 国家"
+  "leaderboardIpCountry": "IP 国家",
+  "practiceSpeakCorrectReply": "第 2 部分 · 说出正确回答",
+  "practiceFirstAnswerHint": "请大声说出正确的回答。"
 }

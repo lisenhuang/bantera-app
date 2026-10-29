@@ -652,7 +652,7 @@
   "quickCue1": "對話 1 · 聽一聽",
   "quickCue2": "對話 2 · 你的回答",
   "quickSpeakHint": "輕點開始，再次輕點檢查；或按住說話，放開檢查。",
-  "quickSpeak": "輕點或按住說話",
+  "quickSpeak": "輕點或長按作答",
   "quickChecking": "正在聽你的回答…",
   "quickCorrect": "回答合適，做得不錯。",
   "quickIncorrect": "試試另一個回答。",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "最近{days}天",
   "leaderboardNativeLanguage": "母語",
   "leaderboardLearningLanguage": "學習語言",
-  "leaderboardIpCountry": "IP 國家"
+  "leaderboardIpCountry": "IP 國家",
+  "practiceSpeakCorrectReply": "第 2 部分 · 說出正確回答",
+  "practiceFirstAnswerHint": "請大聲說出正確的回答。"
 }

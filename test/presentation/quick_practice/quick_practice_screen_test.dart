@@ -289,7 +289,7 @@ void main() {
         find.byKey(const ValueKey('practice-show-translation')),
         findsNothing,
       );
-      expect(find.text('Tap or hold to speak'), findsNothing);
+      expect(find.text('Tap or hold to answer'), findsNothing);
       await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
       await tester.pumpAndSettle();
       expect(find.text('Longer dialogues'), findsNothing);
@@ -500,7 +500,7 @@ void main() {
       final rect = tester.getRect(next);
       expect(rect.right, lessThanOrEqualTo(size.width - 64));
       expect(rect.left, greaterThanOrEqualTo(0));
-      expect(find.text('Bantera App'), findsOneWidget);
+      expect(find.text('Bantera'), findsOneWidget);
       expect(find.byType(GoalTabIcon), findsOneWidget);
     }
   });
@@ -720,12 +720,7 @@ void main() {
       expect(find.textContaining('“next”'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'Tap to start and tap again to check, or hold while speaking and release to check.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('Tap or hold to answer'), findsOneWidget);
       expect(find.text('That reply fits. Nicely done.'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -901,7 +896,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(header), position);
     expect(find.text('Practice'), findsOneWidget);
-    expect(find.text('Bantera App'), findsOneWidget);
+    expect(find.text('Bantera'), findsOneWidget);
   });
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
     for (final dark in [false, true]) {
@@ -931,11 +926,11 @@ void main() {
           final state = tester.state(screen);
           final button = find.byKey(const ValueKey('practice-level-menu'));
           expect(find.text('先听，再说出你的回答。'), findsNothing);
-          expect(tester.getTopLeft(button).dy, greaterThan(kToolbarHeight));
+          expect(tester.getTopLeft(button).dy, lessThan(kToolbarHeight));
           expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
           expect(
             find.descendant(of: find.byType(AppBar), matching: button),
-            findsNothing,
+            findsOneWidget,
           );
           await tester.tap(button);
           await tester.pumpAndSettle();
@@ -1220,6 +1215,31 @@ void main() {
     expect(find.text('Where is the station?'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('replies share a panel and word taps do not submit an answer', (
+    tester,
+  ) async {
+    await mount(tester);
+    expect(find.text('Cue 2 · Speak the correct reply'), findsOneWidget);
+    final panel = find.byKey(const ValueKey('practice-replies-panel'));
+    expect(panel, findsOneWidget);
+    for (var i = 0; i < 2; i++) {
+      final row = find.descendant(
+        of: panel,
+        matching: find.byKey(ValueKey('practice-reply-$i')),
+      );
+      expect(row, findsOneWidget);
+      expect(tester.widget<Container>(row).decoration, isNull);
+    }
+    final word = find
+        .descendant(of: panel, matching: find.byType(PracticeWordText))
+        .first;
+    await tester.tap(word);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('practice-feedback')), findsNothing);
+    expect(find.text('Tap or hold to answer'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('light practice layout', (tester) async {
     await mount(tester);
     await expectLater(

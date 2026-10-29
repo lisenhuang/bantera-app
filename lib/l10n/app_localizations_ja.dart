@@ -2085,7 +2085,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickSpeakHint => 'タップで開始し、もう一度タップで確認。長押しして話し、指を離して確認することもできます。';
 
   @override
-  String get quickSpeak => 'タップまたは長押しで話す';
+  String get quickSpeak => 'タップまたは長押しで回答';
 
   @override
   String get quickChecking => '返事を確認中…';
@@ -2633,4 +2633,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IPアドレスの国';
+
+  @override
+  String get practiceSpeakCorrectReply => 'パート2 · 正しい返答を声に出そう';
+
+  @override
+  String get practiceFirstAnswerHint => '正しい返答を声に出して言ってみましょう。';
 }

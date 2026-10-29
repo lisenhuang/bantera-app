@@ -652,7 +652,7 @@
   "quickCue1": "Реплика 1 · Слушайте",
   "quickCue2": "Реплика 2 · Ваш ответ",
   "quickSpeakHint": "Нажмите, чтобы начать, и ещё раз, чтобы проверить. Или удерживайте во время речи и отпустите для проверки.",
-  "quickSpeak": "Нажмите или удерживайте, чтобы говорить",
+  "quickSpeak": "Нажмите или удерживайте, чтобы ответить",
   "quickChecking": "Проверяем ваш ответ…",
   "quickCorrect": "Ответ подходит. Хорошая работа.",
   "quickIncorrect": "Попробуйте другой ответ.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days, plural, one{Последний {days} день} few{Последние {days} дня} many{Последние {days} дней} other{Последние {days} дня}}",
   "leaderboardNativeLanguage": "Родной язык",
   "leaderboardLearningLanguage": "Изучаемый язык",
-  "leaderboardIpCountry": "Страна IP"
+  "leaderboardIpCountry": "Страна IP",
+  "practiceSpeakCorrectReply": "Часть 2 · Произнесите верный ответ",
+  "practiceFirstAnswerHint": "Произнесите правильный ответ вслух."
 }

@@ -652,7 +652,7 @@
   "quickCue1": "Réplique 1 · Écouter",
   "quickCue2": "Réplique 2 · Votre réponse",
   "quickSpeakHint": "Touchez pour commencer, puis à nouveau pour vérifier. Ou maintenez en parlant et relâchez pour vérifier.",
-  "quickSpeak": "Touchez ou maintenez pour parler",
+  "quickSpeak": "Appuie ou maintiens pour répondre",
   "quickChecking": "Vérification de votre réponse…",
   "quickCorrect": "Cette réponse convient. Bien joué.",
   "quickIncorrect": "Essayez l’autre réponse.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days, plural, one{Dernier {days} jour} other{Derniers {days} jours}}",
   "leaderboardNativeLanguage": "Langue maternelle",
   "leaderboardLearningLanguage": "Langue apprise",
-  "leaderboardIpCountry": "Pays de l’IP"
+  "leaderboardIpCountry": "Pays de l’IP",
+  "practiceSpeakCorrectReply": "Étape 2 · Dis la bonne réponse",
+  "practiceFirstAnswerHint": "Dis la bonne réponse à voix haute."
 }

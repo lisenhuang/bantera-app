@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'practice_level_help.dart';
 import 'practice_level_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../shared/language_code_label.dart';
+import '../shared/learning_language_label.dart';
+import '../shared/locale_flag.dart';
 
 const practiceLevels = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -15,8 +18,10 @@ class PracticeLevelMenu extends StatelessWidget {
     this.levelStates,
     this.freeSelection = false,
     this.highestUnlockedLevel,
+    this.learningLocale,
   });
   final String level, currentLevel;
+  final String? learningLocale;
   final bool freeSelection;
   final Map<String, dynamic>? levelStates;
   final String? highestUnlockedLevel;
@@ -35,28 +40,87 @@ class PracticeLevelMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return OutlinedButton(
-      key: const ValueKey('practice-level-menu'),
-      onPressed: onSelected == null ? null : () => _showLevels(context),
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(0, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        shape: const StadiumBorder(),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(child: Text(l.audioLevelSection)),
-          const SizedBox(width: 8),
-          Text(
-            level,
-            key: const ValueKey('practice-level'),
-            textDirection: TextDirection.ltr,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+    final theme = Theme.of(context);
+    final locale = learningLocale;
+    final hasLocale = locale != null && locale.isNotEmpty;
+    return Tooltip(
+      message: l.quickChooseLevel,
+      child: Semantics(
+        label:
+            '${l.quickChooseLevel}, $level'
+            '${hasLocale ? ', ${learningLanguageLabel(locale).name}' : ''}',
+        excludeSemantics: true,
+        button: true,
+        enabled: onSelected != null,
+        onTap: onSelected == null ? null : () => _showLevels(context),
+        child: TextButton(
+          key: const ValueKey('practice-level-menu'),
+          onPressed: onSelected == null ? null : () => _showLevels(context),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            padding: EdgeInsets.zero,
+            shape: const StadiumBorder(),
           ),
-          const SizedBox(width: 6),
-          const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-        ],
+          child: Container(
+            height: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: .06),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: .35),
+              ),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                textDirection: TextDirection.ltr,
+                children: [
+                  Text(
+                    level,
+                    key: const ValueKey('practice-level'),
+                    textDirection: TextDirection.ltr,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: onSelected == null
+                          ? theme.disabledColor
+                          : theme.colorScheme.primary,
+                    ),
+                  ),
+                  if (hasLocale) ...[
+                    const SizedBox(width: 4),
+                    Row(
+                      key: const ValueKey('practice-language-label'),
+                      mainAxisSize: MainAxisSize.min,
+                      textDirection: TextDirection.ltr,
+                      children: [
+                        Text(
+                          flagEmojiForLocale(locale),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          languageCodeLabel(locale),
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: onSelected == null
+                                    ? Theme.of(context).disabledColor
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(width: 4),
+                  const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -102,6 +166,16 @@ class PracticeLevelMenu extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (learningLocale != null && learningLocale!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        learningLanguageLabel(learningLocale).name,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: c.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                   Text(
                     l.quickCurrentLevel(freeSelection ? level : currentLevel),
                     style: theme.textTheme.bodyMedium?.copyWith(

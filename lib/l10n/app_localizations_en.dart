@@ -2242,7 +2242,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap to start and tap again to check, or hold while speaking and release to check.';
 
   @override
-  String get quickSpeak => 'Tap or hold to speak';
+  String get quickSpeak => 'Tap or hold to answer';
 
   @override
   String get quickChecking => 'Listening to your answer…';
@@ -2832,4 +2832,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IP country';
+
+  @override
+  String get practiceSpeakCorrectReply => 'Cue 2 · Speak the correct reply';
+
+  @override
+  String get practiceFirstAnswerHint => 'Say the correct reply aloud.';
 }

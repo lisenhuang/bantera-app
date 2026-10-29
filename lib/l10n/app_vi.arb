@@ -652,7 +652,7 @@
   "quickCue1": "Lời thoại 1 · Nghe",
   "quickCue2": "Lời thoại 2 · Câu trả lời",
   "quickSpeakHint": "Chạm để bắt đầu rồi chạm lần nữa để kiểm tra, hoặc giữ khi nói và thả ra để kiểm tra.",
-  "quickSpeak": "Chạm hoặc giữ để nói",
+  "quickSpeak": "Chạm hoặc giữ để trả lời",
   "quickChecking": "Đang kiểm tra câu trả lời…",
   "quickCorrect": "Câu trả lời phù hợp. Làm tốt lắm.",
   "quickIncorrect": "Hãy thử câu trả lời còn lại.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days} ngày qua",
   "leaderboardNativeLanguage": "Tiếng mẹ đẻ",
   "leaderboardLearningLanguage": "Ngôn ngữ đang học",
-  "leaderboardIpCountry": "Quốc gia IP"
+  "leaderboardIpCountry": "Quốc gia IP",
+  "practiceSpeakCorrectReply": "Phần 2 · Nói câu trả lời đúng",
+  "practiceFirstAnswerHint": "Hãy nói to câu trả lời đúng."
 }

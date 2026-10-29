@@ -687,7 +687,7 @@
   "quickCue1": "セリフ1 · 聞く",
   "quickCue2": "セリフ2 · あなたの返事",
   "quickSpeakHint": "タップで開始し、もう一度タップで確認。長押しして話し、指を離して確認することもできます。",
-  "quickSpeak": "タップまたは長押しで話す",
+  "quickSpeak": "タップまたは長押しで回答",
   "quickChecking": "返事を確認中…",
   "quickCorrect": "会話に合う返事です。",
   "quickIncorrect": "もう一方の返事を試しましょう。",
@@ -852,5 +852,7 @@
   "leaderboardPeriodScope": "過去{days}日間",
   "leaderboardNativeLanguage": "母語",
   "leaderboardLearningLanguage": "学習言語",
-  "leaderboardIpCountry": "IPアドレスの国"
+  "leaderboardIpCountry": "IPアドレスの国",
+  "practiceSpeakCorrectReply": "パート2 · 正しい返答を声に出そう",
+  "practiceFirstAnswerHint": "正しい返答を声に出して言ってみましょう。"
 }

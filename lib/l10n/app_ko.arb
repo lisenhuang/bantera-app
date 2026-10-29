@@ -687,7 +687,7 @@
   "quickCue1": "대사 1 · 듣기",
   "quickCue2": "대사 2 · 나의 답",
   "quickSpeakHint": "탭하여 시작하고 다시 탭하여 확인하세요. 길게 누른 채 말하고 손을 떼어 확인할 수도 있어요.",
-  "quickSpeak": "탭하거나 길게 눌러 말하기",
+  "quickSpeak": "탭하거나 길게 눌러 답하기",
   "quickChecking": "답을 확인하고 있어요…",
   "quickCorrect": "대화에 맞는 답이에요. 잘했어요.",
   "quickIncorrect": "다른 답을 시도해 보세요.",
@@ -852,5 +852,7 @@
   "leaderboardPeriodScope": "최근 {days}일",
   "leaderboardNativeLanguage": "모국어",
   "leaderboardLearningLanguage": "학습 언어",
-  "leaderboardIpCountry": "IP 국가"
+  "leaderboardIpCountry": "IP 국가",
+  "practiceSpeakCorrectReply": "2단계 · 올바른 답을 말하세요",
+  "practiceFirstAnswerHint": "올바른 답을 소리 내어 말해 보세요."
 }

@@ -94,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               centerTitle: true,
               title: const FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text('Bantera App'),
+                child: Text('Bantera'),
               ),
               actions: [
                 IconButton(

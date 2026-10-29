@@ -2181,7 +2181,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Chạm để bắt đầu rồi chạm lần nữa để kiểm tra, hoặc giữ khi nói và thả ra để kiểm tra.';
 
   @override
-  String get quickSpeak => 'Chạm hoặc giữ để nói';
+  String get quickSpeak => 'Chạm hoặc giữ để trả lời';
 
   @override
   String get quickChecking => 'Đang kiểm tra câu trả lời…';
@@ -2761,4 +2761,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Quốc gia IP';
+
+  @override
+  String get practiceSpeakCorrectReply => 'Phần 2 · Nói câu trả lời đúng';
+
+  @override
+  String get practiceFirstAnswerHint => 'Hãy nói to câu trả lời đúng.';
 }

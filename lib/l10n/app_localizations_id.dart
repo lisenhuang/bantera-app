@@ -2184,7 +2184,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Ketuk untuk mulai dan ketuk lagi untuk memeriksa, atau tahan saat berbicara dan lepaskan untuk memeriksa.';
 
   @override
-  String get quickSpeak => 'Ketuk atau tahan untuk berbicara';
+  String get quickSpeak => 'Ketuk atau tahan untuk menjawab';
 
   @override
   String get quickChecking => 'Memeriksa jawabanmu…';
@@ -2766,4 +2766,12 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Negara IP';
+
+  @override
+  String get practiceSpeakCorrectReply =>
+      'Bagian 2 · Ucapkan jawaban yang benar';
+
+  @override
+  String get practiceFirstAnswerHint =>
+      'Ucapkan jawaban yang benar dengan lantang.';
 }

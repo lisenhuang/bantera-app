@@ -913,7 +913,7 @@
   "quickCue1": "Cue 1 · Listen",
   "quickCue2": "Cue 2 · Your reply",
   "quickSpeakHint": "Tap to start and tap again to check, or hold while speaking and release to check.",
-  "quickSpeak": "Tap or hold to speak",
+  "quickSpeak": "Tap or hold to answer",
   "quickChecking": "Listening to your answer…",
   "quickCorrect": "That reply fits. Nicely done.",
   "quickIncorrect": "Try the other reply.",
@@ -1183,5 +1183,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "practiceSpeakCorrectReply": "Cue 2 · Speak the correct reply",
+  "practiceFirstAnswerHint": "Say the correct reply aloud."
 }

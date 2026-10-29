@@ -71,7 +71,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
           centerTitle: true,
           title: const FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text('Bantera App'),
+            child: Text('Bantera'),
           ),
           actions: [
             ChatsMenuButton(

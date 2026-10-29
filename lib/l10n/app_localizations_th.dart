@@ -2161,7 +2161,7 @@ class AppLocalizationsTh extends AppLocalizations {
       'แตะเพื่อเริ่มและแตะอีกครั้งเพื่อตรวจคำตอบ หรือกดค้างขณะพูดแล้วปล่อยเพื่อตรวจคำตอบ';
 
   @override
-  String get quickSpeak => 'แตะหรือกดค้างเพื่อพูด';
+  String get quickSpeak => 'แตะหรือกดค้างเพื่อตอบ';
 
   @override
   String get quickChecking => 'กำลังตรวจคำตอบ…';
@@ -2739,4 +2739,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'ประเทศของ IP';
+
+  @override
+  String get practiceSpeakCorrectReply => 'ส่วนที่ 2 · พูดคำตอบที่ถูกต้อง';
+
+  @override
+  String get practiceFirstAnswerHint => 'พูดคำตอบที่ถูกต้องออกเสียงดัง ๆ';
 }

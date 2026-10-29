@@ -2249,7 +2249,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Нажмите, чтобы начать, и ещё раз, чтобы проверить. Или удерживайте во время речи и отпустите для проверки.';
 
   @override
-  String get quickSpeak => 'Нажмите или удерживайте, чтобы говорить';
+  String get quickSpeak => 'Нажмите или удерживайте, чтобы ответить';
 
   @override
   String get quickChecking => 'Проверяем ваш ответ…';
@@ -2840,4 +2840,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'Страна IP';
+
+  @override
+  String get practiceSpeakCorrectReply => 'Часть 2 · Произнесите верный ответ';
+
+  @override
+  String get practiceFirstAnswerHint => 'Произнесите правильный ответ вслух.';
 }

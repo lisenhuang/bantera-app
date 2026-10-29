@@ -2180,7 +2180,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Başlamak için dokunun, kontrol etmek için tekrar dokunun. Ya da konuşurken basılı tutup kontrol etmek için bırakın.';
 
   @override
-  String get quickSpeak => 'Konuşmak için dokunun veya basılı tutun';
+  String get quickSpeak => 'Yanıtlamak için dokun veya basılı tut';
 
   @override
   String get quickChecking => 'Yanıtın kontrol ediliyor…';
@@ -2764,4 +2764,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get leaderboardIpCountry => 'IP ülkesi';
+
+  @override
+  String get practiceSpeakCorrectReply => 'Bölüm 2 · Doğru yanıtı söyle';
+
+  @override
+  String get practiceFirstAnswerHint => 'Doğru yanıtı sesli söyle.';
 }

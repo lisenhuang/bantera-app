@@ -652,7 +652,7 @@
   "quickCue1": "Intervención 1 · Escucha",
   "quickCue2": "Intervención 2 · Tu respuesta",
   "quickSpeakHint": "Toca para empezar y vuelve a tocar para comprobar, o mantén pulsado mientras hablas y suelta para comprobar.",
-  "quickSpeak": "Toca o mantén pulsado para hablar",
+  "quickSpeak": "Toca o mantén pulsado para responder",
   "quickChecking": "Comprobando tu respuesta…",
   "quickCorrect": "Esa respuesta encaja. Bien hecho.",
   "quickIncorrect": "Prueba la otra respuesta.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days, plural, one{Último {days} día} other{Últimos {days} días}}",
   "leaderboardNativeLanguage": "Lengua materna",
   "leaderboardLearningLanguage": "Idioma de aprendizaje",
-  "leaderboardIpCountry": "País de la IP"
+  "leaderboardIpCountry": "País de la IP",
+  "practiceSpeakCorrectReply": "Parte 2 · Di la respuesta correcta",
+  "practiceFirstAnswerHint": "Di la respuesta correcta en voz alta."
 }

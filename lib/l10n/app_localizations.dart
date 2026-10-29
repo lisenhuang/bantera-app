@@ -3989,7 +3989,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickSpeak.
   ///
   /// In en, this message translates to:
-  /// **'Tap or hold to speak'**
+  /// **'Tap or hold to answer'**
   String get quickSpeak;
 
   /// No description provided for @quickChecking.
@@ -4981,6 +4981,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'IP country'**
   String get leaderboardIpCountry;
+
+  /// No description provided for @practiceSpeakCorrectReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Cue 2 · Speak the correct reply'**
+  String get practiceSpeakCorrectReply;
+
+  /// No description provided for @practiceFirstAnswerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Say the correct reply aloud.'**
+  String get practiceFirstAnswerHint;
 }
 
 class _AppLocalizationsDelegate

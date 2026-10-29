@@ -353,7 +353,7 @@ void main() {
       await mount(
         tester,
         Scaffold(
-          appBar: AppBar(title: const Text('Bantera App')),
+          appBar: AppBar(title: const Text('Bantera')),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: 2,
             items: const [

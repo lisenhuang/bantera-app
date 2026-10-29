@@ -1933,6 +1933,24 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     return Scaffold(
       appBar: PracticeHeader(
         learningLocale: _exerciseLocale,
+        levelMenu: showLevel
+            ? PracticeLevelMenu(
+                level: level as String,
+                learningLocale: _exerciseLocale,
+                currentLevel: _currentLevel ?? level,
+                levelStates: _levelStates,
+                freeSelection: _listeningOnly,
+                highestUnlockedLevel: _highestUnlockedLevel,
+                onSelected:
+                    _savedSource != null ||
+                        _recording ||
+                        _busy ||
+                        _confirmingNext ||
+                        _loading
+                    ? null
+                    : _selectLevel,
+              )
+            : null,
         playbackSpeed: _playbackSpeed,
         onSpeedSelected: _recording || _busy || _audioCommandBusy || _callActive
             ? null
@@ -2044,61 +2062,40 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 pinned: _pinRecordingLayout,
                 children: [
                   const SizedBox(height: 8),
-                  if (showLevel)
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      spacing: 12,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        PracticeLevelMenu(
-                          level: level as String,
-                          currentLevel: _currentLevel ?? level,
-                          levelStates: _levelStates,
-                          freeSelection: _listeningOnly,
-                          highestUnlockedLevel: _highestUnlockedLevel,
-                          onSelected:
-                              _savedSource != null ||
-                                  _recording ||
-                                  _busy ||
-                                  _confirmingNext ||
-                                  _loading
-                              ? null
-                              : _selectLevel,
-                        ),
-                        if (supportsPracticePronunciation(_exerciseLocale))
-                          MergeSemantics(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(minHeight: 48),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      l.practicePronunciation,
-                                      style: theme.textTheme.labelLarge
-                                          ?.copyWith(color: c.primary),
-                                    ),
+                  if (showLevel &&
+                      supportsPracticePronunciation(_exerciseLocale))
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: MergeSemantics(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 48),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  l.practicePronunciation,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: c.primary,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Switch.adaptive(
-                                    key: const ValueKey(
-                                      'practice-pronunciation-toggle',
-                                    ),
-                                    value: _pronunciation.enabled,
-                                    activeTrackColor: c.primary,
-                                    onChanged:
-                                        _pronunciation.saving ||
-                                            _recording ||
-                                            _busy
-                                        ? null
-                                        : (_) => _togglePronunciation(),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              Switch.adaptive(
+                                key: const ValueKey(
+                                  'practice-pronunciation-toggle',
+                                ),
+                                value: _pronunciation.enabled,
+                                activeTrackColor: c.primary,
+                                onChanged:
+                                    _pronunciation.saving || _recording || _busy
+                                    ? null
+                                    : (_) => _togglePronunciation(),
+                              ),
+                            ],
                           ),
-                      ],
+                        ),
+                      ),
                     ),
                   if (supportsPracticePronunciation(_exerciseLocale) &&
                       _pronunciation.enabled &&
@@ -2316,21 +2313,42 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                         pinned: _pinRecordingLayout,
                         children: [
                           Text(
-                            l.quickCue2,
+                            _listeningOnly
+                                ? l.quickCue2
+                                : l.practiceSpeakCorrectReply,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          for (var i = 0; i < 2; i++) ...[
-                            _choice(
-                              i,
-                              Map<String, dynamic>.from(
-                                (exercise['choices'] as List)[i],
-                              ),
+                          Material(
+                            key: const ValueKey('practice-replies-panel'),
+                            color: c.surface,
+                            borderRadius: BorderRadius.circular(22),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                for (var i = 0; i < 2; i++) ...[
+                                  if (i > 0)
+                                    Divider(
+                                      height: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: c.outlineVariant.withValues(
+                                        alpha: .5,
+                                      ),
+                                    ),
+                                  _choice(
+                                    i,
+                                    Map<String, dynamic>.from(
+                                      (exercise['choices'] as List)[i],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                            const SizedBox(height: 12),
-                          ],
+                          ),
+                          const SizedBox(height: 12),
                           const SizedBox(height: 10),
                           if (!_listeningOnly)
                             PracticeRecordControl(
@@ -2598,53 +2616,40 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final selected = _feedback?['choice'] == index;
     final correct = _feedback?['outcome'] == 'correct';
     final accent = correct ? const Color(0xFF008266) : const Color(0xFFB96A17);
-    return Material(
-      color: c.surface,
-      borderRadius: BorderRadius.circular(22),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 15, 12, 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selected ? accent : c.outlineVariant.withValues(alpha: .6),
-            width: selected ? 1.6 : 1,
+    return Container(
+      key: ValueKey('practice-reply-$index'),
+      padding: const EdgeInsets.fromLTRB(16, 15, 12, 15),
+      color: selected ? accent.withValues(alpha: .08) : null,
+      child: Row(
+        children: [
+          _playButton('option$index', choice['audioUrl'] as String, c.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _wordText(
+                  'option$index',
+                  choice['text'] as String,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(height: 1.4),
+                ),
+                _translationLine('option$index'),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            _playButton(
-              'option$index',
-              choice['audioUrl'] as String,
-              c.primary,
+          if (selected) ...[
+            const SizedBox(width: 8),
+            Icon(
+              correct
+                  ? CupertinoIcons.checkmark
+                  : CupertinoIcons.arrow_uturn_left,
+              size: 18,
+              color: accent,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _wordText(
-                    'option$index',
-                    choice['text'] as String,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(height: 1.4),
-                  ),
-                  _translationLine('option$index'),
-                ],
-              ),
-            ),
-            if (selected) ...[
-              const SizedBox(width: 8),
-              Icon(
-                correct
-                    ? CupertinoIcons.checkmark
-                    : CupertinoIcons.arrow_uturn_left,
-                size: 18,
-                color: accent,
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }

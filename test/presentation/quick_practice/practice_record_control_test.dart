@@ -1,5 +1,7 @@
 import 'package:app/presentation/shared/adaptive_layout.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:app/presentation/quick_practice/practice_speaking_hint_store.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/practice_record_control.dart';
 import 'package:app/presentation/quick_practice/practice_recording_layout.dart';
@@ -7,12 +9,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class MemoryHintStore extends PracticeSpeakingHintStore {
+  bool dismissed = false;
+  @override
+  Future<bool> isDismissed() async => dismissed;
+  @override
+  Future<void> dismiss() async {
+    dismissed = true;
+  }
+}
+
 class RecordingHarness extends StatefulWidget {
   const RecordingHarness({
     super.key,
     this.scrolling = false,
+    this.hintStore,
+    this.reduceMotion = false,
     this.adaptive = false,
   });
+  final PracticeSpeakingHintStore? hintStore;
+  final bool reduceMotion;
   final bool scrolling;
   final bool adaptive;
   @override
@@ -72,6 +88,7 @@ class RecordingHarnessState extends State<RecordingHarness> {
   @override
   Widget build(BuildContext context) {
     final control = PracticeRecordControl(
+      hintStore: widget.hintStore ?? MemoryHintStore(),
       enabled: enabled,
       recording: recording,
       busy: busy,
@@ -81,6 +98,12 @@ class RecordingHarnessState extends State<RecordingHarness> {
       onCancel: cancel,
     );
     return MaterialApp(
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(disableAnimations: widget.reduceMotion),
+        child: child!,
+      ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -145,6 +168,62 @@ void main() {
     return key.currentState!;
   }
 
+  test('hint dismissal survives a new store instance', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'practice-hint-test',
+    );
+    try {
+      final file = File('${directory.path}/hint');
+      final store = PracticeSpeakingHintStore(file: file);
+      expect(await store.isDismissed(), isFalse);
+      await store.dismiss();
+      expect(await PracticeSpeakingHintStore(file: file).isDismissed(), isTrue);
+    } finally {
+      await directory.delete(recursive: true);
+    }
+  });
+
+  testWidgets('Reduce Motion leaves first-use guidance static', (tester) async {
+    await tester.pumpWidget(
+      RecordingHarness(hintStore: MemoryHintStore(), reduceMotion: true),
+    );
+    await tester.pump();
+    expect(find.text('Say the correct reply aloud.'), findsOneWidget);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('first attempt completes guidance and remount keeps it hidden', (
+    tester,
+  ) async {
+    final store = MemoryHintStore();
+    await tester.pumpWidget(RecordingHarness(hintStore: store));
+    await tester.pumpAndSettle();
+    expect(find.text('Say the correct reply aloud.'), findsOneWidget);
+    await tester.tap(button);
+    await tester.pump();
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(store.dismissed, isTrue);
+    expect(find.text('Say the correct reply aloud.'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(RecordingHarness(hintStore: store));
+    await tester.pumpAndSettle();
+    expect(find.text('Say the correct reply aloud.'), findsNothing);
+  });
+
+  testWidgets('hint can be dismissed without recording', (tester) async {
+    final store = MemoryHintStore();
+    await tester.pumpWidget(RecordingHarness(hintStore: store));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('dismiss-practice-speaking-hint')),
+    );
+    await tester.pumpAndSettle();
+    expect(store.dismissed, isTrue);
+    expect(find.text('Say the correct reply aloud.'), findsNothing);
+  });
+
   testWidgets(
     'wide Practice holds mic position while background content changes',
     (tester) async {
@@ -208,7 +287,7 @@ void main() {
     'tap starts; next tap checks once; hint describes both gestures',
     (tester) async {
       final state = await mount(tester);
-      expect(find.text('Tap or hold to speak'), findsOneWidget);
+      expect(find.text('Tap or hold to answer'), findsOneWidget);
       await tester.tap(button);
       await tester.pump();
       expect(state.starts, 1);

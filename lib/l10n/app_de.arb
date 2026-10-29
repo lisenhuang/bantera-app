@@ -652,7 +652,7 @@
   "quickCue1": "Äußerung 1 · Zuhören",
   "quickCue2": "Äußerung 2 · Deine Antwort",
   "quickSpeakHint": "Zum Starten tippen und zum Prüfen erneut tippen. Oder beim Sprechen halten und zum Prüfen loslassen.",
-  "quickSpeak": "Tippen oder halten zum Sprechen",
+  "quickSpeak": "Tippen oder halten zum Antworten",
   "quickChecking": "Deine Antwort wird geprüft…",
   "quickCorrect": "Die Antwort passt. Gut gemacht.",
   "quickIncorrect": "Versuche die andere Antwort.",
@@ -817,5 +817,7 @@
   "leaderboardPeriodScope": "{days, plural, one{Letzter {days} Tag} other{Letzte {days} Tage}}",
   "leaderboardNativeLanguage": "Muttersprache",
   "leaderboardLearningLanguage": "Lernsprache",
-  "leaderboardIpCountry": "IP-Land"
+  "leaderboardIpCountry": "IP-Land",
+  "practiceSpeakCorrectReply": "Teil 2 · Sprich die richtige Antwort",
+  "practiceFirstAnswerHint": "Sprich die richtige Antwort laut aus."
 }

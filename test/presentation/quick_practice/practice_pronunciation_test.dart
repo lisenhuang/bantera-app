@@ -141,13 +141,16 @@ void main() {
       );
       final level = find.byKey(const ValueKey('practice-level-menu'));
       final offSize = tester.getSize(toggle);
-      expect(tester.getTopLeft(level).dx, 24);
+      expect(tester.getTopLeft(level).dx, 16);
       expect(tester.getTopRight(toggle).dx, width - 24);
       expect(
         tester.getTopLeft(toggle).dx,
         greaterThan(tester.getTopRight(level).dx),
       );
-      expect(tester.getCenter(toggle).dy, tester.getCenter(level).dy);
+      expect(
+        tester.getTopLeft(toggle).dy,
+        greaterThan(tester.getBottomLeft(level).dy),
+      );
       expect(tester.widget<Switch>(toggle).value, isFalse);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
