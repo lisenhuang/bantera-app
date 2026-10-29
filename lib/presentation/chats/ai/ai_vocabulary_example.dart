@@ -61,10 +61,10 @@ class VocabularyExample extends StatelessWidget {
         children: vocabularyExampleSpans(
           example,
           word,
-          TextStyle(
+          const TextStyle(
             fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onPrimaryContainer,
-            backgroundColor: theme.colorScheme.primaryContainer,
+            decoration: TextDecoration.underline,
+            decorationThickness: 2,
           ),
         ),
       ),

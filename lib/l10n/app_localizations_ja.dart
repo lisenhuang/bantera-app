@@ -547,6 +547,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatNotificationsSubtitle => 'アカウント共通の切り替えをすべてのデバイスで使います。';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'チャット通知をミュートしますか？';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'すべての端末でチャット通知、着信、AIリマインダーが無効になります。このメニューまたは設定から再び有効にできます。';
+
+  @override
   String get chatNotificationsDisabledTitle => '通知が無効です';
 
   @override
@@ -1754,6 +1761,27 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceHistoryUnavailable => 'このメディアは端末にありません。履歴から削除できます。';
 
   @override
+  String get aiSavedDialogues => '保存した会話';
+
+  @override
+  String get aiSaveDialogue => '会話を保存';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'この会話を保存しますか？';
+
+  @override
+  String get aiSaveDialogueConfirmBody => '「保存した会話」からこのメッセージに戻れます。';
+
+  @override
+  String get aiUnsaveDialogue => '会話の保存を解除';
+
+  @override
+  String get aiSavedDialoguesEmpty => '保存した会話はまだありません';
+
+  @override
+  String get aiDialogueYou => 'あなた';
+
+  @override
   String get aiClearHistory => 'チャットを削除';
 
   @override
@@ -2591,4 +2619,18 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'ウィジェットはホーム画面から追加します。Banteraに戻ると設定状況を確認しますが、閲覧頻度は追跡しません。';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '過去$days日間';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => '母語';
+
+  @override
+  String get leaderboardLearningLanguage => '学習言語';
+
+  @override
+  String get leaderboardIpCountry => 'IPアドレスの国';
 }

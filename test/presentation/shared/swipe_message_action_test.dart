@@ -57,9 +57,12 @@ void main() {
       final deleteButton = tester.widget<IconButton>(find.byType(IconButton));
       expect(
         deleteButton.style!.backgroundColor!.resolve({}),
-        Colors.transparent,
+        Theme.of(
+          tester.element(find.byType(IconButton)),
+        ).colorScheme.errorContainer,
       );
-      expect(tester.getSize(find.byType(IconButton)).height, 48);
+      expect(tester.getSize(find.byType(IconButton)), const Size(52, 52));
+      expect(deleteButton.style!.shape!.resolve({}), isA<CircleBorder>());
       expect(find.byIcon(Icons.admin_panel_settings_outlined), findsOneWidget);
       await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
@@ -122,4 +125,200 @@ void main() {
       expect(find.byType(SelectableText), findsOneWidget);
     },
   );
+
+  testWidgets('Save and Delete are circular buttons in one row', (
+    tester,
+  ) async {
+    var saved = 0;
+    var deleted = 0;
+    await tester.pumpWidget(
+      host(
+        SwipeMessageAction(
+          onSave: () async => saved++,
+          onDelete: () async => deleted++,
+          child: const SizedBox(
+            width: 320,
+            height: 24,
+            child: Text('Short message'),
+          ),
+        ),
+      ),
+    );
+    expect(find.byTooltip('Save dialogue'), findsNothing);
+    await tester.drag(find.byType(SwipeMessageAction), const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    final save = find.byTooltip('Save dialogue');
+    final delete = find.byTooltip('Delete');
+    expect(tester.getSize(save), const Size(52, 52));
+    expect(tester.getSize(delete), const Size(52, 52));
+    expect(tester.getCenter(save).dy, tester.getCenter(delete).dy);
+    expect(tester.getRect(save).right, lessThan(tester.getRect(delete).left));
+    for (final finder in [save, delete]) {
+      final button = tester.widget<IconButton>(
+        find.ancestor(of: finder, matching: find.byType(IconButton)),
+      );
+      expect(button.style!.shape!.resolve({}), isA<CircleBorder>());
+    }
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(saved, 1);
+    expect(deleted, 0);
+    expect(find.byTooltip('Delete'), findsNothing);
+    await tester.drag(find.byType(SwipeMessageAction), const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    expect(saved, 1);
+    expect(deleted, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('only one bubble opens and outside taps remain usable', (
+    tester,
+  ) async {
+    var outsideTaps = 0;
+    var contentTaps = 0;
+    await tester.pumpWidget(
+      host(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SwipeMessageAction(
+              key: const ValueKey('ai-row'),
+              onSave: () async {},
+              onDelete: () async {},
+              child: SizedBox(
+                width: 320,
+                height: 90,
+                child: TextButton(
+                  onPressed: () => contentTaps++,
+                  child: const Text('AI bubble'),
+                ),
+              ),
+            ),
+            SwipeMessageAction(
+              key: const ValueKey('dm-row'),
+              onDelete: () async {},
+              child: const SizedBox(
+                width: 320,
+                height: 90,
+                child: Text('DM bubble'),
+              ),
+            ),
+            TextButton(
+              onPressed: () => outsideTaps++,
+              child: const Text('Elsewhere'),
+            ),
+          ],
+        ),
+      ),
+    );
+    final first = find.byKey(const ValueKey('ai-row'));
+    final second = find.byKey(const ValueKey('dm-row'));
+    await tester.drag(first, const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Save dialogue'), findsOneWidget);
+    await tester.drag(second, const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Save dialogue'), findsNothing);
+    expect(find.byTooltip('Delete'), findsOneWidget);
+    await tester.tap(find.text('Elsewhere'));
+    await tester.pumpAndSettle();
+    expect(outsideTaps, 1);
+    expect(find.byTooltip('Delete'), findsNothing);
+    await tester.drag(first, const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getTopLeft(first) + const Offset(60, 40));
+    await tester.pumpAndSettle();
+    expect(contentTaps, 0);
+    expect(find.byTooltip('Save dialogue'), findsNothing);
+    await tester.tap(find.text('AI bubble'));
+    await tester.pumpAndSettle();
+    expect(contentTaps, 1);
+  });
+
+  testWidgets('a second pointer closes the first still-dragging bubble', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SwipeMessageAction(
+              key: const ValueKey('first-row'),
+              onSave: () async {},
+              onDelete: () async {},
+              child: const SizedBox(
+                width: 320,
+                height: 90,
+                child: Text('First'),
+              ),
+            ),
+            SwipeMessageAction(
+              key: const ValueKey('second-row'),
+              onDelete: () async {},
+              child: const SizedBox(
+                width: 320,
+                height: 90,
+                child: Text('Second'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final first = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('first-row'))),
+      pointer: 1,
+    );
+    await first.moveBy(const Offset(-180, 0));
+    await tester.pump();
+    final second = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('second-row'))),
+      pointer: 2,
+    );
+    await second.moveBy(const Offset(-180, 0));
+    await tester.pump();
+    await first.moveBy(const Offset(-20, 0));
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Save dialogue'), findsNothing);
+    expect(find.byTooltip('Delete'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('actions stay beside a swipe on a very tall bubble', (
+    tester,
+  ) async {
+    var saved = 0;
+    await tester.pumpWidget(
+      host(
+        ListView(
+          children: [
+            SwipeMessageAction(
+              onSave: () async => saved++,
+              onDelete: () async {},
+              child: const SizedBox(
+                width: 320,
+                height: 3000,
+                child: Text('Long response'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final start =
+        tester.getTopLeft(find.byType(SwipeMessageAction)) +
+        const Offset(250, 120);
+    await tester.dragFrom(start, const Offset(-180, 0));
+    await tester.pumpAndSettle();
+    final button = find.byTooltip('Save dialogue');
+    expect(tester.getCenter(button).dy, closeTo(start.dy, 1));
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(saved, 1);
+    expect(tester.takeException(), isNull);
+  });
 }

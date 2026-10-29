@@ -19,6 +19,8 @@ import 'practice_word_flight.dart';
 import 'practice_translation_controller.dart';
 import 'practice_translation_dialogs.dart';
 import 'practice_word_text.dart';
+import 'practice_translation_alignment.dart';
+import '../../infrastructure/language_availability_service.dart';
 import '../practice/subtitle_word_tokens.dart';
 import '../chats/ai/ai_chat_screen.dart';
 import '../../infrastructure/ai/ai_word_explanation.dart';
@@ -65,7 +67,8 @@ class QuickPracticeScreen extends StatefulWidget {
        previewPronunciation = null,
        previewTranslation = null,
        previewTranscriptionSupported = null,
-       previewIsAdmin = false;
+       previewIsAdmin = false,
+       previewLanguageAvailability = null;
   @visibleForTesting
   const QuickPracticeScreen.preview({
     super.key,
@@ -79,9 +82,11 @@ class QuickPracticeScreen extends StatefulWidget {
     this.previewTranslation,
     this.previewTranscriptionSupported,
     this.previewIsAdmin = false,
+    this.previewLanguageAvailability,
   }) : goalTabAnchor = null;
   final bool? previewTranscriptionSupported;
   final bool previewIsAdmin;
+  final LanguageAvailabilityService? previewLanguageAvailability;
   final PracticePronunciationController? previewPronunciation;
   final PracticeTranslationController? previewTranslation;
   final bool active;
@@ -150,17 +155,23 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     bool translationRevealed,
   })?
   _beforeSaved;
+  LanguageAvailabilityService get _languageAvailability =>
+      widget.previewLanguageAvailability ??
+      LanguageAvailabilityService.instance;
+
+  bool _supportsPracticeLocale(String? locale) =>
+      locale != null &&
+      supportsQuickPracticeLanguage(
+        locale,
+        maoriPublicEnabled: _languageAvailability.maoriPublicEnabled,
+        isAdmin:
+            widget.previewIsAdmin ||
+            AuthSessionNotifier.instance.session?.isAdmin == true,
+      );
+
   String? get _exerciseLocale {
     final locale = _exercise?['locale'] as String? ?? _locale;
-    return locale != null &&
-            supportsQuickPracticeLanguage(
-              locale,
-              isAdmin:
-                  widget.previewIsAdmin ||
-                  AuthSessionNotifier.instance.session?.isAdmin == true,
-            )
-        ? locale
-        : null;
+    return _supportsPracticeLocale(locale) ? locale : null;
   }
 
   final Map<String, bool> _speechSupport = {};
@@ -248,6 +259,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
       mounted &&
       widget.active &&
       !_validatingCachedPractice &&
+      _exerciseLocale != null &&
       !_callActive &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
@@ -274,26 +286,26 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _exercise?['translationUsed'] == true);
       _feedback = widget.previewFeedback;
       final previewLocale = _exercise?['locale'] as String? ?? 'en-NZ';
-      _locale =
-          supportsQuickPracticeLanguage(
-            previewLocale,
-            isAdmin:
-                widget.previewIsAdmin ||
-                AuthSessionNotifier.instance.session?.isAdmin == true,
-          )
-          ? previewLocale
-          : null;
+      _locale = _supportsPracticeLocale(previewLocale) ? previewLocale : null;
+      widget.previewLanguageAvailability?.addListener(_profileChanged);
       _allowed = true;
       if (widget.previewSavedStore != null) {
         _owner = AuthSessionNotifier.instance.session?.cacheKey;
         unawaited(_refreshSaved());
       }
       if (widget.previewPlayer != null) _listenToPlayer();
+      if (_isMaori && widget.previewApi != null) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _requestMaoriEnglish(),
+        );
+      }
       return;
     }
     _translations.addListener(_translationsChanged);
     WidgetsBinding.instance.addObserver(this);
     UserProfileNotifier.instance.addListener(_profileChanged);
+    _languageAvailability.addListener(_profileChanged);
+    unawaited(_languageAvailability.refresh());
     AuthSessionNotifier.instance.addListener(_profileChanged);
     AiConsent.instance.addListener(_consentChanged);
     DmCallNotifier.instance.addListener(_callChanged);
@@ -354,23 +366,19 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
 
   void _profileChanged() {
     final owner = AuthSessionNotifier.instance.session?.cacheKey;
-    final savedLocale = UserProfileNotifier.instance.learningLanguage;
-    final locale =
-        savedLocale != null &&
-            supportsQuickPracticeLanguage(
-              savedLocale,
-              isAdmin:
-                  widget.previewIsAdmin ||
-                  AuthSessionNotifier.instance.session?.isAdmin == true,
-            )
-        ? savedLocale
-        : null;
+    final savedLocale =
+        widget.previewExercise?['locale'] as String? ??
+        UserProfileNotifier.instance.learningLanguage;
+    final locale = _supportsPracticeLocale(savedLocale) ? savedLocale : null;
+    // Saved reviews can use a different language from the profile. Revoking
+    // that language must close the review even when the profile did not change.
+    final exerciseUnavailable = _exercise != null && _exerciseLocale == null;
     final profile = UserProfileNotifier.instance;
     final target = [profile.nativeLanguage, l.localeName]
         .whereType<String>()
         .map((value) => value.trim())
         .firstWhere((value) => value.isNotEmpty);
-    if (_owner == owner && _locale == locale) {
+    if (_owner == owner && _locale == locale && !exerciseUnavailable) {
       if (_translationTarget != target) {
         _translationTarget = target;
         _translations.clear();
@@ -491,6 +499,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
   }
 
   Future<void> _reviewSaved(Map<String, dynamic> entry) async {
+    if (!_supportsPracticeLocale(entry['locale'] as String?)) {
+      _notice(l.quickChooseLanguage);
+      return;
+    }
     final epoch = ++_epoch;
     _poll?.cancel();
     _autoplay.cancel();
@@ -501,9 +513,17 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       final response = await _api('${entry['id']}/review', {});
       if (!mounted || epoch != _epoch || !_allowed) return;
+      if (!_supportsPracticeLocale(response['locale'] as String?)) {
+        _notice(l.quickChooseLanguage);
+        return;
+      }
       await _stopAudio();
       await _discardReplay();
       if (!mounted || epoch != _epoch || !_allowed) return;
+      if (!_supportsPracticeLocale(response['locale'] as String?)) {
+        _notice(l.quickChooseLanguage);
+        return;
+      }
       _beforeSaved ??= (
         exercise: _exercise,
         feedback: _feedback,
@@ -1083,8 +1103,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     final id = exercise?['id'] as String?;
     if (!_isMaori ||
         id == null ||
-        exercise?['translations'] != null ||
-        widget.previewExercise != null ||
+        (exercise?['translations'] != null &&
+            ((exercise?['translationAlignments'] is Map &&
+                    exercise?['translationAlignmentStatus'] == 'ready') ||
+                exercise?['translationAlignmentStatus'] == 'unavailable')) ||
+        (widget.previewExercise != null && widget.previewApi == null) ||
         _maoriTranslationRequest == id)
       return;
     _maoriTranslationRequest = id;
@@ -1099,16 +1122,33 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         final result = await _api('$id/english-translation', {});
         if (!mounted || epoch != _epoch || _exercise?['id'] != id) return;
         if (result['translations'] is Map) {
-          setState(
-            () => _exercise = {
-              ..._exercise!,
-              'translations': result['translations'],
-              'translationLocale': 'en-NZ',
-            },
-          );
-          _cachePractice(_exercise!);
-          return;
+          final previous = _exercise!;
+          final updated = {
+            ...previous,
+            'translations': result['translations'],
+            'translationLocale': 'en-NZ',
+            'translationAlignments': result['translationAlignments'],
+            'translationAlignmentStatus':
+                result['translationAlignmentStatus'] ?? 'unavailable',
+          };
+          setState(() {
+            _exercise = updated;
+            final selected = _selectedWord;
+            if (selected != null && identical(selected.exercise, previous)) {
+              _selectedWord = (
+                exercise: updated,
+                part: selected.part,
+                token: selected.token,
+              );
+            }
+          });
+          _cachePractice(updated);
         }
+        // Old servers return English without alignment status. Keep that text
+        // and stop; only an explicit preparing response authorizes polling.
+        if (result['translationAlignmentStatus'] != 'preparing' &&
+            result['status'] != 'preparing')
+          return;
         await Future<void>.delayed(const Duration(seconds: 4));
       }
     } catch (_) {
@@ -1155,8 +1195,15 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
-              text ?? _translationStatus,
+            child: Text.rich(
+              TextSpan(
+                children: practiceTranslationSpans(
+                  text ?? _translationStatus,
+                  _isMaori && text != null
+                      ? _translationHighlights(id, text)
+                      : const [],
+                ),
+              ),
               key: ValueKey('practice-translation-$id'),
               textDirection: text == null
                   ? null
@@ -1183,6 +1230,34 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             ),
         ],
       ),
+    );
+  }
+
+  List<TextRange> _translationHighlights(String part, String text) {
+    final selected = _selectedWord;
+    if (selected == null ||
+        selected.part != part ||
+        !identical(selected.exercise, _exercise))
+      return const [];
+    final choices = _exercise?['choices'];
+    final index = int.tryParse(part.replaceFirst('option', ''));
+    Object? source;
+    if (part == 'cue') {
+      source = _exercise?['cue'];
+    } else if (choices is List &&
+        index != null &&
+        index >= 0 &&
+        index < choices.length) {
+      final choice = choices[index];
+      if (choice is Map) source = choice['text'];
+    }
+    final alignments = _exercise?['translationAlignments'];
+    if (source is! String || alignments is! Map) return const [];
+    return practiceTranslationHighlights(
+      source: source,
+      target: text,
+      alignments: alignments[part],
+      selected: selected.token,
     );
   }
 
@@ -1811,6 +1886,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _position?.cancel();
     _duration?.cancel();
     if (widget.previewExercise != null) {
+      widget.previewLanguageAvailability?.removeListener(_profileChanged);
       widget.previewPlayer?.dispose();
       _pulse.dispose();
       super.dispose();
@@ -1822,6 +1898,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     practiceInteractionBusy.value = false;
     WidgetsBinding.instance.removeObserver(this);
     UserProfileNotifier.instance.removeListener(_profileChanged);
+    _languageAvailability.removeListener(_profileChanged);
     AuthSessionNotifier.instance.removeListener(_profileChanged);
     AiConsent.instance.removeListener(_consentChanged);
     DmCallNotifier.instance.removeListener(_callChanged);
@@ -2468,12 +2545,10 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
                 TextSpan(text: sentence.substring(0, token.start)),
                 TextSpan(
                   text: sentence.substring(token.start, token.end),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
+                    decoration: TextDecoration.underline,
+                    decorationThickness: 2,
                   ),
                 ),
                 TextSpan(text: sentence.substring(token.end)),

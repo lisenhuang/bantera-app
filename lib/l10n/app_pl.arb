@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Nie udało się odblokować użytkownika. Spróbuj ponownie.",
   "chatNotificationsTitle": "Powiadomienia czatu",
   "chatNotificationsSubtitle": "Jeden przełącznik dla całego konta na wszystkich Twoich urządzeniach.",
+  "chatDisableAllNotificationsTitle": "Wyciszyć powiadomienia czatu?",
+  "chatDisableAllNotificationsBody": "Spowoduje to wyłączenie alertów czatu, połączeń przychodzących i przypomnień AI na wszystkich Twoich urządzeniach. Możesz je ponownie włączyć w tym menu lub w Ustawieniach.",
   "chatNotificationsDisabledTitle": "Powiadomienia wyłączone",
   "chatNotificationsDisabledSettings": "Włącz powiadomienia w Ustawieniach, aby otrzymywać alerty czatu Bantera.",
   "chatNotificationsDisabledBody": "Aby włączyć alerty czatu, Bantera potrzebuje zgody na powiadomienia.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Przećwicz lekcję, aby zobaczyć postępy. Historia jest zapisywana na tym urządzeniu.",
   "practiceHistoryRemoveBody": "Usunąć lekcję z historii i zresetować jej postępy oraz punkt wznowienia? Zapisane multimedia, zdania i sumy słów pozostaną.",
   "practiceHistoryUnavailable": "Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii.",
+  "aiSavedDialogues": "Zapisane dialogi",
+  "aiSaveDialogue": "Zapisz dialog",
+  "aiSaveDialogueConfirmTitle": "Zapisać ten dialog?",
+  "aiSaveDialogueConfirmBody": "Możesz wrócić do tej wiadomości z sekcji Zapisane dialogi.",
+  "aiUnsaveDialogue": "Usuń z zapisanych dialogów",
+  "aiSavedDialoguesEmpty": "Nie masz jeszcze zapisanych dialogów",
+  "aiDialogueYou": "Ty",
   "aiClearHistory": "Wyczyść czat",
   "aiClearHistoryBody": "Usunąć wiadomości AI, dźwięk i pamięć rozmowy z tego urządzenia? Połączenie zostanie zakończone. Materiały, profil i zaplanowane połączenia pozostaną.",
   "aiLocalHistory": "Odebrana historia AI pozostaje na urządzeniu. Kontekst jest wysyłany do AI w celu odpowiedzi. Terminy i notatki przypomnień są na serwerze. Dźwięk jest przechowywany do odbioru lub anulowania, maksymalnie siedem dni.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Przesuń, aby wybrać rozmiar, stuknij Dodaj widżet, a następnie Gotowe.",
   "widgetPreviewDescription": "Podgląd rzeczywistego widżetu z przykładowymi postępami.",
   "widgetPreviewRetry": "Odśwież podgląd",
-  "widgetLocalNote": "Dodaj widżet z ekranu początkowego. Bantera sprawdza jego konfigurację po powrocie, ale nie śledzi, jak często go oglądasz."
+  "widgetLocalNote": "Dodaj widżet z ekranu początkowego. Bantera sprawdza jego konfigurację po powrocie, ale nie śledzi, jak często go oglądasz.",
+  "leaderboardPeriodScope": "{days, plural, one{Ostatni {days} dzień} few{Ostatnie {days} dni} many{Ostatnie {days} dni} other{Ostatnie {days} dni}}",
+  "leaderboardNativeLanguage": "Język ojczysty",
+  "leaderboardLearningLanguage": "Uczony język",
+  "leaderboardIpCountry": "Kraj adresu IP"
 }

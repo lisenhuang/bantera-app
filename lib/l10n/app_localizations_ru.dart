@@ -575,6 +575,13 @@ class AppLocalizationsRu extends AppLocalizations {
       'Один переключатель для всего аккаунта на всех устройствах.';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'Отключить уведомления чата?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Это отключит уведомления чата, входящие звонки и напоминания ИИ на всех ваших устройствах. Их можно снова включить в этом меню или в Настройках.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Уведомления выключены';
 
   @override
@@ -1907,6 +1914,28 @@ class AppLocalizationsRu extends AppLocalizations {
       'Этого материала больше нет на устройстве. Его можно удалить из истории.';
 
   @override
+  String get aiSavedDialogues => 'Сохранённые диалоги';
+
+  @override
+  String get aiSaveDialogue => 'Сохранить диалог';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Сохранить этот диалог?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Вы сможете вернуться к этому сообщению из раздела «Сохранённые диалоги».';
+
+  @override
+  String get aiUnsaveDialogue => 'Убрать из сохранённых';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Пока нет сохранённых диалогов';
+
+  @override
+  String get aiDialogueYou => 'Вы';
+
+  @override
   String get aiClearHistory => 'Очистить чат';
 
   @override
@@ -2789,4 +2818,26 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Добавьте виджет с экрана «Домой». Bantera проверяет его настройку, когда вы возвращаетесь, но не отслеживает частоту просмотров.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Последние $days дня',
+      many: 'Последние $days дней',
+      few: 'Последние $days дня',
+      one: 'Последний $days день',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Родной язык';
+
+  @override
+  String get leaderboardLearningLanguage => 'Изучаемый язык';
+
+  @override
+  String get leaderboardIpCountry => 'Страна IP';
 }

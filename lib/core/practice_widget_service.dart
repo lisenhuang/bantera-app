@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/activity/word_activity.dart';
+import '../domain/activity/speaking_leaderboard_period.dart';
 import '../infrastructure/last_snapshot_cache.dart';
 import '../l10n/app_localizations.dart';
 import 'app_locale.dart';
@@ -36,6 +37,7 @@ class PracticeWidgetService {
   bool _initialized = false;
   String? _owner, _language, _level, _rankingDate;
   int? _rank;
+  int _rankingPeriodDays = 30;
   bool _rankKnown = false;
   int _scopeGeneration = 0;
   WordTotals _today = const WordTotals();
@@ -66,6 +68,7 @@ class PracticeWidgetService {
         ? (you['rank'] as num).toInt()
         : null;
     _rankingDate = report['throughDate'] as String?;
+    _rankingPeriodDays = speakingLeaderboardPeriodDays(report);
     _rankKnown = true;
     _republish();
   }
@@ -147,6 +150,7 @@ class PracticeWidgetService {
       _rank = null;
       _rankingDate = null;
       _rankKnown = false;
+      _rankingPeriodDays = 30;
     }
     if (scopeChanged || !signedIn) _level = null;
     _owner = nextOwner;
@@ -163,6 +167,7 @@ class PracticeWidgetService {
     // another learner's progress into an older queued snapshot.
     final level = signedIn ? _level : null;
     final rankingDate = signedIn ? _rankingDate : null;
+    final rankingPeriodDays = _rankingPeriodDays;
     final rank = signedIn && rankingDate == wordActivityDateKey(date.toUtc())
         ? _rank
         : null;
@@ -198,7 +203,7 @@ class PracticeWidgetService {
               'level': l.audioLevelSection,
               'language': l.editProfileLearningLanguage,
               'position': l.leaderboardYourPosition,
-              'period': l.leaderboardScope,
+              'period': l.leaderboardPeriodScope(rankingPeriodDays),
             },
           };
           final signature = jsonEncode(data);

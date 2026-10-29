@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Engel kaldırılamadı. Lütfen tekrar dene.",
   "chatNotificationsTitle": "Sohbet bildirimleri",
   "chatNotificationsSubtitle": "Tüm cihazlarında geçerli tek bir hesap ayarı.",
+  "chatDisableAllNotificationsTitle": "Sohbet bildirimleri sessize alınsın mı?",
+  "chatDisableAllNotificationsBody": "Bu işlem tüm cihazlarınızda sohbet uyarılarını, gelen aramaları ve yapay zekâ hatırlatıcılarını kapatır. Bu menüden veya Ayarlar’dan yeniden açabilirsiniz.",
   "chatNotificationsDisabledTitle": "Bildirimler kapalı",
   "chatNotificationsDisabledSettings": "Bantera sohbet uyarılarını almak için Ayarlar'dan bildirimleri aç.",
   "chatNotificationsDisabledBody": "Sohbet uyarılarını açabilmek için Bantera'nın bildirim iznine ihtiyacı var.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "İlerlemeni burada görmek için bir ders çalış. Geçmiş bu cihazda saklanır.",
   "practiceHistoryRemoveBody": "Bu ders geçmişten kaldırılsın ve ilerleme ile devam noktası sıfırlansın mı? Kayıtlı medya, cümleler ve toplam kelime sayıları korunur.",
   "practiceHistoryUnavailable": "Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.",
+  "aiSavedDialogues": "Kaydedilen diyaloglar",
+  "aiSaveDialogue": "Diyaloğu kaydet",
+  "aiSaveDialogueConfirmTitle": "Bu diyalog kaydedilsin mi?",
+  "aiSaveDialogueConfirmBody": "Kaydedilen diyaloglar bölümünden bu mesaja geri dönebilirsiniz.",
+  "aiUnsaveDialogue": "Diyaloğu kaydedilenlerden kaldır",
+  "aiSavedDialoguesEmpty": "Henüz kaydedilen diyalog yok",
+  "aiDialogueYou": "Siz",
   "aiClearHistory": "Sohbeti temizle",
   "aiClearHistoryBody": "Bu cihazdaki AI mesajları, sesler ve konuşma hafızası silinsin mi? Arama sona erer. Öğrenme içerikleri, profil ve planlanan aramalar korunur.",
   "aiLocalHistory": "Alınan AI sohbet geçmişi bu cihazda kalır. Yanıt için ilgili bağlam AI’a gönderilir. Hatırlatıcı zamanları ve notları sunucuda saklanır. Ses, alınana veya iptal edilene kadar en fazla yedi gün geçici tutulur.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Boyut seçmek için kaydır, Araç Takımı Ekle’ye, ardından Bitti’ye dokun.",
   "widgetPreviewDescription": "Örnek ilerleme içeren gerçek araç takımı önizlemesi.",
   "widgetPreviewRetry": "Önizlemeyi yenile",
-  "widgetLocalNote": "Araç takımını Ana Ekran’dan eklersin. Bantera döndüğünde yapılandırmayı kontrol eder; ne sıklıkla baktığını izlemez."
+  "widgetLocalNote": "Araç takımını Ana Ekran’dan eklersin. Bantera döndüğünde yapılandırmayı kontrol eder; ne sıklıkla baktığını izlemez.",
+  "leaderboardPeriodScope": "Son {days} gün",
+  "leaderboardNativeLanguage": "Ana dil",
+  "leaderboardLearningLanguage": "Öğrenilen dil",
+  "leaderboardIpCountry": "IP ülkesi"
 }

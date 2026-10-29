@@ -31,6 +31,7 @@ class AiMessage {
     this.durationMs,
     String? id,
     DateTime? createdAt,
+    this.savedAt,
     this.timeZone,
     int? utcOffsetMinutes,
     this.failed = false,
@@ -55,6 +56,7 @@ class AiMessage {
        createdAt = createdAt ?? DateTime.now();
   final String id, role;
   final DateTime createdAt;
+  DateTime? savedAt;
   String? timeZone;
   final int? utcOffsetMinutes;
   bool _needsTimeZone;
@@ -92,6 +94,7 @@ class AiMessage {
     'language': language,
     'translationLanguage': translationLanguage,
     'createdAt': createdAt.toUtc().toIso8601String(),
+    if (savedAt != null) 'savedAt': savedAt!.toUtc().toIso8601String(),
     if (timeZone != null) 'timeZone': timeZone,
     if (utcOffsetMinutes != null) 'utcOffsetMinutes': utcOffsetMinutes,
     'failed': failed,
@@ -124,6 +127,7 @@ class AiMessage {
     language: j['language'] ?? '',
     translationLanguage: j['translationLanguage'] ?? '',
     createdAt: DateTime.parse(j['createdAt']),
+    savedAt: j['savedAt'] is String ? DateTime.tryParse(j['savedAt']) : null,
     timeZone: j['timeZone'] as String?,
     utcOffsetMinutes: j['utcOffsetMinutes'] as int?,
     failed: j['failed'] == true,

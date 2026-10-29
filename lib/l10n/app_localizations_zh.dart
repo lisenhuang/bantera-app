@@ -544,6 +544,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatNotificationsSubtitle => '在所有设备上使用同一个账户级开关。';
 
   @override
+  String get chatDisableAllNotificationsTitle => '关闭聊天通知？';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      '这会在你的所有设备上关闭聊天提醒、来电和 AI 提醒。你可以从此菜单或设置中重新开启。';
+
+  @override
   String get chatNotificationsDisabledTitle => '通知已关闭';
 
   @override
@@ -1761,6 +1768,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceHistoryUnavailable => '此媒体已不在本设备上，你可以将其从历史记录中移除。';
 
   @override
+  String get aiSavedDialogues => '已收藏的对话';
+
+  @override
+  String get aiSaveDialogue => '收藏对话';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => '收藏这段对话？';
+
+  @override
+  String get aiSaveDialogueConfirmBody => '你可以从“已收藏的对话”返回这条消息。';
+
+  @override
+  String get aiUnsaveDialogue => '取消收藏对话';
+
+  @override
+  String get aiSavedDialoguesEmpty => '还没有收藏的对话';
+
+  @override
+  String get aiDialogueYou => '你';
+
+  @override
   String get aiClearHistory => '清除聊天';
 
   @override
@@ -2581,6 +2609,20 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       '请从主屏幕添加小组件。返回 Bantera 时，App 会检查小组件是否已配置，但不会跟踪你的查看频率。';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '最近$days天';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => '母语';
+
+  @override
+  String get leaderboardLearningLanguage => '学习语言';
+
+  @override
+  String get leaderboardIpCountry => 'IP 国家';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3121,6 +3163,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get chatNotificationsSubtitle => '所有裝置共用同一個帳戶層級的開關。';
+
+  @override
+  String get chatDisableAllNotificationsTitle => '關閉聊天通知？';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      '這會在你的所有裝置上關閉聊天通知、來電和 AI 提醒。你可以從此選單或設定中重新開啟。';
 
   @override
   String get chatNotificationsDisabledTitle => '通知已關閉';
@@ -4344,6 +4393,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get practiceHistoryUnavailable => '此媒體已不在本裝置上，你可以將其從歷史記錄中移除。';
 
   @override
+  String get aiSavedDialogues => '已收藏的對話';
+
+  @override
+  String get aiSaveDialogue => '收藏對話';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => '收藏這段對話？';
+
+  @override
+  String get aiSaveDialogueConfirmBody => '你可以從「已收藏的對話」返回這則訊息。';
+
+  @override
+  String get aiUnsaveDialogue => '取消收藏對話';
+
+  @override
+  String get aiSavedDialoguesEmpty => '還沒有收藏的對話';
+
+  @override
+  String get aiDialogueYou => '你';
+
+  @override
   String get aiClearHistory => '清除聊天';
 
   @override
@@ -5165,4 +5235,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get widgetLocalNote =>
       '請從主畫面加入小工具。返回 Bantera 時，App 會檢查小工具是否已設定，但不會追蹤你的查看頻率。';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '最近$days天';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => '母語';
+
+  @override
+  String get leaderboardLearningLanguage => '學習語言';
+
+  @override
+  String get leaderboardIpCountry => 'IP 國家';
 }

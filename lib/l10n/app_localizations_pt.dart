@@ -579,6 +579,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Uma única opção para a conta em todos os seus dispositivos.';
 
   @override
+  String get chatDisableAllNotificationsTitle =>
+      'Silenciar as notificações do chat?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Isso desativa os alertas do chat, as chamadas recebidas e os lembretes de IA em todos os seus dispositivos. Você pode ativá-los novamente neste menu ou nas Definições.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Notificações desativadas';
 
   @override
@@ -1900,6 +1908,28 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico.';
 
   @override
+  String get aiSavedDialogues => 'Diálogos guardados';
+
+  @override
+  String get aiSaveDialogue => 'Guardar diálogo';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Guardar este diálogo?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Você pode voltar a esta mensagem em Diálogos guardados.';
+
+  @override
+  String get aiUnsaveDialogue => 'Remover dos diálogos guardados';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Ainda não há diálogos guardados';
+
+  @override
+  String get aiDialogueYou => 'Você';
+
+  @override
   String get aiClearHistory => 'Limpar conversa';
 
   @override
@@ -2785,4 +2815,24 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Adicione o widget a partir do ecrã principal. A Bantera verifica a configuração quando regressa, mas não regista a frequência de visualização.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Últimos $days dias',
+      one: 'Último $days dia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Língua materna';
+
+  @override
+  String get leaderboardLearningLanguage => 'Idioma de aprendizagem';
+
+  @override
+  String get leaderboardIpCountry => 'País do IP';
 }

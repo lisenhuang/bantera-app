@@ -216,13 +216,18 @@ void main() {
       await tester.pumpAndSettle();
       // Even a full swipe only reveals the explicit Delete action.
       expect(store.entries.length, 2);
-      await tester.tap(find.text('Delete'));
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       expect(store.entries.length, 2);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(store.entries.length, 2);
-      await tester.tap(find.text('Delete'));
+      await tester.drag(
+        find.byKey(const ValueKey('saved-practice-one')),
+        const Offset(-350, 0),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(const ValueKey('confirm-remove-saved-practice')),

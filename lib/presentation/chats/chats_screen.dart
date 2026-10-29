@@ -13,7 +13,7 @@ import 'blocked_users_screen.dart';
 import 'ai/ai_chat_screen.dart';
 import 'ai/ai_avatar.dart';
 import 'chat_conversation_screen.dart';
-import 'chat_menu_item_row.dart';
+import 'chats_menu_button.dart';
 import 'group_chat_presentation.dart';
 
 class ChatsScreen extends StatefulWidget {
@@ -74,18 +74,15 @@ class _ChatsScreenState extends State<ChatsScreen> {
             child: Text('Bantera App'),
           ),
           actions: [
-            PopupMenuButton<_ChatsMenuAction>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: _handleMenuAction,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: _ChatsMenuAction.blockedUsers,
-                  child: ChatMenuItemRow(
-                    icon: Icons.person_off_outlined,
-                    label: l10n.chatBlockedUsersMenu,
-                  ),
+            ChatsMenuButton(
+              owner: AuthSessionNotifier.instance.session?.cacheKey,
+              notificationsEnabled: _chat.globalNotificationsEnabled,
+              onNotificationsChanged: _chat.updateGlobalNotifications,
+              onBlockedUsers: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const BlockedUsersScreen(),
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -225,16 +222,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: builder));
   }
 
-  void _handleMenuAction(_ChatsMenuAction action) {
-    switch (action) {
-      case _ChatsMenuAction.blockedUsers:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const BlockedUsersScreen()),
-        );
-        break;
-    }
-  }
-
   List<_ChatHomeItem> _buildHomeItems(
     AppLocalizations l10n,
     List<ChatThreadSummary> groups,
@@ -283,8 +270,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return userId != null && onlineUserIds.contains(userId);
   }
 }
-
-enum _ChatsMenuAction { blockedUsers }
 
 sealed class _ChatHomeItem {
   const _ChatHomeItem();

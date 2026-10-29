@@ -21,7 +21,6 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
   bool _failed = false;
   bool _clearing = false;
   int _revision = 0;
-  String? _revealed;
   final _cancelling = <String>{};
   @override
   void initState() {
@@ -81,7 +80,6 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
       if (mounted) {
         setState(() {
           _items?.removeWhere((row) => row['id'] == id);
-          _revealed = null;
         });
       }
     } catch (_) {
@@ -128,7 +126,6 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
       if (!mounted) return;
       setState(() {
         _items = remaining;
-        _revealed = null;
       });
       if (remaining.isNotEmpty) {
         ScaffoldMessenger.of(
@@ -252,9 +249,6 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
     final locale = Localizations.localeOf(context).toString();
     return SwipeActionCard(
       key: ValueKey(item['id']),
-      revealed: _revealed == item['id'],
-      onReveal: (value) =>
-          setState(() => _revealed = value ? item['id'] as String : null),
       onRemove: _clearing || _cancelling.isNotEmpty
           ? null
           : () => _cancel(item),

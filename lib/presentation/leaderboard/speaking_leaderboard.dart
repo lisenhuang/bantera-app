@@ -2,10 +2,11 @@ import '../profile/goal_motion.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import '../../core/auth_session_notifier.dart';
 import '../../core/chat_session_notifier.dart';
 import '../../domain/models/chat_models.dart';
+import '../../domain/activity/speaking_leaderboard_period.dart';
 import '../chats/chat_conversation_screen.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../core/user_profile_notifier.dart';
@@ -13,6 +14,7 @@ import '../../infrastructure/auth_api_client.dart';
 import '../../infrastructure/last_snapshot_cache.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/learning_language_label.dart';
+import '../shared/language_code_label.dart';
 import '../shared/profile_avatar.dart';
 import 'leaderboard_motion.dart';
 
@@ -35,11 +37,39 @@ class SpeakingReport {
       .map((e) => Map<String, dynamic>.from(e as Map))
       .toList();
   Map<String, dynamic> get you => Map<String, dynamic>.from(data['you'] as Map);
+  int get periodDays => speakingLeaderboardPeriodDays(data);
+  int get nextOffset =>
+      (data['nextOffset'] as int?) ??
+      ((data['offset'] as int?) ?? 0) + rows.length;
+
+  bool sameWindow(SpeakingReport other) =>
+      periodDays == other.periodDays &&
+      [
+        'fromDate',
+        'throughDate',
+        'fromUtc',
+        'throughUtc',
+      ].every((key) => data[key] == other.data[key]);
+
+  SpeakingReport append(SpeakingReport page) {
+    if (!sameWindow(page)) throw StateError('Leaderboard window changed');
+    final keys = rows.map((row) => row['key']).toSet();
+    return SpeakingReport({
+      ...data,
+      'rows': [...rows, ...page.rows.where((row) => keys.add(row['key']))],
+      'hasMore': page.data['hasMore'],
+      'nextOffset': page.nextOffset,
+    });
+  }
+
   String get fingerprint => jsonEncode([
     rows.take((data['limit'] as int?) ?? 100).toList(),
     data['you'],
     data['fromDate'],
     data['throughDate'],
+    periodDays,
+    data['fromUtc'],
+    data['throughUtc'],
   ]);
   String range(String locale) {
     if (data['fromUtc'] is String && data['throughUtc'] is String) {
@@ -49,6 +79,42 @@ class SpeakingReport {
     final format = DateFormat.yMMMd(locale);
     return '${format.format(DateTime.parse(data['fromDate']))} – ${format.format(DateTime.parse(data['throughDate']))} · UTC';
   }
+}
+
+/// Keep every displayed page in one exact reporting window. A configuration
+/// change during pagination starts over with a fresh first page.
+Future<SpeakingReport> loadSpeakingLeaderboardPages({
+  required Future<Map<String, dynamic>> Function({int offset, String? until})
+  loadPage,
+  SpeakingReport? appendTo,
+  int retainRows = 0,
+}) async {
+  var next = SpeakingReport(
+    await loadPage(
+      offset: appendTo?.nextOffset ?? 0,
+      until: appendTo?.data['throughUtc'] as String?,
+    ),
+  );
+  if (appendTo != null) {
+    if (!appendTo.sameWindow(next)) {
+      return SpeakingReport(await loadPage(offset: 0));
+    }
+    return appendTo.append(next);
+  }
+  while (next.data['hasMore'] == true && next.rows.length < retainRows) {
+    final page = SpeakingReport(
+      await loadPage(
+        offset: next.nextOffset,
+        until: next.data['throughUtc'] as String?,
+      ),
+    );
+    if (!next.sameWindow(page)) {
+      return SpeakingReport(await loadPage(offset: 0));
+    }
+    if (page.rows.isEmpty) break;
+    next = next.append(page);
+  }
+  return next;
 }
 
 class SpeakingLeaderboardCard extends StatefulWidget {
@@ -153,6 +219,7 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
       final report = SpeakingReport(
         await AuthApiClient.instance.speakingLeaderboard(
           accessToken: session.accessToken,
+          configured: true,
         ),
       );
       if (mounted &&
@@ -238,6 +305,10 @@ class _SpeakingLeaderboardCardState extends State<SpeakingLeaderboardCard>
                     Icon(Icons.chevron_right, color: c.primary),
                   ],
                 ),
+                if (_report != null) ...[
+                  const SizedBox(height: 6),
+                  Text(l.leaderboardPeriodScope(_report!.periodDays)),
+                ],
                 const SizedBox(height: 16),
                 if (own != null)
                   Wrap(
@@ -332,9 +403,9 @@ class SpeakingLeaderboardScreen extends StatefulWidget {
 class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   SpeakingReport? _report;
   bool _busy = false, _failed = false;
-  int _nextOffset = 100;
   int _days = 30;
   bool _canChoosePeriod = false;
+  bool _isAdmin = false;
   Timer? _timer;
   String? _owner;
   int _epoch = 0;
@@ -342,12 +413,12 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   void initState() {
     super.initState();
     _owner = AuthSessionNotifier.instance.session?.cacheKey;
+    _isAdmin = AuthSessionNotifier.instance.session?.isAdmin == true;
     final cached = _owner == null
         ? null
         : LastSnapshotCache.leaderboard.peek(_owner!);
-    if (cached != null) {
+    if (cached != null && !_isAdmin) {
       _report = SpeakingReport(cached);
-      _nextOffset = _report!.rows.length;
     }
     AuthSessionNotifier.instance.addListener(_accountChanged);
     unawaited(_load());
@@ -359,15 +430,16 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
 
   void _accountChanged() {
     final owner = AuthSessionNotifier.instance.session?.cacheKey;
-    if (owner == _owner) return;
+    final isAdmin = AuthSessionNotifier.instance.session?.isAdmin == true;
+    if (owner == _owner && isAdmin == _isAdmin) return;
     _owner = owner;
+    _isAdmin = isAdmin;
     _epoch++;
     setState(() {
       _report = null;
       _busy = false;
       _days = 30;
       _canChoosePeriod = false;
-      _nextOffset = 100;
     });
     unawaited(_load());
   }
@@ -384,7 +456,7 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     if (session == null) return;
     final epoch = ++_epoch;
     final days = _days;
-    if (days == 30) unawaited(_restoreCache(session.cacheKey, epoch));
+    if (!_isAdmin) unawaited(_restoreCache(session.cacheKey, epoch));
     setState(() {
       _busy = true;
       if (!quiet) _failed = false;
@@ -392,49 +464,30 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     try {
       if (!quiet) await WordActivityNotifier.instance.syncForLeaderboard();
       if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-      var next = SpeakingReport(
-        await AuthApiClient.instance.speakingLeaderboard(
-          accessToken: session.accessToken,
-          days: days,
-        ),
+      final next = await loadSpeakingLeaderboardPages(
+        loadPage: ({int offset = 0, String? until}) async {
+          if (!mounted || epoch != _epoch || session.cacheKey != _owner) {
+            throw StateError('Leaderboard request superseded');
+          }
+          return AuthApiClient.instance.speakingLeaderboard(
+            accessToken: session.accessToken,
+            days: days,
+            configured: !_isAdmin,
+            offset: offset,
+            until: until,
+          );
+        },
+        retainRows: _report?.rows.length ?? 0,
       );
       if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-      if (days == 30) {
+      if (!_isAdmin) {
         unawaited(
           LastSnapshotCache.leaderboard.save(session.cacheKey, next.data),
         );
       }
-      final targetRows = _report?.rows.length ?? 0;
-      var offset = next.rows.length;
-      while (next.data['hasMore'] == true && offset < targetRows) {
-        final page = SpeakingReport(
-          await AuthApiClient.instance.speakingLeaderboard(
-            accessToken: session.accessToken,
-            days: days,
-            offset: offset,
-            until: next.data['throughUtc'] as String?,
-          ),
-        );
-        if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-        if (page.data['throughDate'] != next.data['throughDate'] ||
-            page.rows.isEmpty) {
-          break;
-        }
-        offset += page.rows.length;
-        final keys = next.rows.map((row) => row['key']).toSet();
-        next = SpeakingReport({
-          ...next.data,
-          'rows': [
-            ...next.rows,
-            ...page.rows.where((row) => keys.add(row['key'])),
-          ],
-          'hasMore': page.data['hasMore'],
-        });
-      }
       setState(() {
-        _canChoosePeriod = next.data['canChoosePeriod'] == true;
+        _canChoosePeriod = _isAdmin && next.data['canChoosePeriod'] == true;
         _report = next;
-        _nextOffset = offset;
         _failed = false;
       });
     } on AuthApiException catch (error) {
@@ -459,11 +512,11 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
         epoch == _epoch &&
         _report == null &&
         cached != null &&
+        !_isAdmin &&
         owner == _owner &&
         owner == AuthSessionNotifier.instance.session?.cacheKey) {
       setState(() {
         _report = SpeakingReport(cached);
-        _nextOffset = _report!.rows.length;
       });
     }
   }
@@ -488,42 +541,31 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
       _failed = false;
     });
     try {
-      final next = SpeakingReport(
-        await AuthApiClient.instance.speakingLeaderboard(
-          accessToken: session.accessToken,
-          days: days,
-          offset: _nextOffset,
-          until: _report?.data['throughUtc'] as String?,
-        ),
-      );
-      if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
-      if (next.data['throughDate'] != _report!.data['throughDate']) {
-        final fresh = SpeakingReport(
-          await AuthApiClient.instance.speakingLeaderboard(
+      final next = await loadSpeakingLeaderboardPages(
+        loadPage: ({int offset = 0, String? until}) async {
+          if (!mounted || epoch != _epoch || session.cacheKey != _owner) {
+            throw StateError('Leaderboard request superseded');
+          }
+          return AuthApiClient.instance.speakingLeaderboard(
             accessToken: session.accessToken,
             days: days,
-          ),
-        );
-        if (mounted && epoch == _epoch) {
-          setState(() {
-            _report = fresh;
-            _nextOffset = fresh.rows.length;
-          });
-        }
-        return;
-      }
-      final keys = _report!.rows.map((row) => row['key']).toSet();
+            configured: !_isAdmin,
+            offset: offset,
+            until: until,
+          );
+        },
+        appendTo: _report!,
+      );
+      if (!mounted || epoch != _epoch || session.cacheKey != _owner) return;
       setState(() {
-        _report = SpeakingReport({
-          ..._report!.data,
-          'rows': [
-            ..._report!.rows,
-            ...next.rows.where((row) => !keys.contains(row['key'])),
-          ],
-          'hasMore': next.data['hasMore'],
-        });
-        _nextOffset = (next.data['offset'] as int) + next.rows.length;
+        _report = next;
+        _canChoosePeriod = _isAdmin && next.data['canChoosePeriod'] == true;
       });
+      if (!_isAdmin) {
+        unawaited(
+          LastSnapshotCache.leaderboard.save(session.cacheKey, next.data),
+        );
+      }
     } on AuthApiException catch (error) {
       if (mounted && epoch == _epoch) {
         if (days != 30 && error.statusCode == 403) {
@@ -542,6 +584,7 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
 
   Future<void> _openChat(Map<String, dynamic> row) async {
     if (!_canChoosePeriod ||
+        AuthSessionNotifier.instance.session?.isAdmin != true ||
         row['isMe'] == true ||
         row['adminUserId'] is! String)
       return;
@@ -549,7 +592,11 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     final id = row['adminUserId'] as String;
     final existing = await ChatSessionNotifier.instance
         .directMessageThreadForUser(id);
-    if (!mounted || owner != _owner || !_canChoosePeriod) return;
+    if (!mounted ||
+        owner != _owner ||
+        !_canChoosePeriod ||
+        AuthSessionNotifier.instance.session?.isAdmin != true)
+      return;
     final partner = ChatUserSummary.fromJson({...row, 'id': id});
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -561,7 +608,9 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   }
 
   void _selectPeriod(int days, {bool force = false}) {
-    if ((!force && !_canChoosePeriod) ||
+    if ((!force &&
+            (!_canChoosePeriod ||
+                AuthSessionNotifier.instance.session?.isAdmin != true)) ||
         days == _days ||
         ![1, 7, 30].contains(days))
       return;
@@ -569,7 +618,6 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
     setState(() {
       _days = days;
       _report = null;
-      _nextOffset = 100;
       _busy = false;
       _failed = false;
     });
@@ -588,8 +636,16 @@ class _SpeakingLeaderboardScreenState extends State<SpeakingLeaderboardScreen> {
   Widget build(BuildContext context) => SpeakingLeaderboardView(
     key: ValueKey('$_owner/$_days'),
     days: _days,
-    onPeriodChanged: _canChoosePeriod ? _selectPeriod : null,
-    onOpenChat: _canChoosePeriod ? _openChat : null,
+    onPeriodChanged:
+        _canChoosePeriod &&
+            AuthSessionNotifier.instance.session?.isAdmin == true
+        ? _selectPeriod
+        : null,
+    onOpenChat:
+        _canChoosePeriod &&
+            AuthSessionNotifier.instance.session?.isAdmin == true
+        ? _openChat
+        : null,
     report: _report,
     loading: _busy && _report == null,
     failed: _failed,
@@ -634,6 +690,9 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   @override
   void didUpdateWidget(SpeakingLeaderboardView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.onOpenChat != null && widget.onOpenChat == null) {
+      _dismissConfirmation();
+    }
     if (!identical(widget.report, oldWidget.report)) {
       _fromTops = {
         for (final entry in _rowKeys.entries)
@@ -662,6 +721,7 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
 
   @override
   void dispose() {
+    _dismissConfirmation();
     _scroll.dispose();
     super.dispose();
   }
@@ -728,9 +788,9 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                           ),
                         ],
                       )
-                    else
+                    else if (report != null)
                       Text(
-                        l.leaderboardScope,
+                        l.leaderboardPeriodScope(report.periodDays),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -813,7 +873,7 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                       Text(
                         report.data['throughUtc'] != null
                             ? l.leaderboardRollingFootnote
-                            : widget.days == 30
+                            : report.periodDays == 30
                             ? l.leaderboardFootnote
                             : l.leaderboardPeriodFootnote,
                         style: TextStyle(
@@ -861,6 +921,18 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   }
 
   bool _openingChat = false;
+  ModalRoute<bool>? _confirmationRoute;
+  void _dismissConfirmation() {
+    final route = _confirmationRoute;
+    _confirmationRoute = null;
+    if (route == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = route.navigator;
+      if (navigator != null && route.isActive)
+        navigator.removeRoute(route, false);
+    });
+  }
+
   Future<void> _confirmChat(Map<String, dynamic> row) async {
     if (_openingChat || widget.onOpenChat == null) return;
     _openingChat = true;
@@ -870,31 +942,56 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
     try {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          icon: Icon(
-            Icons.admin_panel_settings_outlined,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          title: Text(l.chatMessageAction),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ProfileAvatar(radius: 28, imageUrl: row['avatarUrl'] as String?),
-              const SizedBox(height: 16),
-              Text(l.leaderboardOpenChat(name)),
+        builder: (context) {
+          _confirmationRoute = ModalRoute.of<bool>(context);
+          return AlertDialog(
+            scrollable: true,
+            icon: Icon(
+              Icons.admin_panel_settings_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(l.chatMessageAction),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ProfileAvatar(
+                  radius: 28,
+                  imageUrl: row['avatarUrl'] as String?,
+                ),
+                const SizedBox(height: 16),
+                Text(l.leaderboardOpenChat(name)),
+                const SizedBox(height: 20),
+                _personDetail(
+                  l.leaderboardNativeLanguage,
+                  _languageDetail(
+                    row['nativeLanguage'],
+                    row['nativeLanguageFlag'],
+                    l,
+                  ),
+                ),
+                _personDetail(
+                  l.leaderboardLearningLanguage,
+                  _languageDetail(
+                    row['learningLanguage'],
+                    row['learningLanguageFlag'],
+                    l,
+                  ),
+                ),
+                _personDetail(l.leaderboardIpCountry, _countryDetail(row, l)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(l.chatMessageAction),
+              ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l.chatMessageAction),
-            ),
-          ],
-        ),
+          );
+        },
       );
       if (confirmed == true && mounted) await widget.onOpenChat?.call(row);
     } catch (_) {
@@ -903,8 +1000,57 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
           context,
         ).showSnackBar(SnackBar(content: Text(l.onboardingLoadFailed)));
     } finally {
+      _confirmationRoute = null;
       _openingChat = false;
     }
+  }
+
+  Widget _personDetail(String label, String value) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 3),
+          Text(value, textDirection: TextDirection.ltr),
+        ],
+      ),
+    ),
+  );
+
+  String _languageDetail(Object? code, Object? flag, AppLocalizations l) {
+    if (code is! String ||
+        !RegExp(
+          r'^[a-zA-Z]{2,3}(?:[-_][a-zA-Z0-9]{2,8})*$',
+        ).hasMatch(code.trim())) {
+      return l.permissionStatusUnknown;
+    }
+    final label = languageCodeLabel(code);
+    final emoji =
+        _countryFlag(flag) ?? _countryFlag(learningLanguageLabel(code).flag);
+    return emoji == null ? label : '$label $emoji';
+  }
+
+  String _countryDetail(Map<String, dynamic> row, AppLocalizations l) {
+    final code = (row['ipCountryCode'] as String?)?.trim().toUpperCase();
+    if (code == null ||
+        !RegExp(r'^[A-Z]{2}$').hasMatch(code) ||
+        ['XX', 'ZZ'].contains(code))
+      return l.permissionStatusUnknown;
+    final flag =
+        _countryFlag(row['ipCountryFlag']) ??
+        String.fromCharCodes(code.codeUnits.map((c) => c + 0x1F1E6 - 65));
+    return '$code $flag';
+  }
+
+  String? _countryFlag(Object? value) {
+    if (value is! String) return null;
+    final runes = value.runes.toList();
+    return runes.length == 2 && runes.every((r) => r >= 0x1F1E6 && r <= 0x1F1FF)
+        ? value
+        : null;
   }
 
   Widget _notice(String text, {String? action}) => Padding(

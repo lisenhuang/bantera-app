@@ -11,6 +11,65 @@ void main() {
   final l = AppLocalizationsEn();
 
   test(
+    'configured period is captured per queued account snapshot with legacy fallback',
+    () async {
+      final writes = <Map<String, Object>>[];
+      final service = PracticeWidgetService.forTesting(
+        send: (data) async => writes.add(data),
+      );
+      Future<void> publish(String owner) => service.update(
+        signedIn: true,
+        owner: owner,
+        today: const WordTotals(),
+        localizations: l,
+      );
+      await publish('alice');
+      service.setLeaderboard(
+        owner: 'alice',
+        report: {
+          'you': {'rank': 3},
+          'periodDays': 14,
+          'throughDate': wordActivityDateKey(DateTime.now().toUtc()),
+        },
+      );
+      final alice = publish('alice');
+      final bob = publish('bob');
+      await Future.wait([alice, bob]);
+      expect(
+        writes.where((w) => w['rank'] == 3).last['labels'],
+        containsPair('period', 'Last 14 days'),
+      );
+      expect(writes.last['labels'], containsPair('period', 'Last 30 days'));
+      expect(writes.last.containsKey('rank'), isFalse);
+      service.setLeaderboard(
+        owner: 'alice',
+        report: {
+          'you': {'rank': 1},
+          'periodDays': 365,
+        },
+      );
+      await publish('bob');
+      expect(writes.last['labels'], containsPair('period', 'Last 30 days'));
+      service.setLeaderboard(
+        owner: 'bob',
+        report: {
+          'you': {'rank': 2},
+          'periodDays': 7,
+        },
+      );
+      await publish('bob');
+      expect(writes.last['labels'], containsPair('period', 'Last 7 days'));
+      service.setLeaderboard(
+        owner: 'bob',
+        report: {
+          'you': {'rank': 2},
+        },
+      );
+      await publish('bob');
+      expect(writes.last['labels'], containsPair('period', 'Last 30 days'));
+    },
+  );
+  test(
     'details are scoped to the account and current learning language',
     () async {
       final writes = <Map<String, Object>>[];

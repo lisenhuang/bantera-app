@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Não foi possível desbloquear este usuário. Tente novamente.",
   "chatNotificationsTitle": "Notificações do chat",
   "chatNotificationsSubtitle": "Uma única opção para a conta em todos os seus dispositivos.",
+  "chatDisableAllNotificationsTitle": "Silenciar as notificações do chat?",
+  "chatDisableAllNotificationsBody": "Isso desativa os alertas do chat, as chamadas recebidas e os lembretes de IA em todos os seus dispositivos. Você pode ativá-los novamente neste menu ou nas Definições.",
   "chatNotificationsDisabledTitle": "Notificações desativadas",
   "chatNotificationsDisabledSettings": "Ative as notificações nos Ajustes para receber alertas de chat do Bantera.",
   "chatNotificationsDisabledBody": "O Bantera precisa de permissão de notificações para ativar os alertas de chat.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Pratique uma lição para ver seu progresso aqui. O histórico é salvo neste dispositivo.",
   "practiceHistoryRemoveBody": "Remover esta lição do histórico e redefinir o progresso e o ponto de retomada? Suas mídias, frases salvas e totais de palavras serão mantidos.",
   "practiceHistoryUnavailable": "Esta mídia não está mais neste dispositivo. Você pode removê-la do histórico.",
+  "aiSavedDialogues": "Diálogos guardados",
+  "aiSaveDialogue": "Guardar diálogo",
+  "aiSaveDialogueConfirmTitle": "Guardar este diálogo?",
+  "aiSaveDialogueConfirmBody": "Você pode voltar a esta mensagem em Diálogos guardados.",
+  "aiUnsaveDialogue": "Remover dos diálogos guardados",
+  "aiSavedDialoguesEmpty": "Ainda não há diálogos guardados",
+  "aiDialogueYou": "Você",
   "aiClearHistory": "Limpar conversa",
   "aiClearHistoryBody": "Eliminar mensagens, áudios e memórias da conversa com IA neste dispositivo? A chamada terminará. A biblioteca, o perfil e as chamadas agendadas serão mantidos.",
   "aiLocalHistory": "O histórico de IA recebido fica neste dispositivo. O contexto relevante é enviado à IA. Horários e notas de lembretes ficam no servidor. O áudio é guardado até ser recebido ou cancelado, no máximo sete dias.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Passe o dedo para escolher um tamanho, toque em Adicionar widget e depois em OK.",
   "widgetPreviewDescription": "Pré-visualização do widget real com progresso de exemplo.",
   "widgetPreviewRetry": "Recarregar pré-visualização",
-  "widgetLocalNote": "Adicione o widget a partir do ecrã principal. A Bantera verifica a configuração quando regressa, mas não regista a frequência de visualização."
+  "widgetLocalNote": "Adicione o widget a partir do ecrã principal. A Bantera verifica a configuração quando regressa, mas não regista a frequência de visualização.",
+  "leaderboardPeriodScope": "{days, plural, one{Último {days} dia} other{Últimos {days} dias}}",
+  "leaderboardNativeLanguage": "Língua materna",
+  "leaderboardLearningLanguage": "Idioma de aprendizagem",
+  "leaderboardIpCountry": "País do IP"
 }

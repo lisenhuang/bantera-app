@@ -289,6 +289,8 @@ class VideoProcessingService {
       RegionService.instance.profileLanguageOptions(
         await _fetchAllLearningLanguageOptions(),
         isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+        currentIsAdmin: () =>
+            AuthSessionNotifier.instance.session?.isAdmin == true,
       );
 
   Future<List<TranscriptionLocaleOption>>

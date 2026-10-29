@@ -209,6 +209,8 @@
   "chatUnblockFailed": "Could not unblock this user. Please try again.",
   "chatNotificationsTitle": "Chat notifications",
   "chatNotificationsSubtitle": "Use one account-wide switch across your devices.",
+  "chatDisableAllNotificationsTitle": "Mute chat notifications?",
+  "chatDisableAllNotificationsBody": "This turns off chat alerts, incoming calls and AI reminders across your devices. You can enable them again from this menu or Settings.",
   "chatNotificationsDisabledTitle": "Notifications disabled",
   "chatNotificationsDisabledSettings": "Enable notifications in Settings to receive Bantera chat alerts.",
   "chatNotificationsDisabledBody": "Bantera needs notification permission before chat alerts can be enabled.",
@@ -808,6 +810,13 @@
       }
     }
   },
+  "aiSavedDialogues": "Saved dialogues",
+  "aiSaveDialogue": "Save dialogue",
+  "aiSaveDialogueConfirmTitle": "Save this dialogue?",
+  "aiSaveDialogueConfirmBody": "You can return to this message from Saved dialogues.",
+  "aiUnsaveDialogue": "Unsave dialogue",
+  "aiSavedDialoguesEmpty": "No saved dialogues yet",
+  "aiDialogueYou": "You",
   "aiClearHistory": "Clear chat",
   "aiClearHistoryBody": "Delete this device’s AI messages, audio and conversation memory? This ends the current call. Your learning library, profile and scheduled callbacks stay unchanged.",
   "aiLocalHistory": "Received AI chat history stays on this device. Relevant context is sent to AI to reply. Reminder schedules and notes are stored on the server. Voice reminder audio is stored temporarily until received or cancelled, for up to seven days.",
@@ -1163,5 +1172,16 @@
   "widgetStepAdd": "Swipe to select a size, tap Add Widget, then tap Done.",
   "widgetPreviewDescription": "Actual widget preview with example progress.",
   "widgetPreviewRetry": "Reload preview",
-  "widgetLocalNote": "You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it."
+  "widgetLocalNote": "You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it.",
+  "leaderboardPeriodScope": "{days, plural, one{Last {days} day} other{Last {days} days}}",
+  "leaderboardNativeLanguage": "Native language",
+  "leaderboardLearningLanguage": "Learning language",
+  "leaderboardIpCountry": "IP country",
+  "@leaderboardPeriodScope": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

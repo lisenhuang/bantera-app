@@ -575,6 +575,13 @@ class AppLocalizationsId extends AppLocalizations {
       'Satu pengaturan untuk seluruh akun di semua perangkatmu.';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'Bisukan notifikasi chat?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Ini menonaktifkan peringatan chat, panggilan masuk, dan pengingat AI di semua perangkat Anda. Anda dapat mengaktifkannya lagi dari menu ini atau Pengaturan.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Notifikasi nonaktif';
 
   @override
@@ -1843,6 +1850,28 @@ class AppLocalizationsId extends AppLocalizations {
       'Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.';
 
   @override
+  String get aiSavedDialogues => 'Dialog tersimpan';
+
+  @override
+  String get aiSaveDialogue => 'Simpan dialog';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Simpan dialog ini?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Anda dapat kembali ke pesan ini dari Dialog tersimpan.';
+
+  @override
+  String get aiUnsaveDialogue => 'Hapus dari dialog tersimpan';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Belum ada dialog tersimpan';
+
+  @override
+  String get aiDialogueYou => 'Anda';
+
+  @override
   String get aiClearHistory => 'Hapus percakapan';
 
   @override
@@ -2723,4 +2752,18 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Tambahkan widget dari Layar Utama. Bantera memeriksa konfigurasinya saat Anda kembali, bukan seberapa sering Anda melihatnya.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '$days hari terakhir';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Bahasa ibu';
+
+  @override
+  String get leaderboardLearningLanguage => 'Bahasa yang dipelajari';
+
+  @override
+  String get leaderboardIpCountry => 'Negara IP';
 }

@@ -577,6 +577,14 @@ class AppLocalizationsTr extends AppLocalizations {
       'Tüm cihazlarında geçerli tek bir hesap ayarı.';
 
   @override
+  String get chatDisableAllNotificationsTitle =>
+      'Sohbet bildirimleri sessize alınsın mı?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Bu işlem tüm cihazlarınızda sohbet uyarılarını, gelen aramaları ve yapay zekâ hatırlatıcılarını kapatır. Bu menüden veya Ayarlar’dan yeniden açabilirsiniz.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Bildirimler kapalı';
 
   @override
@@ -1838,6 +1846,28 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu medya artık cihazda yok. Geçmişten kaldırabilirsin.';
 
   @override
+  String get aiSavedDialogues => 'Kaydedilen diyaloglar';
+
+  @override
+  String get aiSaveDialogue => 'Diyaloğu kaydet';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Bu diyalog kaydedilsin mi?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Kaydedilen diyaloglar bölümünden bu mesaja geri dönebilirsiniz.';
+
+  @override
+  String get aiUnsaveDialogue => 'Diyaloğu kaydedilenlerden kaldır';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Henüz kaydedilen diyalog yok';
+
+  @override
+  String get aiDialogueYou => 'Siz';
+
+  @override
   String get aiClearHistory => 'Sohbeti temizle';
 
   @override
@@ -2720,4 +2750,18 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Araç takımını Ana Ekran’dan eklersin. Bantera döndüğünde yapılandırmayı kontrol eder; ne sıklıkla baktığını izlemez.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return 'Son $days gün';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Ana dil';
+
+  @override
+  String get leaderboardLearningLanguage => 'Öğrenilen dil';
+
+  @override
+  String get leaderboardIpCountry => 'IP ülkesi';
 }

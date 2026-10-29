@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Impossible de débloquer cette personne. Réessaie.",
   "chatNotificationsTitle": "Notifications de discussion",
   "chatNotificationsSubtitle": "Un seul réglage pour tout ton compte, sur tous tes appareils.",
+  "chatDisableAllNotificationsTitle": "Désactiver les notifications de discussion ?",
+  "chatDisableAllNotificationsBody": "Cela désactive les alertes de discussion, les appels entrants et les rappels IA sur tous vos appareils. Vous pourrez les réactiver depuis ce menu ou les Réglages.",
   "chatNotificationsDisabledTitle": "Notifications désactivées",
   "chatNotificationsDisabledSettings": "Active les notifications dans les Réglages pour recevoir les alertes de discussion Bantera.",
   "chatNotificationsDisabledBody": "Bantera a besoin de l’autorisation de notifications pour activer les alertes de discussion.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Pratiquez une leçon pour voir vos progrès ici. L’historique est enregistré sur cet appareil.",
   "practiceHistoryRemoveBody": "Retirer cette leçon de l’historique et réinitialiser sa progression et son point de reprise ? Vos médias, phrases enregistrées et totaux de mots seront conservés.",
   "practiceHistoryUnavailable": "Ce média n’est plus sur cet appareil. Vous pouvez le retirer de l’historique.",
+  "aiSavedDialogues": "Dialogues enregistrés",
+  "aiSaveDialogue": "Enregistrer le dialogue",
+  "aiSaveDialogueConfirmTitle": "Enregistrer ce dialogue ?",
+  "aiSaveDialogueConfirmBody": "Vous pourrez retrouver ce message dans Dialogues enregistrés.",
+  "aiUnsaveDialogue": "Retirer des dialogues enregistrés",
+  "aiSavedDialoguesEmpty": "Aucun dialogue enregistré pour le moment",
+  "aiDialogueYou": "Vous",
   "aiClearHistory": "Effacer le chat",
   "aiClearHistoryBody": "Supprimer les messages, audios et souvenirs de conversation de l’IA sur cet appareil ? L’appel sera terminé. Votre bibliothèque, profil et rappels programmés seront conservés.",
   "aiLocalHistory": "Les échanges IA reçus restent sur cet appareil. Le contexte utile est envoyé à l’IA. Les horaires et notes des rappels sont sur le serveur. Leur audio y reste temporairement jusqu’à réception ou annulation, pendant sept jours au maximum.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Balayez pour choisir une taille, touchez Ajouter le widget, puis OK.",
   "widgetPreviewDescription": "Aperçu du widget réel avec un exemple de progression.",
   "widgetPreviewRetry": "Recharger l’aperçu",
-  "widgetLocalNote": "Ajoutez le widget depuis l’écran d’accueil. Bantera vérifie sa configuration à votre retour, sans suivre la fréquence à laquelle vous le consultez."
+  "widgetLocalNote": "Ajoutez le widget depuis l’écran d’accueil. Bantera vérifie sa configuration à votre retour, sans suivre la fréquence à laquelle vous le consultez.",
+  "leaderboardPeriodScope": "{days, plural, one{Dernier {days} jour} other{Derniers {days} jours}}",
+  "leaderboardNativeLanguage": "Langue maternelle",
+  "leaderboardLearningLanguage": "Langue apprise",
+  "leaderboardIpCountry": "Pays de l’IP"
 }

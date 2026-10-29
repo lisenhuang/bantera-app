@@ -575,6 +575,13 @@ class AppLocalizationsVi extends AppLocalizations {
       'Một công tắc chung cho tài khoản trên mọi thiết bị của bạn.';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'Tắt thông báo trò chuyện?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Thao tác này tắt thông báo trò chuyện, cuộc gọi đến và lời nhắc AI trên tất cả thiết bị của bạn. Bạn có thể bật lại từ menu này hoặc Cài đặt.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Thông báo đang tắt';
 
   @override
@@ -1840,6 +1847,28 @@ class AppLocalizationsVi extends AppLocalizations {
       'Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.';
 
   @override
+  String get aiSavedDialogues => 'Hội thoại đã lưu';
+
+  @override
+  String get aiSaveDialogue => 'Lưu hội thoại';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Lưu hội thoại này?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Bạn có thể quay lại tin nhắn này từ Hội thoại đã lưu.';
+
+  @override
+  String get aiUnsaveDialogue => 'Bỏ lưu hội thoại';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Chưa có hội thoại nào được lưu';
+
+  @override
+  String get aiDialogueYou => 'Bạn';
+
+  @override
   String get aiClearHistory => 'Xóa trò chuyện';
 
   @override
@@ -2718,4 +2747,18 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Bạn thêm tiện ích từ Màn hình chính. Bantera kiểm tra cấu hình khi bạn quay lại, không theo dõi tần suất bạn xem tiện ích.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '$days ngày qua';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Tiếng mẹ đẻ';
+
+  @override
+  String get leaderboardLearningLanguage => 'Ngôn ngữ đang học';
+
+  @override
+  String get leaderboardIpCountry => 'Quốc gia IP';
 }

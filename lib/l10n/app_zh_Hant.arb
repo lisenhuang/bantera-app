@@ -174,6 +174,8 @@
   "chatUnblockFailed": "無法解除封鎖此用戶，請重試。",
   "chatNotificationsTitle": "聊天通知",
   "chatNotificationsSubtitle": "所有裝置共用同一個帳戶層級的開關。",
+  "chatDisableAllNotificationsTitle": "關閉聊天通知？",
+  "chatDisableAllNotificationsBody": "這會在你的所有裝置上關閉聊天通知、來電和 AI 提醒。你可以從此選單或設定中重新開啟。",
   "chatNotificationsDisabledTitle": "通知已關閉",
   "chatNotificationsDisabledSettings": "請在「設定」中開啟通知，以接收 Bantera 的聊天提示。",
   "chatNotificationsDisabledBody": "開啟聊天提示前，Bantera 需要通知權限。",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "練習課程後，即可在此查看進度。歷史記錄儲存在本裝置上。",
   "practiceHistoryRemoveBody": "要移除此課程的歷史記錄並重設進度和繼續位置嗎？收藏的媒體、字幕和詞數統計會保留。",
   "practiceHistoryUnavailable": "此媒體已不在本裝置上，你可以將其從歷史記錄中移除。",
+  "aiSavedDialogues": "已收藏的對話",
+  "aiSaveDialogue": "收藏對話",
+  "aiSaveDialogueConfirmTitle": "收藏這段對話？",
+  "aiSaveDialogueConfirmBody": "你可以從「已收藏的對話」返回這則訊息。",
+  "aiUnsaveDialogue": "取消收藏對話",
+  "aiSavedDialoguesEmpty": "還沒有收藏的對話",
+  "aiDialogueYou": "你",
   "aiClearHistory": "清除聊天",
   "aiClearHistoryBody": "刪除此裝置上的 AI 訊息、音訊和對話記憶？目前通話也會結束。學習資料、個人資料和預約回撥不會改變。",
   "aiLocalHistory": "已接收的AI聊天記錄保存在本機。相關上下文會傳送給AI生成回覆。提醒時間和備註保存在伺服器上；語音提醒音訊僅暫存至接收或取消，最長7天。",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "左右滑動選擇尺寸，點一下「加入小工具」，然後點一下「完成」。",
   "widgetPreviewDescription": "使用範例進度展示的實際小工具預覽。",
   "widgetPreviewRetry": "重新載入預覽",
-  "widgetLocalNote": "請從主畫面加入小工具。返回 Bantera 時，App 會檢查小工具是否已設定，但不會追蹤你的查看頻率。"
+  "widgetLocalNote": "請從主畫面加入小工具。返回 Bantera 時，App 會檢查小工具是否已設定，但不會追蹤你的查看頻率。",
+  "leaderboardPeriodScope": "最近{days}天",
+  "leaderboardNativeLanguage": "母語",
+  "leaderboardLearningLanguage": "學習語言",
+  "leaderboardIpCountry": "IP 國家"
 }

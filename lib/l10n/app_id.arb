@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Tidak dapat membuka blokir pengguna ini. Coba lagi.",
   "chatNotificationsTitle": "Notifikasi chat",
   "chatNotificationsSubtitle": "Satu pengaturan untuk seluruh akun di semua perangkatmu.",
+  "chatDisableAllNotificationsTitle": "Bisukan notifikasi chat?",
+  "chatDisableAllNotificationsBody": "Ini menonaktifkan peringatan chat, panggilan masuk, dan pengingat AI di semua perangkat Anda. Anda dapat mengaktifkannya lagi dari menu ini atau Pengaturan.",
   "chatNotificationsDisabledTitle": "Notifikasi nonaktif",
   "chatNotificationsDisabledSettings": "Aktifkan notifikasi di Pengaturan untuk menerima pemberitahuan chat Bantera.",
   "chatNotificationsDisabledBody": "Bantera memerlukan izin notifikasi sebelum pemberitahuan chat dapat diaktifkan.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Latih sebuah pelajaran untuk melihat progres di sini. Riwayat disimpan di perangkat ini.",
   "practiceHistoryRemoveBody": "Hapus pelajaran ini dari riwayat dan atur ulang progres serta posisi lanjutannya? Media, frasa tersimpan, dan total kata Anda akan tetap ada.",
   "practiceHistoryUnavailable": "Media ini sudah tidak ada di perangkat ini. Anda dapat menghapusnya dari riwayat.",
+  "aiSavedDialogues": "Dialog tersimpan",
+  "aiSaveDialogue": "Simpan dialog",
+  "aiSaveDialogueConfirmTitle": "Simpan dialog ini?",
+  "aiSaveDialogueConfirmBody": "Anda dapat kembali ke pesan ini dari Dialog tersimpan.",
+  "aiUnsaveDialogue": "Hapus dari dialog tersimpan",
+  "aiSavedDialoguesEmpty": "Belum ada dialog tersimpan",
+  "aiDialogueYou": "Anda",
   "aiClearHistory": "Hapus percakapan",
   "aiClearHistoryBody": "Hapus pesan AI, audio, dan ingatan percakapan di perangkat ini? Panggilan akan berakhir. Materi belajar, profil, dan jadwal panggilan tetap tersimpan.",
   "aiLocalHistory": "Riwayat AI yang diterima tetap di perangkat ini. Konteks terkait dikirim ke AI untuk menjawab. Jadwal dan catatan pengingat disimpan di server. Audio pengingat disimpan sementara hingga diterima atau dibatalkan, maksimal tujuh hari.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Geser untuk memilih ukuran, ketuk Tambah Widget, lalu Selesai.",
   "widgetPreviewDescription": "Pratinjau widget asli dengan contoh kemajuan.",
   "widgetPreviewRetry": "Muat ulang pratinjau",
-  "widgetLocalNote": "Tambahkan widget dari Layar Utama. Bantera memeriksa konfigurasinya saat Anda kembali, bukan seberapa sering Anda melihatnya."
+  "widgetLocalNote": "Tambahkan widget dari Layar Utama. Bantera memeriksa konfigurasinya saat Anda kembali, bukan seberapa sering Anda melihatnya.",
+  "leaderboardPeriodScope": "{days} hari terakhir",
+  "leaderboardNativeLanguage": "Bahasa ibu",
+  "leaderboardLearningLanguage": "Bahasa yang dipelajari",
+  "leaderboardIpCountry": "Negara IP"
 }

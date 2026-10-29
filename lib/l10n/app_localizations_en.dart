@@ -575,6 +575,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use one account-wide switch across your devices.';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'Mute chat notifications?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'This turns off chat alerts, incoming calls and AI reminders across your devices. You can enable them again from this menu or Settings.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Notifications disabled';
 
   @override
@@ -1902,6 +1909,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'This media is no longer on this device. You can remove it from history.';
 
   @override
+  String get aiSavedDialogues => 'Saved dialogues';
+
+  @override
+  String get aiSaveDialogue => 'Save dialogue';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Save this dialogue?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'You can return to this message from Saved dialogues.';
+
+  @override
+  String get aiUnsaveDialogue => 'Unsave dialogue';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'No saved dialogues yet';
+
+  @override
+  String get aiDialogueYou => 'You';
+
+  @override
   String get aiClearHistory => 'Clear chat';
 
   @override
@@ -2783,4 +2812,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Last $days days',
+      one: 'Last $days day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Native language';
+
+  @override
+  String get leaderboardLearningLanguage => 'Learning language';
+
+  @override
+  String get leaderboardIpCountry => 'IP country';
 }

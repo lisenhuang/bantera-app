@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Không thể bỏ chặn người dùng này. Vui lòng thử lại.",
   "chatNotificationsTitle": "Thông báo trò chuyện",
   "chatNotificationsSubtitle": "Một công tắc chung cho tài khoản trên mọi thiết bị của bạn.",
+  "chatDisableAllNotificationsTitle": "Tắt thông báo trò chuyện?",
+  "chatDisableAllNotificationsBody": "Thao tác này tắt thông báo trò chuyện, cuộc gọi đến và lời nhắc AI trên tất cả thiết bị của bạn. Bạn có thể bật lại từ menu này hoặc Cài đặt.",
   "chatNotificationsDisabledTitle": "Thông báo đang tắt",
   "chatNotificationsDisabledSettings": "Bật thông báo trong Cài đặt để nhận thông báo trò chuyện từ Bantera.",
   "chatNotificationsDisabledBody": "Bantera cần quyền gửi thông báo trước khi bật thông báo trò chuyện.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Luyện tập một bài học để xem tiến độ tại đây. Lịch sử được lưu trên thiết bị này.",
   "practiceHistoryRemoveBody": "Xóa bài học này khỏi lịch sử và đặt lại tiến độ cùng vị trí tiếp tục? Nội dung, câu đã lưu và tổng số từ sẽ được giữ lại.",
   "practiceHistoryUnavailable": "Nội dung này không còn trên thiết bị. Bạn có thể xóa khỏi lịch sử.",
+  "aiSavedDialogues": "Hội thoại đã lưu",
+  "aiSaveDialogue": "Lưu hội thoại",
+  "aiSaveDialogueConfirmTitle": "Lưu hội thoại này?",
+  "aiSaveDialogueConfirmBody": "Bạn có thể quay lại tin nhắn này từ Hội thoại đã lưu.",
+  "aiUnsaveDialogue": "Bỏ lưu hội thoại",
+  "aiSavedDialoguesEmpty": "Chưa có hội thoại nào được lưu",
+  "aiDialogueYou": "Bạn",
   "aiClearHistory": "Xóa trò chuyện",
   "aiClearHistoryBody": "Xóa tin nhắn AI, âm thanh và ký ức hội thoại trên thiết bị này? Cuộc gọi sẽ kết thúc. Tài liệu học, hồ sơ và lịch gọi lại vẫn được giữ.",
   "aiLocalHistory": "Lịch sử AI đã nhận nằm trên thiết bị này. Ngữ cảnh liên quan được gửi cho AI để trả lời. Lịch và nội dung nhắc được lưu trên máy chủ. Âm thanh được giữ tạm đến khi nhận hoặc hủy, tối đa bảy ngày.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Vuốt để chọn kích cỡ, chạm Thêm tiện ích, rồi chạm Xong.",
   "widgetPreviewDescription": "Bản xem trước tiện ích thực với tiến độ minh họa.",
   "widgetPreviewRetry": "Tải lại bản xem trước",
-  "widgetLocalNote": "Bạn thêm tiện ích từ Màn hình chính. Bantera kiểm tra cấu hình khi bạn quay lại, không theo dõi tần suất bạn xem tiện ích."
+  "widgetLocalNote": "Bạn thêm tiện ích từ Màn hình chính. Bantera kiểm tra cấu hình khi bạn quay lại, không theo dõi tần suất bạn xem tiện ích.",
+  "leaderboardPeriodScope": "{days} ngày qua",
+  "leaderboardNativeLanguage": "Tiếng mẹ đẻ",
+  "leaderboardLearningLanguage": "Ngôn ngữ đang học",
+  "leaderboardIpCountry": "Quốc gia IP"
 }

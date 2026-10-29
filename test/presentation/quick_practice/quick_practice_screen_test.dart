@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:app/core/apple_system_version.dart';
 import 'package:app/presentation/discover/discover_screen.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:app/core/practice_review_service.dart';
 import 'package:app/core/theme.dart';
 import 'package:app/domain/activity/word_activity.dart';
@@ -12,6 +13,8 @@ import 'package:app/presentation/shared/daily_goal_celebration_dialog.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/quick_practice/quick_practice_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:app/presentation/quick_practice/practice_word_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -302,6 +305,173 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('practice-level-option-C2')));
       await tester.pumpAndSettle();
       expect(find.text('Continue'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Māori selection underlines its linked English phrase only', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      height: 1600,
+      isAdmin: true,
+      material: {
+        ...exercise,
+        'locale': 'mi-NZ',
+        'cue': 'Kei hea te teihana?',
+        'translations': {
+          'cue': 'Where is the station?',
+          'option0': 'It is next to the bank.',
+          'option1': 'It opens at nine.',
+        },
+        'translationAlignments': {
+          'cue': [
+            {
+              'sourceStart': 0,
+              'sourceEnd': 7,
+              'sourceText': 'Kei hea',
+              'targetStart': 0,
+              'targetEnd': 8,
+              'targetText': 'Where is',
+            },
+            {
+              'sourceStart': 11,
+              'sourceEnd': 18,
+              'sourceText': 'teihana',
+              'targetStart': 13,
+              'targetEnd': 20,
+              'targetText': 'station',
+            },
+          ],
+        },
+      },
+    );
+    final words = find.byWidgetPredicate(
+      (w) => w is PracticeWordText && w.text == 'Kei hea te teihana?',
+    );
+    Future<void> select(String word) async {
+      final text = tester.widget<Text>(
+        find.descendant(of: words, matching: find.byType(Text)),
+      );
+      final span = (text.textSpan! as TextSpan).children!
+          .whereType<TextSpan>()
+          .firstWhere((span) => span.text == word);
+      (span.recognizer! as TapGestureRecognizer).onTap!();
+      await tester.pumpAndSettle();
+    }
+
+    List<TextSpan> translated() =>
+        (tester
+                    .widget<Text>(
+                      find.byKey(const ValueKey('practice-translation-cue')),
+                    )
+                    .textSpan!
+                as TextSpan)
+            .children!
+            .whereType<TextSpan>()
+            .toList();
+    await select('hea');
+    expect(
+      translated()
+          .where((s) => s.style?.decoration == TextDecoration.underline)
+          .single
+          .text,
+      'Where is',
+    );
+    expect(translated().first.style!.fontWeight, FontWeight.w700);
+    expect(translated().first.style!.backgroundColor, isNull);
+    await select('teihana');
+    expect(
+      translated()
+          .where((s) => s.style?.decoration == TextDecoration.underline)
+          .single
+          .text,
+      'station',
+    );
+    expect(
+      TextSpan(children: translated()).toPlainText(),
+      'Where is the station?',
+    );
+    final other = tester.widget<Text>(
+      find.byKey(const ValueKey('practice-translation-option0')),
+    );
+    expect(
+      (other.textSpan! as TextSpan).children!.whereType<TextSpan>().every(
+        (s) => s.style == null,
+      ),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'existing Māori English gains alignment without losing selected word',
+    (tester) async {
+      final response = Completer<Map<String, dynamic>>();
+      final requests = <String>[];
+      await mount(
+        tester,
+        height: 1600,
+        isAdmin: true,
+        material: {
+          ...exercise,
+          'locale': 'mi-NZ',
+          'cue': 'Kei hea te teihana?',
+          'translations': {
+            'cue': 'Where is the station?',
+            'option0': 'It is next to the bank.',
+            'option1': 'It opens at nine.',
+          },
+        },
+        api: (path, body) {
+          requests.add(path);
+          return response.future;
+        },
+      );
+      final words = find.byWidgetPredicate(
+        (w) => w is PracticeWordText && w.text == 'Kei hea te teihana?',
+      );
+      final sourceText = tester.widget<Text>(
+        find.descendant(of: words, matching: find.byType(Text)),
+      );
+      final selected = (sourceText.textSpan! as TextSpan).children!
+          .whereType<TextSpan>()
+          .firstWhere((span) => span.text == 'teihana');
+      (selected.recognizer! as TapGestureRecognizer).onTap!();
+      await tester.pumpAndSettle();
+      expect(requests, ['sample/english-translation']);
+      response.complete({
+        'status': 'ready',
+        'translationAlignmentStatus': 'ready',
+        'translations': {
+          'cue': 'Where is the station?',
+          'option0': 'It is next to the bank.',
+          'option1': 'It opens at nine.',
+        },
+        'translationAlignments': {
+          'cue': [
+            {
+              'sourceStart': 11,
+              'sourceEnd': 18,
+              'sourceText': 'teihana',
+              'targetStart': 13,
+              'targetEnd': 20,
+              'targetText': 'station',
+            },
+          ],
+        },
+      });
+      await tester.pumpAndSettle();
+      final translated = tester.widget<Text>(
+        find.byKey(const ValueKey('practice-translation-cue')),
+      );
+      final highlights = (translated.textSpan! as TextSpan).children!
+          .whereType<TextSpan>()
+          .where((s) => s.style?.decoration == TextDecoration.underline);
+      expect(highlights.single.text, 'station');
+      expect(highlights.single.style!.backgroundColor, isNull);
+      expect(requests, hasLength(1));
+      expect(tester.takeException(), isNull);
     },
   );
 

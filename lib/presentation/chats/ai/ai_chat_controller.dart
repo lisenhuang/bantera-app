@@ -210,6 +210,7 @@ class AiChatController extends ChangeNotifier {
   bool _recordStarting = false, _waitingToSend = false;
   Future<void> _replyAudioWork = Future.value();
   bool _deletingMessage = false;
+  final Set<String> _savingMessages = {};
   bool _consentStopping = false;
   bool get canRecord =>
       !_consentStopping &&
@@ -1960,6 +1961,35 @@ class AiChatController extends ChangeNotifier {
         if (!callKitManaged) AiCallbackNotifier.instance.aiActive = false;
         changed();
       }
+    }
+  }
+
+  bool canSaveMessage(AiMessage message) =>
+      canDeleteMessage(message) &&
+      !_savingMessages.contains(message.id) &&
+      !isReceiving(message) &&
+      !message.failed &&
+      (message.savedAt != null ||
+          message.displayText.trim().isNotEmpty ||
+          message.audio != null ||
+          message.images.isNotEmpty ||
+          message.videos.isNotEmpty ||
+          message.emojis.isNotEmpty);
+
+  Future<void> toggleSavedMessage(AiMessage message) async {
+    if (!canSaveMessage(message)) return;
+    _savingMessages.add(message.id);
+    final previous = message.savedAt;
+    message.savedAt = previous == null ? DateTime.now() : null;
+    changed();
+    try {
+      await store.save();
+    } catch (_) {
+      message.savedAt = previous;
+      rethrow;
+    } finally {
+      _savingMessages.remove(message.id);
+      changed();
     }
   }
 

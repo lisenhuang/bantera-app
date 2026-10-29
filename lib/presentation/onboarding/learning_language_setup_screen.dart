@@ -237,6 +237,8 @@ class _LearningLanguageSetupScreenState
     final visibleOptions = await RegionService.instance.profileLanguageOptions(
       options,
       isAdmin: AuthSessionNotifier.instance.session?.isAdmin == true,
+      currentIsAdmin: () =>
+          AuthSessionNotifier.instance.session?.isAdmin == true,
       nativeLanguage: !learning,
     );
     if (!mounted) return;
@@ -652,7 +654,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                           title: Row(
                             children: [
                               Expanded(child: Text(option.displayName)),
-                              if (option.identifier == 'mi-NZ')
+                              if (option.isAdminOnly)
                                 const Icon(
                                   Icons.admin_panel_settings_outlined,
                                   size: 18,

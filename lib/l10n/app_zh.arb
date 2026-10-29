@@ -209,6 +209,8 @@
   "chatUnblockFailed": "无法解除屏蔽此用户，请重试。",
   "chatNotificationsTitle": "聊天通知",
   "chatNotificationsSubtitle": "在所有设备上使用同一个账户级开关。",
+  "chatDisableAllNotificationsTitle": "关闭聊天通知？",
+  "chatDisableAllNotificationsBody": "这会在你的所有设备上关闭聊天提醒、来电和 AI 提醒。你可以从此菜单或设置中重新开启。",
   "chatNotificationsDisabledTitle": "通知已关闭",
   "chatNotificationsDisabledSettings": "请在设置中开启通知，以接收 Bantera 聊天提醒。",
   "chatNotificationsDisabledBody": "开启聊天提醒前，Bantera 需要通知权限。",
@@ -582,6 +584,13 @@
   "practiceHistoryDeviceNote": "练习课程后，即可在此查看进度。历史记录保存在本设备上。",
   "practiceHistoryRemoveBody": "要移除此课程的历史记录并重置进度和继续位置吗？收藏的媒体、字幕和词数统计会保留。",
   "practiceHistoryUnavailable": "此媒体已不在本设备上，你可以将其从历史记录中移除。",
+  "aiSavedDialogues": "已收藏的对话",
+  "aiSaveDialogue": "收藏对话",
+  "aiSaveDialogueConfirmTitle": "收藏这段对话？",
+  "aiSaveDialogueConfirmBody": "你可以从“已收藏的对话”返回这条消息。",
+  "aiUnsaveDialogue": "取消收藏对话",
+  "aiSavedDialoguesEmpty": "还没有收藏的对话",
+  "aiDialogueYou": "你",
   "aiClearHistory": "清除聊天",
   "aiClearHistoryBody": "删除此设备上的 AI 消息、音频和对话记忆？当前通话也会结束。学习资料、个人资料和预约回拨不会改变。",
   "aiLocalHistory": "已接收的AI聊天记录保存在本机。相关上下文会发送给AI生成回复。提醒时间和备注保存在服务器上；语音提醒音频仅临时保存至接收或取消，最长7天。",
@@ -839,5 +848,9 @@
   "widgetStepAdd": "左右轻扫选择尺寸，点按“添加小组件”，然后点按“完成”。",
   "widgetPreviewDescription": "使用示例进度展示的真实小组件预览。",
   "widgetPreviewRetry": "重新加载预览",
-  "widgetLocalNote": "请从主屏幕添加小组件。返回 Bantera 时，App 会检查小组件是否已配置，但不会跟踪你的查看频率。"
+  "widgetLocalNote": "请从主屏幕添加小组件。返回 Bantera 时，App 会检查小组件是否已配置，但不会跟踪你的查看频率。",
+  "leaderboardPeriodScope": "最近{days}天",
+  "leaderboardNativeLanguage": "母语",
+  "leaderboardLearningLanguage": "学习语言",
+  "leaderboardIpCountry": "IP 国家"
 }

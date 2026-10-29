@@ -136,6 +136,83 @@ void main() {
     onRefresh: () async {},
   );
 
+  testWidgets('configured report labels stay with their cached values', (
+    tester,
+  ) async {
+    final report = SpeakingReport({...sample().data, 'periodDays': 14});
+    await mount(
+      tester,
+      Scaffold(body: SpeakingLeaderboardCard(preview: report)),
+    );
+    expect(find.text('Last 14 days'), findsOneWidget);
+    await mount(tester, view(report: report));
+    expect(find.text('Last 14 days'), findsOneWidget);
+    expect(find.text('Last 30 days'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(SpeakingLeaderboardView)),
+        )!.leaderboardPeriodFootnote,
+      ),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('previous 29 days'), findsNothing);
+    await mount(tester, view(failed: true));
+    expect(find.text('Last 30 days'), findsNothing);
+    await mount(
+      tester,
+      Scaffold(body: SpeakingLeaderboardCard(preview: sample())),
+    );
+    expect(find.text('Last 30 days'), findsOneWidget);
+  });
+
+  for (final replaceKey in [false, true]) {
+    testWidgets(
+      'losing admin privileges dismisses owned person dialog, key replacement=$replaceKey',
+      (tester) async {
+        var admin = true;
+        late StateSetter update;
+        final report = sample();
+        (report.data['rows'] as List).first.addAll({
+          'adminUserId': 'person',
+          'nativeLanguage': 'zh-CN',
+          'nativeLanguageFlag': '🇨🇳',
+          'ipCountryCode': 'NZ',
+          'ipCountryFlag': '🇳🇿',
+        });
+        await mount(
+          tester,
+          StatefulBuilder(
+            builder: (context, setState) {
+              update = setState;
+              return SpeakingLeaderboardView(
+                key: ValueKey(replaceKey ? admin : true),
+                report: report,
+                onPeriodChanged: admin ? (_) {} : null,
+                onOpenChat: admin ? (_) async {} : null,
+                onRefresh: () async {},
+              );
+            },
+          ),
+        );
+        await tester.tap(find.text('Maya'));
+        await tester.pumpAndSettle();
+        expect(find.text('zh-CN 🇨🇳'), findsOneWidget);
+        expect(find.text('ja-JP 🇯🇵'), findsOneWidget);
+        expect(find.text('NZ 🇳🇿'), findsOneWidget);
+        update(() => admin = false);
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.byType(ChoiceChip), findsNothing);
+        await tester.tap(find.text('Maya'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('admin periods have shield and remain selectable while loading', (
     tester,
   ) async {
@@ -219,10 +296,17 @@ void main() {
     testWidgets('admin controls wrap at 320px with large text $locale', (
       tester,
     ) async {
+      final report = sample();
+      (report.data['rows'] as List).first.addAll({
+        'adminUserId': 'person',
+        'nativeLanguage': 'en-NZ',
+        'nativeLanguageFlag': '🇳🇿',
+      });
       await mount(
         tester,
         SpeakingLeaderboardView(
-          report: sample(),
+          report: report,
+          onOpenChat: (_) async {},
           days: 1,
           onPeriodChanged: (_) {},
           onRefresh: () async {},
@@ -234,6 +318,18 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.byType(ChoiceChip), findsNWidgets(3));
+      await tester.ensureVisible(find.text('Maya'));
+      await tester.tap(find.text('Maya'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(tester.element(find.byType(AlertDialog)))!;
+      expect(l.leaderboardPeriodScope(14), contains('14'));
+      expect(l.leaderboardPeriodScope(14), isNot(contains('#')));
+      expect(find.text(l.leaderboardNativeLanguage), findsOneWidget);
+      expect(find.text(l.leaderboardLearningLanguage), findsOneWidget);
+      expect(find.text(l.leaderboardIpCountry), findsOneWidget);
+      expect(find.text('en-NZ 🇳🇿'), findsOneWidget);
+      expect(find.text(l.permissionStatusUnknown), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   }
 
@@ -319,7 +415,7 @@ void main() {
         find.byType(MaterialApp),
         'goldens/goal-${dark ? 'dark' : 'light'}.png',
       );
-      expect(find.text('Last 30 days'), findsNothing);
+      expect(find.text('Last 30 days'), findsOneWidget);
       expect(find.byIcon(Icons.emoji_events_outlined), findsOneWidget);
     });
   }

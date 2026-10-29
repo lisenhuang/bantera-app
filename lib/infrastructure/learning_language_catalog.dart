@@ -642,11 +642,13 @@ List<TranscriptionLocaleOption> availableProfileLanguages(
 bool supportsAudioDialogueLanguage(String identifier) =>
     primaryLanguageCodeForLocaleIdentifier(identifier) != 'mi';
 
-/// Admins may evaluate Māori in Practice without enabling it for the public
-/// catalog or the native-language picker. Reapply when opening cached pickers.
+/// Māori stays a learning-only choice. Testing-only availability is marked for
+/// admins; public rollout removes the badge for everyone, including admins.
+/// Reapply role and rollout state when opening cached pickers.
 List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
   Iterable<TranscriptionLocaleOption> options, {
   required bool isAdmin,
+  bool maoriPublicEnabled = false,
   bool nativeLanguage = false,
   bool preferNewZealand = false,
 }) {
@@ -676,12 +678,13 @@ List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
   visible
     ..clear()
     ..addAll(indexed.map((entry) => entry.$2));
-  if (isAdmin) {
+  if (isAdmin || maoriPublicEnabled) {
     visible.add(
-      const TranscriptionLocaleOption(
+      TranscriptionLocaleOption(
         identifier: 'mi-NZ',
         displayName: 'Māori (New Zealand)',
         isInstalled: false,
+        isAdminOnly: !maoriPublicEnabled,
         flagEmoji: '🇳🇿',
       ),
     );
@@ -701,6 +704,8 @@ List<TranscriptionLocaleOption> profileLanguageOptionsForRole(
 bool supportsQuickPracticeLanguage(
   String identifier, {
   required bool isAdmin,
+  bool maoriPublicEnabled = false,
 }) =>
     supportsAudioDialogueLanguage(identifier) ||
-    (isAdmin && normalizeLocaleIdentifierForLookup(identifier) == 'mi-nz');
+    ((isAdmin || maoriPublicEnabled) &&
+        normalizeLocaleIdentifierForLookup(identifier) == 'mi-nz');

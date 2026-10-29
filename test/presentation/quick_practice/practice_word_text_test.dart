@@ -40,6 +40,9 @@ void main() {
         (span) => span.style?.decoration == TextDecoration.underline,
       );
       expect(underlined.single.text, sample.$2);
+      expect(underlined.single.style?.fontWeight, FontWeight.w700);
+      expect(underlined.single.style?.backgroundColor, isNull);
+      expect(underlined.single.style?.background, isNull);
       await tester.tapOnText(find.textRange.ofSubstring(sample.$2));
       expect(tapped?.text, sample.$2);
       expect(tapped?.start, sample.$3);

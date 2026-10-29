@@ -40,6 +40,84 @@ void main() {
       }
     },
   );
+  test('configured period omits hours and keeps its page cutoff', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final requests = <Uri>[];
+    server.listen((request) async {
+      requests.add(request.uri);
+      request.response.headers.contentType = ContentType.json;
+      request.response.write(
+        jsonEncode({'rows': [], 'you': {}, 'periodDays': 14}),
+      );
+      await request.response.close();
+    });
+    final client = AuthApiClient.forTesting(
+      baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
+    );
+    try {
+      final report = await client.speakingLeaderboard(
+        accessToken: 'test',
+        configured: true,
+        offset: 100,
+        until: '2026-10-29T12:00:00Z',
+      );
+      expect(report['periodDays'], 14);
+      expect(requests.single.path, '/api/speaking-leaderboard/configured');
+      expect(requests.single.queryParameters, {
+        'offset': '100',
+        'until': '2026-10-29T12:00:00Z',
+      });
+    } finally {
+      await server.close(force: true);
+    }
+  });
+  test(
+    'only missing configured endpoint falls back to the legacy 30-day report',
+    () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final requests = <Uri>[];
+      var status = 404;
+      server.listen((request) async {
+        requests.add(request.uri);
+        request.response.statusCode = request.uri.path.endsWith('/configured')
+            ? status
+            : 200;
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(jsonEncode({'rows': [], 'you': {}}));
+        await request.response.close();
+      });
+      final client = AuthApiClient.forTesting(
+        baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
+      );
+      try {
+        await client.speakingLeaderboard(
+          accessToken: 'test',
+          configured: true,
+          offset: 100,
+          until: '2026-10-29T12:00:00Z',
+        );
+        expect(requests.map((r) => r.path), [
+          '/api/speaking-leaderboard/configured',
+          '/api/speaking-leaderboard',
+        ]);
+        expect(requests.last.queryParameters, {
+          'offset': '100',
+          'hours': '720',
+          'until': '2026-10-29T12:00:00Z',
+        });
+        status = 403;
+        await expectLater(
+          client.speakingLeaderboard(accessToken: 'test', configured: true),
+          throwsA(
+            isA<AuthApiException>().having((e) => e.statusCode, 'status', 403),
+          ),
+        );
+        expect(requests.length, 3);
+      } finally {
+        await server.close(force: true);
+      }
+    },
+  );
   test(
     'default stays public 30 days and admin periods preserve pagination',
     () async {

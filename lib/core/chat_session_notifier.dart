@@ -753,20 +753,45 @@ class ChatSessionNotifier extends ChangeNotifier {
   }
 
   Future<void> updateGlobalNotifications(bool enabled) async {
-    await _withRetry<void>(
-      (token) => _apiClient.updateGlobalNotifications(
+    final owner = AuthSessionNotifier.instance.session?.cacheKey;
+    await _withRetry<void>((token) async {
+      // A token-expired retry must not apply the old account's choice to a
+      // newly signed-in account.
+      if (owner == null ||
+          AuthSessionNotifier.instance.session?.cacheKey != owner) {
+        return;
+      }
+      await _apiClient.updateGlobalNotifications(
         accessToken: token,
         enabled: enabled,
-      ),
-    );
+      );
+    });
+    if (owner == null ||
+        AuthSessionNotifier.instance.session?.cacheKey != owner) {
+      return;
+    }
     _globalNotificationsEnabled = enabled;
     SettingsNotifier.instance.toggleNotifications(enabled);
-    if (enabled) {
-      await _syncPushToken(promptForPermission: true);
-      // Register first so a newly authorized device receives the test alert.
-      unawaited(_sendTestNotification());
-    }
+    // Publish the saved account setting independently of best-effort device
+    // registration. A push failure must not look like a failed settings save.
     notifyListeners();
+    if (AuthSessionNotifier.instance.session?.cacheKey != owner) return;
+    if (enabled) {
+      try {
+        await _syncPushToken(promptForPermission: true);
+        if (AuthSessionNotifier.instance.session?.cacheKey != owner) return;
+        // Register first so a newly authorized device receives the test alert.
+        unawaited(
+          _sendTestNotification(owner).catchError((Object error) {
+            debugPrint(
+              '[ChatPush] Test notification failed: ${error.runtimeType}',
+            );
+          }),
+        );
+      } catch (error) {
+        debugPrint('[ChatPush] Registration failed: ${error.runtimeType}');
+      }
+    }
   }
 
   Future<void> updateThreadNotifications({
@@ -995,10 +1020,11 @@ class ChatSessionNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> _sendTestNotification() async {
-    await _withRetry<void>(
-      (token) => _apiClient.sendTestNotification(accessToken: token),
-    );
+  Future<void> _sendTestNotification(String owner) async {
+    await _withRetry<void>((token) async {
+      if (AuthSessionNotifier.instance.session?.cacheKey != owner) return;
+      await _apiClient.sendTestNotification(accessToken: token);
+    });
   }
 
   void _handleAppResumed() {

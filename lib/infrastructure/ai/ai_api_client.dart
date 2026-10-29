@@ -113,6 +113,7 @@ class AiApiClient {
     String? previous,
     List<Map<String, String>> turns,
   ) async {
+    await AiConsent.instance.require(owner);
     final payload = <String, dynamic>{
       'previousSummary': previous,
       'turns': turns,

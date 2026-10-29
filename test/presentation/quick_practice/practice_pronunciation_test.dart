@@ -14,9 +14,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, dynamic> ready(String text) => {
-  'status': 'ready', 'alignmentVersion': 2,
-  'cue': [{'text': text, 'reading': text}],
-  'choices': [[{'text': text, 'reading': text}], [{'text': text, 'reading': text}]],
+  'status': 'ready',
+  'alignmentVersion': 2,
+  'cue': [
+    {'text': text, 'reading': text},
+  ],
+  'choices': [
+    [
+      {'text': text, 'reading': text},
+    ],
+    [
+      {'text': text, 'reading': text},
+    ],
+  ],
 };
 
 class MemoryPreferences extends PracticeTranslationPreferences {
@@ -230,9 +240,7 @@ void main() {
         id: id,
         embedded: null,
         active: active,
-        fetch: (id) => id == 'first'
-            ? first.future
-            : Future.value(ready(id)),
+        fetch: (id) => id == 'first' ? first.future : Future.value(ready(id)),
       );
       configure('one', 'zh-CN', 'first');
       await settle();
@@ -386,6 +394,14 @@ void main() {
       await tester.pump();
       expect(selected?.start, 1);
       expect(confirmed, isNull);
+      final source = tester.widget<Text>(find.text('好')).textSpan! as TextSpan;
+      final selectedSpan = source.children!.cast<TextSpan>().firstWhere(
+        (span) => span.text == '好',
+      );
+      expect(selectedSpan.style?.fontWeight, FontWeight.w700);
+      expect(selectedSpan.style?.decoration, TextDecoration.underline);
+      expect(selectedSpan.style?.backgroundColor, isNull);
+      expect(selectedSpan.style?.background, isNull);
       await tester.tapOnText(find.textRange.ofSubstring('好'));
       await tester.pump();
       expect(confirmed?.text, '好');

@@ -571,6 +571,13 @@ class AppLocalizationsTh extends AppLocalizations {
       'ใช้สวิตช์เดียวสำหรับทั้งบัญชีในทุกอุปกรณ์ของคุณ';
 
   @override
+  String get chatDisableAllNotificationsTitle => 'ปิดเสียงการแจ้งเตือนแชตไหม?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'การดำเนินการนี้จะปิดการแจ้งเตือนแชต สายเรียกเข้า และการเตือนจาก AI บนอุปกรณ์ทั้งหมดของคุณ คุณสามารถเปิดอีกครั้งได้จากเมนูนี้หรือการตั้งค่า';
+
+  @override
   String get chatNotificationsDisabledTitle => 'การแจ้งเตือนถูกปิดอยู่';
 
   @override
@@ -1821,6 +1828,28 @@ class AppLocalizationsTh extends AppLocalizations {
       'สื่อนี้ไม่อยู่ในอุปกรณ์แล้ว คุณสามารถนำออกจากประวัติได้';
 
   @override
+  String get aiSavedDialogues => 'บทสนทนาที่บันทึกไว้';
+
+  @override
+  String get aiSaveDialogue => 'บันทึกบทสนทนา';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'บันทึกบทสนทนานี้ไหม?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'คุณสามารถกลับมาที่ข้อความนี้ได้จากบทสนทนาที่บันทึกไว้';
+
+  @override
+  String get aiUnsaveDialogue => 'ยกเลิกการบันทึกบทสนทนา';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'ยังไม่มีบทสนทนาที่บันทึกไว้';
+
+  @override
+  String get aiDialogueYou => 'คุณ';
+
+  @override
   String get aiClearHistory => 'ล้างแชต';
 
   @override
@@ -2696,4 +2725,18 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'เพิ่มวิดเจ็ตจากหน้าจอโฮม Bantera จะตรวจสอบการตั้งค่าเมื่อคุณกลับมา แต่จะไม่ติดตามว่าคุณดูบ่อยแค่ไหน';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '$days วันที่ผ่านมา';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'ภาษาแม่';
+
+  @override
+  String get leaderboardLearningLanguage => 'ภาษาที่เรียน';
+
+  @override
+  String get leaderboardIpCountry => 'ประเทศของ IP';
 }

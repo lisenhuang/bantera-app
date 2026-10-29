@@ -63,14 +63,19 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(api.calls.where((c) => c.startsWith('DELETE')), isEmpty);
-      await tester.tap(find.text('Delete'));
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       api.fail = true;
       await tester.tap(find.widgetWithText(TextButton, 'Delete').last);
       await tester.pumpAndSettle();
       expect(find.text('Review words'), findsOneWidget);
       api.fail = false;
-      await tester.tap(find.text('Delete'));
+      await tester.drag(
+        find.byType(SwipeActionCard).first,
+        const Offset(-220, 0),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       api.gate = Completer<void>();
       await tester.tap(find.widgetWithText(TextButton, 'Delete').last);

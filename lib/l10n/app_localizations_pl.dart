@@ -578,6 +578,14 @@ class AppLocalizationsPl extends AppLocalizations {
       'Jeden przełącznik dla całego konta na wszystkich Twoich urządzeniach.';
 
   @override
+  String get chatDisableAllNotificationsTitle =>
+      'Wyciszyć powiadomienia czatu?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Spowoduje to wyłączenie alertów czatu, połączeń przychodzących i przypomnień AI na wszystkich Twoich urządzeniach. Możesz je ponownie włączyć w tym menu lub w Ustawieniach.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Powiadomienia wyłączone';
 
   @override
@@ -1915,6 +1923,28 @@ class AppLocalizationsPl extends AppLocalizations {
       'Tego materiału nie ma już na urządzeniu. Możesz usunąć go z historii.';
 
   @override
+  String get aiSavedDialogues => 'Zapisane dialogi';
+
+  @override
+  String get aiSaveDialogue => 'Zapisz dialog';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Zapisać ten dialog?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Możesz wrócić do tej wiadomości z sekcji Zapisane dialogi.';
+
+  @override
+  String get aiUnsaveDialogue => 'Usuń z zapisanych dialogów';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Nie masz jeszcze zapisanych dialogów';
+
+  @override
+  String get aiDialogueYou => 'Ty';
+
+  @override
   String get aiClearHistory => 'Wyczyść czat';
 
   @override
@@ -2800,4 +2830,26 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Dodaj widżet z ekranu początkowego. Bantera sprawdza jego konfigurację po powrocie, ale nie śledzi, jak często go oglądasz.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Ostatnie $days dni',
+      many: 'Ostatnie $days dni',
+      few: 'Ostatnie $days dni',
+      one: 'Ostatni $days dzień',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Język ojczysty';
+
+  @override
+  String get leaderboardLearningLanguage => 'Uczony język';
+
+  @override
+  String get leaderboardIpCountry => 'Kraj adresu IP';
 }

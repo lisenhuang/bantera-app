@@ -209,6 +209,8 @@
   "chatUnblockFailed": "이 사용자를 차단 해제하지 못했습니다. 다시 시도하세요.",
   "chatNotificationsTitle": "채팅 알림",
   "chatNotificationsSubtitle": "모든 기기에서 하나의 계정 전체 스위치를 사용합니다.",
+  "chatDisableAllNotificationsTitle": "채팅 알림을 끌까요?",
+  "chatDisableAllNotificationsBody": "모든 기기에서 채팅 알림, 수신 전화 및 AI 알림이 꺼집니다. 이 메뉴나 설정에서 다시 켤 수 있습니다.",
   "chatNotificationsDisabledTitle": "알림이 꺼져 있습니다",
   "chatNotificationsDisabledSettings": "Bantera 채팅 알림을 받으려면 설정에서 알림을 켜세요.",
   "chatNotificationsDisabledBody": "채팅 알림을 켜려면 알림 권한이 필요합니다.",
@@ -582,6 +584,13 @@
   "practiceHistoryDeviceNote": "레슨을 연습하면 진행 상황이 표시됩니다. 기록은 이 기기에 저장됩니다.",
   "practiceHistoryRemoveBody": "이 레슨을 기록에서 삭제하고 진행 상황과 재개 위치를 초기화할까요? 저장한 미디어, 자막과 단어 수 합계는 유지됩니다.",
   "practiceHistoryUnavailable": "이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다.",
+  "aiSavedDialogues": "저장한 대화",
+  "aiSaveDialogue": "대화 저장",
+  "aiSaveDialogueConfirmTitle": "이 대화를 저장할까요?",
+  "aiSaveDialogueConfirmBody": "저장한 대화에서 이 메시지로 돌아올 수 있습니다.",
+  "aiUnsaveDialogue": "대화 저장 취소",
+  "aiSavedDialoguesEmpty": "아직 저장한 대화가 없습니다",
+  "aiDialogueYou": "나",
   "aiClearHistory": "채팅 삭제",
   "aiClearHistoryBody": "이 기기의 AI 메시지, 오디오 및 대화 기억을 삭제할까요? 현재 통화도 종료됩니다. 학습 자료, 프로필 및 예약 통화는 유지됩니다.",
   "aiLocalHistory": "받은 AI 대화 기록은 이 기기에 저장돼요. 답변에 필요한 맥락은 AI로 전송돼요. 알림 일정과 메모는 서버에 저장되며, 알림 음성은 수신하거나 취소할 때까지 최대 7일간 임시 보관돼요.",
@@ -839,5 +848,9 @@
   "widgetStepAdd": "쓸어넘겨 크기를 고른 후 위젯 추가, 완료를 누르세요.",
   "widgetPreviewDescription": "예시 진행 상황이 표시된 실제 위젯 미리보기.",
   "widgetPreviewRetry": "미리보기 새로고침",
-  "widgetLocalNote": "홈 화면에서 직접 위젯을 추가하세요. Bantera는 돌아오면 위젯 설정 여부를 확인하며, 조회 빈도는 추적하지 않아요."
+  "widgetLocalNote": "홈 화면에서 직접 위젯을 추가하세요. Bantera는 돌아오면 위젯 설정 여부를 확인하며, 조회 빈도는 추적하지 않아요.",
+  "leaderboardPeriodScope": "최근 {days}일",
+  "leaderboardNativeLanguage": "모국어",
+  "leaderboardLearningLanguage": "학습 언어",
+  "leaderboardIpCountry": "IP 국가"
 }

@@ -4,6 +4,7 @@ class TranscriptionLocaleOption {
     required String displayName,
     required this.isInstalled,
     this.flagEmoji,
+    this.isAdminOnly = false,
   }) : _displayName = displayName;
 
   factory TranscriptionLocaleOption.fromMap(Map<Object?, Object?> map) {
@@ -12,6 +13,7 @@ class TranscriptionLocaleOption {
       displayName: map['displayName']?.toString() ?? '',
       isInstalled: map['isInstalled'] == true,
       flagEmoji: map['flagEmoji']?.toString(),
+      isAdminOnly: map['isAdminOnly'] == true,
     );
   }
 
@@ -20,6 +22,7 @@ class TranscriptionLocaleOption {
   String get displayName => localeDisplayName(identifier, _displayName);
   final bool isInstalled;
   final String? flagEmoji;
+  final bool isAdminOnly;
 }
 
 /// Keep spoken-language names consistent across API and native pickers.

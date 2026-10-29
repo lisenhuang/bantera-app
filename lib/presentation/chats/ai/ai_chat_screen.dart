@@ -8,6 +8,7 @@ import '../../../core/ai_consent.dart';
 import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
 import 'ai_vocabulary_screen.dart';
+import 'ai_saved_dialogues_screen.dart';
 import 'ai_image_cards.dart';
 import 'ai_video_cards.dart';
 import 'ai_message_markdown.dart';
@@ -16,7 +17,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../l10n/app_localizations.dart';
 import 'ai_chat_controller.dart';
@@ -116,7 +116,11 @@ class _AiChatScreenState extends State<AiChatScreen>
       widget.controller ??
       widget._controllerFactory?.call() ??
       AiChatController.forChat();
-  final _scroll = ScrollController();
+  final _scroll = ScrollController(keepScrollOffset: false);
+  String? _focusedMessageId;
+  String? _highlightedMessageId;
+  int _focusRevision = 0;
+  Timer? _highlightTimer;
   final _player = AudioPlayer();
   String? _playing;
   ListeningWordTracker? _listening;
@@ -126,6 +130,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   final Map<String, Duration> _durations = {};
   bool _startingRecord = false;
   int _count = 0;
+  String? _latestUserMessageId;
   bool _historyLoaded = false;
   bool _confirmingCall = false;
   bool _initializationStarted = false;
@@ -135,6 +140,10 @@ class _AiChatScreenState extends State<AiChatScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _count = _chat.messages.length;
+    _latestUserMessageId = _chat.messages
+        .where((m) => m.role == 'user')
+        .lastOrNull
+        ?.id;
     _historyLoaded = _chat.loaded;
     _scroll.addListener(_pauseVideo);
     _chat.attachChat();
@@ -290,13 +299,25 @@ class _AiChatScreenState extends State<AiChatScreen>
                     AppLifecycleState.inactive))) {
       unawaited(_play(reply));
     }
-    final count = _chat.messages.length;
+    final messages = _chat.messages;
+    final count = messages.length;
     final arrivingMessage = _historyLoaded && count > _count;
+    final latestUserMessageId = messages
+        .where((m) => m.role == 'user')
+        .lastOrNull
+        ?.id;
+    final sentMessage =
+        arrivingMessage && latestUserMessageId != _latestUserMessageId;
+    _latestUserMessageId = latestUserMessageId;
+    if (_focusedMessageId != null &&
+        (!messages.any((m) => m.id == _focusedMessageId) || sentMessage)) {
+      _focusedMessageId = null;
+    }
     _historyLoaded = _chat.loaded;
     _count = count;
-    if (arrivingMessage) {
+    if (arrivingMessage && _focusedMessageId == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _scroll.hasClients) {
+        if (mounted && _focusedMessageId == null && _scroll.hasClients) {
           _scroll.animateTo(
             0,
             duration: const Duration(milliseconds: 220),
@@ -347,8 +368,74 @@ class _AiChatScreenState extends State<AiChatScreen>
     _positionEvents?.cancel();
     _durationEvents?.cancel();
     _player.dispose();
+    _highlightTimer?.cancel();
     _scroll.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleSavedMessage(AiMessage message) async {
+    if (!_chat.canSaveMessage(message)) return;
+    if (message.savedAt == null) {
+      final l = AppLocalizations.of(context)!;
+      final confirmed = await showBanteraDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l.aiSaveDialogueConfirmTitle),
+          content: Text(l.aiSaveDialogueConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.saveLabel),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true ||
+          !mounted ||
+          !_chat.canSaveMessage(message) ||
+          message.savedAt != null) {
+        return;
+      }
+    }
+    if (!mounted || !_chat.canSaveMessage(message)) return;
+    try {
+      await _chat.toggleSavedMessage(message);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.onboardingLoadFailed),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openSavedDialogues() async {
+    final messageId = await Navigator.push<String>(
+      context,
+      MaterialPageRoute<String>(
+        builder: (_) => AiSavedDialoguesScreen(controller: _chat),
+      ),
+    );
+    if (!mounted ||
+        messageId == null ||
+        !_chat.messages.any((m) => m.id == messageId)) {
+      return;
+    }
+    _pauseVideo();
+    _highlightTimer?.cancel();
+    setState(() {
+      _focusedMessageId = messageId;
+      _highlightedMessageId = messageId;
+      _focusRevision++;
+    });
+    _highlightTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _highlightedMessageId = null);
+    });
   }
 
   Future<void> _deleteMessage(AiMessage message) async {
@@ -580,7 +667,9 @@ class _AiChatScreenState extends State<AiChatScreen>
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_horiz),
             onSelected: (value) {
-              if (value == 'vocabulary') {
+              if (value == 'saved') {
+                unawaited(_openSavedDialogues());
+              } else if (value == 'vocabulary') {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(
@@ -633,6 +722,17 @@ class _AiChatScreenState extends State<AiChatScreen>
               }
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'saved',
+                enabled: _chat.loaded,
+                child: Row(
+                  children: [
+                    const Icon(Icons.bookmarks_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.aiSavedDialogues),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'vocabulary',
                 child: Row(
@@ -804,66 +904,127 @@ class _AiChatScreenState extends State<AiChatScreen>
     final sending = _chat.sendingVoice;
     final draft = _chat.draftUser.isNotEmpty;
     final extra = (sending ? 1 : 0) + (draft ? 1 : 0);
+    final itemCount = extra + (messages.isEmpty ? 1 : messages.length);
+    int? findIndex(Key key) {
+      if (key == const ValueKey('ai-sending')) return sending ? 0 : null;
+      if (key == const ValueKey('ai-draft')) {
+        return draft ? (sending ? 1 : 0) : null;
+      }
+      if (key == const ValueKey('ai-welcome')) {
+        return messages.isEmpty ? extra : null;
+      }
+      final index = messages.indexWhere((m) => ValueKey(m.id) == key);
+      return index < 0 ? null : extra + messages.length - 1 - index;
+    }
+
+    Widget itemBuilder(BuildContext context, int index) {
+      if (sending && index == 0) {
+        return Padding(
+          key: const ValueKey('ai-sending'),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(l.chatSendingAudio),
+            ],
+          ),
+        );
+      }
+      if (draft && index == (sending ? 1 : 0)) {
+        return KeyedSubtree(
+          key: const ValueKey('ai-draft'),
+          child: _draft(_chat.draftUser, true),
+        );
+      }
+      if (messages.isEmpty) {
+        return Padding(
+          key: const ValueKey('ai-welcome'),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            children: [
+              const AiAvatar(radius: 28),
+              const SizedBox(height: 16),
+              Text(
+                l.aiWelcome,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+        );
+      }
+      final message = messages[messages.length - 1 - (index - extra)];
+      return AnimatedContainer(
+        key: ValueKey(message.id),
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          color: _highlightedMessageId == message.id
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: .12)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: _bubble(message),
+      );
+    }
+
+    final focusedIndex = messages.indexWhere((m) => m.id == _focusedMessageId);
+    if (focusedIndex >= 0) {
+      final pivot = extra + messages.length - 1 - focusedIndex;
+      const center = ValueKey('ai-focused-message-sliver');
+      // Anchor the selected bubble directly. Both sides stay lazy, even with
+      // years of variable-height messages, images and formatted responses.
+      return CustomScrollView(
+        key: ValueKey('ai-focus-$_focusedMessageId-$_focusRevision'),
+        controller: _scroll,
+        center: center,
+        anchor: .12,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => itemBuilder(context, pivot + 1 + index),
+                childCount: itemCount - pivot - 1,
+                findChildIndexCallback: (key) {
+                  final index = findIndex(key);
+                  return index != null && index > pivot
+                      ? index - pivot - 1
+                      : null;
+                },
+              ),
+            ),
+          ),
+          SliverPadding(
+            key: center,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => itemBuilder(context, pivot - index),
+                childCount: pivot + 1,
+                findChildIndexCallback: (key) {
+                  final index = findIndex(key);
+                  return index != null && index <= pivot ? pivot - index : null;
+                },
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     return ListView.builder(
+      key: const ValueKey('ai-newest-messages'),
       // Offset zero is the newest message; only visible history builds bubbles.
       reverse: true,
       controller: _scroll,
       padding: const EdgeInsets.all(16),
-      itemCount: extra + (messages.isEmpty ? 1 : messages.length),
-      findChildIndexCallback: (key) {
-        if (key == const ValueKey('ai-sending')) return sending ? 0 : null;
-        if (key == const ValueKey('ai-draft')) {
-          return draft ? (sending ? 1 : 0) : null;
-        }
-        if (key == const ValueKey('ai-welcome')) {
-          return messages.isEmpty ? extra : null;
-        }
-        final index = messages.indexWhere((m) => ValueKey(m.id) == key);
-        return index < 0 ? null : extra + messages.length - 1 - index;
-      },
-      itemBuilder: (context, index) {
-        if (sending && index == 0) {
-          return Padding(
-            key: const ValueKey('ai-sending'),
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 12),
-                Text(l.chatSendingAudio),
-              ],
-            ),
-          );
-        }
-        if (draft && index == (sending ? 1 : 0)) {
-          return KeyedSubtree(
-            key: const ValueKey('ai-draft'),
-            child: _draft(_chat.draftUser, true),
-          );
-        }
-        if (messages.isEmpty) {
-          return Padding(
-            key: const ValueKey('ai-welcome'),
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              children: [
-                const AiAvatar(radius: 28),
-                const SizedBox(height: 16),
-                Text(
-                  l.aiWelcome,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-          );
-        }
-        return _bubble(messages[messages.length - 1 - (index - extra)]);
-      },
+      itemCount: itemCount,
+      findChildIndexCallback: findIndex,
+      itemBuilder: itemBuilder,
     );
   }
 
@@ -984,6 +1145,8 @@ class _AiChatScreenState extends State<AiChatScreen>
       child: SwipeMessageAction(
         key: ValueKey('ai-message-swipe-${m.id}'),
         onDelete: _chat.canDeleteMessage(m) ? () => _deleteMessage(m) : null,
+        onSave: _chat.canSaveMessage(m) ? () => _toggleSavedMessage(m) : null,
+        isSaved: m.savedAt != null,
         child: Container(
           key: ValueKey('ai-message-content-${m.id}'),
           constraints: user ? const BoxConstraints(maxWidth: 340) : null,

@@ -185,7 +185,20 @@ class _PracticePronunciationTextState extends State<PracticePronunciationText> {
                   reading = unit.reading,
                   start = unit.start;
               final end = start + source.length;
-              final naturalWidth = width(source, sourceStyle, direction);
+              final selected = selectedWord;
+              final selectionOverlaps =
+                  selected != null &&
+                  selected.start < end &&
+                  selected.end > start;
+              // Reserve enough width for the selected bold source without
+              // shifting its reading onto the next unit or clipping glyphs.
+              final naturalWidth = width(
+                source,
+                selectionOverlaps
+                    ? sourceStyle.copyWith(fontWeight: FontWeight.w700)
+                    : sourceStyle,
+                direction,
+              );
               final readingWidth = width(
                 reading,
                 readingStyle,
@@ -206,7 +219,6 @@ class _PracticePronunciationTextState extends State<PracticePronunciationText> {
                       part.text,
                     ),
                   );
-              final selected = selectedWord;
               final a = selected == null
                   ? 0
                   : (selected.start - start).clamp(0, source.length);

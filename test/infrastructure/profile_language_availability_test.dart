@@ -35,22 +35,60 @@ void main() {
     expect(supportsQuickPracticeLanguage('mi-NZ', isAdmin: true), isTrue);
     expect(supportsQuickPracticeLanguage('mi-NZ', isAdmin: false), isFalse);
   });
-  test('retired Māori is excluded from every picker source', () {
-    final options = ['mi', 'mi-NZ', 'MI_nz', 'en-NZ'].map(option);
-    for (final native in [true, false]) {
+  test(
+    'Māori requires explicit availability and stays out of base catalogs',
+    () {
+      final options = ['mi', 'mi-NZ', 'MI_nz', 'en-NZ'].map(option);
+      for (final native in [true, false]) {
+        expect(
+          availableProfileLanguages(
+            options,
+            nativeLanguage: native,
+          ).map((o) => o.identifier),
+          ['en-NZ'],
+        );
+      }
       expect(
-        availableProfileLanguages(
-          options,
-          nativeLanguage: native,
-        ).map((o) => o.identifier),
-        ['en-NZ'],
+        kFallbackLearningLanguages.any((o) => o.identifier == 'mi-NZ'),
+        isFalse,
       );
+    },
+  );
+  for (final public in [false, true]) {
+    for (final admin in [false, true]) {
+      test('Māori public=$public admin=$admin sets visibility and badge', () {
+        final options = profileLanguageOptionsForRole(
+          ['mi-NZ', 'MI_nz', 'en-NZ'].map(option),
+          isAdmin: admin,
+          maoriPublicEnabled: public,
+        );
+        final maori = options.where((o) => isMaoriLanguage(o.identifier));
+        expect(maori.length, public || admin ? 1 : 0);
+        if (maori.isNotEmpty) {
+          expect(maori.single.isAdminOnly, !public);
+          expect(maori.single.identifier, 'mi-NZ');
+        }
+        expect(
+          supportsQuickPracticeLanguage(
+            'mi-NZ',
+            isAdmin: admin,
+            maoriPublicEnabled: public,
+          ),
+          public || admin,
+        );
+        expect(
+          profileLanguageOptionsForRole(
+            options,
+            isAdmin: admin,
+            maoriPublicEnabled: public,
+            nativeLanguage: true,
+          ).any((o) => isMaoriLanguage(o.identifier)),
+          isFalse,
+        );
+        expect(supportsAudioDialogueLanguage('mi-NZ'), isFalse);
+      });
     }
-    expect(
-      kFallbackLearningLanguages.any((o) => o.identifier == 'mi-NZ'),
-      isFalse,
-    );
-  });
+  }
   test('mainland Cantonese is hidden only from native choices', () {
     final options = ['yue-CN', 'YUE_cn', 'zh-HK', 'zh-CN', 'en-NZ'].map(option);
     expect(

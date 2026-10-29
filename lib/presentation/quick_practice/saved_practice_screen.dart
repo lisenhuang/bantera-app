@@ -23,7 +23,7 @@ class SavedPracticeScreen extends StatefulWidget {
 class _SavedPracticeScreenState extends State<SavedPracticeScreen> {
   List<Map<String, dynamic>> _entries = [];
   bool _loading = true, _failed = false;
-  String? _removing, _revealed;
+  String? _removing;
   SavedPracticeStore get _store => widget.store ?? SavedPracticeStore.instance;
   AppLocalizations get l => AppLocalizations.of(context)!;
   bool get _sameOwner =>
@@ -111,7 +111,6 @@ class _SavedPracticeScreenState extends State<SavedPracticeScreen> {
       if (mounted && _sameOwner) {
         setState(() {
           _entries = [];
-          _revealed = null;
         });
       }
     } catch (_) {
@@ -172,10 +171,6 @@ class _SavedPracticeScreenState extends State<SavedPracticeScreen> {
                   key: ValueKey('saved-practice-${entry['id']}'),
                   cue: entry['cue'] as String,
                   subtitle: '${entry['locale']} · ${entry['level']}',
-                  revealed: _revealed == entry['id'],
-                  onReveal: (open) => setState(
-                    () => _revealed = open ? entry['id'] as String : null,
-                  ),
                   onOpen: _callActive || _removing != null
                       ? null
                       : () => _open(entry),

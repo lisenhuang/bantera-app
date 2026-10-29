@@ -174,6 +174,8 @@
   "chatUnblockFailed": "Impossibile sbloccare questo utente. Riprova.",
   "chatNotificationsTitle": "Notifiche chat",
   "chatNotificationsSubtitle": "Un unico interruttore per l'account, valido su tutti i tuoi dispositivi.",
+  "chatDisableAllNotificationsTitle": "Disattivare le notifiche della chat?",
+  "chatDisableAllNotificationsBody": "Verranno disattivati gli avvisi della chat, le chiamate in arrivo e i promemoria AI su tutti i tuoi dispositivi. Puoi riattivarli da questo menu o dalle Impostazioni.",
   "chatNotificationsDisabledTitle": "Notifiche disattivate",
   "chatNotificationsDisabledSettings": "Attiva le notifiche in Impostazioni per ricevere gli avvisi delle chat di Bantera.",
   "chatNotificationsDisabledBody": "Bantera ha bisogno dell'autorizzazione alle notifiche per attivare gli avvisi delle chat.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Esercitati con una lezione per vedere i progressi qui. La cronologia è salvata su questo dispositivo.",
   "practiceHistoryRemoveBody": "Rimuovere questa lezione dalla cronologia e azzerare i progressi e il punto di ripresa? I contenuti, le frasi salvate e i totali delle parole resteranno.",
   "practiceHistoryUnavailable": "Questo contenuto non è più sul dispositivo. Puoi rimuoverlo dalla cronologia.",
+  "aiSavedDialogues": "Dialoghi salvati",
+  "aiSaveDialogue": "Salva dialogo",
+  "aiSaveDialogueConfirmTitle": "Salvare questo dialogo?",
+  "aiSaveDialogueConfirmBody": "Puoi tornare a questo messaggio da Dialoghi salvati.",
+  "aiUnsaveDialogue": "Rimuovi dai dialoghi salvati",
+  "aiSavedDialoguesEmpty": "Nessun dialogo salvato",
+  "aiDialogueYou": "Tu",
   "aiClearHistory": "Cancella chat",
   "aiClearHistoryBody": "Eliminare messaggi, audio e ricordi della conversazione AI da questo dispositivo? La chiamata terminerà. Materiali, profilo e richiamate programmate resteranno invariati.",
   "aiLocalHistory": "La cronologia IA ricevuta resta su questo dispositivo. Il contesto utile viene inviato all’IA. Orari e note dei promemoria sono sul server. L’audio resta temporaneamente fino alla ricezione o all’annullamento, al massimo sette giorni.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Scorri per scegliere una dimensione, tocca Aggiungi widget e poi Fine.",
   "widgetPreviewDescription": "Anteprima del widget reale con progressi di esempio.",
   "widgetPreviewRetry": "Ricarica anteprima",
-  "widgetLocalNote": "Aggiungi il widget dalla schermata Home. Bantera ne verifica la configurazione al tuo ritorno, senza monitorare quante volte lo guardi."
+  "widgetLocalNote": "Aggiungi il widget dalla schermata Home. Bantera ne verifica la configurazione al tuo ritorno, senza monitorare quante volte lo guardi.",
+  "leaderboardPeriodScope": "{days, plural, one{Ultimo {days} giorno} other{Ultimi {days} giorni}}",
+  "leaderboardNativeLanguage": "Lingua madre",
+  "leaderboardLearningLanguage": "Lingua studiata",
+  "leaderboardIpCountry": "Paese IP"
 }

@@ -174,6 +174,8 @@
   "chatUnblockFailed": "No se pudo desbloquear a este usuario. Inténtalo de nuevo.",
   "chatNotificationsTitle": "Notificaciones de chat",
   "chatNotificationsSubtitle": "Un solo interruptor para toda tu cuenta en todos tus dispositivos.",
+  "chatDisableAllNotificationsTitle": "¿Silenciar las notificaciones del chat?",
+  "chatDisableAllNotificationsBody": "Esto desactiva las alertas de chat, las llamadas entrantes y los recordatorios de IA en todos tus dispositivos. Puedes volver a activarlos desde este menú o Ajustes.",
   "chatNotificationsDisabledTitle": "Notificaciones desactivadas",
   "chatNotificationsDisabledSettings": "Activa las notificaciones en Configuración para recibir alertas de chat de Bantera.",
   "chatNotificationsDisabledBody": "Bantera necesita permiso de notificaciones para activar las alertas de chat.",
@@ -547,6 +549,13 @@
   "practiceHistoryDeviceNote": "Practica una lección para ver tu progreso aquí. El historial se guarda en este dispositivo.",
   "practiceHistoryRemoveBody": "¿Eliminar esta lección del historial y restablecer su progreso y punto de reanudación? Se conservarán tus medios, frases guardadas y recuentos de palabras.",
   "practiceHistoryUnavailable": "Este contenido ya no está en el dispositivo. Puedes eliminarlo del historial.",
+  "aiSavedDialogues": "Diálogos guardados",
+  "aiSaveDialogue": "Guardar diálogo",
+  "aiSaveDialogueConfirmTitle": "¿Guardar este diálogo?",
+  "aiSaveDialogueConfirmBody": "Puedes volver a este mensaje desde Diálogos guardados.",
+  "aiUnsaveDialogue": "Dejar de guardar diálogo",
+  "aiSavedDialoguesEmpty": "Aún no hay diálogos guardados",
+  "aiDialogueYou": "Tú",
   "aiClearHistory": "Borrar chat",
   "aiClearHistoryBody": "¿Eliminar los mensajes, audios y recuerdos de conversación de la IA en este dispositivo? Se terminará la llamada. Tu biblioteca, perfil y llamadas programadas se conservarán.",
   "aiLocalHistory": "El historial de IA recibido queda en este dispositivo. Se envía contexto relevante a la IA para responder. Los horarios y notas de recordatorios se guardan en el servidor. El audio se conserva hasta recibirlo o cancelarlo, como máximo siete días.",
@@ -804,5 +813,9 @@
   "widgetStepAdd": "Desliza para elegir un tamaño, pulsa Añadir widget y luego OK.",
   "widgetPreviewDescription": "Vista previa del widget real con progreso de ejemplo.",
   "widgetPreviewRetry": "Recargar vista previa",
-  "widgetLocalNote": "Añade el widget desde la pantalla de inicio. Bantera comprueba su configuración cuando vuelves, pero no registra cuántas veces lo miras."
+  "widgetLocalNote": "Añade el widget desde la pantalla de inicio. Bantera comprueba su configuración cuando vuelves, pero no registra cuántas veces lo miras.",
+  "leaderboardPeriodScope": "{days, plural, one{Último {days} día} other{Últimos {days} días}}",
+  "leaderboardNativeLanguage": "Lengua materna",
+  "leaderboardLearningLanguage": "Idioma de aprendizaje",
+  "leaderboardIpCountry": "País de la IP"
 }

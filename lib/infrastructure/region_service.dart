@@ -10,6 +10,7 @@ import '../core/app_resume_notifier.dart';
 import '../core/settings_notifier.dart';
 import 'transcription_locale_option.dart';
 import 'learning_language_catalog.dart';
+import 'language_availability_service.dart';
 
 /// Works out, from the user's IP, whether they are outside mainland China.
 ///
@@ -18,7 +19,10 @@ import 'learning_language_catalog.dart';
 /// lookup confirms a country other than CN, the user is treated as being in
 /// mainland China.
 class RegionService extends ChangeNotifier {
-  RegionService._() : _countryLookup = null, _appLocale = null {
+  RegionService._()
+    : _countryLookup = null,
+      _appLocale = null,
+      _languageAvailability = LanguageAvailabilityService.instance {
     AppResumeNotifier.instance.addListener(_refreshCountry);
   }
 
@@ -26,11 +30,14 @@ class RegionService extends ChangeNotifier {
   RegionService.forTesting({
     required Future<String?> Function() countryLookup,
     required Locale Function() appLocale,
+    LanguageAvailabilityService? languageAvailability,
   }) : _countryLookup = countryLookup,
-       _appLocale = appLocale;
+       _appLocale = appLocale,
+       _languageAvailability = languageAvailability;
 
   final Future<String?> Function()? _countryLookup;
   final Locale Function()? _appLocale;
+  final LanguageAvailabilityService? _languageAvailability;
 
   static final RegionService instance = RegionService._();
 
@@ -121,13 +128,20 @@ class RegionService extends ChangeNotifier {
   Future<List<TranscriptionLocaleOption>> profileLanguageOptions(
     Iterable<TranscriptionLocaleOption> options, {
     required bool isAdmin,
+    bool Function()? currentIsAdmin,
     bool nativeLanguage = false,
   }) async {
-    if (!nativeLanguage) await isOutsideMainlandChina();
+    if (!nativeLanguage) {
+      await Future.wait([
+        isOutsideMainlandChina(),
+        if (_languageAvailability != null) _languageAvailability.refresh(),
+      ]);
+    }
     return filterLanguageOptions(
       profileLanguageOptionsForRole(
         options,
-        isAdmin: isAdmin,
+        isAdmin: currentIsAdmin?.call() ?? isAdmin,
+        maoriPublicEnabled: _languageAvailability?.maoriPublicEnabled ?? false,
         nativeLanguage: nativeLanguage,
         preferNewZealand: _confirmedCountry == 'NZ',
       ),

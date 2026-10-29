@@ -1171,6 +1171,18 @@ abstract class AppLocalizations {
   /// **'Use one account-wide switch across your devices.'**
   String get chatNotificationsSubtitle;
 
+  /// No description provided for @chatDisableAllNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute chat notifications?'**
+  String get chatDisableAllNotificationsTitle;
+
+  /// No description provided for @chatDisableAllNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This turns off chat alerts, incoming calls and AI reminders across your devices. You can enable them again from this menu or Settings.'**
+  String get chatDisableAllNotificationsBody;
+
   /// No description provided for @chatNotificationsDisabledTitle.
   ///
   /// In en, this message translates to:
@@ -3356,6 +3368,48 @@ abstract class AppLocalizations {
   /// **'This media is no longer on this device. You can remove it from history.'**
   String get practiceHistoryUnavailable;
 
+  /// No description provided for @aiSavedDialogues.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved dialogues'**
+  String get aiSavedDialogues;
+
+  /// No description provided for @aiSaveDialogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Save dialogue'**
+  String get aiSaveDialogue;
+
+  /// No description provided for @aiSaveDialogueConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this dialogue?'**
+  String get aiSaveDialogueConfirmTitle;
+
+  /// No description provided for @aiSaveDialogueConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can return to this message from Saved dialogues.'**
+  String get aiSaveDialogueConfirmBody;
+
+  /// No description provided for @aiUnsaveDialogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsave dialogue'**
+  String get aiUnsaveDialogue;
+
+  /// No description provided for @aiSavedDialoguesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved dialogues yet'**
+  String get aiSavedDialoguesEmpty;
+
+  /// No description provided for @aiDialogueYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get aiDialogueYou;
+
   /// No description provided for @aiClearHistory.
   ///
   /// In en, this message translates to:
@@ -4903,6 +4957,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You add the widget from your Home Screen. Bantera checks its configuration when you return; it does not track how often you view it.'**
   String get widgetLocalNote;
+
+  /// No description provided for @leaderboardPeriodScope.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Last {days} day} other{Last {days} days}}'**
+  String leaderboardPeriodScope(int days);
+
+  /// No description provided for @leaderboardNativeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Native language'**
+  String get leaderboardNativeLanguage;
+
+  /// No description provided for @leaderboardLearningLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning language'**
+  String get leaderboardLearningLanguage;
+
+  /// No description provided for @leaderboardIpCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'IP country'**
+  String get leaderboardIpCountry;
 }
 
 class _AppLocalizationsDelegate

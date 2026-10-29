@@ -72,6 +72,7 @@ class _PracticeWordTextState extends State<PracticeWordText> {
           text: token.text,
           style: isSelected
               ? const TextStyle(
+                  fontWeight: FontWeight.w700,
                   decoration: TextDecoration.underline,
                   decorationThickness: 2,
                 )

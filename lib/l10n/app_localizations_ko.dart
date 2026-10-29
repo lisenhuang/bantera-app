@@ -551,6 +551,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatNotificationsSubtitle => '모든 기기에서 하나의 계정 전체 스위치를 사용합니다.';
 
   @override
+  String get chatDisableAllNotificationsTitle => '채팅 알림을 끌까요?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      '모든 기기에서 채팅 알림, 수신 전화 및 AI 알림이 꺼집니다. 이 메뉴나 설정에서 다시 켤 수 있습니다.';
+
+  @override
   String get chatNotificationsDisabledTitle => '알림이 꺼져 있습니다';
 
   @override
@@ -1764,6 +1771,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceHistoryUnavailable => '이 미디어가 기기에 없습니다. 기록에서 삭제할 수 있습니다.';
 
   @override
+  String get aiSavedDialogues => '저장한 대화';
+
+  @override
+  String get aiSaveDialogue => '대화 저장';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => '이 대화를 저장할까요?';
+
+  @override
+  String get aiSaveDialogueConfirmBody => '저장한 대화에서 이 메시지로 돌아올 수 있습니다.';
+
+  @override
+  String get aiUnsaveDialogue => '대화 저장 취소';
+
+  @override
+  String get aiSavedDialoguesEmpty => '아직 저장한 대화가 없습니다';
+
+  @override
+  String get aiDialogueYou => '나';
+
+  @override
   String get aiClearHistory => '채팅 삭제';
 
   @override
@@ -2607,4 +2635,18 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       '홈 화면에서 직접 위젯을 추가하세요. Bantera는 돌아오면 위젯 설정 여부를 확인하며, 조회 빈도는 추적하지 않아요.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    return '최근 $days일';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => '모국어';
+
+  @override
+  String get leaderboardLearningLanguage => '학습 언어';
+
+  @override
+  String get leaderboardIpCountry => 'IP 국가';
 }

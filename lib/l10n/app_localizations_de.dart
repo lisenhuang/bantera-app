@@ -580,6 +580,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein Schalter für deinen Account – auf all deinen Geräten.';
 
   @override
+  String get chatDisableAllNotificationsTitle =>
+      'Chat-Benachrichtigungen stummschalten?';
+
+  @override
+  String get chatDisableAllNotificationsBody =>
+      'Dadurch werden Chat-Benachrichtigungen, eingehende Anrufe und KI-Erinnerungen auf allen deinen Geräten deaktiviert. Du kannst sie über dieses Menü oder die Einstellungen wieder aktivieren.';
+
+  @override
   String get chatNotificationsDisabledTitle => 'Mitteilungen deaktiviert';
 
   @override
@@ -1900,6 +1908,28 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieses Medium ist nicht mehr auf diesem Gerät. Du kannst es aus dem Verlauf entfernen.';
 
   @override
+  String get aiSavedDialogues => 'Gespeicherte Dialoge';
+
+  @override
+  String get aiSaveDialogue => 'Dialog speichern';
+
+  @override
+  String get aiSaveDialogueConfirmTitle => 'Diesen Dialog speichern?';
+
+  @override
+  String get aiSaveDialogueConfirmBody =>
+      'Du kannst über „Gespeicherte Dialoge“ zu dieser Nachricht zurückkehren.';
+
+  @override
+  String get aiUnsaveDialogue => 'Dialog nicht mehr speichern';
+
+  @override
+  String get aiSavedDialoguesEmpty => 'Noch keine gespeicherten Dialoge';
+
+  @override
+  String get aiDialogueYou => 'Du';
+
+  @override
   String get aiClearHistory => 'Chat löschen';
 
   @override
@@ -2789,4 +2819,24 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get widgetLocalNote =>
       'Du fügst das Widget auf deinem Home-Bildschirm hinzu. Bantera prüft die Konfiguration bei deiner Rückkehr, erfasst aber nicht, wie oft du es ansiehst.';
+
+  @override
+  String leaderboardPeriodScope(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Letzte $days Tage',
+      one: 'Letzter $days Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaderboardNativeLanguage => 'Muttersprache';
+
+  @override
+  String get leaderboardLearningLanguage => 'Lernsprache';
+
+  @override
+  String get leaderboardIpCountry => 'IP-Land';
 }

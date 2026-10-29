@@ -478,6 +478,28 @@ class AuthApiClient {
     });
   }
 
+  /// Public rollout setting; an older API or failed request stays testing-only.
+  Future<bool> fetchMaoriPublicEnabled() async {
+    const timeout = Duration(seconds: 5);
+    try {
+      final request = await _httpClient
+          .getUrl(_resolve('/api/public/language-availability'))
+          .timeout(timeout);
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache');
+      final response = await request.close().timeout(timeout);
+      final text = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) return false;
+      final data = jsonDecode(text);
+      return data is Map && data['maoriPublicEnabled'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Public catalog for learning/transcription locale pickers (no auth).
   /// Returns null if the request fails or the response is unusable.
   Future<List<LearningLanguageRow>?> fetchLearningLanguagesCatalog() async {
@@ -1474,20 +1496,36 @@ class AuthApiClient {
     int offset = 0,
     int days = 30,
     String? until,
+    bool configured = false,
   }) async {
-    if (![1, 7, 30].contains(days)) throw ArgumentError.value(days, 'days');
-    final route = days == 30
+    if (!configured && ![1, 7, 30].contains(days)) {
+      throw ArgumentError.value(days, 'days');
+    }
+    final route = configured
+        ? '/api/speaking-leaderboard/configured'
+        : days == 30
         ? '/api/speaking-leaderboard'
         : '/api/admin/speaking-leaderboard';
-    final data = await _sendJsonRequest(
-      method: 'GET',
-      path:
-          '$route?offset=$offset&hours=${days * 24}${until == null ? '' : '&until=${Uri.encodeQueryComponent(until)}'}',
-      accessToken: accessToken,
-      expectedUserId: _wordActivityTokenSubject(accessToken),
-    ).timeout(const Duration(seconds: 15));
+    Map<String, dynamic> data;
+    try {
+      data = await _sendJsonRequest(
+        method: 'GET',
+        path:
+            '$route?offset=$offset${configured ? '' : '&hours=${days * 24}'}${until == null ? '' : '&until=${Uri.encodeQueryComponent(until)}'}',
+        accessToken: accessToken,
+        expectedUserId: _wordActivityTokenSubject(accessToken),
+      ).timeout(const Duration(seconds: 15));
+    } on AuthApiException catch (error) {
+      if (!configured || error.statusCode != 404) rethrow;
+      // Older servers have only the fixed 30-day public report.
+      data = await speakingLeaderboard(
+        accessToken: accessToken,
+        offset: offset,
+        until: until,
+      );
+    }
     final session = AuthSessionNotifier.instance.session;
-    if (days == 30 &&
+    if (configured &&
         session != null &&
         session.userId == _wordActivityTokenSubject(accessToken)) {
       PracticeWidgetService.instance.setLeaderboard(
