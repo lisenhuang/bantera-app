@@ -9,6 +9,8 @@ import 'package:uuid/uuid.dart';
 import '../../core/auth_session_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 
+part 'ai_vocabulary_review.dart';
+
 class VocabularyWord {
   const VocabularyWord({
     required this.id,

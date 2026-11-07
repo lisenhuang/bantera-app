@@ -11,6 +11,7 @@ import '../chats/chat_conversation_screen.dart';
 import '../../core/word_activity_notifier.dart';
 import '../../core/user_profile_notifier.dart';
 import '../../infrastructure/auth_api_client.dart';
+import '../../infrastructure/region_service.dart';
 import '../../infrastructure/last_snapshot_cache.dart';
 import '../../l10n/app_localizations.dart';
 import '../shared/learning_language_label.dart';
@@ -28,6 +29,19 @@ String? leaderboardFirstName(String? name) {
         RegExp(r'[\s\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+'),
       )
       .first;
+}
+
+/// Use the same effective language for filtering and rendering, including a
+/// freshly changed own profile while the cached leaderboard is still stale.
+String leaderboardRowLanguageLabel(Map<String, dynamic> row) {
+  final profile = UserProfileNotifier.instance;
+  final ownProfile =
+      row['isMe'] == true &&
+      profile.profile != null &&
+      profile.profile!.id == AuthSessionNotifier.instance.session?.userId;
+  return goalLearningLanguageLabel(
+    ownProfile ? profile.learningLanguage : row['learningLanguage'] as String?,
+  );
 }
 
 class SpeakingReport {
@@ -667,9 +681,11 @@ class SpeakingLeaderboardView extends StatefulWidget {
     this.days = 30,
     this.onPeriodChanged,
     this.onOpenChat,
+    this.regionService,
     required this.onRefresh,
   });
   final SpeakingReport? report;
+  final RegionService? regionService;
   final bool loading, failed, hasUpdate, loadingMore;
   final int days;
   final ValueChanged<int>? onPeriodChanged;
@@ -681,7 +697,35 @@ class SpeakingLeaderboardView extends StatefulWidget {
       _SpeakingLeaderboardViewState();
 }
 
-class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
+class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView>
+    with WidgetsBindingObserver {
+  RegionService get _region => widget.regionService ?? RegionService.instance;
+  bool _allowTaiwanRows = false;
+  int _regionEpoch = 0;
+
+  Future<void> _refreshRegion({bool refresh = false}) async {
+    final epoch = ++_regionEpoch;
+    if (_allowTaiwanRows) {
+      setState(() => _allowTaiwanRows = false);
+      _dismissConfirmation();
+    }
+    final allowed = await _region.allowsTaiwanLeaderboardRows(refresh: refresh);
+    if (!mounted || epoch != _regionEpoch) return;
+    setState(() => _allowTaiwanRows = allowed);
+  }
+
+  void _regionChanged() => unawaited(_refreshRegion());
+  void _profileChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshRegion(refresh: true));
+    }
+  }
+
   final _scroll = ScrollController();
   final _rowKeys = <Object, GlobalKey<LeaderboardMotionRowState>>{};
   Map<Object, double?> _fromTops = {};
@@ -690,6 +734,13 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   @override
   void didUpdateWidget(SpeakingLeaderboardView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.regionService != widget.regionService) {
+      (oldWidget.regionService ?? RegionService.instance).removeListener(
+        _regionChanged,
+      );
+      _region.addListener(_regionChanged);
+      unawaited(_refreshRegion());
+    }
     if (oldWidget.onOpenChat != null && widget.onOpenChat == null) {
       _dismissConfirmation();
     }
@@ -708,6 +759,10 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   void initState() {
     super.initState();
     _scroll.addListener(_nearEnd);
+    _region.addListener(_regionChanged);
+    UserProfileNotifier.instance.addListener(_profileChanged);
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_refreshRegion());
   }
 
   void _nearEnd() {
@@ -722,6 +777,10 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
   @override
   void dispose() {
     _dismissConfirmation();
+    _regionEpoch++;
+    _region.removeListener(_regionChanged);
+    UserProfileNotifier.instance.removeListener(_profileChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _scroll.dispose();
     super.dispose();
   }
@@ -731,6 +790,15 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
     final l = AppLocalizations.of(context)!;
     final c = Theme.of(context).colorScheme;
     final report = widget.report;
+    final visibleRows =
+        report?.rows
+            .where(
+              (row) =>
+                  _allowTaiwanRows ||
+                  !leaderboardRowLanguageLabel(row).contains('🇹🇼'),
+            )
+            .toList() ??
+        <Map<String, dynamic>>[];
     return Scaffold(
       appBar: AppBar(
         toolbarHeight:
@@ -746,7 +814,12 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: widget.onRefresh,
+                onRefresh: () async {
+                  await Future.wait([
+                    _refreshRegion(refresh: true),
+                    widget.onRefresh(),
+                  ]);
+                },
                 child: ListView(
                   controller: _scroll,
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -822,10 +895,10 @@ class _SpeakingLeaderboardViewState extends State<SpeakingLeaderboardView> {
                         action: l.leaderboardRefresh,
                       ),
                     if (report != null) ...[
-                      if (report.rows.isEmpty) _notice(l.leaderboardEmpty),
+                      if (visibleRows.isEmpty) _notice(l.leaderboardEmpty),
                       if (report.you['rank'] == null)
                         _notice(l.leaderboardNoActivity),
-                      for (final row in report.rows)
+                      for (final row in visibleRows)
                         LeaderboardMotionRow(
                           key: _rowKeys.putIfAbsent(
                             row['key'],
@@ -1085,16 +1158,7 @@ class SpeakingLeaderboardRow extends StatelessWidget {
     final mine = row['isMe'] == true;
     final name = leaderboardFirstName(row['name'] as String?);
     final rank = row['rank'] as num?;
-    final profile = UserProfileNotifier.instance;
-    final ownProfile =
-        mine &&
-        profile.profile != null &&
-        profile.profile!.id == AuthSessionNotifier.instance.session?.userId;
-    final language = goalLearningLanguageLabel(
-      ownProfile
-          ? profile.learningLanguage
-          : row['learningLanguage'] as String?,
-    );
+    final language = leaderboardRowLanguageLabel(row);
     final accent = mine
         ? c.primary
         : switch (rank?.toInt()) {

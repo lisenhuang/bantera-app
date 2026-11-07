@@ -2714,11 +2714,11 @@ class AppLocalizationsPt extends AppLocalizations {
       'Apagar todo o vocabulário guardado e o seu progresso, incluindo palavras ocultadas pelo filtro? Não é possível desfazer.';
 
   @override
-  String get vocabReviewHelpTitle => 'Por que há palavras para rever?';
+  String get vocabReviewHelpTitle => 'Por que revisar as palavras?';
 
   @override
   String get vocabReviewHelpBody =>
-      'A Bantera usa repetição espaçada: rever após uma pausa pode ajudar a recordar por mais tempo. Isto relaciona-se com a curva do esquecimento, que descreve como a memória enfraquece com o tempo.\n\nO nosso calendário:\n• Primeira revisão: 1 dia após guardar.\n• Após as revisões seguintes: 3, 7, 14 e depois 30 dias.\n• A partir daí, a cada 30 dias.\n\nUma palavra fica pendente na data prevista. Marcá-la como revista inicia o próximo intervalo a partir dessa revisão. É um calendário fixo, não uma medição da memória nem uma previsão de que esqueceu a palavra.';
+      'As memórias enfraquecem com o tempo. Rever palavras em intervalos pode ajudar você a lembrá-las por mais tempo. Isso se chama repetição espaçada.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2841,4 +2841,57 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Diga a resposta correta em voz alta.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Remover todos os diálogos salvos?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Remover todos os favoritos? As mensagens e os áudios originais permanecerão na conversa.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Remover este favorito? A mensagem e o áudio originais permanecerão na conversa.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Seu calendário de revisão';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Primeira revisão: 1 dia após salvar.\nDepois, espere 3 → 7 → 14 → 30 dias entre revisões. A partir daí, revise a cada 30 dias.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '«Pendente» significa que chegou a data da revisão, não que você esqueceu a palavra.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Ilustração, não uma medida da sua memória.';
+
+  @override
+  String get vocabReviewMemory => 'Memória';
+
+  @override
+  String get vocabReviewTime => 'Tempo';
+
+  @override
+  String get vocabReviewWith => 'Com revisões';
+
+  @override
+  String get vocabReviewWithout => 'Sem revisão';
+
+  @override
+  String get vocabReviewGotIt => 'Entendi';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Excluir permanentemente todas as mensagens, transcrições, gravações e anexos desta conversa? O último resumo será mantido. Esta ação não pode ser desfeita.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Excluir permanentemente todas as mensagens, transcrições, gravações, anexos e o último resumo desta conversa? Esta ação não pode ser desfeita.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Excluir todas as suas gravações e os áudios da IA desta conversa? As mensagens, transcrições, imagens e o resumo serão mantidos. Os áudios excluídos não podem ser recuperados.';
 }

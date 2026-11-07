@@ -2711,11 +2711,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete all saved vocabulary words and their review progress, including words hidden by your current filter? This cannot be undone.';
 
   @override
-  String get vocabReviewHelpTitle => 'Why are words due for review?';
+  String get vocabReviewHelpTitle => 'Why review words again?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.';
+      'Memories fade over time. Revisiting words at spaced intervals can help you remember them longer. This is called spaced repetition.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2838,4 +2838,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Say the correct reply aloud.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Clear all saved dialogues?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Remove all bookmarks? Your original chat messages and audio will stay in the conversation.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Remove this bookmark? The original message and audio will stay in the conversation.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Your review schedule';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'First review: 1 day after saving.\nThen wait 3 → 7 → 14 → 30 days between reviews. After that, review every 30 days.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '“Due” means it’s time for your scheduled review, not that you’ve forgotten the word.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Illustration, not a measure of your memory.';
+
+  @override
+  String get vocabReviewMemory => 'Memory';
+
+  @override
+  String get vocabReviewTime => 'Time';
+
+  @override
+  String get vocabReviewWith => 'With reviews';
+
+  @override
+  String get vocabReviewWithout => 'Without review';
+
+  @override
+  String get vocabReviewGotIt => 'Got it';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Permanently delete all messages, transcripts, recordings and attachments in this chat? The last summary will be kept. This cannot be undone.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Permanently delete all messages, transcripts, recordings, attachments and the last summary in this chat? This cannot be undone.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored.';
 }

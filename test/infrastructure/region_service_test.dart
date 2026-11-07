@@ -4,9 +4,11 @@ import 'package:app/core/app_locale.dart';
 import 'package:app/infrastructure/region_service.dart';
 import 'package:app/infrastructure/transcription_locale_option.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('regional learning-language ordering', () {
     final choices = ['en-NZ', 'en-US', 'en-GB', 'ja-JP', 'MI_nz']
         .map(
@@ -305,6 +307,114 @@ void main() {
             ['zh-CN', 'zh-HK', 'en-US'],
           );
         }
+      },
+    );
+  });
+
+  group('iOS native regional policy for both language pickers', () {
+    const channel = MethodChannel('bantera/callkit');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+    for (final native in [true, false]) {
+      for (final allowed in [true, false, null]) {
+        test('native=$native, overseas IP, native policy=$allowed', () async {
+          final methods = <String>[];
+          messenger.setMockMethodCallHandler(channel, (call) async {
+            methods.add(call.method);
+            return allowed;
+          });
+          final service = RegionService.forTesting(
+            isIOS: true,
+            countryLookup: () async => 'NZ',
+            appLocale: () => const Locale('en'),
+          );
+          addTearDown(service.dispose);
+          final result = await service.profileLanguageOptions(
+            options,
+            isAdmin: false,
+            nativeLanguage: native,
+          );
+          expect(
+            result.any(
+              (o) => RegionService.isTaiwanChineseLocale(o.identifier),
+            ),
+            allowed == true,
+          );
+          expect(methods, [
+            'regionPolicyAllowed',
+          ]); // No ready/token/VoIP side effects.
+          expect(options.any((o) => o.identifier == 'zh-TW'), isTrue);
+        });
+      }
+    }
+
+    test(
+      'rechecks region for cached options and retries after native failure',
+      () async {
+        var allowed = true;
+        var fail = false;
+        messenger.setMockMethodCallHandler(channel, (_) async {
+          if (fail) throw PlatformException(code: 'unavailable');
+          return allowed;
+        });
+        final service = RegionService.forTesting(
+          isIOS: true,
+          countryLookup: () async => 'NZ',
+          appLocale: () => const Locale('en'),
+        );
+        addTearDown(service.dispose);
+        final cached = await service.filterLanguageOptions(options);
+        expect(cached, options);
+        allowed = false;
+        expect((await service.filterLanguageOptions(cached)).length, 3);
+        allowed = true;
+        fail = true;
+        expect((await service.filterLanguageOptions(cached)).length, 3);
+        fail = false;
+        expect(await service.filterLanguageOptions(cached), options);
+      },
+    );
+
+    test(
+      'native permission does not bypass mainland IP or Simplified Chinese',
+      () async {
+        messenger.setMockMethodCallHandler(channel, (_) async => true);
+        for (final country in ['NZ', 'CN', null]) {
+          for (final locale in [const Locale('en'), const Locale('zh', 'CN')]) {
+            final service = RegionService.forTesting(
+              isIOS: true,
+              countryLookup: () async => country,
+              appLocale: () => locale,
+            );
+            final result = await service.filterLanguageOptions(options);
+            expect(
+              result.length,
+              country == 'NZ' && locale.languageCode == 'en' ? 5 : 3,
+            );
+            service.dispose();
+          }
+        }
+      },
+    );
+
+    test(
+      'Android keeps existing rules without invoking the iOS bridge',
+      () async {
+        var calls = 0;
+        messenger.setMockMethodCallHandler(channel, (_) async {
+          calls++;
+          return false;
+        });
+        final service = RegionService.forTesting(
+          isIOS: false,
+          countryLookup: () async => 'NZ',
+          appLocale: () => const Locale('en'),
+        );
+        addTearDown(service.dispose);
+        expect(await service.filterLanguageOptions(options), options);
+        expect(calls, 0);
       },
     );
   });

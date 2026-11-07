@@ -55,6 +55,8 @@ void main() {
       final usage = await store.storageUsage();
       expect(usage.audioBytes, 8);
       expect(usage.hasSummary, true);
+      expect(usage.reclaimable(AiHistoryClearMode.audioOnly, false), 8);
+      expect(usage.reclaimable(AiHistoryClearMode.audioOnly, true), 8);
       expect(
         usage.reclaimable(AiHistoryClearMode.all, true),
         usage.totalBytes - usage.summaryBytes,
@@ -62,7 +64,14 @@ void main() {
       final other = AiHistoryStore('bob');
       await other.load();
       await File(other.path('other.wav')).writeAsBytes([1]);
-      await store.clear(mode: AiHistoryClearMode.audioOnly, keepSummary: true);
+      final originalSummary = await File(
+        store.path('memory.json'),
+      ).readAsString();
+      await store.clear(mode: AiHistoryClearMode.audioOnly);
+      expect(
+        await File(store.path('memory.json')).readAsString(),
+        originalSummary,
+      );
       final restored = AiHistoryStore('alice');
       await restored.load();
       expect(restored.messages.length, 22);
@@ -110,6 +119,9 @@ void main() {
       expect(called, true);
       expect(restored.memory?['retainedAfterClear'], isNull);
       await restored.clear(mode: AiHistoryClearMode.audioOnly);
+      expect(restored.memory?['summary'], 'Old and new interests');
+      expect(await File(restored.path('memory.json')).exists(), true);
+      await restored.clear(mode: AiHistoryClearMode.all);
       expect(restored.memory, isNull);
       expect(await File(restored.path('memory.json')).exists(), false);
     },
@@ -130,7 +142,7 @@ void main() {
     expect(store.memory?['summary'], 'Remember my interests');
   });
   testWidgets(
-    'clear dialog starts unchecked and disabled, radio choices exclusive and summary optional',
+    'clear mode starts unselected; summary defaults on and remains optional',
     (tester) async {
       AiHistoryClearChoice? selected;
       await tester.pumpWidget(
@@ -165,28 +177,137 @@ void main() {
         tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
         isNull,
       );
-      expect(
-        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
-        false,
-      );
+      expect(find.byType(CheckboxListTile), findsNothing);
       await tester.tap(find.text('Audio only'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
         isNotNull,
       );
+      expect(find.byType(CheckboxListTile), findsNothing);
       await tester.tap(find.text('All messages and audio'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(CheckboxListTile));
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        true,
+      );
+      expect(find.textContaining('1.9 MB'), findsOneWidget);
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(selected, isNull);
+      expect(
+        find.textContaining('attachments and the last summary'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        false,
+      );
       await tester.ensureVisible(find.byType(CheckboxListTile));
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pumpAndSettle();
       expect(find.textContaining('1.9 MB'), findsOneWidget);
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
+      expect(selected, isNull);
+      expect(find.text('Confirm deletion'), findsOneWidget);
+      expect(
+        find.textContaining('The last summary will be kept.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(selected, isNull);
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        true,
+      );
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
       expect(selected?.mode, AiHistoryClearMode.all);
       expect(selected?.keepSummary, true);
     },
   );
+  testWidgets(
+    'audio only requires confirmation and preserves summary without a checkbox',
+    (tester) async {
+      final store = (await tester.runAsync(history))!;
+      final usage = (await tester.runAsync(store.storageUsage))!;
+      AiHistoryClearChoice? selected;
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                selected = await showDialog<AiHistoryClearChoice>(
+                  context: context,
+                  builder: (_) =>
+                      AiClearHistoryDialog(usage: Future.value(usage)),
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All messages and audio'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        true,
+      );
+      await tester.ensureVisible(find.byType(CheckboxListTile));
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Audio only'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CheckboxListTile), findsNothing);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Confirm deletion'), findsOneWidget);
+      expect(selected, isNull);
+      expect(
+        find.textContaining(
+          'Messages, transcripts, images and the summary will stay.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(selected, isNull);
+      expect(find.byType(CheckboxListTile), findsNothing);
+      expect(store.messages.first.audio, isNotNull);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(selected?.mode, AiHistoryClearMode.audioOnly);
+      expect(selected?.keepSummary, true);
+      await tester.runAsync(() async {
+        await store.clear(
+          mode: selected!.mode,
+          keepSummary: selected!.keepSummary,
+        );
+        final restored = AiHistoryStore('alice');
+        await restored.load();
+        expect(restored.memory?['summary'], 'Remember my interests');
+        expect(restored.messages.length, 22);
+        expect((await restored.storageUsage()).audioBytes, 0);
+      });
+    },
+  );
+
   testWidgets('clear dialog fits all locales on a narrow phone', (
     tester,
   ) async {
@@ -194,29 +315,58 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    for (final locale in AppLocalizations.supportedLocales) {
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: AiClearHistoryDialog(
-              key: ValueKey(locale),
-              usage: Future.value(
-                const AiHistoryStorageUsage(
-                  audioBytes: 100,
-                  totalBytes: 1000,
-                  summaryBytes: 0,
-                  hasSummary: false,
+    for (final mode in AiHistoryClearMode.values) {
+      for (final locale in AppLocalizations.supportedLocales) {
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: locale,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(2)),
+              child: child!,
+            ),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: AiClearHistoryDialog(
+                key: ValueKey('$locale-$mode'),
+                usage: Future.value(
+                  const AiHistoryStorageUsage(
+                    audioBytes: 100,
+                    totalBytes: 1000,
+                    summaryBytes: 0,
+                    hasSummary: false,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: '$locale');
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: '$locale');
+        final all = find.byWidgetPredicate(
+          (w) => w is RadioListTile<AiHistoryClearMode> && w.value == mode,
+        );
+        await tester.ensureVisible(all);
+        await tester.tap(all);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(FilledButton));
+        await tester.pumpAndSettle();
+        expect(find.byType(RadioListTile<AiHistoryClearMode>), findsNothing);
+        expect(tester.takeException(), isNull, reason: 'confirmation $locale');
+        final l = AppLocalizations.of(
+          tester.element(find.byType(AlertDialog)),
+        )!;
+        expect(
+          find.textContaining(
+            mode == AiHistoryClearMode.audioOnly
+                ? l.aiClearConfirmAudioOnly
+                : l.aiClearConfirmRemoveSummary,
+          ),
+          findsOneWidget,
+        );
+      }
     }
   });
   test(

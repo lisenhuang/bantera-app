@@ -2730,11 +2730,11 @@ class AppLocalizationsPl extends AppLocalizations {
       'Usunąć wszystkie zapisane słowa i postępy powtórek, również słowa ukryte filtrem? Tej czynności nie można cofnąć.';
 
   @override
-  String get vocabReviewHelpTitle => 'Dlaczego słowa czekają na powtórkę?';
+  String get vocabReviewHelpTitle => 'Dlaczego powtarzać słowa?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera stosuje powtórki w odstępach: powrót do słowa po przerwie pomaga pamiętać je dłużej. Wiąże się to z krzywą zapominania, opisującą osłabianie pamięci z czasem.\n\nNasz harmonogram:\n• Pierwsza powtórka: 1 dzień po zapisaniu.\n• Po kolejnych powtórkach: 3, 7, 14, a potem 30 dni.\n• Następnie co 30 dni.\n\nSłowo czeka na powtórkę, gdy nadejdzie termin. Oznaczenie jako powtórzone rozpoczyna kolejny odstęp od tej powtórki. To stały harmonogram, a nie pomiar pamięci lub stwierdzenie, że słowo zostało zapomniane.';
+      'Wspomnienia z czasem słabną. Powtarzanie słów w odstępach może pomóc zapamiętać je na dłużej. To metoda powtórek rozłożonych w czasie.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2859,4 +2859,57 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Powiedz poprawną odpowiedź na głos.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Usunąć wszystkie zapisane dialogi?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Usunąć wszystkie zakładki? Oryginalne wiadomości i nagrania pozostaną w rozmowie.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Usunąć tę zakładkę? Oryginalna wiadomość i nagranie pozostaną w rozmowie.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Twój plan powtórek';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Pierwsza powtórka: 1 dzień po zapisaniu.\nPotem odczekaj 3 → 7 → 14 → 30 dni między powtórkami. Następnie powtarzaj co 30 dni.';
+
+  @override
+  String get vocabReviewDueNote =>
+      'Termin powtórki oznacza, że nadszedł zaplanowany dzień, a nie że słowo zostało zapomniane.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Ilustracja, a nie pomiar Twojej pamięci.';
+
+  @override
+  String get vocabReviewMemory => 'Pamięć';
+
+  @override
+  String get vocabReviewTime => 'Czas';
+
+  @override
+  String get vocabReviewWith => 'Z powtórkami';
+
+  @override
+  String get vocabReviewWithout => 'Bez powtórek';
+
+  @override
+  String get vocabReviewGotIt => 'Rozumiem';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Trwale usunąć wszystkie wiadomości, transkrypcje, nagrania i załączniki z tego czatu? Ostatnie podsumowanie zostanie zachowane. Tej operacji nie można cofnąć.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Trwale usunąć wszystkie wiadomości, transkrypcje, nagrania, załączniki i ostatnie podsumowanie z tego czatu? Tej operacji nie można cofnąć.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Usunąć wszystkie Twoje nagrania i nagrania AI z tego czatu? Wiadomości, transkrypcje, obrazy i podsumowanie pozostaną. Usuniętych nagrań nie można przywrócić.';
 }

@@ -507,7 +507,7 @@ void main() {
 
   for (final major in [15, 16, 17]) {
     testWidgets(
-      'A0 shows meanings before answering and a visible beginner level',
+      'A0 starts untranslated and translates on tap without confirmation',
       (tester) async {
         await mount(
           tester,
@@ -516,13 +516,22 @@ void main() {
         expect(find.text('A0'), findsOneWidget);
         expect(
           find.byKey(const ValueKey('practice-translation-cue')),
-          findsOneWidget,
-        );
-        expect(find.text('¿Dónde está la estación?'), findsOneWidget);
-        expect(
-          find.byKey(const ValueKey('practice-show-translation')),
           findsNothing,
         );
+        expect(find.text('¿Dónde está la estación?'), findsNothing);
+        expect(
+          find.byKey(const ValueKey('practice-show-translation')),
+          findsOneWidget,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('practice-show-translation')),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('practice-confirm-translation')),
+          findsNothing,
+        );
+        expect(find.text('¿Dónde está la estación?'), findsOneWidget);
         expect(
           find.textContaining('A0 includes learning support'),
           findsOneWidget,
@@ -597,6 +606,13 @@ void main() {
         },
       );
       final practiceState = tester.state(find.byType(QuickPracticeScreen));
+      expect(find.text('¿Dónde está la estación?'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('practice-show-translation')));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.tap(
+        find.byKey(const ValueKey('practice-confirm-translation')),
+      );
+      await tester.pumpAndSettle();
       expect(find.text('¿Dónde está la estación?'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('practice-more-menu')));
       await tester.pumpAndSettle();
@@ -726,21 +742,20 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 4));
     },
   );
-  testWidgets(
-    'resumed assisted exercise keeps translations without inline explanation',
-    (tester) async {
-      await mount(tester, material: {...exercise, 'translationUsed': true});
-      expect(find.text('¿Dónde está la estación?'), findsOneWidget);
-      expect(
-        find.text('Translation used · This exercise won’t change your level.'),
-        findsNothing,
-      );
-      expect(
-        find.byKey(const ValueKey('practice-show-translation')),
-        findsNothing,
-      );
-    },
-  );
+  testWidgets('resumed assisted exercise requires a fresh translation tap', (
+    tester,
+  ) async {
+    await mount(tester, material: {...exercise, 'translationUsed': true});
+    expect(find.text('¿Dónde está la estación?'), findsNothing);
+    expect(
+      find.text('Translation used · This exercise won’t change your level.'),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-show-translation')),
+      findsOneWidget,
+    );
+  });
   for (final outcome in [null, 'correct', 'incorrect', 'unclear']) {
     testWidgets(
       'microphone stays directly below choices with $outcome feedback',
@@ -954,7 +969,7 @@ void main() {
             find.byKey(const ValueKey('practice-pinned-next')),
             findsOneWidget,
           );
-          expect(find.text('¿Dónde está la estación?'), findsOneWidget);
+          expect(find.text('¿Dónde está la estación?'), findsNothing);
         },
       );
     }

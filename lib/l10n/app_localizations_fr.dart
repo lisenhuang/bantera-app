@@ -2725,11 +2725,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Supprimer tout le vocabulaire enregistré et sa progression, y compris les mots masqués par le filtre ? Cette action est irréversible.';
 
   @override
-  String get vocabReviewHelpTitle => 'Pourquoi des mots sont-ils à réviser ?';
+  String get vocabReviewHelpTitle => 'Pourquoi revoir les mots ?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera utilise la répétition espacée : réviser après une pause peut aider à retenir plus longtemps. Cela rejoint la courbe de l’oubli, qui décrit comment la mémoire s’estompe avec le temps.\n\nNotre calendrier :\n• Première révision : 1 jour après l’enregistrement.\n• Après les révisions suivantes : 3, 7, 14, puis 30 jours.\n• Ensuite, tous les 30 jours.\n\nUn mot est à réviser quand la date prévue arrive. Le marquer comme révisé lance le prochain intervalle à partir de cette révision. C’est un calendrier fixe, pas une mesure de votre mémoire ni une prédiction d’oubli.';
+      'Les souvenirs s’estompent avec le temps. Revoir les mots à intervalles espacés peut aider à les retenir plus longtemps. C’est la répétition espacée.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2852,4 +2852,58 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Dis la bonne réponse à voix haute.';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      'Effacer tous les dialogues enregistrés ?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Supprimer tous les favoris ? Les messages et fichiers audio d’origine resteront dans la conversation.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Supprimer ce favori ? Le message et le fichier audio d’origine resteront dans la conversation.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Votre calendrier de révision';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Première révision : 1 jour après l’enregistrement.\nPuis attendez 3 → 7 → 14 → 30 jours entre les révisions. Ensuite, révisez tous les 30 jours.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '« À revoir » signifie que la date de révision est arrivée, pas que vous avez oublié le mot.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Illustration, pas une mesure de votre mémoire.';
+
+  @override
+  String get vocabReviewMemory => 'Mémoire';
+
+  @override
+  String get vocabReviewTime => 'Temps';
+
+  @override
+  String get vocabReviewWith => 'Avec révisions';
+
+  @override
+  String get vocabReviewWithout => 'Sans révision';
+
+  @override
+  String get vocabReviewGotIt => 'Compris';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Supprimer définitivement tous les messages, transcriptions, enregistrements et pièces jointes de cette conversation ? Le dernier résumé sera conservé. Cette action est irréversible.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Supprimer définitivement tous les messages, transcriptions, enregistrements, pièces jointes et le dernier résumé de cette conversation ? Cette action est irréversible.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Supprimer tous vos enregistrements et les fichiers audio de l’IA dans cette conversation ? Les messages, transcriptions, images et le résumé seront conservés. Les fichiers audio supprimés ne pourront pas être restaurés.';
 }

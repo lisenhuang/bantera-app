@@ -2718,11 +2718,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Удалить все сохранённые слова и прогресс повторения, включая скрытые фильтром? Это нельзя отменить.';
 
   @override
-  String get vocabReviewHelpTitle => 'Почему пора повторить слова?';
+  String get vocabReviewHelpTitle => 'Зачем повторять слова?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera использует интервальное повторение: повторение после перерыва помогает запоминать надолго. Это связано с кривой забывания, описывающей ослабление памяти со временем.\n\nНаш график:\n• Первое повторение: через 1 день после сохранения.\n• После следующих повторений: через 3, 7, 14, затем 30 дней.\n• Далее каждые 30 дней.\n\nСлово пора повторить, когда наступит назначенная дата. Отметка о повторении запускает следующий интервал с этого момента. Это фиксированный график, а не измерение памяти или утверждение, что вы забыли слово.';
+      'Со временем воспоминания ослабевают. Повторение слов с перерывами помогает помнить их дольше. Этот метод называется интервальным повторением.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2846,4 +2846,57 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Произнесите правильный ответ вслух.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Убрать все сохранённые диалоги?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Удалить все закладки? Исходные сообщения и аудио останутся в переписке.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Удалить эту закладку? Исходное сообщение и аудио останутся в переписке.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Ваш график повторений';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Первое повторение: через 1 день после сохранения.\nЗатем делайте перерывы в 3 → 7 → 14 → 30 дней между повторениями. Далее повторяйте каждые 30 дней.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '«Пора повторить» означает, что наступила запланированная дата, а не что вы забыли слово.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Иллюстрация, а не измерение вашей памяти.';
+
+  @override
+  String get vocabReviewMemory => 'Память';
+
+  @override
+  String get vocabReviewTime => 'Время';
+
+  @override
+  String get vocabReviewWith => 'С повторением';
+
+  @override
+  String get vocabReviewWithout => 'Без повторения';
+
+  @override
+  String get vocabReviewGotIt => 'Понятно';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Навсегда удалить все сообщения, расшифровки, записи и вложения этого чата? Последняя сводка будет сохранена. Это действие нельзя отменить.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Навсегда удалить все сообщения, расшифровки, записи, вложения и последнюю сводку этого чата? Это действие нельзя отменить.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Удалить все ваши записи и аудио ИИ из этого чата? Сообщения, расшифровки, изображения и сводка останутся. Удалённое аудио нельзя восстановить.';
 }

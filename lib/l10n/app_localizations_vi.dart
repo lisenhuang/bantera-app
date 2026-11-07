@@ -2648,11 +2648,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Xóa tất cả từ vựng đã lưu và tiến độ ôn tập, kể cả từ bị bộ lọc ẩn? Không thể hoàn tác.';
 
   @override
-  String get vocabReviewHelpTitle => 'Vì sao từ đến hạn ôn tập?';
+  String get vocabReviewHelpTitle => 'Tại sao cần ôn lại từ?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera dùng lặp lại ngắt quãng: ôn sau một khoảng nghỉ có thể giúp nhớ lâu hơn. Điều này liên quan đến đường cong quên lãng, mô tả trí nhớ suy giảm theo thời gian.\n\nLịch của chúng tôi:\n• Ôn lần đầu: 1 ngày sau khi lưu.\n• Sau các lần ôn tiếp theo: 3, 7, 14 rồi 30 ngày.\n• Sau đó cứ mỗi 30 ngày.\n\nTừ đến hạn khi tới ngày dự kiến. Đánh dấu đã ôn sẽ bắt đầu khoảng thời gian tiếp theo từ lần ôn đó. Đây là lịch cố định, không đo trí nhớ hay dự đoán rằng bạn đã quên từ.';
+      'Ký ức phai dần theo thời gian. Ôn lại từ sau những khoảng nghỉ có thể giúp bạn nhớ lâu hơn. Đây là phương pháp lặp lại ngắt quãng.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2767,4 +2767,57 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Hãy nói to câu trả lời đúng.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Xóa tất cả hội thoại đã lưu?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Xóa tất cả dấu trang? Tin nhắn và âm thanh gốc vẫn sẽ được giữ trong cuộc trò chuyện.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Xóa dấu trang này? Tin nhắn và âm thanh gốc vẫn sẽ được giữ trong cuộc trò chuyện.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Lịch ôn tập của bạn';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Lần ôn đầu tiên: 1 ngày sau khi lưu.\nSau đó, chờ 3 → 7 → 14 → 30 ngày giữa các lần ôn. Tiếp theo, ôn mỗi 30 ngày.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '“Đến hạn” nghĩa là đã đến ngày ôn theo lịch, không có nghĩa là bạn đã quên từ đó.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Hình minh họa, không phải phép đo trí nhớ của bạn.';
+
+  @override
+  String get vocabReviewMemory => 'Trí nhớ';
+
+  @override
+  String get vocabReviewTime => 'Thời gian';
+
+  @override
+  String get vocabReviewWith => 'Có ôn tập';
+
+  @override
+  String get vocabReviewWithout => 'Không ôn tập';
+
+  @override
+  String get vocabReviewGotIt => 'Đã hiểu';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Xóa vĩnh viễn tất cả tin nhắn, bản chép lời, bản ghi âm và tệp đính kèm trong cuộc trò chuyện này? Bản tóm tắt cuối cùng sẽ được giữ lại. Không thể hoàn tác thao tác này.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Xóa vĩnh viễn tất cả tin nhắn, bản chép lời, bản ghi âm, tệp đính kèm và bản tóm tắt cuối cùng trong cuộc trò chuyện này? Không thể hoàn tác thao tác này.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Xóa tất cả bản ghi âm của bạn và âm thanh AI trong cuộc trò chuyện này? Tin nhắn, bản chép lời, hình ảnh và bản tóm tắt sẽ được giữ lại. Không thể khôi phục âm thanh đã xóa.';
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'ai_history_store.dart';
+import 'ai_review_turn.dart';
 
 /// One recording, uploaded while it is captured. A commit is the only message
 /// that asks the model to answer. Closing before commit cancels the recording.
@@ -34,6 +35,7 @@ class AiVoiceStream {
     required this.onReset,
     this.onTranscript,
     this.onToolCall,
+    this.reviewTurn,
     this.requiresImages = false,
     this.requiresText = false,
   }) {
@@ -41,6 +43,7 @@ class AiVoiceStream {
     _reply.future.ignore();
     unawaited(_open(connect));
   }
+  final AiReviewTurn? reviewTurn;
   final bool requiresImages, requiresText;
   final Future<void> Function(Uint8List) onAudio;
   final Future<void> Function() onReset;
@@ -60,7 +63,9 @@ class AiVoiceStream {
   int get outputBytes => _output.length;
   int? get closeCode => _socket?.closeCode;
   Uint8List? get partialAudio =>
-      _output.isEmpty ? null : aiWave(_output.toBytes(), 24000);
+      (reviewTurn?.holdOutput == true || _output.isEmpty)
+      ? null
+      : aiWave(_output.toBytes(), 24000);
 
   Future<void> _open(Future<WebSocket> Function() connect) async {
     try {
@@ -130,7 +135,7 @@ class AiVoiceStream {
       final bytes = Uint8List.fromList(event);
       _output.add(bytes);
       try {
-        await onAudio(bytes);
+        if (reviewTurn?.holdOutput != true) await onAudio(bytes);
       } catch (error) {
         throw AiVoiceFailure.from('playback_failed', error);
       }
@@ -139,6 +144,9 @@ class AiVoiceStream {
     final json = jsonDecode(event as String) as Map<String, dynamic>;
     switch (json['type']) {
       case 'ready':
+        if (reviewTurn != null) {
+          reviewTurn!.enabled = json['vocabularyVersion'] == 3;
+        }
         if (requiresText && json['acceptText'] != true) {
           throw const AiVoiceFailure('text_unavailable');
         }
@@ -153,6 +161,7 @@ class AiVoiceStream {
         _pending.clear();
         _ready.complete();
       case 'reset':
+        reviewTurn?.resetOutput();
         _output.clear();
         try {
           await onReset();
@@ -167,12 +176,25 @@ class AiVoiceStream {
             text is! String) {
           throw StateError('Invalid voice transcript');
         }
-        onTranscript?.call(role as String, text);
+        if (role == 'user') reviewTurn?.addInput(text);
+        if (role == 'user' || reviewTurn?.holdOutput != true) {
+          onTranscript?.call(role as String, text);
+        }
       case 'toolCall':
         if (!committed || onToolCall == null) {
           throw const AiVoiceFailure('invalid_frame');
         }
-        unawaited(_tools((json['calls'] as List).cast<Map>()));
+        final calls = (json['calls'] as List).cast<Map>();
+        if (reviewTurn?.enabled == true &&
+            calls.any((c) => c['name'] == 'manage_vocabulary')) {
+          final held = reviewTurn!.holdOutput;
+          await _tools(calls);
+          if (held && !reviewTurn!.holdOutput && _output.isNotEmpty) {
+            await onAudio(_output.toBytes());
+          }
+        } else {
+          unawaited(_tools(calls));
+        }
       case 'no_speech':
         if (!committed || _output.isNotEmpty || _reply.isCompleted) {
           throw const AiVoiceFailure('invalid_frame');
@@ -184,13 +206,28 @@ class AiVoiceStream {
               .catchError((Object _) {}),
         );
       case 'complete':
-        if (!committed || _output.isEmpty || _reply.isCompleted) {
+        if (!committed ||
+            (_output.isEmpty && reviewTurn?.holdOutput != true) ||
+            _reply.isCompleted) {
           throw const AiVoiceFailure('invalid_frame');
         }
+        var outputText = json['outputText'] as String? ?? '';
+        if (reviewTurn?.holdOutput == true) {
+          final expected = await reviewTurn!.finalText();
+          if (reviewTurn!.matchesSpeech(outputText, expected)) {
+            await onAudio(_output.toBytes());
+          } else {
+            _output.clear();
+          }
+          outputText = expected;
+          onTranscript?.call('model', outputText);
+        }
         _reply.complete({
-          'audio': base64Encode(aiWave(_output.toBytes(), 24000)),
+          'audio': _output.isEmpty
+              ? null
+              : base64Encode(aiWave(_output.toBytes(), 24000)),
           'inputText': json['inputText'],
-          'outputText': json['outputText'],
+          'outputText': outputText,
         });
         // Receiving is finished; the local player may still have seconds of
         // queued audio. Finish the handshake now, independently of playback.
@@ -225,11 +262,7 @@ class AiVoiceStream {
     committed = true;
     try {
       _socket!.add(
-        jsonEncode({
-          'type': 'commit',
-          'metadata': metadata,
-          'text': ?text,
-        }),
+        jsonEncode({'type': 'commit', 'metadata': metadata, 'text': ?text}),
       );
     } catch (_) {
       throw const AiVoiceFailure('send_failed');

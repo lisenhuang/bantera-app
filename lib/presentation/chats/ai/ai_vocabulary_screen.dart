@@ -1,4 +1,5 @@
 import 'ai_vocabulary_example.dart';
+import 'ai_vocabulary_review_help.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -163,20 +164,9 @@ class _AiVocabularyScreenState extends State<AiVocabularyScreen> {
   }
 
   void _reviewHelp() {
-    final l = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l.vocabReviewHelpTitle),
-        scrollable: true,
-        content: Text(l.vocabReviewHelpBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l.closeLabel),
-          ),
-        ],
-      ),
+      builder: (context) => const AiVocabularyReviewHelp(),
     );
   }
 

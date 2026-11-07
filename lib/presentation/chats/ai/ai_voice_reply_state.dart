@@ -28,7 +28,7 @@ class AiVoiceReplyState {
     message?.durationMs = 0;
   }
 
-  AiMessage complete(String text, String audio, String language) {
+  AiMessage complete(String text, String? audio, String language) {
     final result = ensure(language);
     result.text = text;
     result.audio = audio;

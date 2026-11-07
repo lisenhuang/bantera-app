@@ -2719,11 +2719,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Eliminare tutte le parole salvate e i progressi, anche quelle nascoste dal filtro? Non si può annullare.';
 
   @override
-  String get vocabReviewHelpTitle => 'Perché alcune parole sono da ripassare?';
+  String get vocabReviewHelpTitle => 'Perché ripassare le parole?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera usa la ripetizione dilazionata: ripassare dopo una pausa può aiutare a ricordare più a lungo. È collegata alla curva dell’oblio, che descrive come i ricordi si attenuano nel tempo.\n\nIl nostro calendario:\n• Primo ripasso: 1 giorno dopo il salvataggio.\n• Dopo i ripassi successivi: 3, 7, 14 e poi 30 giorni.\n• In seguito, ogni 30 giorni.\n\nUna parola è da ripassare quando arriva la data prevista. Segnarla come ripassata avvia l’intervallo successivo da quel momento. È un calendario fisso, non una misura della memoria né una previsione che tu abbia dimenticato la parola.';
+      'I ricordi svaniscono con il tempo. Ripassare le parole a intervalli può aiutarti a ricordarle più a lungo. Si chiama ripetizione dilazionata.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2846,4 +2846,58 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get practiceFirstAnswerHint =>
       'Di’ la risposta corretta ad alta voce.';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      'Rimuovere tutti i dialoghi salvati?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Rimuovere tutti i segnalibri? I messaggi e gli audio originali rimarranno nella conversazione.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Rimuovere questo segnalibro? Il messaggio e l’audio originali rimarranno nella conversazione.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Il tuo programma di ripasso';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Primo ripasso: 1 giorno dopo il salvataggio.\nPoi attendi 3 → 7 → 14 → 30 giorni tra i ripassi. In seguito, ripassa ogni 30 giorni.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '«Da ripassare» significa che è arrivata la data prevista, non che hai dimenticato la parola.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Illustrazione, non una misura della tua memoria.';
+
+  @override
+  String get vocabReviewMemory => 'Memoria';
+
+  @override
+  String get vocabReviewTime => 'Tempo';
+
+  @override
+  String get vocabReviewWith => 'Con ripassi';
+
+  @override
+  String get vocabReviewWithout => 'Senza ripasso';
+
+  @override
+  String get vocabReviewGotIt => 'Ho capito';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Eliminare definitivamente tutti i messaggi, le trascrizioni, le registrazioni e gli allegati di questa chat? L’ultimo riepilogo verrà conservato. L’operazione non può essere annullata.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Eliminare definitivamente tutti i messaggi, le trascrizioni, le registrazioni, gli allegati e l’ultimo riepilogo di questa chat? L’operazione non può essere annullata.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Eliminare tutte le tue registrazioni e gli audio dell’IA in questa chat? Messaggi, trascrizioni, immagini e riepilogo rimarranno. Gli audio eliminati non possono essere recuperati.';
 }

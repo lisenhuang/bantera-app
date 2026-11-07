@@ -75,14 +75,14 @@ void main() {
         await tester.pumpWidget(page());
         await settle(tester);
         expect(find.byIcon(Icons.add), findsNothing);
-        await tester.tap(find.byTooltip('Why are words due for review?'));
+        await tester.tap(find.byTooltip('Why review words again?'));
         await settle(tester);
         expect(find.textContaining('1 day after saving'), findsOneWidget);
         expect(
-          find.textContaining('not a measurement of your memory'),
+          find.textContaining('not that you’ve forgotten the word'),
           findsOneWidget,
         );
-        await tester.tap(find.text('Close'));
+        await tester.tap(find.text('Got it'));
         await settle(tester);
         await tester.drag(
           find.byType(CustomScrollView),

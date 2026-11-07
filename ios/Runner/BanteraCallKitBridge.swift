@@ -185,6 +185,15 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
       let args = call.arguments as? [String: Any] ?? [:]
       let id = (args["callId"] as? String).flatMap(UUID.init(uuidString:))
       switch call.method {
+      case "regionPolicyAllowed":
+        // Read-only reuse for language pickers, including before sign-in.
+        // Do not register VoIP or change active calls just to filter a list.
+        Task { @MainActor in
+          let storefront = await Storefront.current
+          result(BanteraCallKitRegionPolicy.allows(
+            storefront: storefront?.countryCode,
+            deviceRegion: Locale.current.regionCode))
+        }
       case "ready":
         self.defaults.set(args["userId"] as? String, forKey: "callkit.userId")
         Task { @MainActor in

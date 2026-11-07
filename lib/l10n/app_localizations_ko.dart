@@ -2542,11 +2542,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '현재 필터로 숨겨진 단어를 포함한 모든 저장 단어와 복습 기록을 삭제할까요? 되돌릴 수 없습니다.';
 
   @override
-  String get vocabReviewHelpTitle => '왜 복습할 단어가 표시되나요?';
+  String get vocabReviewHelpTitle => '왜 단어를 복습하나요?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera는 간격 반복을 사용합니다. 시간을 두고 복습하면 더 오래 기억하는 데 도움이 됩니다. 이는 시간이 지나며 기억이 약해지는 망각 곡선과 관련이 있습니다.\n\n복습 일정:\n• 저장 후 1일 뒤 첫 복습.\n• 이후 복습할 때마다 3일, 7일, 14일, 30일 간격.\n• 그다음부터는 30일 간격.\n\n예정일이 되면 복습 대상으로 표시됩니다. 복습 완료로 표시하면 그날부터 다음 간격이 시작됩니다. 고정 일정이며 기억력을 측정하거나 단어를 잊었다고 판단하는 것은 아닙니다.';
+      '기억은 시간이 지나면 흐려집니다. 간격을 두고 단어를 복습하면 더 오래 기억하는 데 도움이 됩니다. 이를 간격 반복이라고 합니다.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2655,4 +2655,55 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => '올바른 답을 소리 내어 말해 보세요.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => '저장한 대화를 모두 해제할까요?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      '모든 북마크를 삭제할까요? 원본 메시지와 오디오는 대화에 남아 있습니다.';
+
+  @override
+  String get aiUnsaveDialogueBody => '이 북마크를 삭제할까요? 원본 메시지와 오디오는 대화에 남아 있습니다.';
+
+  @override
+  String get vocabReviewScheduleTitle => '복습 일정';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      '첫 복습: 저장한 지 1일 후.\n이후 복습 간격은 3 → 7 → 14 → 30일입니다. 그다음부터는 30일마다 복습합니다.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '복습 시기가 되었다는 것은 예정된 날짜가 왔다는 뜻이지, 단어를 잊었다는 뜻이 아닙니다.';
+
+  @override
+  String get vocabReviewIllustration => '이해를 돕는 그림이며, 기억력을 측정한 결과가 아닙니다.';
+
+  @override
+  String get vocabReviewMemory => '기억';
+
+  @override
+  String get vocabReviewTime => '시간';
+
+  @override
+  String get vocabReviewWith => '복습 있음';
+
+  @override
+  String get vocabReviewWithout => '복습 없음';
+
+  @override
+  String get vocabReviewGotIt => '알겠어요';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      '이 채팅의 모든 메시지, 받아쓰기, 녹음 및 첨부 파일을 영구 삭제할까요? 마지막 요약은 유지됩니다. 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      '이 채팅의 모든 메시지, 받아쓰기, 녹음, 첨부 파일 및 마지막 요약을 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      '이 채팅의 내 녹음과 AI 오디오를 모두 삭제할까요? 메시지, 받아쓰기, 이미지 및 요약은 유지됩니다. 삭제한 오디오는 복원할 수 없습니다.';
 }

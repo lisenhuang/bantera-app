@@ -168,8 +168,7 @@ class AiHistoryStorageUsage {
   final bool hasSummary;
   int reclaimable(AiHistoryClearMode mode, bool keepSummary) =>
       (mode == AiHistoryClearMode.audioOnly ? audioBytes : totalBytes) -
-      (mode == AiHistoryClearMode.all && keepSummary ? summaryBytes : 0) +
-      (mode == AiHistoryClearMode.audioOnly && !keepSummary ? summaryBytes : 0);
+      (mode == AiHistoryClearMode.all && keepSummary ? summaryBytes : 0);
 }
 
 class AiHistoryStore {
@@ -465,7 +464,11 @@ class AiHistoryStore {
     _memoryEpoch++;
     conversationId = const Uuid().v4();
     final identity = conversationId;
-    _memory = keepSummary && _memory != null ? Map.of(_memory!) : null;
+    // Audio cleanup never deletes text or conversation memory, regardless of
+    // a caller's keepSummary value. That choice applies only to a full clear.
+    if (mode == AiHistoryClearMode.all) {
+      _memory = keepSummary && _memory != null ? Map.of(_memory!) : null;
+    }
     if (_memory != null && mode == AiHistoryClearMode.all) {
       // The old checkpoint no longer exists. New messages can extend this seed.
       _memory!['retainedAfterClear'] = true;
@@ -504,11 +507,13 @@ class AiHistoryStore {
           }
         }
       }
-      final memoryFile = File(path('memory.json'));
-      if (retainedMemory != null) {
-        await memoryFile.writeAsString(retainedMemory, flush: true);
-      } else if (await memoryFile.exists()) {
-        await memoryFile.delete();
+      if (mode == AiHistoryClearMode.all) {
+        final memoryFile = File(path('memory.json'));
+        if (retainedMemory != null) {
+          await memoryFile.writeAsString(retainedMemory, flush: true);
+        } else if (await memoryFile.exists()) {
+          await memoryFile.delete();
+        }
       }
       await File(path('conversation-id')).writeAsString(identity, flush: true);
       onSaved?.call().ignore();

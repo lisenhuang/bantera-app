@@ -4,6 +4,8 @@ import '../../../core/apple_system_version.dart';
 import '../../../core/ai_consent.dart';
 import '../../../infrastructure/ai/ai_image_input.dart';
 import '../../../infrastructure/ai/ai_vocabulary.dart';
+import '../../../infrastructure/ai/ai_review_turn.dart';
+import 'package:uuid/uuid.dart';
 import '../../../infrastructure/ai/ai_emoji_tool.dart';
 import '../../../infrastructure/ai/ai_search_capabilities.dart';
 import '../../../infrastructure/ai/ai_image_search.dart';
@@ -44,6 +46,7 @@ class _VoiceReplyJob {
   final state = AiVoiceReplyState();
   final finished = Completer<void>();
   AiVoiceStream? stream;
+  AiReviewTurn? review;
   bool playbackAllowed = true;
   int playedFrames = 0;
   AiMessage? savedMessage;
@@ -204,6 +207,38 @@ class AiChatController extends ChangeNotifier {
       _disposed = false;
   int remaining = 540, _epoch = 0;
   String draftUser = '', draftModel = '';
+  AiReviewTurn? _liveReview;
+  final _reviewCallAudio = BytesBuilder(copy: false);
+  String _reviewCallText = '';
+  bool _releasingReview = false;
+
+  void _nextReviewTurn() {
+    final enabled = _liveReview?.enabled ?? false;
+    _liveReview = AiReviewTurn(vocabulary, const Uuid().v4())
+      ..enabled = enabled;
+    _reviewCallAudio.clear();
+    _reviewCallText = '';
+  }
+
+  Future<void> _deliverReviewCall(int epoch) async {
+    final review = _liveReview;
+    if (review?.holdOutput != true) return;
+    final text = await review!.finalText();
+    if (!available || epoch != _epoch) return;
+    final pcm = _reviewCallAudio.takeBytes();
+    if (review.matchesSpeech(_reviewCallText, text) && pcm.isNotEmpty) {
+      _releasingReview = true;
+      try {
+        await _event(pcm, epoch);
+      } finally {
+        _releasingReview = false;
+      }
+    }
+    draftModel = text;
+    _liveBubble().text = text;
+    _reviewCallText = '';
+  }
+
   AiVoiceStream? _voiceStream;
   _VoiceReplyJob? _recordJob, _foregroundReply;
   final _replies = <_VoiceReplyJob>[];
@@ -691,7 +726,9 @@ class AiChatController extends ChangeNotifier {
   AiVoiceStream _openVoiceStream(_VoiceReplyJob job) {
     final message = job.input;
     late final AiVoiceStream stream;
+    final review = job.review = AiReviewTurn(vocabulary, message.id);
     stream = AiVoiceStream(
+      reviewTurn: review,
       requiresImages: message.images.isNotEmpty,
       requiresText: message.textRequest != null,
       connect: () async => _api.voice(
@@ -718,6 +755,14 @@ class AiChatController extends ChangeNotifier {
         if (!_jobActive(job)) {
           return {'unavailable': true};
         }
+        if (review.holdOutput &&
+            [
+              AiFormattedTextTool.name,
+              AiEmojiTool.name,
+              'search_web',
+            ].contains(call['name'])) {
+          return {'ok': false, 'error': 'review_output_only'};
+        }
         if (call['name'] == AiFormattedTextTool.name) {
           return _formattedText(
             call['args'],
@@ -734,11 +779,17 @@ class AiChatController extends ChangeNotifier {
                 'stats',
                 'latest',
                 'quiz',
+                'review_conversation',
+                'review_status',
+                'review_pause',
               ].contains((call['args'] as Map?)?['action'])) {
             return {
               'confirmationRequired': true,
               'instruction': 'Ask the learner first. Do not save yet.',
             };
+          }
+          if (review.enabled) {
+            return review.tool(Map<String, dynamic>.from(call['args'] as Map));
           }
           return vocabulary.execute(
             Map<String, dynamic>.from(call['args'] as Map),
@@ -1150,7 +1201,10 @@ class AiChatController extends ChangeNotifier {
     }
     // Credit the completed input independently of storing/playing the reply.
     unawaited(_countSpeech(message));
-    final name = await store.saveAudio(base64Decode(reply['audio'] as String));
+    final encodedAudio = reply['audio'] as String?;
+    final name = encodedAudio == null
+        ? null
+        : await store.saveAudio(base64Decode(encodedAudio));
     if (!available || epoch != _epoch) return;
     final answer = job.state.complete(
       reply['outputText'] as String? ?? '',
@@ -1160,6 +1214,13 @@ class AiChatController extends ChangeNotifier {
     _insertReply(job, answer);
     job.savedMessage = answer;
     await store.save();
+    if (job.review?.enabled == true) {
+      final completion = await job.review!.delivered();
+      if (completion != null && _jobActive(job)) {
+        answer.text += '\n\n$completion';
+        await store.save();
+      }
+    }
     if (autoplay && _canPlay(job) && !recording && !_recordStarting) {
       requestReplyPlayback(answer);
     }
@@ -1556,6 +1617,13 @@ class AiChatController extends ChangeNotifier {
     if (event is List<int>) {
       if (event.length <= 2) return;
       _firstCallAudio();
+      if (!_releasingReview && _liveReview?.holdOutput == true) {
+        if (_reviewCallAudio.length + event.length > 24000 * 2 * 90) {
+          throw StateError('Audio too long');
+        }
+        _reviewCallAudio.add(event);
+        return;
+      }
       if (_output.length + event.length > 24000 * 2 * 90) {
         throw StateError('Audio too long');
       }
@@ -1572,6 +1640,8 @@ class AiChatController extends ChangeNotifier {
     final data = jsonDecode(event as String) as Map<String, dynamic>;
     switch (data['type']) {
       case 'ready':
+        _nextReviewTurn();
+        _liveReview!.enabled = data['vocabularyVersion'] == 3;
         // The transport is ready, but the greeting is not yet audible. Keep
         // Connecting and the original startup deadline until real audio arrives.
         _callTransportReady = true;
@@ -1588,14 +1658,26 @@ class AiChatController extends ChangeNotifier {
         unawaited(endCall());
       case 'transcript':
         if (data['role'] == 'user') {
-          draftUser += data['text'] as String? ?? '';
+          final input = data['text'] as String? ?? '';
+          draftUser += input;
+          _liveReview?.addInput(input);
+        } else if (_liveReview?.holdOutput == true) {
+          _reviewCallText += data['text'] as String? ?? '';
         } else {
           draftModel += data['text'] as String? ?? '';
           if (draftModel.isNotEmpty) _liveBubble().text = draftModel;
         }
       case 'turnComplete':
+        await _deliverReviewCall(epoch);
         await _saveTurn();
+        final completion = await _liveReview?.delivered();
+        if (completion != null && store.messages.isNotEmpty) {
+          store.messages.last.text += '\n\n$completion';
+          await store.save();
+        }
+        _nextReviewTurn();
       case 'interrupted':
+        _nextReviewTurn();
         await _saveModel();
         await _pollListening(discard: true);
         await audio.invokeMethod<void>('clear');
@@ -1622,7 +1704,20 @@ class AiChatController extends ChangeNotifier {
         );
       case 'toolCall':
         // Read tools run outside the audio queue so local disk/network reads never stall playback.
-        unawaited(_tools((data['calls'] as List).cast<Map>(), epoch));
+        final calls = (data['calls'] as List).cast<Map>();
+        if (_liveReview?.enabled == true &&
+            calls.any((c) => c['name'] == AiVocabulary.toolName)) {
+          final held = _liveReview!.holdOutput;
+          await _tools(calls, epoch);
+          if (held && !_liveReview!.holdOutput) {
+            final pcm = _reviewCallAudio.takeBytes();
+            if (pcm.isNotEmpty) await _event(pcm, epoch);
+            draftModel += _reviewCallText;
+            _reviewCallText = '';
+          }
+        } else {
+          unawaited(_tools(calls, epoch));
+        }
     }
     changed();
   }
@@ -1779,6 +1874,7 @@ class AiChatController extends ChangeNotifier {
 
   Future<void> _tools(List<Map> calls, int epoch) async {
     final destination = _socket;
+    final review = _liveReview;
     final responses = <Map<String, dynamic>>[];
     for (final call in calls) {
       Map<String, dynamic> result;
@@ -1786,29 +1882,42 @@ class AiChatController extends ChangeNotifier {
         if (!available || epoch != _epoch || !identical(_socket, destination)) {
           return;
         }
-        result = call['name'] == AiFormattedTextTool.name
-            ? await _formattedText(call['args'], _liveBubble())
-            : call['name'] == AiEmojiTool.name
-            ? await _emojis(call['args'], _liveBubble())
-            : call['name'] == AiVocabulary.toolName
-            ? await vocabulary.execute(
-                Map<String, dynamic>.from(call['args'] as Map),
-                conversationId: store.conversationId,
-              )
-            : call['name'] == 'search_web'
-            ? await _search(
-                Map<String, dynamic>.from(call),
-                _liveBubble(),
-                () =>
-                    available &&
-                    epoch == _epoch &&
-                    calling &&
-                    identical(_socket, destination),
-              )
-            : await AiDeviceData.read(
-                call['name'] as String,
-                owner,
-              ).timeout(const Duration(seconds: 10));
+        if (review?.holdOutput == true &&
+            [
+              AiFormattedTextTool.name,
+              AiEmojiTool.name,
+              'search_web',
+            ].contains(call['name'])) {
+          result = {'ok': false, 'error': 'review_output_only'};
+        } else {
+          result = call['name'] == AiFormattedTextTool.name
+              ? await _formattedText(call['args'], _liveBubble())
+              : call['name'] == AiEmojiTool.name
+              ? await _emojis(call['args'], _liveBubble())
+              : call['name'] == AiVocabulary.toolName
+              ? review?.enabled == true
+                    ? await review!.tool(
+                        Map<String, dynamic>.from(call['args'] as Map),
+                      )
+                    : await vocabulary.execute(
+                        Map<String, dynamic>.from(call['args'] as Map),
+                        conversationId: store.conversationId,
+                      )
+              : call['name'] == 'search_web'
+              ? await _search(
+                  Map<String, dynamic>.from(call),
+                  _liveBubble(),
+                  () =>
+                      available &&
+                      epoch == _epoch &&
+                      calling &&
+                      identical(_socket, destination),
+                )
+              : await AiDeviceData.read(
+                  call['name'] as String,
+                  owner,
+                ).timeout(const Duration(seconds: 10));
+        }
       } catch (_) {
         result = {'unavailable': true};
       }
@@ -1989,6 +2098,30 @@ class AiChatController extends ChangeNotifier {
       rethrow;
     } finally {
       _savingMessages.remove(message.id);
+      changed();
+    }
+  }
+
+  /// Removes bookmarks only, in one write. A failed write restores every date.
+  Future<void> removeSavedMessages(List<AiMessage> messages) async {
+    final saved = messages.where((message) => message.savedAt != null).toSet();
+    if (saved.isEmpty) return;
+    if (!saved.every(canSaveMessage)) throw StateError('Message is in use');
+    final previous = {for (final message in saved) message: message.savedAt};
+    _savingMessages.addAll(saved.map((message) => message.id));
+    for (final message in saved) {
+      message.savedAt = null;
+    }
+    changed();
+    try {
+      await store.save();
+    } catch (_) {
+      for (final entry in previous.entries) {
+        entry.key.savedAt = entry.value;
+      }
+      rethrow;
+    } finally {
+      _savingMessages.removeAll(saved.map((message) => message.id));
       changed();
     }
   }

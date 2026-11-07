@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../shared/swipe_action_reveal.dart';
 import 'ai_chat_controller.dart';
 
 /// Saved bubbles remain references to the original, device-local conversation.
@@ -16,23 +17,43 @@ class AiSavedDialoguesScreen extends StatefulWidget {
 }
 
 class _AiSavedDialoguesScreenState extends State<AiSavedDialoguesScreen> {
-  final _unsaving = <String>{};
+  bool _removing = false;
 
-  Future<void> _unsave(AiMessage message) async {
-    if (!_unsaving.add(message.id)) return;
-    setState(() {});
+  Future<void> _remove(List<AiMessage> messages, {bool all = false}) async {
+    if (_removing) return;
+    setState(() => _removing = true);
+    final l = AppLocalizations.of(context)!;
     try {
-      await widget.controller.toggleSavedMessage(message);
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          scrollable: true,
+          title: Text(all ? l.aiClearSavedDialoguesTitle : l.aiUnsaveDialogue),
+          content: Text(
+            all ? l.aiClearSavedDialoguesBody : l.aiUnsaveDialogueBody,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(all ? l.clearAllLabel : l.aiUnsaveDialogue),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+      await widget.controller.removeSavedMessages(messages);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.onboardingLoadFailed),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.onboardingLoadFailed)));
       }
     } finally {
-      if (mounted) setState(() => _unsaving.remove(message.id));
+      if (mounted) setState(() => _removing = false);
     }
   }
 
@@ -58,7 +79,29 @@ class _AiSavedDialoguesScreenState extends State<AiSavedDialoguesScreen> {
     final theme = Theme.of(context);
     final locale = Localizations.localeOf(context).toString();
     return Scaffold(
-      appBar: AppBar(title: Text(l.aiSavedDialogues)),
+      appBar: AppBar(
+        title: Text(l.aiSavedDialogues),
+        actions: [
+          ListenableBuilder(
+            listenable: widget.controller,
+            builder: (context, _) {
+              final saved = widget.controller.messages
+                  .where((message) => message.savedAt != null)
+                  .toList();
+              return IconButton(
+                tooltip: l.clearAllLabel,
+                icon: const Icon(Icons.delete_outline_rounded),
+                onPressed:
+                    !_removing &&
+                        saved.isNotEmpty &&
+                        saved.every(widget.controller.canSaveMessage)
+                    ? () => _remove(saved, all: true)
+                    : null,
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: widget.controller,
@@ -97,67 +140,55 @@ class _AiSavedDialoguesScreenState extends State<AiSavedDialoguesScreen> {
               itemBuilder: (context, index) {
                 final message = messages[index];
                 final savedAt = message.savedAt!.toLocal();
-                final unsaving = _unsaving.contains(message.id);
+                final canRemove =
+                    !_removing && widget.controller.canSaveMessage(message);
                 return Card(
                   key: ValueKey('ai-saved-dialogue-${message.id}'),
                   clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => Navigator.pop<String>(context, message.id),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  message.role == 'user'
-                                      ? l.aiDialogueYou
-                                      : 'Bantera AI',
-                                  style: theme.textTheme.labelLarge,
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: l.aiUnsaveDialogue,
-                                onPressed:
-                                    unsaving ||
-                                        !widget.controller.canSaveMessage(
-                                          message,
-                                        )
-                                    ? null
-                                    : () => _unsave(message),
-                                icon: unsaving
-                                    ? const SizedBox.square(
-                                        dimension: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.bookmark_rounded,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Text(
-                              _preview(message, l),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyLarge,
+                  child: SwipeActionReveal(
+                    surfaceColor: theme.colorScheme.surfaceContainerLow,
+                    actions: [
+                      if (canRemove)
+                        SwipeRevealAction(
+                          label: l.aiUnsaveDialogue,
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          onPressed: () => _remove([message]),
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: theme.colorScheme.error,
+                        ),
+                    ],
+                    child: InkWell(
+                      onTap: () => Navigator.pop<String>(context, message.id),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              message.role == 'user'
+                                  ? l.aiDialogueYou
+                                  : 'Bantera AI',
+                              style: theme.textTheme.labelLarge,
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '${DateFormat.yMMMd(locale).format(savedAt)} · ${TimeOfDay.fromDateTime(savedAt).format(context)}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Text(
+                                _preview(message, l),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyLarge,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            Text(
+                              '${DateFormat.yMMMd(locale).format(savedAt)} · ${TimeOfDay.fromDateTime(savedAt).format(context)}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

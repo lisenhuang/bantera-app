@@ -4787,13 +4787,13 @@ abstract class AppLocalizations {
   /// No description provided for @vocabReviewHelpTitle.
   ///
   /// In en, this message translates to:
-  /// **'Why are words due for review?'**
+  /// **'Why review words again?'**
   String get vocabReviewHelpTitle;
 
   /// No description provided for @vocabReviewHelpBody.
   ///
   /// In en, this message translates to:
-  /// **'Bantera uses spaced repetition: reviewing a word again after a gap can help you remember it longer. This relates to the forgetting curve, which describes how memory can fade over time.\n\nOur schedule:\n• First review: 1 day after saving.\n• After successive reviews: 3, 7, 14, then 30 days.\n• Later reviews stay 30 days apart.\n\nA word is due when its scheduled date arrives. Marking it reviewed starts the next interval from that review. This is a fixed schedule, not a measurement of your memory or a prediction that you have forgotten the word.'**
+  /// **'Memories fade over time. Revisiting words at spaced intervals can help you remember them longer. This is called spaced repetition.'**
   String get vocabReviewHelpBody;
 
   /// No description provided for @leaderboardRollingFootnote.
@@ -4993,6 +4993,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Say the correct reply aloud.'**
   String get practiceFirstAnswerHint;
+
+  /// No description provided for @aiClearSavedDialoguesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all saved dialogues?'**
+  String get aiClearSavedDialoguesTitle;
+
+  /// No description provided for @aiClearSavedDialoguesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all bookmarks? Your original chat messages and audio will stay in the conversation.'**
+  String get aiClearSavedDialoguesBody;
+
+  /// No description provided for @aiUnsaveDialogueBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this bookmark? The original message and audio will stay in the conversation.'**
+  String get aiUnsaveDialogueBody;
+
+  /// No description provided for @vocabReviewScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review schedule'**
+  String get vocabReviewScheduleTitle;
+
+  /// No description provided for @vocabReviewScheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'First review: 1 day after saving.\nThen wait 3 → 7 → 14 → 30 days between reviews. After that, review every 30 days.'**
+  String get vocabReviewScheduleBody;
+
+  /// No description provided for @vocabReviewDueNote.
+  ///
+  /// In en, this message translates to:
+  /// **'“Due” means it’s time for your scheduled review, not that you’ve forgotten the word.'**
+  String get vocabReviewDueNote;
+
+  /// No description provided for @vocabReviewIllustration.
+  ///
+  /// In en, this message translates to:
+  /// **'Illustration, not a measure of your memory.'**
+  String get vocabReviewIllustration;
+
+  /// No description provided for @vocabReviewMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory'**
+  String get vocabReviewMemory;
+
+  /// No description provided for @vocabReviewTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get vocabReviewTime;
+
+  /// No description provided for @vocabReviewWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With reviews'**
+  String get vocabReviewWith;
+
+  /// No description provided for @vocabReviewWithout.
+  ///
+  /// In en, this message translates to:
+  /// **'Without review'**
+  String get vocabReviewWithout;
+
+  /// No description provided for @vocabReviewGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get vocabReviewGotIt;
+
+  /// No description provided for @aiClearConfirmKeepSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete all messages, transcripts, recordings and attachments in this chat? The last summary will be kept. This cannot be undone.'**
+  String get aiClearConfirmKeepSummary;
+
+  /// No description provided for @aiClearConfirmRemoveSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete all messages, transcripts, recordings, attachments and the last summary in this chat? This cannot be undone.'**
+  String get aiClearConfirmRemoveSummary;
+
+  /// No description provided for @aiClearConfirmAudioOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored.'**
+  String get aiClearConfirmAudioOnly;
 }
 
 class _AppLocalizationsDelegate

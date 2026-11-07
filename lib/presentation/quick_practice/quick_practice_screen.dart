@@ -281,9 +281,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _exercise?['currentLevel'] as String? ??
           _exercise?['level'] as String?;
       _practiceLevel = _exercise?['level'] as String?;
-      _translationRevealed =
-          (_exercise?['level'] == 'A0' ||
-          _exercise?['translationUsed'] == true);
+      _translationRevealed = false;
       _feedback = widget.previewFeedback;
       final previewLocale = _exercise?['locale'] as String? ?? 'en-NZ';
       _locale = _supportsPracticeLocale(previewLocale) ? previewLocale : null;
@@ -541,7 +539,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _readLevelStates(response);
         _currentLevel = response['currentLevel'] as String?;
         _practiceLevel = response['level'] as String?;
-        _translationRevealed = response['level'] == 'A0';
+        _translationRevealed = false;
         _error = null;
       });
       _prepareExerciseAudio();
@@ -631,8 +629,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           cached['currentLevel'] as String? ?? cached['level'] as String?;
       _practiceLevel =
           cached['practiceLevel'] as String? ?? cached['level'] as String?;
-      _translationRevealed =
-          cached['level'] == 'A0' || cached['translationUsed'] == true;
+      _translationRevealed = false;
     });
   }
 
@@ -692,6 +689,11 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     _syncPronunciation();
     unawaited(_refreshSpeechSupport());
     if (state != AppLifecycleState.resumed) {
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.hidden) {
+        setState(() => _translationRevealed = false);
+        _translations.clear();
+      }
       _poll?.cancel();
       unawaited(_stopAudio());
     } else if (widget.active && _allowed) {
@@ -776,10 +778,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
           _exercise = response;
           _validatingCachedPractice = false;
           _selectedWord = null;
-          _translationRevealed =
-              (response['level'] == 'A0' ||
-              response['translationUsed'] == true ||
-              (restoring && remembered!.translationRevealed));
+          _translationRevealed = false;
           _feedback = restoring ? remembered!.feedback : null;
           _loading = false;
           _waitingSince = null;
@@ -1282,25 +1281,28 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
     try {
       await _stopAudio();
       if (!mounted || epoch != _epoch) return;
-      final confirmed = await showBanteraDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l.quickShowTranslation),
-          content: Text(l.quickTranslationHint),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              key: const ValueKey('practice-confirm-translation'),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(l.quickShowTranslation),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
+      final confirmed =
+          _exercise?['level'] == 'A0' ||
+          await showBanteraDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: Text(l.quickShowTranslation),
+                  content: Text(l.quickTranslationHint),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: Text(l.cancel),
+                    ),
+                    FilledButton(
+                      key: const ValueKey('practice-confirm-translation'),
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: Text(l.quickShowTranslation),
+                    ),
+                  ],
+                ),
+              ) ==
+              true;
+      if (!confirmed) return;
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted ||
           epoch != _epoch ||
@@ -1655,7 +1657,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
             'level': selected,
             'reviewMode': selected != _currentLevel,
           };
-          _translationRevealed = selected == 'A0';
+          _translationRevealed = false;
           _feedback = null;
         });
         return;
@@ -1827,7 +1829,7 @@ class _QuickPracticeScreenState extends State<QuickPracticeScreen>
         _feedback = beforeSaved.feedback;
         _currentLevel = beforeSaved.currentLevel;
         _practiceLevel = beforeSaved.practiceLevel;
-        _translationRevealed = beforeSaved.translationRevealed;
+        _translationRevealed = false;
         _selectedWord = null;
         _savedSource = null;
         _beforeSaved = null;

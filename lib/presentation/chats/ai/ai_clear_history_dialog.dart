@@ -18,10 +18,40 @@ class AiClearHistoryDialog extends StatefulWidget {
 
 class _AiClearHistoryDialogState extends State<AiClearHistoryDialog> {
   AiHistoryClearMode? _mode;
-  bool _keepSummary = false;
+  bool _keepSummary = true;
+  bool _confirming = false;
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    if (_confirming) {
+      final audioOnly = _mode == AiHistoryClearMode.audioOnly;
+      final confirmation = audioOnly
+          ? l.aiClearConfirmAudioOnly
+          : _keepSummary
+          ? l.aiClearConfirmKeepSummary
+          : l.aiClearConfirmRemoveSummary;
+      return AlertDialog(
+        title: Text(l.confirmDeletionTitle),
+        scrollable: true,
+        content: Text('$confirmation\n\n${l.aiClearNotice}'),
+        actions: [
+          TextButton(
+            onPressed: () => setState(() => _confirming = false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(
+              context,
+              AiHistoryClearChoice(_mode!, audioOnly || _keepSummary),
+            ),
+            child: Text(l.aiClearHistory),
+          ),
+        ],
+      );
+    }
     return FutureBuilder<AiHistoryStorageUsage>(
       future: widget.usage,
       builder: (context, snapshot) {
@@ -64,7 +94,11 @@ class _AiClearHistoryDialogState extends State<AiClearHistoryDialog> {
                               if (usage != null)
                                 l.aiClearFreed(
                                   storageSize(
-                                    usage.reclaimable(mode, _keepSummary),
+                                    usage.reclaimable(
+                                      mode,
+                                      mode == AiHistoryClearMode.audioOnly ||
+                                          _keepSummary,
+                                    ),
                                   ),
                                 ),
                             ].join('\n'),
@@ -73,21 +107,24 @@ class _AiClearHistoryDialogState extends State<AiClearHistoryDialog> {
                     ],
                   ),
                 ),
-                const Divider(),
-                CheckboxListTile(
-                  value: _keepSummary,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: usage?.hasSummary == true
-                      ? (value) => setState(() => _keepSummary = value ?? false)
-                      : null,
-                  title: Text(l.aiKeepSummary),
-                  subtitle: Text(
-                    usage?.hasSummary == true
-                        ? l.aiKeepSummaryBody
-                        : l.aiNoSummary,
+                if (_mode == AiHistoryClearMode.all) ...[
+                  const Divider(),
+                  CheckboxListTile(
+                    value: usage?.hasSummary == true && _keepSummary,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: usage?.hasSummary == true
+                        ? (value) =>
+                              setState(() => _keepSummary = value ?? false)
+                        : null,
+                    title: Text(l.aiKeepSummary),
+                    subtitle: Text(
+                      usage?.hasSummary == true
+                          ? l.aiKeepSummaryBody
+                          : l.aiNoSummary,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -102,10 +139,13 @@ class _AiClearHistoryDialogState extends State<AiClearHistoryDialog> {
               ),
               onPressed: _mode == null || usage == null
                   ? null
-                  : () => Navigator.pop(
-                      context,
-                      AiHistoryClearChoice(_mode!, _keepSummary),
-                    ),
+                  : () => setState(() {
+                      if (_mode == AiHistoryClearMode.all &&
+                          !usage.hasSummary) {
+                        _keepSummary = false;
+                      }
+                      _confirming = true;
+                    }),
               child: Text(l.aiClearHistory),
             ),
           ],

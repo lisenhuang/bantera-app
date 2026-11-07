@@ -2526,11 +2526,11 @@ class AppLocalizationsJa extends AppLocalizations {
       '現在の絞り込みで非表示の単語も含め、すべての保存済み単語と復習履歴を削除しますか？元に戻せません。';
 
   @override
-  String get vocabReviewHelpTitle => 'なぜ復習が必要なの？';
+  String get vocabReviewHelpTitle => 'なぜ単語を復習するの？';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera は間隔を空けた反復学習を使います。時間を置いて復習すると、長く覚える助けになります。これは、時間とともに記憶が薄れることを示す忘却曲線に関連します。\n\n復習の間隔：\n• 保存から 1 日後に初回。\n• その後、復習するたびに 3、7、14、30 日後。\n• 以降は 30 日ごと。\n\n予定日になると復習対象になります。復習済みにすると、その日から次の間隔が始まります。固定のスケジュールであり、記憶力の測定や、忘れたという判定ではありません。';
+      '記憶は時間とともに薄れます。間隔を空けて単語を復習すると、より長く覚えておく助けになります。これを「間隔反復」といいます。';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2639,4 +2639,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => '正しい返答を声に出して言ってみましょう。';
+
+  @override
+  String get aiClearSavedDialoguesTitle => '保存した会話をすべて解除しますか？';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'すべてのブックマークを削除しますか？元のメッセージと音声はチャットに残ります。';
+
+  @override
+  String get aiUnsaveDialogueBody => 'このブックマークを削除しますか？元のメッセージと音声はチャットに残ります。';
+
+  @override
+  String get vocabReviewScheduleTitle => '復習のスケジュール';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      '最初の復習：保存した1日後。\nその後は復習の間隔を3 → 7 → 14 → 30日と延ばします。以降は30日ごとに復習します。';
+
+  @override
+  String get vocabReviewDueNote => '「復習の時期」は予定の日が来たという意味で、単語を忘れたという意味ではありません。';
+
+  @override
+  String get vocabReviewIllustration => '理解のための図であり、あなたの記憶を測定したものではありません。';
+
+  @override
+  String get vocabReviewMemory => '記憶';
+
+  @override
+  String get vocabReviewTime => '時間';
+
+  @override
+  String get vocabReviewWith => '復習あり';
+
+  @override
+  String get vocabReviewWithout => '復習なし';
+
+  @override
+  String get vocabReviewGotIt => 'わかりました';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'このチャットのすべてのメッセージ、文字起こし、録音、添付ファイルを完全に削除しますか？最後の要約は保持されます。この操作は取り消せません。';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'このチャットのすべてのメッセージ、文字起こし、録音、添付ファイル、最後の要約を完全に削除しますか？この操作は取り消せません。';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'このチャットのあなたの録音とAIの音声をすべて削除しますか？メッセージ、文字起こし、画像、要約は残ります。削除した音声は復元できません。';
 }

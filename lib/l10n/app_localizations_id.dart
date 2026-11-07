@@ -2653,11 +2653,11 @@ class AppLocalizationsId extends AppLocalizations {
       'Hapus semua kosakata tersimpan dan kemajuan ulasannya, termasuk kata yang tersembunyi oleh filter? Ini tidak dapat dibatalkan.';
 
   @override
-  String get vocabReviewHelpTitle => 'Mengapa kata perlu diulas?';
+  String get vocabReviewHelpTitle => 'Mengapa mengulang kata?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera memakai pengulangan berjarak: mengulas setelah jeda dapat membantu Anda mengingat lebih lama. Ini terkait kurva lupa, yang menggambarkan melemahnya ingatan seiring waktu.\n\nJadwal kami:\n• Ulasan pertama: 1 hari setelah disimpan.\n• Setelah ulasan berikutnya: 3, 7, 14, lalu 30 hari.\n• Selanjutnya setiap 30 hari.\n\nKata jatuh tempo saat tanggalnya tiba. Menandainya sudah diulas memulai interval berikutnya dari ulasan itu. Ini jadwal tetap, bukan pengukuran ingatan atau prediksi bahwa Anda telah melupakan kata tersebut.';
+      'Ingatan memudar seiring waktu. Mengulang kata dengan jeda dapat membantu Anda mengingatnya lebih lama. Ini disebut pengulangan berjarak.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2774,4 +2774,57 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get practiceFirstAnswerHint =>
       'Ucapkan jawaban yang benar dengan lantang.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Hapus semua dialog tersimpan?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Hapus semua penanda? Pesan dan audio asli akan tetap ada dalam percakapan.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Hapus penanda ini? Pesan dan audio asli akan tetap ada dalam percakapan.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Jadwal pengulangan Anda';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Pengulangan pertama: 1 hari setelah disimpan.\nLalu tunggu 3 → 7 → 14 → 30 hari di antara pengulangan. Setelah itu, ulangi setiap 30 hari.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '“Jatuh tempo” berarti sudah waktunya mengulang sesuai jadwal, bukan berarti Anda telah melupakan kata tersebut.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Ilustrasi, bukan pengukuran ingatan Anda.';
+
+  @override
+  String get vocabReviewMemory => 'Ingatan';
+
+  @override
+  String get vocabReviewTime => 'Waktu';
+
+  @override
+  String get vocabReviewWith => 'Dengan pengulangan';
+
+  @override
+  String get vocabReviewWithout => 'Tanpa pengulangan';
+
+  @override
+  String get vocabReviewGotIt => 'Mengerti';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Hapus permanen semua pesan, transkrip, rekaman, dan lampiran dalam percakapan ini? Ringkasan terakhir akan disimpan. Tindakan ini tidak dapat dibatalkan.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Hapus permanen semua pesan, transkrip, rekaman, lampiran, dan ringkasan terakhir dalam percakapan ini? Tindakan ini tidak dapat dibatalkan.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Hapus semua rekaman Anda dan audio AI dalam percakapan ini? Pesan, transkrip, gambar, dan ringkasan tetap tersimpan. Audio yang dihapus tidak dapat dipulihkan.';
 }

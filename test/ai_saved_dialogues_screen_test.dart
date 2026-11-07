@@ -16,10 +16,12 @@ class _SavedController extends AiChatController {
   bool canSaveMessage(AiMessage message) => true;
 
   @override
-  Future<void> toggleSavedMessage(AiMessage message) async {
+  Future<void> removeSavedMessages(List<AiMessage> messages) async {
     if (fail) throw StateError('write failed');
-    unsaved.add(message.id);
-    message.savedAt = null;
+    for (final message in messages) {
+      unsaved.add(message.id);
+      message.savedAt = null;
+    }
     changed();
   }
 }
@@ -36,7 +38,19 @@ void main() {
   });
   tearDown(() => controller.dispose());
 
-  Widget app({Locale locale = const Locale('en'), Widget? home}) => MaterialApp(
+  Widget app({
+    Locale locale = const Locale('en'),
+    Widget? home,
+    double textScale = 1,
+    Brightness brightness = Brightness.light,
+  }) => MaterialApp(
+    theme: ThemeData(brightness: brightness),
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      child: child!,
+    ),
     locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -115,19 +129,116 @@ void main() {
       controller.store.messages.add(message);
       await tester.pumpWidget(app());
       controller.fail = true;
+      await tester.drag(
+        find.byKey(const ValueKey('ai-saved-dialogue-saved')),
+        const Offset(-160, 0),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Unsave dialogue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Unsave dialogue'));
       await tester.pumpAndSettle();
       expect(find.text('Keep my original bubble'), findsOneWidget);
       expect(message.savedAt, isNotNull);
       expect(find.byType(SnackBar), findsOneWidget);
       controller.fail = false;
+      await tester.drag(
+        find.byKey(const ValueKey('ai-saved-dialogue-saved')),
+        const Offset(-160, 0),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Unsave dialogue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Unsave dialogue'));
       await tester.pumpAndSettle();
       expect(controller.unsaved, ['saved']);
       expect(controller.store.messages, contains(message));
       expect(find.text('No saved dialogues yet'), findsOneWidget);
     },
   );
+
+  testWidgets('swipe reveals only; cancel keeps bookmark; clear all confirms', (
+    tester,
+  ) async {
+    for (final id in ['one', 'two']) {
+      controller.store.messages.add(
+        AiMessage(
+          id: id,
+          role: 'user',
+          text: id,
+          savedAt: DateTime.utc(2026, 10, 29),
+        ),
+      );
+    }
+    await tester.pumpWidget(app());
+    expect(find.byTooltip('Unsave dialogue'), findsNothing);
+    await tester.drag(
+      find.byKey(const ValueKey('ai-saved-dialogue-one')),
+      const Offset(-160, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(controller.unsaved, isEmpty);
+    await tester.tap(find.byTooltip('Unsave dialogue'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(controller.unsaved, isEmpty);
+    await tester.tap(find.byTooltip('Clear all'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(controller.unsaved, isEmpty);
+    await tester.tap(find.byTooltip('Clear all'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Clear all'));
+    await tester.pumpAndSettle();
+    expect(controller.unsaved, containsAll(['one', 'two']));
+    expect(controller.store.messages.length, 2);
+    expect(find.text('No saved dialogues yet'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byWidgetPredicate(
+              (widget) => widget is IconButton && widget.tooltip == 'Clear all',
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('failed clear all leaves saved dialogues available to retry', (
+    tester,
+  ) async {
+    controller.store.messages.add(
+      AiMessage(
+        id: 'one',
+        role: 'user',
+        text: 'Keep me',
+        savedAt: DateTime.utc(2026, 10, 29),
+      ),
+    );
+    controller.fail = true;
+    await tester.pumpWidget(app());
+    await tester.tap(find.byTooltip('Clear all'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Clear all'));
+    await tester.pumpAndSettle();
+    expect(find.text('Keep me'), findsOneWidget);
+    expect(controller.store.messages.single.savedAt, isNotNull);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byWidgetPredicate(
+              (widget) => widget is IconButton && widget.tooltip == 'Clear all',
+            ),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
 
   testWidgets('saved list fits narrow phones in every supported locale', (
     tester,
@@ -145,9 +256,17 @@ void main() {
       ),
     );
     for (final locale in AppLocalizations.supportedLocales) {
-      await tester.pumpWidget(app(locale: locale));
+      await tester.pumpWidget(
+        app(locale: locale, textScale: 2, brightness: Brightness.dark),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: locale.toString());
+      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'dialog $locale');
+      await tester.tap(find.byType(TextButton));
+      await tester.pumpAndSettle();
     }
   });
 }

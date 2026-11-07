@@ -2718,11 +2718,11 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Borrar todo el vocabulario guardado y su progreso, incluso las palabras ocultas por el filtro? No se puede deshacer.';
 
   @override
-  String get vocabReviewHelpTitle => '¿Por qué hay palabras para repasar?';
+  String get vocabReviewHelpTitle => '¿Por qué repasar las palabras?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera usa repetición espaciada: repasar después de una pausa puede ayudarte a recordar durante más tiempo. Se relaciona con la curva del olvido, que describe cómo se debilita la memoria con el tiempo.\n\nNuestro calendario:\n• Primer repaso: 1 día después de guardar.\n• Tras los siguientes repasos: 3, 7, 14 y luego 30 días.\n• Después, cada 30 días.\n\nUna palabra queda pendiente al llegar su fecha. Marcarla como repasada inicia el siguiente intervalo desde ese repaso. Es un calendario fijo, no una medición de tu memoria ni una predicción de que la has olvidado.';
+      'Los recuerdos se desvanecen con el tiempo. Repasar las palabras a intervalos puede ayudarte a recordarlas durante más tiempo. Esto se llama repetición espaciada.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2845,4 +2845,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Di la respuesta correcta en voz alta.';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      '¿Borrar todos los diálogos guardados?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      '¿Eliminar todos los marcadores? Los mensajes y audios originales permanecerán en la conversación.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      '¿Eliminar este marcador? El mensaje y audio originales permanecerán en la conversación.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Tu calendario de repaso';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Primer repaso: 1 día después de guardar.\nDespués, espera 3 → 7 → 14 → 30 días entre repasos. A partir de entonces, repasa cada 30 días.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '«Pendiente» significa que ha llegado la fecha de repaso, no que hayas olvidado la palabra.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Ilustración, no una medición de tu memoria.';
+
+  @override
+  String get vocabReviewMemory => 'Memoria';
+
+  @override
+  String get vocabReviewTime => 'Tiempo';
+
+  @override
+  String get vocabReviewWith => 'Con repasos';
+
+  @override
+  String get vocabReviewWithout => 'Sin repaso';
+
+  @override
+  String get vocabReviewGotIt => 'Entendido';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      '¿Eliminar permanentemente todos los mensajes, transcripciones, grabaciones y archivos adjuntos de este chat? Se conservará el último resumen. Esta acción no se puede deshacer.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      '¿Eliminar permanentemente todos los mensajes, transcripciones, grabaciones, archivos adjuntos y el último resumen de este chat? Esta acción no se puede deshacer.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      '¿Eliminar todas tus grabaciones y los audios de la IA de este chat? Se conservarán los mensajes, transcripciones, imágenes y el resumen. Los audios eliminados no se pueden recuperar.';
 }

@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 
 import '../core/app_locale.dart';
 import '../core/app_resume_notifier.dart';
@@ -22,6 +23,7 @@ class RegionService extends ChangeNotifier {
   RegionService._()
     : _countryLookup = null,
       _appLocale = null,
+      _isIOSOverride = null,
       _languageAvailability = LanguageAvailabilityService.instance {
     AppResumeNotifier.instance.addListener(_refreshCountry);
   }
@@ -31,9 +33,28 @@ class RegionService extends ChangeNotifier {
     required Future<String?> Function() countryLookup,
     required Locale Function() appLocale,
     LanguageAvailabilityService? languageAvailability,
+    bool? isIOS,
   }) : _countryLookup = countryLookup,
        _appLocale = appLocale,
+       _isIOSOverride = isIOS,
        _languageAvailability = languageAvailability;
+
+  final bool? _isIOSOverride;
+  static const _regionChannel = MethodChannel('bantera/callkit');
+
+  Future<bool> _allowsTaiwanByDeviceRegion() async {
+    if (!(_isIOSOverride ?? Platform.isIOS)) return true;
+    try {
+      // Query on every picker open; a cached IP cannot bypass a changed
+      // storefront/device region. Missing or failed native results hide it.
+      return await _regionChannel
+              .invokeMethod<bool>('regionPolicyAllowed')
+              .timeout(_timeout) ==
+          true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   final Future<String?> Function()? _countryLookup;
   final Locale Function()? _appLocale;
@@ -165,8 +186,19 @@ class RegionService extends ChangeNotifier {
         AppLocalePreference.zhCn.explicitLocale;
   }
 
+  /// Leaderboard visibility depends on the viewer's IP and native region,
+  /// not their display or learning language. Unknown checks fail closed.
+  Future<bool> allowsTaiwanLeaderboardRows({bool refresh = false}) async {
+    final allowed = await Future.wait([
+      isOutsideMainlandChina(refresh: refresh),
+      _allowsTaiwanByDeviceRegion(),
+    ]);
+    return allowed.every((value) => value);
+  }
+
   /// Chinese (Taiwan) is hidden when the app UI is Simplified Chinese, or
-  /// unless the user's IP is confirmed to be outside mainland China.
+  /// unless the user's IP is confirmed to be outside mainland China. On iOS,
+  /// the App Store/device region must also pass the native CallKit policy.
   Future<List<TranscriptionLocaleOption>> filterLanguageOptions(
     List<TranscriptionLocaleOption> options,
   ) async {
@@ -174,9 +206,14 @@ class RegionService extends ChangeNotifier {
       return options;
     }
     if (!_usesSimplifiedChinese) {
-      final outsideMainlandChina = await isOutsideMainlandChina();
+      final allowed = await Future.wait([
+        isOutsideMainlandChina(),
+        _allowsTaiwanByDeviceRegion(),
+      ]);
       // The app language may change while the country lookup is in flight.
-      if (outsideMainlandChina && !_usesSimplifiedChinese) return options;
+      if (allowed.every((value) => value) && !_usesSimplifiedChinese) {
+        return options;
+      }
     }
     return options.where((o) => !isTaiwanChineseLocale(o.identifier)).toList();
   }

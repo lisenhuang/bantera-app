@@ -144,6 +144,81 @@ void main() {
   });
 
   test(
+    'bulk removal persists bookmarks only and rolls back every bookmark on failure',
+    () async {
+      final store = _ControlledHistoryStore();
+      final chat = AiChatController.forTesting(store);
+      addTearDown(chat.dispose);
+      await chat.initialize();
+      final savedAt = DateTime.utc(2026, 10, 29);
+      final messages = [
+        AiMessage(
+          id: 'one',
+          role: 'user',
+          text: 'Original one',
+          audio: 'voice.m4a',
+          savedAt: savedAt,
+          timeZone: 'UTC',
+        ),
+        AiMessage(
+          id: 'two',
+          role: 'model',
+          text: 'Original two',
+          savedAt: savedAt,
+          timeZone: 'UTC',
+        ),
+      ];
+      store.messages.addAll(messages);
+      await File(store.path('voice.m4a')).writeAsBytes([1, 2, 3]);
+      store.failSave = true;
+      await expectLater(
+        chat.removeSavedMessages(messages),
+        throwsA(isA<FileSystemException>()),
+      );
+      expect(messages.every((message) => message.savedAt == savedAt), isTrue);
+      expect(messages.every(chat.canSaveMessage), isTrue);
+      store.failSave = false;
+      final saves = store.saves;
+      await chat.removeSavedMessages(messages);
+      expect(store.saves, saves + 1);
+      final restored = AiHistoryStore('test');
+      await restored.load();
+      expect(restored.messages.map((message) => message.text), [
+        'Original one',
+        'Original two',
+      ]);
+      expect(
+        restored.messages.every((message) => message.savedAt == null),
+        isTrue,
+      );
+      expect(await File(store.path('voice.m4a')).readAsBytes(), [1, 2, 3]);
+      await chat.removeSavedMessages(messages);
+      expect(store.saves, saves + 1); // Retrying removal never saves it again.
+    },
+  );
+
+  test(
+    'bulk removal rejects in-use messages without partial removal',
+    () async {
+      final store = _ControlledHistoryStore();
+      final chat = AiChatController.forTesting(store);
+      addTearDown(chat.dispose);
+      await chat.initialize();
+      final message = AiMessage(
+        role: 'user',
+        text: 'Keep',
+        savedAt: DateTime.utc(2026),
+      );
+      store.messages.add(message);
+      chat.recording = true;
+      await expectLater(chat.removeSavedMessages([message]), throwsStateError);
+      expect(message.savedAt, isNotNull);
+      expect(store.saves, 0);
+      chat.recording = false;
+    },
+  );
+
+  test(
     'only finished messages still in the current history can be saved',
     () async {
       final store = AiHistoryStore('test');

@@ -2718,11 +2718,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Alle gespeicherten Vokabeln und ihren Lernfortschritt löschen, auch die vom Filter ausgeblendeten? Dies kann nicht rückgängig gemacht werden.';
 
   @override
-  String get vocabReviewHelpTitle => 'Warum ist eine Wiederholung fällig?';
+  String get vocabReviewHelpTitle => 'Warum Wörter wiederholen?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera nutzt verteilte Wiederholungen: Lernen mit Pausen kann das langfristige Erinnern fördern. Das hängt mit der Vergessenskurve zusammen, die beschreibt, wie Erinnerungen mit der Zeit verblassen.\n\nUnser Zeitplan:\n• Erste Wiederholung: 1 Tag nach dem Speichern.\n• Nach weiteren Wiederholungen: 3, 7, 14 und dann 30 Tage.\n• Danach bleiben es 30 Tage.\n\nAm geplanten Datum wird ein Wort fällig. Als wiederholt markieren startet das nächste Intervall ab diesem Zeitpunkt. Das ist ein fester Zeitplan, keine Messung deines Gedächtnisses oder Aussage, dass du das Wort vergessen hast.';
+      'Erinnerungen verblassen mit der Zeit. Wörter in zeitlichen Abständen zu wiederholen kann helfen, sie länger zu behalten. Das nennt man verteiltes Wiederholen.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2846,4 +2846,58 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Sprich die richtige Antwort laut aus.';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      'Alle gespeicherten Dialoge entfernen?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Alle Lesezeichen entfernen? Die ursprünglichen Chatnachrichten und Audiodateien bleiben im Gespräch.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Dieses Lesezeichen entfernen? Die ursprüngliche Nachricht und die Audiodatei bleiben im Gespräch.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Dein Wiederholungsplan';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Erste Wiederholung: 1 Tag nach dem Speichern.\nDanach liegen 3 → 7 → 14 → 30 Tage zwischen den Wiederholungen. Anschließend alle 30 Tage.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '„Fällig“ bedeutet, dass eine Wiederholung geplant ist, nicht dass du das Wort vergessen hast.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Veranschaulichung, keine Messung deines Gedächtnisses.';
+
+  @override
+  String get vocabReviewMemory => 'Erinnerung';
+
+  @override
+  String get vocabReviewTime => 'Zeit';
+
+  @override
+  String get vocabReviewWith => 'Mit Wiederholungen';
+
+  @override
+  String get vocabReviewWithout => 'Ohne Wiederholung';
+
+  @override
+  String get vocabReviewGotIt => 'Verstanden';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Alle Nachrichten, Transkripte, Aufnahmen und Anhänge dieses Chats dauerhaft löschen? Die letzte Zusammenfassung bleibt erhalten. Dies kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Alle Nachrichten, Transkripte, Aufnahmen, Anhänge und die letzte Zusammenfassung dieses Chats dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Alle eigenen Aufnahmen und KI-Audiodateien dieses Chats löschen? Nachrichten, Transkripte, Bilder und die Zusammenfassung bleiben erhalten. Gelöschte Audiodateien können nicht wiederhergestellt werden.';
 }

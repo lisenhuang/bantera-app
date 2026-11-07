@@ -2650,11 +2650,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Filtreyle gizlenenler dahil tüm kayıtlı kelimeler ve tekrar ilerlemesi silinsin mi? Bu işlem geri alınamaz.';
 
   @override
-  String get vocabReviewHelpTitle => 'Kelimelerin tekrar zamanı neden geldi?';
+  String get vocabReviewHelpTitle => 'Kelimeleri neden tekrar etmeliyiz?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera aralıklı tekrarı kullanır: bir aradan sonra tekrar etmek daha uzun süre hatırlamaya yardımcı olabilir. Bu, belleğin zamanla zayıflamasını anlatan unutma eğrisiyle ilişkilidir.\n\nProgramımız:\n• İlk tekrar: kaydettikten 1 gün sonra.\n• Sonraki tekrarların ardından: 3, 7, 14, ardından 30 gün.\n• Daha sonra her 30 günde bir.\n\nPlanlanan tarihte kelimenin tekrar zamanı gelir. Tekrar edildi olarak işaretlemek, sonraki aralığı o andan başlatır. Bu sabit bir programdır; belleğinizin ölçümü veya kelimeyi unuttuğunuzun tahmini değildir.';
+      'Anılar zamanla zayıflar. Kelimeleri aralıklarla tekrar etmek onları daha uzun süre hatırlamanıza yardımcı olabilir. Buna aralıklı tekrar denir.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2770,4 +2770,58 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Doğru yanıtı sesli söyle.';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      'Kaydedilen tüm diyaloglar kaldırılsın mı?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Tüm yer işaretleri kaldırılsın mı? Orijinal mesajlar ve sesler sohbette kalır.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Bu yer işareti kaldırılsın mı? Orijinal mesaj ve ses sohbette kalır.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Tekrar programınız';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'İlk tekrar: kaydettikten 1 gün sonra.\nSonra tekrarlar arasında 3 → 7 → 14 → 30 gün bekleyin. Daha sonra her 30 günde bir tekrar edin.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '“Zamanı geldi” ifadesi, kelimeyi unuttuğunuz değil, planlanan tekrar gününün geldiği anlamına gelir.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Bu bir örnek çizimdir, hafızanızın ölçümü değildir.';
+
+  @override
+  String get vocabReviewMemory => 'Hafıza';
+
+  @override
+  String get vocabReviewTime => 'Zaman';
+
+  @override
+  String get vocabReviewWith => 'Tekrarlı';
+
+  @override
+  String get vocabReviewWithout => 'Tekrarsız';
+
+  @override
+  String get vocabReviewGotIt => 'Anladım';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Bu sohbetteki tüm mesajlar, dökümler, kayıtlar ve ekler kalıcı olarak silinsin mi? Son özet korunacak. Bu işlem geri alınamaz.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Bu sohbetteki tüm mesajlar, dökümler, kayıtlar, ekler ve son özet kalıcı olarak silinsin mi? Bu işlem geri alınamaz.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Bu sohbetteki tüm kayıtlarınız ve yapay zekâ sesleri silinsin mi? Mesajlar, dökümler, görseller ve özet korunacak. Silinen sesler geri yüklenemez.';
 }

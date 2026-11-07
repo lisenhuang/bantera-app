@@ -2517,11 +2517,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get vocabClearBody => '删除所有已保存词汇及其复习进度，包括当前筛选隐藏的词汇？此操作无法撤销。';
 
   @override
-  String get vocabReviewHelpTitle => '为什么需要复习？';
+  String get vocabReviewHelpTitle => '为什么要复习单词？';
 
   @override
-  String get vocabReviewHelpBody =>
-      'Bantera 使用间隔重复：隔一段时间再复习，有助于更长久地记住词汇。这与描述记忆随时间减弱的遗忘曲线有关。\n\n我们的安排：\n• 保存后 1 天首次复习。\n• 后续每次复习后分别间隔 3、7、14、30 天。\n• 之后保持每 30 天复习一次。\n\n到达安排的日期后，词汇就会显示为待复习。标记已复习后，从该次复习开始计算下一次间隔。这是固定安排，并非对你的记忆进行测量，也不表示你已经忘记该词。';
+  String get vocabReviewHelpBody => '记忆会随时间淡化。隔一段时间复习单词，可以帮助你记得更久。这叫作间隔重复。';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2629,6 +2628,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => '请大声说出正确的回答。';
+
+  @override
+  String get aiClearSavedDialoguesTitle => '清空已保存的对话？';
+
+  @override
+  String get aiClearSavedDialoguesBody => '移除所有书签？原始消息和音频将保留在聊天中。';
+
+  @override
+  String get aiUnsaveDialogueBody => '移除此书签？原始消息和音频将保留在聊天中。';
+
+  @override
+  String get vocabReviewScheduleTitle => '你的复习安排';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      '首次复习：保存后1天。\n之后每次复习的间隔依次为3 → 7 → 14 → 30天，再往后每30天复习一次。';
+
+  @override
+  String get vocabReviewDueNote => '“待复习”表示已到安排好的复习时间，并不代表你忘记了这个单词。';
+
+  @override
+  String get vocabReviewIllustration => '此图仅作说明，并非对你记忆的测量。';
+
+  @override
+  String get vocabReviewMemory => '记忆';
+
+  @override
+  String get vocabReviewTime => '时间';
+
+  @override
+  String get vocabReviewWith => '定期复习';
+
+  @override
+  String get vocabReviewWithout => '不复习';
+
+  @override
+  String get vocabReviewGotIt => '明白了';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      '永久删除此聊天中的所有消息、转写文本、录音和附件？最后的摘要将被保留。此操作无法撤销。';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      '永久删除此聊天中的所有消息、转写文本、录音、附件以及最后的摘要？此操作无法撤销。';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      '删除此聊天中你的所有录音和 AI 音频？消息、转写文本、图片和摘要将保留。已删除的音频无法恢复。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -5148,11 +5196,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get vocabClearBody => '刪除所有已儲存詞彙及其複習進度，包括目前篩選隱藏的詞彙？此操作無法復原。';
 
   @override
-  String get vocabReviewHelpTitle => '為甚麼需要複習？';
+  String get vocabReviewHelpTitle => '為什麼要複習單字？';
 
   @override
-  String get vocabReviewHelpBody =>
-      'Bantera 使用間隔重複：隔一段時間再複習，有助於更長久地記住詞彙。這與描述記憶隨時間減弱的遺忘曲線有關。\n\n我們的安排：\n• 儲存後 1 天首次複習。\n• 後續每次複習後分別間隔 3、7、14、30 天。\n• 之後保持每 30 天複習一次。\n\n到達安排的日期後，詞彙就會顯示為待複習。標記已複習後，從該次複習開始計算下一次間隔。這是固定安排，並非測量你的記憶，也不表示你已經忘記該詞。';
+  String get vocabReviewHelpBody => '記憶會隨時間淡化。隔一段時間複習單字，可以幫助你記得更久。這叫作間隔重複。';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -5261,4 +5308,53 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get practiceFirstAnswerHint => '請大聲說出正確的回答。';
+
+  @override
+  String get aiClearSavedDialoguesTitle => '清空已儲存的對話？';
+
+  @override
+  String get aiClearSavedDialoguesBody => '移除所有書籤？原始訊息和音訊將保留在聊天中。';
+
+  @override
+  String get aiUnsaveDialogueBody => '移除此書籤？原始訊息和音訊將保留在聊天中。';
+
+  @override
+  String get vocabReviewScheduleTitle => '你的複習安排';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      '首次複習：儲存後1天。\n之後每次複習的間隔依次為3 → 7 → 14 → 30天，再往後每30天複習一次。';
+
+  @override
+  String get vocabReviewDueNote => '「待複習」表示已到安排好的複習時間，並不代表你忘記了這個單字。';
+
+  @override
+  String get vocabReviewIllustration => '此圖僅作說明，並非對你記憶的測量。';
+
+  @override
+  String get vocabReviewMemory => '記憶';
+
+  @override
+  String get vocabReviewTime => '時間';
+
+  @override
+  String get vocabReviewWith => '定期複習';
+
+  @override
+  String get vocabReviewWithout => '不複習';
+
+  @override
+  String get vocabReviewGotIt => '明白了';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      '永久刪除此聊天中的所有訊息、轉寫文字、錄音和附件？最後的摘要將被保留。此操作無法復原。';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      '永久刪除此聊天中的所有訊息、轉寫文字、錄音、附件以及最後的摘要？此操作無法復原。';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      '刪除此聊天中你的所有錄音和 AI 音訊？訊息、轉寫文字、圖片和摘要將保留。已刪除的音訊無法復原。';
 }

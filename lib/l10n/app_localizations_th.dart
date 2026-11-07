@@ -2627,11 +2627,11 @@ class AppLocalizationsTh extends AppLocalizations {
       'ลบคำศัพท์ที่บันทึกไว้ทั้งหมดและความคืบหน้าการทบทวน รวมถึงคำที่ตัวกรองซ่อนอยู่หรือไม่? ย้อนกลับไม่ได้';
 
   @override
-  String get vocabReviewHelpTitle => 'ทำไมจึงถึงเวลาทบทวน?';
+  String get vocabReviewHelpTitle => 'ทำไมต้องทบทวนคำศัพท์?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera ใช้การทบทวนแบบเว้นระยะ การกลับมาทบทวนหลังเว้นช่วงช่วยให้จำได้นานขึ้น ซึ่งเกี่ยวข้องกับเส้นโค้งการลืมที่อธิบายว่าความจำอาจลดลงตามเวลา\n\nตารางของเรา:\n• ทบทวนครั้งแรกหลังบันทึก 1 วัน\n• หลังการทบทวนครั้งถัดไป เว้น 3, 7, 14 แล้ว 30 วัน\n• จากนั้นทุก 30 วัน\n\nคำจะถึงกำหนดเมื่อถึงวันที่ตั้งไว้ การทำเครื่องหมายว่าทบทวนแล้วจะเริ่มช่วงถัดไปจากครั้งนั้น นี่คือตารางคงที่ ไม่ใช่การวัดความจำหรือการคาดว่าคุณลืมคำแล้ว';
+      'ความทรงจำจางลงตามเวลา การเว้นช่วงก่อนทบทวนคำศัพท์ช่วยให้คุณจำได้นานขึ้น วิธีนี้เรียกว่าการทบทวนแบบเว้นระยะ';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2745,4 +2745,57 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'พูดคำตอบที่ถูกต้องออกเสียงดัง ๆ';
+
+  @override
+  String get aiClearSavedDialoguesTitle =>
+      'ล้างบทสนทนาที่บันทึกไว้ทั้งหมดหรือไม่?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'ลบบุ๊กมาร์กทั้งหมดหรือไม่? ข้อความและเสียงต้นฉบับจะยังอยู่ในการสนทนา';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'ลบบุ๊กมาร์กนี้หรือไม่? ข้อความและเสียงต้นฉบับจะยังอยู่ในการสนทนา';
+
+  @override
+  String get vocabReviewScheduleTitle => 'ตารางทบทวนของคุณ';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'ทบทวนครั้งแรก: 1 วันหลังบันทึก\nจากนั้นเว้น 3 → 7 → 14 → 30 วันระหว่างการทบทวน หลังจากนั้นทบทวนทุก 30 วัน';
+
+  @override
+  String get vocabReviewDueNote =>
+      '“ถึงเวลาทบทวน” หมายถึงถึงวันที่กำหนดไว้ ไม่ได้หมายความว่าคุณลืมคำนั้นแล้ว';
+
+  @override
+  String get vocabReviewIllustration => 'ภาพประกอบ ไม่ใช่การวัดความจำของคุณ';
+
+  @override
+  String get vocabReviewMemory => 'ความจำ';
+
+  @override
+  String get vocabReviewTime => 'เวลา';
+
+  @override
+  String get vocabReviewWith => 'มีการทบทวน';
+
+  @override
+  String get vocabReviewWithout => 'ไม่มีการทบทวน';
+
+  @override
+  String get vocabReviewGotIt => 'เข้าใจแล้ว';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'ลบข้อความ ข้อความถอดเสียง ไฟล์บันทึกเสียง และไฟล์แนบทั้งหมดในแชตนี้อย่างถาวรหรือไม่? สรุปล่าสุดจะยังคงอยู่ การดำเนินการนี้ไม่สามารถเลิกทำได้';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'ลบข้อความ ข้อความถอดเสียง ไฟล์บันทึกเสียง ไฟล์แนบ และสรุปล่าสุดทั้งหมดในแชตนี้อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถเลิกทำได้';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'ลบไฟล์บันทึกเสียงของคุณและเสียง AI ทั้งหมดในแชตนี้หรือไม่? ข้อความ ข้อความถอดเสียง รูปภาพ และสรุปจะยังคงอยู่ เสียงที่ลบแล้วไม่สามารถกู้คืนได้';
 }

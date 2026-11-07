@@ -2716,11 +2716,11 @@ class AppLocalizationsUk extends AppLocalizations {
       'Видалити всі збережені слова й прогрес повторення, зокрема приховані фільтром? Це неможливо скасувати.';
 
   @override
-  String get vocabReviewHelpTitle => 'Чому час повторити слова?';
+  String get vocabReviewHelpTitle => 'Навіщо повторювати слова?';
 
   @override
   String get vocabReviewHelpBody =>
-      'Bantera використовує інтервальне повторення: повторення після перерви допомагає пам’ятати довше. Це пов’язано з кривою забування, яка описує ослаблення пам’яті з часом.\n\nНаш розклад:\n• Перше повторення: через 1 день після збереження.\n• Після наступних повторень: через 3, 7, 14, потім 30 днів.\n• Надалі кожні 30 днів.\n\nСлово потребує повторення, коли настає запланована дата. Позначення як повтореного запускає наступний інтервал від цієї миті. Це фіксований розклад, а не вимірювання пам’яті чи прогноз, що ви забули слово.';
+      'З часом спогади слабшають. Повторення слів з перервами допомагає пам’ятати їх довше. Цей метод називається інтервальним повторенням.';
 
   @override
   String get leaderboardRollingFootnote =>
@@ -2844,4 +2844,57 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get practiceFirstAnswerHint => 'Промовте правильну відповідь уголос.';
+
+  @override
+  String get aiClearSavedDialoguesTitle => 'Прибрати всі збережені діалоги?';
+
+  @override
+  String get aiClearSavedDialoguesBody =>
+      'Видалити всі закладки? Оригінальні повідомлення й аудіо залишаться в розмові.';
+
+  @override
+  String get aiUnsaveDialogueBody =>
+      'Видалити цю закладку? Оригінальне повідомлення й аудіо залишаться в розмові.';
+
+  @override
+  String get vocabReviewScheduleTitle => 'Ваш графік повторень';
+
+  @override
+  String get vocabReviewScheduleBody =>
+      'Перше повторення: через 1 день після збереження.\nПотім робіть перерви в 3 → 7 → 14 → 30 днів між повтореннями. Далі повторюйте кожні 30 днів.';
+
+  @override
+  String get vocabReviewDueNote =>
+      '«Час повторити» означає, що настала запланована дата, а не що ви забули слово.';
+
+  @override
+  String get vocabReviewIllustration =>
+      'Ілюстрація, а не вимірювання вашої пам’яті.';
+
+  @override
+  String get vocabReviewMemory => 'Пам’ять';
+
+  @override
+  String get vocabReviewTime => 'Час';
+
+  @override
+  String get vocabReviewWith => 'З повторенням';
+
+  @override
+  String get vocabReviewWithout => 'Без повторення';
+
+  @override
+  String get vocabReviewGotIt => 'Зрозуміло';
+
+  @override
+  String get aiClearConfirmKeepSummary =>
+      'Назавжди видалити всі повідомлення, розшифровки, записи та вкладення цього чату? Останній підсумок буде збережено. Цю дію неможливо скасувати.';
+
+  @override
+  String get aiClearConfirmRemoveSummary =>
+      'Назавжди видалити всі повідомлення, розшифровки, записи, вкладення та останній підсумок цього чату? Цю дію неможливо скасувати.';
+
+  @override
+  String get aiClearConfirmAudioOnly =>
+      'Видалити всі ваші записи й аудіо ШІ з цього чату? Повідомлення, розшифровки, зображення та підсумок залишаться. Видалене аудіо неможливо відновити.';
 }
