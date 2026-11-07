@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/infrastructure/ai/ai_image_search.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
 import 'package:app/infrastructure/ai/ai_search_capabilities.dart';
+import 'package:app/infrastructure/ai/ai_vocabulary.dart';
 import 'package:app/presentation/chats/ai/ai_chat_controller.dart';
 
 const picture = AiImageAttachment(
@@ -209,9 +210,20 @@ void main() {
     store = AiHistoryStore('test');
     await store.load();
     search = _Search();
-    controller = AiChatController.forTesting(store, imageSearch: search)
-      ..loaded = true
-      ..calling = true;
+    controller =
+        AiChatController.forTesting(
+            store,
+            imageSearch: search,
+            vocabulary: AiVocabulary(
+              'test',
+              storagePath: () async => root.path,
+              isActive: () => true,
+              language: () => 'en-NZ',
+              timeZone: () async => 'UTC',
+            ),
+          )
+          ..loaded = true
+          ..calling = true;
   });
   tearDown(() async {
     controller.calling = false;
@@ -229,6 +241,53 @@ void main() {
         },
       ],
     }),
+  );
+  test(
+    'V3 photo search escapes review gate and keeps active review for later',
+    () async {
+      final vocabulary = controller.vocabulary;
+      await vocabulary.execute({
+        'action': 'add',
+        'word': 'brownie',
+        'meaning': 'A small chocolate cake',
+      });
+      final started = await vocabulary.reviewTool(
+        {'action': 'review_start', 'scope': 'all', 'style': 'explain_meaning'},
+        turnId: 'before',
+        input: 'Review',
+      );
+      await controller.receiveCallEventForTesting(
+        jsonEncode({'type': 'ready', 'vocabularyVersion': 3}),
+      );
+      await request();
+      expect(search.receivedQuery, 'kiwi bird');
+      expect((await vocabulary.reviewState())!['paused'], true);
+      expect((await vocabulary.reviewState())!['id'], started['sessionId']);
+      final displayed = Completer<void>();
+      controller.addListener(() {
+        if (controller.messages.any((m) => m.images.isNotEmpty) &&
+            !displayed.isCompleted)
+          displayed.complete();
+      });
+      search.result.complete([
+        (image: picture, bytes: Uint8List.fromList([1, 2, 3])),
+      ]);
+      await displayed.future.timeout(const Duration(seconds: 3));
+      await controller.receiveCallEventForTesting(Uint8List(4800));
+      await controller.receiveCallEventForTesting(
+        jsonEncode({
+          'type': 'transcript',
+          'role': 'model',
+          'text': 'Here are the photos.',
+        }),
+      );
+      await controller.receiveCallEventForTesting(
+        jsonEncode({'type': 'turnComplete'}),
+      );
+      expect(controller.messages.last.text, 'Here are the photos.');
+      expect(controller.messages.last.images, isNotEmpty);
+      expect((await vocabulary.words()).single.reviews, 0);
+    },
   );
   test(
     'image download finishing after an interrupted call turn stays in original bubble and persists',

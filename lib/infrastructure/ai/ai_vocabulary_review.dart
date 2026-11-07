@@ -35,7 +35,7 @@ extension AiVocabularyReview on AiVocabulary {
     };
     if (action == 'review_conversation') {
       if (session != null &&
-          session['state'] != 'cancelled' &&
+          ['active', 'unfinished'].contains(session['state']) &&
           session['paused'] != true) {
         return error('review_session_active');
       }

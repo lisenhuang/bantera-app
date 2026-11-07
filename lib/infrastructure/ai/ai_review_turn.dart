@@ -9,6 +9,7 @@ class AiReviewTurn {
   final String id;
   bool enabled = false;
   bool normalConversation = false;
+  bool _reviewRequested = false;
   String input = '';
   String? _text, _token;
   bool get holdOutput => enabled && !normalConversation;
@@ -24,6 +25,17 @@ class AiReviewTurn {
   Future<Map<String, dynamic>> tool(Map<String, dynamic> args) async {
     final action = args['action'];
     if (!enabled) return vocabulary.execute(args);
+    if (action is String &&
+        ((action.startsWith('review_') &&
+                ![
+                  'review_conversation',
+                  'review_pause',
+                  'review_cancel',
+                  'review_suggestions',
+                ].contains(action)) ||
+            action == 'quiz' ||
+            action == 'review'))
+      _reviewRequested = true;
     try {
       if (action == 'review_answer') {
         await vocabulary.reviewInput(id, input);
@@ -62,6 +74,27 @@ class AiReviewTurn {
     }
   }
 
+  /// Missing model bookkeeping must not turn ordinary chat into a failed quiz.
+  /// An actual review tool attempt or an active persisted review remains guarded.
+  Future<void> allowOrdinaryReply() async {
+    if (!enabled || normalConversation || _reviewRequested) return;
+    await tool({'action': 'review_conversation'});
+  }
+
+  /// Search is an ordinary conversation action. Pause (never consume or cancel)
+  /// an existing review before allowing device-side search and its response.
+  Future<void> authorizeOrdinaryTool(String name) async {
+    if (!enabled || name != 'search_web' || normalConversation) return;
+    final result = await tool({'action': 'review_conversation'});
+    if (result['error'] == 'review_session_active') {
+      await tool({'action': 'review_pause', 'explicitChange': true});
+    }
+    if (normalConversation) {
+      _text = null;
+      _token = null;
+    }
+  }
+
   Future<String> finalText() async {
     if (_token != null) {
       try {
@@ -96,6 +129,7 @@ class AiReviewTurn {
 
   void resetOutput() {
     normalConversation = false;
+    _reviewRequested = false;
     _text = null;
     _token = null;
   }

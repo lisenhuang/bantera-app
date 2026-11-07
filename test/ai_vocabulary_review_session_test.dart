@@ -50,6 +50,50 @@ void main() {
   );
 
   test(
+    'ordinary chat needs no review handshake, active review stays guarded',
+    () async {
+      final ordinary = AiReviewTurn(store, 'chat')..enabled = true;
+      await ordinary.allowOrdinaryReply();
+      expect(ordinary.normalConversation, true);
+      final word = await add();
+      final session = await start(scope: 'all');
+      final blocked = AiReviewTurn(store, 'unrelated')..enabled = true;
+      await blocked.allowOrdinaryReply();
+      expect(blocked.holdOutput, true);
+      await blocked.authorizeOrdinaryTool('search_web');
+      expect(blocked.normalConversation, true);
+      final paused = (await store.reviewState())!;
+      expect(paused['paused'], true);
+      expect(paused['id'], session['sessionId']);
+      expect(paused['current']['id'], word['id']);
+      expect(paused['completed'], isEmpty);
+      expect((await store.words()).single.reviews, 0);
+      final resumed = await store.reviewTool(
+        {'action': 'review_next'},
+        turnId: 'resume',
+        input: 'Continue',
+      );
+      expect(resumed['currentId'], word['id']);
+      expect(resumed['sessionId'], session['sessionId']);
+    },
+  );
+
+  test(
+    'failed review attempt cannot escape validation through ordinary fallback',
+    () async {
+      final gate = AiReviewTurn(store, 'invalid')..enabled = true;
+      await gate.tool({
+        'action': 'review_feedback',
+        'id': 'invented',
+        'questionId': 'missing',
+      });
+      await gate.allowOrdinaryReply();
+      expect(gate.holdOutput, true);
+      expect(await gate.delivered(), isNull);
+    },
+  );
+
+  test(
     'empty, none due, storage failure and language no-match are distinct',
     () async {
       expect((await start())['state'], 'empty_notebook');

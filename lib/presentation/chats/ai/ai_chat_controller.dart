@@ -223,10 +223,12 @@ class AiChatController extends ChangeNotifier {
   Future<void> _deliverReviewCall(int epoch) async {
     final review = _liveReview;
     if (review?.holdOutput != true) return;
-    final text = await review!.finalText();
+    await review!.allowOrdinaryReply();
+    final text = review.holdOutput ? await review.finalText() : _reviewCallText;
     if (!available || epoch != _epoch) return;
     final pcm = _reviewCallAudio.takeBytes();
-    if (review.matchesSpeech(_reviewCallText, text) && pcm.isNotEmpty) {
+    if ((!review.holdOutput || review.matchesSpeech(_reviewCallText, text)) &&
+        pcm.isNotEmpty) {
       _releasingReview = true;
       try {
         await _event(pcm, epoch);
@@ -755,6 +757,7 @@ class AiChatController extends ChangeNotifier {
         if (!_jobActive(job)) {
           return {'unavailable': true};
         }
+        await review.authorizeOrdinaryTool(call['name'] as String);
         if (review.holdOutput &&
             [
               AiFormattedTextTool.name,
@@ -1705,6 +1708,16 @@ class AiChatController extends ChangeNotifier {
       case 'toolCall':
         // Read tools run outside the audio queue so local disk/network reads never stall playback.
         final calls = (data['calls'] as List).cast<Map>();
+        if (_liveReview?.holdOutput == true &&
+            calls.any((c) => c['name'] == 'search_web')) {
+          await _liveReview!.authorizeOrdinaryTool('search_web');
+          if (!_liveReview!.holdOutput) {
+            final pcm = _reviewCallAudio.takeBytes();
+            if (pcm.isNotEmpty) await _event(pcm, epoch);
+            draftModel += _reviewCallText;
+            _reviewCallText = '';
+          }
+        }
         if (_liveReview?.enabled == true &&
             calls.any((c) => c['name'] == AiVocabulary.toolName)) {
           final held = _liveReview!.holdOutput;

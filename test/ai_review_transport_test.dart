@@ -230,6 +230,90 @@ void main() {
     },
   );
 
+  for (final search in [false, true]) {
+    test(
+      'V3 ordinary voice reply works without review handshake; search=$search',
+      () async {
+        final root = await Directory.systemTemp.createTemp('ordinary-v3');
+        final vocabulary = AiVocabulary(
+          'ordinary',
+          storagePath: () async => root.path,
+          isActive: () => true,
+          language: () => 'en-NZ',
+          timeZone: () async => 'UTC',
+        );
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        WebSocket? peer;
+        final gate = AiReviewTurn(vocabulary, 'ordinary');
+        final played = <int>[];
+        var searched = false;
+        server.listen((request) async {
+          final socket = peer = await WebSocketTransformer.upgrade(request);
+          socket.add(jsonEncode({'type': 'ready', 'vocabularyVersion': 3}));
+          void reply() {
+            socket.add(Uint8List(4800));
+            socket.add(
+              jsonEncode({
+                'type': 'complete',
+                'inputText': 'Show brownie photos',
+                'outputText': 'Here are some brownie photos.',
+              }),
+            );
+          }
+
+          socket.listen((frame) {
+            if (frame is! String) return;
+            final data = jsonDecode(frame) as Map;
+            if (data['type'] == 'commit') {
+              if (search) {
+                socket.add(
+                  jsonEncode({
+                    'type': 'toolCall',
+                    'calls': [
+                      {
+                        'id': 'photos',
+                        'name': 'search_web',
+                        'args': {'query': 'images: brownies'},
+                      },
+                    ],
+                  }),
+                );
+              } else {
+                reply();
+              }
+            } else if (data['type'] == 'toolResponse') {
+              reply();
+            }
+          });
+        });
+        final stream = AiVoiceStream(
+          connect: () => WebSocket.connect('ws://127.0.0.1:${server.port}'),
+          reviewTurn: gate,
+          onAudio: (b) async => played.addAll(b),
+          onReset: () async {},
+          onToolCall: (call) async {
+            expect(call['name'], 'search_web');
+            expect(gate.holdOutput, false);
+            searched = true;
+            return {'images': <dynamic>[]};
+          },
+        );
+        try {
+          final result = await stream.send({});
+          expect(result['outputText'], 'Here are some brownie photos.');
+          expect(played, hasLength(4800));
+          expect(searched, search);
+          expect(await vocabulary.reviewState(), isNull);
+        } finally {
+          await stream.close();
+          await peer?.close();
+          await server.close(force: true);
+          await root.delete(recursive: true);
+        }
+      },
+    );
+  }
+
   for (final match in [true, false]) {
     test(
       'V3 buffers quiz speech; matching=$match, and identity survives separate messages',

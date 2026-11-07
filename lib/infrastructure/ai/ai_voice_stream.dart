@@ -185,6 +185,12 @@ class AiVoiceStream {
           throw const AiVoiceFailure('invalid_frame');
         }
         final calls = (json['calls'] as List).cast<Map>();
+        if (reviewTurn?.holdOutput == true &&
+            calls.any((c) => c['name'] == 'search_web')) {
+          await reviewTurn!.authorizeOrdinaryTool('search_web');
+          if (!reviewTurn!.holdOutput && _output.isNotEmpty)
+            await onAudio(_output.toBytes());
+        }
         if (reviewTurn?.enabled == true &&
             calls.any((c) => c['name'] == 'manage_vocabulary')) {
           final held = reviewTurn!.holdOutput;
@@ -212,6 +218,13 @@ class AiVoiceStream {
           throw const AiVoiceFailure('invalid_frame');
         }
         var outputText = json['outputText'] as String? ?? '';
+        if (reviewTurn?.holdOutput == true) {
+          await reviewTurn!.allowOrdinaryReply();
+          if (!reviewTurn!.holdOutput) {
+            if (_output.isNotEmpty) await onAudio(_output.toBytes());
+            onTranscript?.call('model', outputText);
+          }
+        }
         if (reviewTurn?.holdOutput == true) {
           final expected = await reviewTurn!.finalText();
           if (reviewTurn!.matchesSpeech(outputText, expected)) {

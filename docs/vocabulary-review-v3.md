@@ -46,3 +46,30 @@ No database migrations, new secrets, configuration keys or server-side vocabular
 ## Practice translation follow-up
 
 All ordinary Practice exercises start with translations hidden, including A0 and exercises with `translationUsed=true`. Restored caches/levels/saved exercises do not restore visibility. Backgrounding hides it again. A0 taps bypass the scoring-warning confirmation; higher levels keep the warning. The server's prior translation-used scoring record is preserved. The earlier explicit Māori server-English exception remains unchanged. System language/download consent, when actually required by the platform, is not bypassed.
+
+
+## 8 November 2026: Ordinary chat and photo-search regression
+
+The V3 gate initially held every reply and rejected `search_web` until the model
+called `review_conversation`. An ordinary image-search request could consequently
+be replaced with a vocabulary-review failure even when no review was requested.
+
+App 3.38.1 (521) permits an ordinary completed reply when no review was attempted
+and the device confirms no active review. Explicit review attempts, invalid IDs,
+undelivered questions, and unacknowledged feedback retain existing safeguards.
+Completed, empty, no-due and cancelled sessions no longer block ordinary chat.
+Device-side search can authorize ordinary output and pause an active review,
+retaining its identity, pool and current item without marking anything reviewed.
+Search remains asynchronous so microphone/audio flow is not blocked by downloads.
+
+Backend 1.56.2 clarifies that ordinary searches must first authorize conversation
+mode, pause an active review and never report an ordinary search failure as a
+vocabulary failure. Context version 14 invalidates cached older instructions.
+Existing V1/V2/V3 tool and HTTP contracts remain compatible; no migration, new
+configuration or server-side search execution is introduced.
+
+Validation: 70 app tests, including new socket and photo-search regressions,
+review-session protection and required callback/CallKit/audio checks, passed.
+Backend: 165 passed, 7 external-provider/database tests skipped. App static
+analysis passed its error/warning gate; debug and signed iOS builds passed.
+No real-provider search or physical-iPhone acceptance test was performed.
