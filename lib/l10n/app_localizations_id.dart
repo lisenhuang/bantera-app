@@ -2827,4 +2827,10 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Hapus semua rekaman Anda dan audio AI dalam percakapan ini? Pesan, transkrip, gambar, dan ringkasan tetap tersimpan. Audio yang dihapus tidak dapat dipulihkan.';
+
+  @override
+  String get aiWaitingForReply => 'Menunggu AI…';
+
+  @override
+  String get aiCheckingVocabulary => 'Memeriksa kosakatamu…';
 }

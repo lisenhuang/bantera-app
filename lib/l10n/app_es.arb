@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Entendido",
   "aiClearConfirmKeepSummary": "¿Eliminar permanentemente todos los mensajes, transcripciones, grabaciones y archivos adjuntos de este chat? Se conservará el último resumen. Esta acción no se puede deshacer.",
   "aiClearConfirmRemoveSummary": "¿Eliminar permanentemente todos los mensajes, transcripciones, grabaciones, archivos adjuntos y el último resumen de este chat? Esta acción no se puede deshacer.",
-  "aiClearConfirmAudioOnly": "¿Eliminar todas tus grabaciones y los audios de la IA de este chat? Se conservarán los mensajes, transcripciones, imágenes y el resumen. Los audios eliminados no se pueden recuperar."
+  "aiClearConfirmAudioOnly": "¿Eliminar todas tus grabaciones y los audios de la IA de este chat? Se conservarán los mensajes, transcripciones, imágenes y el resumen. Los audios eliminados no se pueden recuperar.",
+  "aiWaitingForReply": "Esperando a la IA…",
+  "aiCheckingVocabulary": "Consultando tu vocabulario…"
 }

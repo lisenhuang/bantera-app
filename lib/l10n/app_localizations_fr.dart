@@ -2906,4 +2906,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Supprimer tous vos enregistrements et les fichiers audio de l’IA dans cette conversation ? Les messages, transcriptions, images et le résumé seront conservés. Les fichiers audio supprimés ne pourront pas être restaurés.';
+
+  @override
+  String get aiWaitingForReply => 'En attente de l’IA…';
+
+  @override
+  String get aiCheckingVocabulary => 'Consultation de votre vocabulaire…';
 }

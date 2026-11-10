@@ -2798,4 +2798,10 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'ลบไฟล์บันทึกเสียงของคุณและเสียง AI ทั้งหมดในแชตนี้หรือไม่? ข้อความ ข้อความถอดเสียง รูปภาพ และสรุปจะยังคงอยู่ เสียงที่ลบแล้วไม่สามารถกู้คืนได้';
+
+  @override
+  String get aiWaitingForReply => 'กำลังรอ AI…';
+
+  @override
+  String get aiCheckingVocabulary => 'กำลังตรวจสอบคำศัพท์ของคุณ…';
 }

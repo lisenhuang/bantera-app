@@ -1,3 +1,4 @@
+import 'ai_reply_status.dart';
 import '../../shared/adaptive_overlays.dart';
 import '../chat_pane_navigation.dart';
 import '../../../infrastructure/transcription_locale_option.dart';
@@ -901,7 +902,8 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   Widget _conversation(AppLocalizations l) {
     final messages = _chat.messages;
-    final sending = _chat.sendingVoice;
+    final phase = _chat.replyPhase;
+    final sending = phase != null;
     final draft = _chat.draftUser.isNotEmpty;
     final extra = (sending ? 1 : 0) + (draft ? 1 : 0);
     final itemCount = extra + (messages.isEmpty ? 1 : messages.length);
@@ -922,17 +924,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         return Padding(
           key: const ValueKey('ai-sending'),
           padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: 12),
-              Text(l.chatSendingAudio),
-            ],
-          ),
+          child: AiReplyStatus(phase: phase),
         );
       }
       if (draft && index == (sending ? 1 : 0)) {
@@ -1053,14 +1045,6 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
   }
 
-  bool get _replyIsPlaying => _chat.messages.any(
-    (message) =>
-        message.role != 'user' &&
-        ((_chat.isAutomaticReply(message) &&
-                !_chat.isAutomaticReplyPaused(message)) ||
-            (_playing == message.id && _player.state == PlayerState.playing)),
-  );
-
   Widget _composer(BuildContext context, AppLocalizations l) => AiImageComposer(
     chat: _chat,
     child: VoiceMessageComposer(
@@ -1068,13 +1052,6 @@ class _AiChatScreenState extends State<AiChatScreen>
       enabled: _chat.recording || (_chat.canRecord && !_chat.preparingImages),
       recording: _chat.recording,
       remainingSeconds: _chat.recordingRemaining,
-      busyLabel: _chat.busy && !_chat.recording
-          ? (_chat.sendingVoice
-                ? l.chatSendingAudio
-                : _replyIsPlaying
-                ? null
-                : l.aiReplying)
-          : null,
       onStart: _startRecording,
       onSend: () async {
         unawaited(_chat.sendRecording());
@@ -1192,7 +1169,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                   alignment: Alignment.centerRight,
                   child: translationAction,
                 ),
-              if (receiving && !playing)
+              if (receiving && !playing && _chat.replyPhase == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(l.aiReplying, style: theme.textTheme.labelMedium),

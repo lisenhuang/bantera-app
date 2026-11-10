@@ -2820,4 +2820,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Xóa tất cả bản ghi âm của bạn và âm thanh AI trong cuộc trò chuyện này? Tin nhắn, bản chép lời, hình ảnh và bản tóm tắt sẽ được giữ lại. Không thể khôi phục âm thanh đã xóa.';
+
+  @override
+  String get aiWaitingForReply => 'Đang chờ AI…';
+
+  @override
+  String get aiCheckingVocabulary => 'Đang kiểm tra từ vựng của bạn…';
 }

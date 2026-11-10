@@ -1200,5 +1200,7 @@
   "vocabReviewGotIt": "Got it",
   "aiClearConfirmKeepSummary": "Permanently delete all messages, transcripts, recordings and attachments in this chat? The last summary will be kept. This cannot be undone.",
   "aiClearConfirmRemoveSummary": "Permanently delete all messages, transcripts, recordings, attachments and the last summary in this chat? This cannot be undone.",
-  "aiClearConfirmAudioOnly": "Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored."
+  "aiClearConfirmAudioOnly": "Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored.",
+  "aiWaitingForReply": "Waiting for AI…",
+  "aiCheckingVocabulary": "Checking your vocabulary…"
 }

@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Rozumiem",
   "aiClearConfirmKeepSummary": "Trwale usunąć wszystkie wiadomości, transkrypcje, nagrania i załączniki z tego czatu? Ostatnie podsumowanie zostanie zachowane. Tej operacji nie można cofnąć.",
   "aiClearConfirmRemoveSummary": "Trwale usunąć wszystkie wiadomości, transkrypcje, nagrania, załączniki i ostatnie podsumowanie z tego czatu? Tej operacji nie można cofnąć.",
-  "aiClearConfirmAudioOnly": "Usunąć wszystkie Twoje nagrania i nagrania AI z tego czatu? Wiadomości, transkrypcje, obrazy i podsumowanie pozostaną. Usuniętych nagrań nie można przywrócić."
+  "aiClearConfirmAudioOnly": "Usunąć wszystkie Twoje nagrania i nagrania AI z tego czatu? Wiadomości, transkrypcje, obrazy i podsumowanie pozostaną. Usuniętych nagrań nie można przywrócić.",
+  "aiWaitingForReply": "Oczekiwanie na AI…",
+  "aiCheckingVocabulary": "Sprawdzanie Twojego słownictwa…"
 }

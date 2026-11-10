@@ -2912,4 +2912,10 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Usunąć wszystkie Twoje nagrania i nagrania AI z tego czatu? Wiadomości, transkrypcje, obrazy i podsumowanie pozostaną. Usuniętych nagrań nie można przywrócić.';
+
+  @override
+  String get aiWaitingForReply => 'Oczekiwanie na AI…';
+
+  @override
+  String get aiCheckingVocabulary => 'Sprawdzanie Twojego słownictwa…';
 }

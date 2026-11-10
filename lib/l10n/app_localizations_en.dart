@@ -2891,4 +2891,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored.';
+
+  @override
+  String get aiWaitingForReply => 'Waiting for AI…';
+
+  @override
+  String get aiCheckingVocabulary => 'Checking your vocabulary…';
 }

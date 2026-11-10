@@ -2824,4 +2824,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Bu sohbetteki tüm kayıtlarınız ve yapay zekâ sesleri silinsin mi? Mesajlar, dökümler, görseller ve özet korunacak. Silinen sesler geri yüklenemez.';
+
+  @override
+  String get aiWaitingForReply => 'Yapay zekâ yanıtı bekleniyor…';
+
+  @override
+  String get aiCheckingVocabulary => 'Kelime listeniz kontrol ediliyor…';
 }

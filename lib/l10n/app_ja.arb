@@ -869,5 +869,7 @@
   "vocabReviewGotIt": "わかりました",
   "aiClearConfirmKeepSummary": "このチャットのすべてのメッセージ、文字起こし、録音、添付ファイルを完全に削除しますか？最後の要約は保持されます。この操作は取り消せません。",
   "aiClearConfirmRemoveSummary": "このチャットのすべてのメッセージ、文字起こし、録音、添付ファイル、最後の要約を完全に削除しますか？この操作は取り消せません。",
-  "aiClearConfirmAudioOnly": "このチャットのあなたの録音とAIの音声をすべて削除しますか？メッセージ、文字起こし、画像、要約は残ります。削除した音声は復元できません。"
+  "aiClearConfirmAudioOnly": "このチャットのあなたの録音とAIの音声をすべて削除しますか？メッセージ、文字起こし、画像、要約は残ります。削除した音声は復元できません。",
+  "aiWaitingForReply": "AIの返答を待っています…",
+  "aiCheckingVocabulary": "単語帳を確認しています…"
 }

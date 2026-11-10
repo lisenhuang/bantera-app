@@ -2897,4 +2897,10 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Видалити всі ваші записи й аудіо ШІ з цього чату? Повідомлення, розшифровки, зображення та підсумок залишаться. Видалене аудіо неможливо відновити.';
+
+  @override
+  String get aiWaitingForReply => 'Очікування відповіді ШІ…';
+
+  @override
+  String get aiCheckingVocabulary => 'Перевіряємо ваш словник…';
 }

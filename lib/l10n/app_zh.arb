@@ -869,5 +869,7 @@
   "vocabReviewGotIt": "明白了",
   "aiClearConfirmKeepSummary": "永久删除此聊天中的所有消息、转写文本、录音和附件？最后的摘要将被保留。此操作无法撤销。",
   "aiClearConfirmRemoveSummary": "永久删除此聊天中的所有消息、转写文本、录音、附件以及最后的摘要？此操作无法撤销。",
-  "aiClearConfirmAudioOnly": "删除此聊天中你的所有录音和 AI 音频？消息、转写文本、图片和摘要将保留。已删除的音频无法恢复。"
+  "aiClearConfirmAudioOnly": "删除此聊天中你的所有录音和 AI 音频？消息、转写文本、图片和摘要将保留。已删除的音频无法恢复。",
+  "aiWaitingForReply": "等待 AI 回复…",
+  "aiCheckingVocabulary": "正在查看你的词汇…"
 }

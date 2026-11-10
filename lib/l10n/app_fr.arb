@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Compris",
   "aiClearConfirmKeepSummary": "Supprimer définitivement tous les messages, transcriptions, enregistrements et pièces jointes de cette conversation ? Le dernier résumé sera conservé. Cette action est irréversible.",
   "aiClearConfirmRemoveSummary": "Supprimer définitivement tous les messages, transcriptions, enregistrements, pièces jointes et le dernier résumé de cette conversation ? Cette action est irréversible.",
-  "aiClearConfirmAudioOnly": "Supprimer tous vos enregistrements et les fichiers audio de l’IA dans cette conversation ? Les messages, transcriptions, images et le résumé seront conservés. Les fichiers audio supprimés ne pourront pas être restaurés."
+  "aiClearConfirmAudioOnly": "Supprimer tous vos enregistrements et les fichiers audio de l’IA dans cette conversation ? Les messages, transcriptions, images et le résumé seront conservés. Les fichiers audio supprimés ne pourront pas être restaurés.",
+  "aiWaitingForReply": "En attente de l’IA…",
+  "aiCheckingVocabulary": "Consultation de votre vocabulaire…"
 }

@@ -2706,4 +2706,10 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       '이 채팅의 내 녹음과 AI 오디오를 모두 삭제할까요? 메시지, 받아쓰기, 이미지 및 요약은 유지됩니다. 삭제한 오디오는 복원할 수 없습니다.';
+
+  @override
+  String get aiWaitingForReply => 'AI 응답을 기다리는 중…';
+
+  @override
+  String get aiCheckingVocabulary => '단어장을 확인하는 중…';
 }

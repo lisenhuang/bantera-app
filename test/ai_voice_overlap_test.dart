@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:record/record.dart';
 import 'package:app/infrastructure/ai/ai_api_client.dart';
+import 'package:app/infrastructure/ai/ai_reply_activity.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
 import 'package:app/presentation/chats/ai/ai_chat_controller.dart';
 
@@ -135,12 +136,14 @@ void main() {
         final first = chat.sendRecording();
         await until(() => peers.length == 1);
         await peers.first.committed.future;
+        expect(chat.replyPhase, AiReplyPhase.waiting);
         peers.first.audio('First ');
         await until(
           () =>
               calls.contains('feed') &&
               chat.voiceReply.message?.text == 'First',
         );
+        expect(chat.replyPhase, AiReplyPhase.replying);
         expect(chat.canRecord, true);
         final firstId = chat.voiceReply.message!.id;
         await chat.record();

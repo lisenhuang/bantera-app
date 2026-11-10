@@ -37,7 +37,14 @@ extension AiVocabularyReview on AiVocabulary {
       if (session != null &&
           ['active', 'unfinished'].contains(session['state']) &&
           session['paused'] != true) {
-        return error('review_session_active');
+        // An ordinary request pauses the saved session atomically. It does not
+        // consume the current word, change its scope, or mark it reviewed.
+        session['paused'] = true;
+        // An earlier response may still be delivering its authorized question or
+        // feedback. Keep that token valid. Status never exposes it to this turn;
+        // explicit pause/cancel or a new review delivery can still invalidate it.
+        data['reviewSession'] = session;
+        await _write(file, data);
       }
       return {'ok': true, 'reviewVersion': 3, 'normalConversation': true};
     }
@@ -86,7 +93,19 @@ extension AiVocabularyReview on AiVocabulary {
       }
       // A repeated start without explicitChange resumes the saved scope/style.
     }
-    if (session == null) return error('review_session_required');
+    if (session == null) {
+      if (action == 'review_status') {
+        return {
+          'ok': true,
+          'reviewVersion': 3,
+          'state': 'inactive',
+          'paused': false,
+          'instruction':
+              'No review session is active. Answer the current request normally. Start a review only if the learner asks for one.',
+        };
+      }
+      return error('review_session_required');
+    }
     if (!created &&
         args['sessionId'] != null &&
         args['sessionId'] != session['id']) {
@@ -118,6 +137,11 @@ extension AiVocabularyReview on AiVocabulary {
         s.remove('pending');
         current = null;
       }
+    }
+    if (action == 'review_status') {
+      // Reconcile a detached snapshot for an accurate answer, without resuming,
+      // persisting, consuming, or re-delivering anything merely by inspecting it.
+      return _reviewResult(s, words, includeDelivery: false);
     }
     if (action == 'review_pause') {
       if (args['explicitChange'] != true) {
@@ -268,6 +292,17 @@ extension AiVocabularyReview on AiVocabulary {
     Map<String, dynamic> s,
     List<VocabularyWord> words,
   ) async {
+    final result = _reviewResult(s, words);
+    data['reviewSession'] = s;
+    await _write(file, data);
+    return result;
+  }
+
+  Map<String, dynamic> _reviewResult(
+    Map<String, dynamic> s,
+    List<VocabularyWord> words, {
+    bool includeDelivery = true,
+  }) {
     final completed = List<String>.from(s['completed']);
     final skipped = List<String>.from(s['skipped']);
     final removed = List<String>.from(s['removed']);
@@ -280,7 +315,9 @@ extension AiVocabularyReview on AiVocabulary {
         )
         .length;
     String? message;
-    if (words.isEmpty) {
+    if (s['state'] == 'cancelled') {
+      // Status inspection must not resurrect a cancelled session.
+    } else if (words.isEmpty) {
       s['state'] = 'empty_notebook';
       message = 'Your vocabulary list is empty.';
     } else if ((s['pool'] as List).isEmpty) {
@@ -300,8 +337,6 @@ extension AiVocabularyReview on AiVocabulary {
     } else {
       s['state'] = 'active';
     }
-    data['reviewSession'] = s;
-    await _write(file, data);
     final current = s['current'] as Map?;
     final attempted = current?['phase'] == 'attempted';
     final word = words.where((w) => w.id == current?['id']).firstOrNull;
@@ -309,6 +344,7 @@ extension AiVocabularyReview on AiVocabulary {
       'ok': true, 'reviewVersion': 3, 'sessionId': s['id'], 'state': s['state'],
       'scope': s['scope'], 'style': s['style'], 'language': s['language'],
       'dueCutoff': s['cutoff'],
+      'paused': s['paused'] == true,
       'remaining': remaining,
       'completed': completed.length,
       'skipped': skipped.length, 'removed': removed.length,
@@ -318,12 +354,16 @@ extension AiVocabularyReview on AiVocabulary {
       // Expected answers are withheld until an actual subsequent input turn.
       if (attempted && word != null) 'answerReference': word.toJson(),
       if (attempted) 'learnerAnswer': current?['answer'],
-      if (s['pending'] != null) 'delivery': s['pending'],
+      if (includeDelivery && s['pending'] != null) 'delivery': s['pending'],
       'message': ?message,
-      'instruction':
-          'Use only this session. Read the delivery text verbatim, with no extra quiz or answer. '
-          'If phase is attempted, give fair feedback using answerReference; accept equivalent meanings. '
-          'Do not claim completion unless state is completed. New due entries after dueCutoff belong to a new explicitly requested session.',
+      'instruction': includeDelivery
+          ? 'Use only this session. Read the delivery text verbatim, with no extra quiz or answer. '
+                'If phase is attempted, give fair feedback using answerReference; accept equivalent meanings. '
+                'Do not claim completion unless state is completed. New due entries after dueCutoff belong to a new explicitly requested session.'
+          : 'This is an observational snapshot, not a request to start or resume a review. '
+                'Answer unrelated questions normally. For an explicitly requested review, use review_next for a question, '
+                'review_answer for an actual learner answer, then review_feedback if phase is attempted. '
+                'Never replay a previous turn or change the saved scope without an explicit request.',
     };
   }
 

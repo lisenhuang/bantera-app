@@ -5083,6 +5083,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete all your recordings and AI audio in this chat? Messages, transcripts, images and the summary will stay. Deleted audio cannot be restored.'**
   String get aiClearConfirmAudioOnly;
+
+  /// No description provided for @aiWaitingForReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for AI…'**
+  String get aiWaitingForReply;
+
+  /// No description provided for @aiCheckingVocabulary.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your vocabulary…'**
+  String get aiCheckingVocabulary;
 }
 
 class _AppLocalizationsDelegate

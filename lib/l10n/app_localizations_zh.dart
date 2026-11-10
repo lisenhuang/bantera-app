@@ -2677,6 +2677,12 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       '删除此聊天中你的所有录音和 AI 音频？消息、转写文本、图片和摘要将保留。已删除的音频无法恢复。';
+
+  @override
+  String get aiWaitingForReply => '等待 AI 回复…';
+
+  @override
+  String get aiCheckingVocabulary => '正在查看你的词汇…';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -5357,4 +5363,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get aiClearConfirmAudioOnly =>
       '刪除此聊天中你的所有錄音和 AI 音訊？訊息、轉寫文字、圖片和摘要將保留。已刪除的音訊無法復原。';
+
+  @override
+  String get aiWaitingForReply => '等待 AI 回覆…';
+
+  @override
+  String get aiCheckingVocabulary => '正在查看你的詞彙…';
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:app/infrastructure/ai/ai_vocabulary.dart';
 import 'package:app/infrastructure/ai/ai_review_turn.dart';
@@ -49,34 +50,31 @@ void main() {
     isTrue,
   );
 
-  test(
-    'ordinary chat needs no review handshake, active review stays guarded',
-    () async {
-      final ordinary = AiReviewTurn(store, 'chat')..enabled = true;
-      await ordinary.allowOrdinaryReply();
-      expect(ordinary.normalConversation, true);
-      final word = await add();
-      final session = await start(scope: 'all');
-      final blocked = AiReviewTurn(store, 'unrelated')..enabled = true;
-      await blocked.allowOrdinaryReply();
-      expect(blocked.holdOutput, true);
-      await blocked.authorizeOrdinaryTool('search_web');
-      expect(blocked.normalConversation, true);
-      final paused = (await store.reviewState())!;
-      expect(paused['paused'], true);
-      expect(paused['id'], session['sessionId']);
-      expect(paused['current']['id'], word['id']);
-      expect(paused['completed'], isEmpty);
-      expect((await store.words()).single.reviews, 0);
-      final resumed = await store.reviewTool(
-        {'action': 'review_next'},
-        turnId: 'resume',
-        input: 'Continue',
-      );
-      expect(resumed['currentId'], word['id']);
-      expect(resumed['sessionId'], session['sessionId']);
-    },
-  );
+  test('ordinary chat pauses old review without losing its progress', () async {
+    final ordinary = AiReviewTurn(store, 'chat')..enabled = true;
+    await ordinary.allowOrdinaryReply();
+    expect(ordinary.normalConversation, true);
+    final word = await add();
+    final session = await start(scope: 'all');
+    final blocked = AiReviewTurn(store, 'unrelated')..enabled = true;
+    await blocked.allowOrdinaryReply();
+    expect(blocked.holdOutput, false);
+    await blocked.authorizeOrdinaryTool('search_web');
+    expect(blocked.normalConversation, true);
+    final paused = (await store.reviewState())!;
+    expect(paused['paused'], true);
+    expect(paused['id'], session['sessionId']);
+    expect(paused['current']['id'], word['id']);
+    expect(paused['completed'], isEmpty);
+    expect((await store.words()).single.reviews, 0);
+    final resumed = await store.reviewTool(
+      {'action': 'review_next'},
+      turnId: 'resume',
+      input: 'Continue',
+    );
+    expect(resumed['currentId'], word['id']);
+    expect(resumed['sessionId'], session['sessionId']);
+  });
 
   test(
     'failed review attempt cannot escape validation through ordinary fallback',
@@ -111,7 +109,364 @@ void main() {
         (await gate.tool({'action': 'review_status'}))['state'],
         'storage_error',
       );
-      expect(await gate.finalText(), AiReviewTurn.unavailable);
+      await gate.allowOrdinaryReply();
+      expect(gate.normalConversation, true);
+      final review = AiReviewTurn(store, 'bad-review')..enabled = true;
+      await review.tool({'action': 'review_next'});
+      expect(await review.finalText(), AiReviewTurn.unavailable);
+    },
+  );
+
+  for (final sessionKind in [
+    'none',
+    'active',
+    'paused',
+    'completed',
+    'cancelled',
+    'none_due',
+    'empty',
+  ]) {
+    for (final statusFirst in [true, false]) {
+      test(
+        'status and add are ordinary: $sessionKind, statusFirst=$statusFirst',
+        () async {
+          if (sessionKind != 'none') {
+            if (sessionKind != 'empty') await add();
+            final started = await start(
+              scope: sessionKind == 'none_due' ? 'due' : 'all',
+            );
+            if (sessionKind == 'paused') {
+              await store.reviewTool(
+                {'action': 'review_pause', 'explicitChange': true},
+                turnId: 'pause',
+                input: 'pause',
+              );
+            } else if (sessionKind == 'cancelled') {
+              await store.reviewTool(
+                {'action': 'review_cancel'},
+                turnId: 'cancel',
+                input: 'cancel',
+              );
+            } else if (sessionKind == 'completed') {
+              await deliver(started);
+              await store.reviewInput('answer', 'Try something');
+              final feedback = await store.reviewTool(
+                {
+                  'action': 'review_feedback',
+                  'id': started['currentId'],
+                  'questionId': started['questionId'],
+                  'verdict': 'accepted',
+                },
+                turnId: 'answer',
+                input: 'Try something',
+              );
+              await deliver(feedback);
+            }
+          }
+          final before = await store.reviewState();
+          final gate = AiReviewTurn(store, 'add-antidote')..enabled = true;
+          Future<void> status() async {
+            final beforeRead = await store.reviewState();
+            final file = root.listSync().whereType<File>().firstOrNull;
+            final bytes = await file?.readAsBytes();
+            final result = await gate.tool({'action': 'review_status'});
+            expect(result.containsKey('delivery'), false);
+            expect(result['ok'], true);
+            if (sessionKind == 'none') expect(result['state'], 'inactive');
+            expect(await store.reviewState(), beforeRead);
+            if (file != null) expect(await file.readAsBytes(), bytes);
+            if (sessionKind == 'cancelled')
+              expect(result['state'], 'cancelled');
+          }
+
+          if (statusFirst) await status();
+          final added = await gate.tool({
+            'action': 'add',
+            'word': 'antidote',
+            'meaning': 'A medicine that stops a poison from hurting you',
+            'example': 'The doctor gave her an antidote.',
+          });
+          expect(added['ok'], true);
+          expect(gate.normalConversation, true);
+          if (!statusFirst) await status();
+          await gate.allowOrdinaryReply();
+          expect(gate.holdOutput, false);
+          expect(
+            (await store.words()).where((w) => w.word == 'antidote'),
+            hasLength(1),
+          );
+          final after = await store.reviewState();
+          if (before != null) {
+            for (final field in [
+              'id',
+              'scope',
+              'style',
+              'pool',
+              'current',
+              'completed',
+              'skipped',
+              'removed',
+            ]) {
+              expect(after![field], before[field], reason: field);
+            }
+            if (sessionKind == 'active' || sessionKind == 'paused')
+              expect(after!['paused'], true);
+          } else {
+            expect(after, isNull);
+          }
+          // A fresh message for a translation/meaning remains ordinary too.
+          final followUp = AiReviewTurn(create(), 'translation')
+            ..enabled = true;
+          await followUp.tool({'action': 'review_status'});
+          await followUp.allowOrdinaryReply();
+          expect(followUp.holdOutput, false);
+        },
+      );
+    }
+  }
+
+  for (final action in [
+    'stats',
+    'latest',
+    'list',
+    'review_suggestions',
+    'add',
+    'update',
+    'remove',
+  ]) {
+    test(
+      'notebook $action pauses earlier review but never grades it',
+      () async {
+        final word = await add();
+        final started = await start(scope: 'all');
+        await deliver(started);
+        final gate = AiReviewTurn(store, 'notebook')..enabled = true;
+        final result = await gate.tool({
+          'action': action,
+          'id': word['id'],
+          'word': 'antidote',
+          'meaning': 'Medicine for poison',
+        });
+        expect(result['ok'], true);
+        expect(gate.holdOutput, false);
+        final saved = (await store.reviewState())!;
+        expect(saved['paused'], true);
+        expect(saved['completed'], isEmpty);
+        expect(saved['current']['phase'], 'delivered');
+      },
+    );
+  }
+
+  test(
+    'status is observational even for paused, stale and deleted items',
+    () async {
+      final word = await add();
+      final started = await start(scope: 'all');
+      await store.reviewTool(
+        {'action': 'review_pause', 'explicitChange': true},
+        turnId: 'p',
+        input: 'pause',
+      );
+      await store.execute({'action': 'remove', 'id': word['id']});
+      final file = root.listSync().whereType<File>().single;
+      final original = await file.readAsString();
+      final result = await store.reviewTool(
+        {'action': 'review_status'},
+        turnId: 's',
+        input: 'inspect',
+      );
+      expect(result['paused'], true);
+      expect(result['currentId'], isNull);
+      expect(result['state'], 'empty_notebook');
+      expect(result['removed'], 1);
+      expect(result.containsKey('delivery'), false);
+      expect(await file.readAsString(), original);
+      expect(jsonDecode(original)['reviewSession']['id'], started['sessionId']);
+    },
+  );
+
+  test(
+    'observations and notebook tools cannot release same-turn valid review output',
+    () async {
+      await add();
+      final gate = AiReviewTurn(store, 'q')..enabled = true;
+      final result = await gate.tool({
+        'action': 'review_start',
+        'scope': 'all',
+        'style': 'explain_meaning',
+      });
+      final expected = await gate.finalText();
+      await gate.tool({'action': 'review_status'});
+      await gate.tool({'action': 'stats'});
+      await gate.tool({
+        'action': 'add',
+        'word': 'antidote',
+        'meaning': 'Medicine for poison',
+      });
+      expect((await gate.tool({'action': 'review_conversation'}))['ok'], false);
+      await gate.authorizeOrdinaryTool('search_web');
+      await gate.allowOrdinaryReply();
+      expect(gate.holdOutput, true);
+      expect(await gate.finalText(), expected);
+      expect(
+        await store.reviewDeliveryValid('q', result['delivery']['token']),
+        true,
+      );
+      await gate.delivered();
+      expect((await store.reviewState())!['current']['phase'], 'delivered');
+    },
+  );
+
+  test(
+    'invalid review attempts stay guarded after observations and ordinary tools',
+    () async {
+      await add();
+      final gate = AiReviewTurn(store, 'invalid')..enabled = true;
+      await gate.tool({
+        'action': 'review_feedback',
+        'id': 'invented',
+        'questionId': 'invented',
+        'verdict': 'accepted',
+      });
+      await gate.tool({'action': 'review_status'});
+      await gate.tool({'action': 'list'});
+      await gate.tool({'action': 'review_conversation'});
+      await gate.authorizeOrdinaryTool('search_web');
+      await gate.allowOrdinaryReply();
+      expect(gate.holdOutput, true);
+      expect(await gate.finalText(), AiReviewTurn.notReady);
+      expect(await gate.delivered(), isNull);
+      expect((await store.words()).single.reviews, 0);
+    },
+  );
+
+  for (final name in ['search_web', 'display_formatted_text', 'send_emojis']) {
+    test(
+      '$name authorizes ordinary output but cannot override a review attempt',
+      () async {
+        await add();
+        await start(scope: 'all');
+        final ordinary = AiReviewTurn(store, 'ordinary')..enabled = true;
+        await ordinary.tool({'action': 'review_status'});
+        await ordinary.authorizeOrdinaryTool(name);
+        expect(ordinary.holdOutput, false);
+        expect((await store.reviewState())!['paused'], true);
+        final guarded = AiReviewTurn(store, 'guarded')..enabled = true;
+        await guarded.tool({'action': 'review_next'});
+        final expected = await guarded.finalText();
+        await guarded.authorizeOrdinaryTool(name);
+        expect(guarded.holdOutput, true);
+        expect(await guarded.finalText(), expected);
+      },
+    );
+  }
+
+  test(
+    'ordinary overlapping turn does not invalidate an issued review delivery',
+    () async {
+      await add();
+      final question = AiReviewTurn(store, 'question')..enabled = true;
+      final selected = await question.tool({
+        'action': 'review_start',
+        'scope': 'all',
+        'style': 'explain_meaning',
+      });
+      final questionText = await question.finalText();
+      final unrelated = AiReviewTurn(create(), 'ordinary')..enabled = true;
+      await unrelated.tool({'action': 'review_status'});
+      await unrelated.allowOrdinaryReply();
+      expect(unrelated.holdOutput, false);
+      expect((await store.reviewState())!['paused'], true);
+      expect(await question.finalText(), questionText);
+      expect(
+        await store.reviewDeliveryValid(
+          'question',
+          selected['delivery']['token'],
+        ),
+        true,
+      );
+      await question.delivered();
+      expect((await store.reviewState())!['current']['phase'], 'delivered');
+      expect((await store.words()).single.reviews, 0);
+
+      final answer = AiReviewTurn(create(), 'answer')..enabled = true;
+      answer.addInput('Try something');
+      final state = await answer.tool({'action': 'review_answer'});
+      final feedback = await answer.tool({
+        'action': 'review_feedback',
+        'id': state['currentId'],
+        'questionId': state['questionId'],
+        'verdict': 'accepted',
+      });
+      final feedbackText = await answer.finalText();
+      final addTurn = AiReviewTurn(create(), 'add')..enabled = true;
+      await addTurn.tool({
+        'action': 'add',
+        'word': 'antidote',
+        'meaning': 'Medicine for poison',
+      });
+      await addTurn.tool({'action': 'review_status'});
+      expect(await answer.finalText(), feedbackText);
+      expect(
+        await store.reviewDeliveryValid(
+          'answer',
+          feedback['delivery']['token'],
+        ),
+        true,
+      );
+      await answer.delivered();
+      expect(
+        (await store.words())
+            .firstWhere((w) => w.word == 'give it a go')
+            .reviews,
+        1,
+      );
+      expect((await store.reviewState())!['paused'], true);
+      expect(await answer.delivered(), isNull);
+    },
+  );
+
+  for (final action in ['review_pause', 'review_cancel', 'review_next']) {
+    test(
+      'explicit $action still invalidates previous pending delivery',
+      () async {
+        await add();
+        final pending = AiReviewTurn(store, 'old')..enabled = true;
+        final old = await pending.tool({
+          'action': 'review_start',
+          'scope': 'all',
+          'style': 'explain_meaning',
+        });
+        final ordinary = AiReviewTurn(create(), 'ordinary')..enabled = true;
+        await ordinary.allowOrdinaryReply();
+        expect(
+          await store.reviewDeliveryValid('old', old['delivery']['token']),
+          true,
+        );
+        final explicit = AiReviewTurn(create(), 'new')..enabled = true;
+        await explicit.tool({'action': action, 'explicitChange': true});
+        expect(
+          await store.reviewDeliveryValid('old', old['delivery']['token']),
+          false,
+        );
+        expect(await pending.finalText(), AiReviewTurn.notReady);
+        expect(await pending.delivered(), isNull);
+        expect((await store.words()).single.reviews, 0);
+      },
+    );
+  }
+
+  test(
+    'ordinary storage failure is not a failed review and never prevents normal replies',
+    () async {
+      await add();
+      await root.listSync().whereType<File>().single.writeAsString('broken');
+      final gate = AiReviewTurn(store, 'ordinary')..enabled = true;
+      expect((await gate.tool({'action': 'list'}))['state'], 'storage_error');
+      await gate.tool({'action': 'review_status'});
+      await gate.allowOrdinaryReply();
+      expect(gate.normalConversation, true);
+      expect(gate.holdOutput, false);
     },
   );
 
@@ -268,9 +623,10 @@ void main() {
           {'action': 'review_conversation'},
           turnId: 'r',
           input: 'hi',
-        ))['ok'],
-        false,
+        ))['normalConversation'],
+        true,
       );
+      expect((await store.reviewState())!['paused'], true);
       await store.reviewTool(
         {'action': 'review_cancel'},
         turnId: 'cancel',

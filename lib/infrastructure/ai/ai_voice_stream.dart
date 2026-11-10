@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'ai_history_store.dart';
 import 'ai_review_turn.dart';
+import 'ai_reply_activity.dart';
 
 /// One recording, uploaded while it is captured. A commit is the only message
 /// that asks the model to answer. Closing before commit cancels the recording.
@@ -36,6 +37,7 @@ class AiVoiceStream {
     this.onTranscript,
     this.onToolCall,
     this.reviewTurn,
+    this.onProgress,
     this.requiresImages = false,
     this.requiresText = false,
   }) {
@@ -44,6 +46,7 @@ class AiVoiceStream {
     unawaited(_open(connect));
   }
   final AiReviewTurn? reviewTurn;
+  final void Function(AiReplyPhase phase)? onProgress;
   final bool requiresImages, requiresText;
   final Future<void> Function(Uint8List) onAudio;
   final Future<void> Function() onReset;
@@ -125,6 +128,11 @@ class AiVoiceStream {
     }
   }
 
+  Future<void> _playAudio(Uint8List bytes) async {
+    if (bytes.isNotEmpty) reviewTurn?.outputStarted();
+    await onAudio(bytes);
+  }
+
   Future<void> _event(dynamic event) async {
     if (_closed || _failed) return;
     if (event is List<int>) {
@@ -134,8 +142,11 @@ class AiVoiceStream {
       }
       final bytes = Uint8List.fromList(event);
       _output.add(bytes);
+      onProgress?.call(AiReplyPhase.replying);
       try {
-        if (reviewTurn?.holdOutput != true) await onAudio(bytes);
+        if (reviewTurn?.holdOutput != true) {
+          await _playAudio(bytes);
+        }
       } catch (error) {
         throw AiVoiceFailure.from('playback_failed', error);
       }
@@ -145,7 +156,7 @@ class AiVoiceStream {
     switch (json['type']) {
       case 'ready':
         if (reviewTurn != null) {
-          reviewTurn!.enabled = json['vocabularyVersion'] == 3;
+          reviewTurn!.configure(json['vocabularyVersion'] as int?);
         }
         if (requiresText && json['acceptText'] != true) {
           throw const AiVoiceFailure('text_unavailable');
@@ -161,6 +172,9 @@ class AiVoiceStream {
         _pending.clear();
         _ready.complete();
       case 'reset':
+        onProgress?.call(
+          committed ? AiReplyPhase.waiting : AiReplyPhase.sending,
+        );
         reviewTurn?.resetOutput();
         _output.clear();
         try {
@@ -178,6 +192,7 @@ class AiVoiceStream {
         }
         if (role == 'user') reviewTurn?.addInput(text);
         if (role == 'user' || reviewTurn?.holdOutput != true) {
+          if (role == 'model' && text.isNotEmpty) reviewTurn?.outputStarted();
           onTranscript?.call(role as String, text);
         }
       case 'toolCall':
@@ -185,18 +200,24 @@ class AiVoiceStream {
           throw const AiVoiceFailure('invalid_frame');
         }
         final calls = (json['calls'] as List).cast<Map>();
+        // Notebook/review batches decide their mode in tool order. A pure
+        // presentation/search batch can authorize ordinary output before its
+        // slow work starts, without blocking subsequent streaming audio.
         if (reviewTurn?.holdOutput == true &&
-            calls.any((c) => c['name'] == 'search_web')) {
-          await reviewTurn!.authorizeOrdinaryTool('search_web');
-          if (!reviewTurn!.holdOutput && _output.isNotEmpty)
-            await onAudio(_output.toBytes());
+            !calls.any((c) => c['name'] == 'manage_vocabulary')) {
+          for (final call in calls) {
+            await reviewTurn!.authorizeOrdinaryTool(call['name'] as String);
+          }
+          if (!reviewTurn!.holdOutput && _output.isNotEmpty) {
+            await _playAudio(_output.toBytes());
+          }
         }
         if (reviewTurn?.enabled == true &&
             calls.any((c) => c['name'] == 'manage_vocabulary')) {
           final held = reviewTurn!.holdOutput;
           await _tools(calls);
           if (held && !reviewTurn!.holdOutput && _output.isNotEmpty) {
-            await onAudio(_output.toBytes());
+            await _playAudio(_output.toBytes());
           }
         } else {
           unawaited(_tools(calls));
@@ -218,17 +239,22 @@ class AiVoiceStream {
           throw const AiVoiceFailure('invalid_frame');
         }
         var outputText = json['outputText'] as String? ?? '';
+        // Pause resumable review state after ordinary streaming, not before
+        // first audio. Legacy held replies still flush below.
+        if (reviewTurn?.holdOutput != true) {
+          await reviewTurn?.allowOrdinaryReply();
+        }
         if (reviewTurn?.holdOutput == true) {
           await reviewTurn!.allowOrdinaryReply();
           if (!reviewTurn!.holdOutput) {
-            if (_output.isNotEmpty) await onAudio(_output.toBytes());
+            if (_output.isNotEmpty) await _playAudio(_output.toBytes());
             onTranscript?.call('model', outputText);
           }
         }
         if (reviewTurn?.holdOutput == true) {
           final expected = await reviewTurn!.finalText();
           if (reviewTurn!.matchesSpeech(outputText, expected)) {
-            await onAudio(_output.toBytes());
+            await _playAudio(_output.toBytes());
           } else {
             _output.clear();
           }
@@ -277,6 +303,7 @@ class AiVoiceStream {
       _socket!.add(
         jsonEncode({'type': 'commit', 'metadata': metadata, 'text': ?text}),
       );
+      onProgress?.call(AiReplyPhase.waiting);
     } catch (_) {
       throw const AiVoiceFailure('send_failed');
     }

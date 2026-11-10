@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Đã hiểu",
   "aiClearConfirmKeepSummary": "Xóa vĩnh viễn tất cả tin nhắn, bản chép lời, bản ghi âm và tệp đính kèm trong cuộc trò chuyện này? Bản tóm tắt cuối cùng sẽ được giữ lại. Không thể hoàn tác thao tác này.",
   "aiClearConfirmRemoveSummary": "Xóa vĩnh viễn tất cả tin nhắn, bản chép lời, bản ghi âm, tệp đính kèm và bản tóm tắt cuối cùng trong cuộc trò chuyện này? Không thể hoàn tác thao tác này.",
-  "aiClearConfirmAudioOnly": "Xóa tất cả bản ghi âm của bạn và âm thanh AI trong cuộc trò chuyện này? Tin nhắn, bản chép lời, hình ảnh và bản tóm tắt sẽ được giữ lại. Không thể khôi phục âm thanh đã xóa."
+  "aiClearConfirmAudioOnly": "Xóa tất cả bản ghi âm của bạn và âm thanh AI trong cuộc trò chuyện này? Tin nhắn, bản chép lời, hình ảnh và bản tóm tắt sẽ được giữ lại. Không thể khôi phục âm thanh đã xóa.",
+  "aiWaitingForReply": "Đang chờ AI…",
+  "aiCheckingVocabulary": "Đang kiểm tra từ vựng của bạn…"
 }

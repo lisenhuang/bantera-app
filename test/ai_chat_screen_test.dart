@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
+import 'package:app/infrastructure/ai/ai_reply_activity.dart';
 import 'package:app/presentation/chats/ai/ai_chat_controller.dart';
 import 'package:app/presentation/chats/ai/ai_chat_screen.dart';
 import 'package:app/l10n/app_localizations.dart';
@@ -26,6 +27,9 @@ class _ScreenHistoryStore extends AiHistoryStore {
 class _TranslationController extends AiChatController {
   _TranslationController(super.store) : super.forTesting();
   AiMessage? automaticReply;
+  AiReplyPhase phase = AiReplyPhase.waiting;
+  @override
+  AiReplyPhase? get replyPhase => busy ? phase : null;
   bool automaticPaused = false;
   @override
   bool isAutomaticReply(AiMessage message) =>
@@ -280,13 +284,15 @@ void main() {
       controller.busy = true;
       controller.changed();
       await tester.pump();
-      expect(find.text('Sending audio...'), findsWidgets);
+      expect(find.text('Waiting for AI…'), findsOneWidget);
+      expect(find.text('Sending audio...'), findsNothing);
+      controller.phase = AiReplyPhase.replying;
       controller.voiceReply.addAudio(48000, 'en-NZ');
       controller.changed();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
       expect(find.text('Sending audio...'), findsNothing);
-      expect(find.text('Bantera AI is replying…'), findsWidgets);
+      expect(find.text('Bantera AI is replying…'), findsOneWidget);
       expect(find.byIcon(Icons.graphic_eq), findsOneWidget);
       expect(controller.messages.length, 2);
       expect(store.messages.length, 1);
@@ -296,7 +302,7 @@ void main() {
       controller.changed();
       await tester.pump();
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
-      expect(find.text('Bantera AI is replying…'), findsNothing);
+      expect(find.text('Bantera AI is replying…'), findsOneWidget);
       await tester.tap(find.byTooltip('Pause audio'));
       await tester.pump();
       expect(controller.automaticPaused, true);
@@ -305,7 +311,7 @@ void main() {
       await tester.tap(find.byTooltip('Resume audio'));
       await tester.pump();
       expect(controller.automaticPaused, false);
-      expect(find.text('Bantera AI is replying…'), findsNothing);
+      expect(find.text('Bantera AI is replying…'), findsOneWidget);
       controller.automaticReply = null;
       controller.voiceReply.addTranscript('A streamed reply', 'en-NZ');
       controller.voiceReply.message!.emojis.addAll(['🇮🇪', '🇮🇳']);
@@ -543,6 +549,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('All messages and audio'));
       await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear chat'));
+      await tester.pumpAndSettle();
+      // Clearing now requires a second destructive-action confirmation.
+      expect(controller.clearing, isNull);
+      expect(store.messages.length, 1);
       await tester.tap(find.widgetWithText(FilledButton, 'Clear chat'));
       await tester.pump();
       var clearDone = false;

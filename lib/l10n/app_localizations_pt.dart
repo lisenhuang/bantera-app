@@ -2894,4 +2894,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Excluir todas as suas gravações e os áudios da IA desta conversa? As mensagens, transcrições, imagens e o resumo serão mantidos. Os áudios excluídos não podem ser recuperados.';
+
+  @override
+  String get aiWaitingForReply => 'Aguardando a IA…';
+
+  @override
+  String get aiCheckingVocabulary => 'Consultando seu vocabulário…';
 }

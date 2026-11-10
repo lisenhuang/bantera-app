@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "明白了",
   "aiClearConfirmKeepSummary": "永久刪除此聊天中的所有訊息、轉寫文字、錄音和附件？最後的摘要將被保留。此操作無法復原。",
   "aiClearConfirmRemoveSummary": "永久刪除此聊天中的所有訊息、轉寫文字、錄音、附件以及最後的摘要？此操作無法復原。",
-  "aiClearConfirmAudioOnly": "刪除此聊天中你的所有錄音和 AI 音訊？訊息、轉寫文字、圖片和摘要將保留。已刪除的音訊無法復原。"
+  "aiClearConfirmAudioOnly": "刪除此聊天中你的所有錄音和 AI 音訊？訊息、轉寫文字、圖片和摘要將保留。已刪除的音訊無法復原。",
+  "aiWaitingForReply": "等待 AI 回覆…",
+  "aiCheckingVocabulary": "正在查看你的詞彙…"
 }

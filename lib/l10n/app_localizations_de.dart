@@ -2900,4 +2900,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Alle eigenen Aufnahmen und KI-Audiodateien dieses Chats löschen? Nachrichten, Transkripte, Bilder und die Zusammenfassung bleiben erhalten. Gelöschte Audiodateien können nicht wiederhergestellt werden.';
+
+  @override
+  String get aiWaitingForReply => 'Warten auf die KI…';
+
+  @override
+  String get aiCheckingVocabulary => 'Dein Wortschatz wird geprüft…';
 }

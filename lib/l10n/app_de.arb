@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Verstanden",
   "aiClearConfirmKeepSummary": "Alle Nachrichten, Transkripte, Aufnahmen und Anhänge dieses Chats dauerhaft löschen? Die letzte Zusammenfassung bleibt erhalten. Dies kann nicht rückgängig gemacht werden.",
   "aiClearConfirmRemoveSummary": "Alle Nachrichten, Transkripte, Aufnahmen, Anhänge und die letzte Zusammenfassung dieses Chats dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
-  "aiClearConfirmAudioOnly": "Alle eigenen Aufnahmen und KI-Audiodateien dieses Chats löschen? Nachrichten, Transkripte, Bilder und die Zusammenfassung bleiben erhalten. Gelöschte Audiodateien können nicht wiederhergestellt werden."
+  "aiClearConfirmAudioOnly": "Alle eigenen Aufnahmen und KI-Audiodateien dieses Chats löschen? Nachrichten, Transkripte, Bilder und die Zusammenfassung bleiben erhalten. Gelöschte Audiodateien können nicht wiederhergestellt werden.",
+  "aiWaitingForReply": "Warten auf die KI…",
+  "aiCheckingVocabulary": "Dein Wortschatz wird geprüft…"
 }

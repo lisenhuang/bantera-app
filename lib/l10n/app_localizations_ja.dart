@@ -2689,4 +2689,10 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'このチャットのあなたの録音とAIの音声をすべて削除しますか？メッセージ、文字起こし、画像、要約は残ります。削除した音声は復元できません。';
+
+  @override
+  String get aiWaitingForReply => 'AIの返答を待っています…';
+
+  @override
+  String get aiCheckingVocabulary => '単語帳を確認しています…';
 }

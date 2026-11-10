@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Entendi",
   "aiClearConfirmKeepSummary": "Excluir permanentemente todas as mensagens, transcrições, gravações e anexos desta conversa? O último resumo será mantido. Esta ação não pode ser desfeita.",
   "aiClearConfirmRemoveSummary": "Excluir permanentemente todas as mensagens, transcrições, gravações, anexos e o último resumo desta conversa? Esta ação não pode ser desfeita.",
-  "aiClearConfirmAudioOnly": "Excluir todas as suas gravações e os áudios da IA desta conversa? As mensagens, transcrições, imagens e o resumo serão mantidos. Os áudios excluídos não podem ser recuperados."
+  "aiClearConfirmAudioOnly": "Excluir todas as suas gravações e os áudios da IA desta conversa? As mensagens, transcrições, imagens e o resumo serão mantidos. Os áudios excluídos não podem ser recuperados.",
+  "aiWaitingForReply": "Aguardando a IA…",
+  "aiCheckingVocabulary": "Consultando seu vocabulário…"
 }

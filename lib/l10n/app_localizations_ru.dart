@@ -2899,4 +2899,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get aiClearConfirmAudioOnly =>
       'Удалить все ваши записи и аудио ИИ из этого чата? Сообщения, расшифровки, изображения и сводка останутся. Удалённое аудио нельзя восстановить.';
+
+  @override
+  String get aiWaitingForReply => 'Ожидание ответа ИИ…';
+
+  @override
+  String get aiCheckingVocabulary => 'Проверяем ваш словарь…';
 }

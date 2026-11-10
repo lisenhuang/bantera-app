@@ -34,6 +34,7 @@ import '../../../core/word_activity_notifier.dart';
 import '../../../infrastructure/ai/ai_spoken_words.dart';
 import '../../../domain/models/models.dart';
 import '../../../infrastructure/ai/ai_api_client.dart';
+import '../../../infrastructure/ai/ai_reply_activity.dart';
 import '../../../infrastructure/ai/ai_device_data.dart';
 import '../../../infrastructure/ai/ai_history_store.dart';
 import '../../../infrastructure/ai/ai_formatted_text_tool.dart';
@@ -44,6 +45,7 @@ class _VoiceReplyJob {
   final AiMessage input;
   final int epoch;
   final state = AiVoiceReplyState();
+  final activity = AiReplyActivity();
   final finished = Completer<void>();
   AiVoiceStream? stream;
   AiReviewTurn? review;
@@ -213,17 +215,19 @@ class AiChatController extends ChangeNotifier {
   bool _releasingReview = false;
 
   void _nextReviewTurn() {
-    final enabled = _liveReview?.enabled ?? false;
+    final version = _liveReview?.protocolVersion;
     _liveReview = AiReviewTurn(vocabulary, const Uuid().v4())
-      ..enabled = enabled;
+      ..configure(version);
     _reviewCallAudio.clear();
     _reviewCallText = '';
   }
 
   Future<void> _deliverReviewCall(int epoch) async {
     final review = _liveReview;
-    if (review?.holdOutput != true) return;
-    await review!.allowOrdinaryReply();
+    if (review == null) return;
+    final held = review.holdOutput;
+    await review.allowOrdinaryReply();
+    if (!held) return;
     final text = review.holdOutput ? await review.finalText() : _reviewCallText;
     if (!available || epoch != _epoch) return;
     final pcm = _reviewCallAudio.takeBytes();
@@ -271,6 +275,12 @@ class AiChatController extends ChangeNotifier {
   AiVoiceReplyState get voiceReply =>
       _foregroundReply?.state ?? _idleVoiceReply;
   AiMessage? _liveModelMessage;
+  AiReplyPhase? get replyPhase {
+    if (_waitingToSend) return AiReplyPhase.sending;
+    if (_replies.isNotEmpty) return _replies.last.activity.phase;
+    return busy && !recording ? AiReplyPhase.waiting : null;
+  }
+
   bool get sendingVoice =>
       _waitingToSend ||
       _replies.any((j) => !j.state.received) ||
@@ -731,6 +741,11 @@ class AiChatController extends ChangeNotifier {
     final review = job.review = AiReviewTurn(vocabulary, message.id);
     stream = AiVoiceStream(
       reviewTurn: review,
+      onProgress: (phase) {
+        if (!_jobActive(job)) return;
+        job.activity.base = phase;
+        changed();
+      },
       requiresImages: message.images.isNotEmpty,
       requiresText: message.textRequest != null,
       connect: () async => _api.voice(
@@ -757,53 +772,65 @@ class AiChatController extends ChangeNotifier {
         if (!_jobActive(job)) {
           return {'unavailable': true};
         }
-        await review.authorizeOrdinaryTool(call['name'] as String);
-        if (review.holdOutput &&
-            [
-              AiFormattedTextTool.name,
-              AiEmojiTool.name,
-              'search_web',
-            ].contains(call['name'])) {
-          return {'ok': false, 'error': 'review_output_only'};
-        }
-        if (call['name'] == AiFormattedTextTool.name) {
-          return _formattedText(
-            call['args'],
-            job.savedMessage ?? job.state.ensure(message.language),
-          );
-        }
-        if (call['name'] == AiEmojiTool.name) {
-          return _emojis(call['args'], job.state.ensure(message.language));
-        }
-        if (call['name'] == AiVocabulary.toolName) {
-          // A word-explanation confirmation is not permission to save a word.
-          if (message.textRequest != null &&
-              ![
-                'stats',
-                'latest',
-                'quiz',
-                'review_conversation',
-                'review_status',
-                'review_pause',
-              ].contains((call['args'] as Map?)?['action'])) {
-            return {
-              'confirmationRequired': true,
-              'instruction': 'Ask the learner first. Do not save yet.',
-            };
+        final activity = job.activity.beginTool(call);
+        if (activity != null) changed();
+        try {
+          await review.authorizeOrdinaryTool(call['name'] as String);
+          if (review.holdOutput &&
+              [
+                AiFormattedTextTool.name,
+                AiEmojiTool.name,
+                'search_web',
+              ].contains(call['name'])) {
+            return {'ok': false, 'error': 'review_output_only'};
           }
-          if (review.enabled) {
-            return review.tool(Map<String, dynamic>.from(call['args'] as Map));
+          if (call['name'] == AiFormattedTextTool.name) {
+            return await _formattedText(
+              call['args'],
+              job.savedMessage ?? job.state.ensure(message.language),
+            );
           }
-          return vocabulary.execute(
-            Map<String, dynamic>.from(call['args'] as Map),
-            conversationId: store.conversationId,
+          if (call['name'] == AiEmojiTool.name) {
+            return await _emojis(
+              call['args'],
+              job.state.ensure(message.language),
+            );
+          }
+          if (call['name'] == AiVocabulary.toolName) {
+            // A word-explanation confirmation is not permission to save a word.
+            if (message.textRequest != null &&
+                ![
+                  'stats',
+                  'latest',
+                  'quiz',
+                  'review_conversation',
+                  'review_status',
+                  'review_pause',
+                ].contains((call['args'] as Map?)?['action'])) {
+              return {
+                'confirmationRequired': true,
+                'instruction': 'Ask the learner first. Do not save yet.',
+              };
+            }
+            if (review.enabled) {
+              return await review.tool(
+                Map<String, dynamic>.from(call['args'] as Map),
+              );
+            }
+            return await vocabulary.execute(
+              Map<String, dynamic>.from(call['args'] as Map),
+              conversationId: store.conversationId,
+            );
+          }
+          return await _search(
+            call,
+            job.state.ensure(message.language),
+            () => _jobActive(job),
           );
+        } finally {
+          job.activity.endTool(activity);
+          if (_jobActive(job)) changed();
         }
-        return _search(
-          call,
-          job.state.ensure(message.language),
-          () => _jobActive(job),
-        );
       },
       onAudio: (bytes) async {
         if (!_jobActive(job)) return;
@@ -1630,6 +1657,7 @@ class AiChatController extends ChangeNotifier {
       if (_output.length + event.length > 24000 * 2 * 90) {
         throw StateError('Audio too long');
       }
+      _liveReview?.outputStarted();
       _output.add(event);
       _liveBubble().durationMs = _output.length * 1000 ~/ 48000;
       changed();
@@ -1644,7 +1672,7 @@ class AiChatController extends ChangeNotifier {
     switch (data['type']) {
       case 'ready':
         _nextReviewTurn();
-        _liveReview!.enabled = data['vocabularyVersion'] == 3;
+        _liveReview!.configure(data['vocabularyVersion'] as int?);
         // The transport is ready, but the greeting is not yet audible. Keep
         // Connecting and the original startup deadline until real audio arrives.
         _callTransportReady = true;
@@ -1667,6 +1695,9 @@ class AiChatController extends ChangeNotifier {
         } else if (_liveReview?.holdOutput == true) {
           _reviewCallText += data['text'] as String? ?? '';
         } else {
+          if ((data['text'] as String? ?? '').isNotEmpty) {
+            _liveReview?.outputStarted();
+          }
           draftModel += data['text'] as String? ?? '';
           if (draftModel.isNotEmpty) _liveBubble().text = draftModel;
         }
@@ -1709,8 +1740,10 @@ class AiChatController extends ChangeNotifier {
         // Read tools run outside the audio queue so local disk/network reads never stall playback.
         final calls = (data['calls'] as List).cast<Map>();
         if (_liveReview?.holdOutput == true &&
-            calls.any((c) => c['name'] == 'search_web')) {
-          await _liveReview!.authorizeOrdinaryTool('search_web');
+            !calls.any((c) => c['name'] == AiVocabulary.toolName)) {
+          for (final call in calls) {
+            await _liveReview!.authorizeOrdinaryTool(call['name'] as String);
+          }
           if (!_liveReview!.holdOutput) {
             final pcm = _reviewCallAudio.takeBytes();
             if (pcm.isNotEmpty) await _event(pcm, epoch);
@@ -1894,6 +1927,9 @@ class AiChatController extends ChangeNotifier {
       try {
         if (!available || epoch != _epoch || !identical(_socket, destination)) {
           return;
+        }
+        if (review?.holdOutput == true) {
+          await review!.authorizeOrdinaryTool(call['name'] as String);
         }
         if (review?.holdOutput == true &&
             [

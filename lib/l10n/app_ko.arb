@@ -869,5 +869,7 @@
   "vocabReviewGotIt": "알겠어요",
   "aiClearConfirmKeepSummary": "이 채팅의 모든 메시지, 받아쓰기, 녹음 및 첨부 파일을 영구 삭제할까요? 마지막 요약은 유지됩니다. 이 작업은 되돌릴 수 없습니다.",
   "aiClearConfirmRemoveSummary": "이 채팅의 모든 메시지, 받아쓰기, 녹음, 첨부 파일 및 마지막 요약을 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
-  "aiClearConfirmAudioOnly": "이 채팅의 내 녹음과 AI 오디오를 모두 삭제할까요? 메시지, 받아쓰기, 이미지 및 요약은 유지됩니다. 삭제한 오디오는 복원할 수 없습니다."
+  "aiClearConfirmAudioOnly": "이 채팅의 내 녹음과 AI 오디오를 모두 삭제할까요? 메시지, 받아쓰기, 이미지 및 요약은 유지됩니다. 삭제한 오디오는 복원할 수 없습니다.",
+  "aiWaitingForReply": "AI 응답을 기다리는 중…",
+  "aiCheckingVocabulary": "단어장을 확인하는 중…"
 }

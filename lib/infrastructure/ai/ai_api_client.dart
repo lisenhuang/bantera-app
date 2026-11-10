@@ -51,7 +51,7 @@ class AiApiClient {
     'hasMetBanteraAi': hasMetBanteraAi,
     'deviceWebSearch': true,
     'deviceVocabulary': true,
-    'vocabularyVersion': 3,
+    'vocabularyVersion': 4,
     'deviceEmojis': true,
     'deviceFormattedText': true,
     'learningLevel': SettingsNotifier.instance.audioLevel?.name,

@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Anladım",
   "aiClearConfirmKeepSummary": "Bu sohbetteki tüm mesajlar, dökümler, kayıtlar ve ekler kalıcı olarak silinsin mi? Son özet korunacak. Bu işlem geri alınamaz.",
   "aiClearConfirmRemoveSummary": "Bu sohbetteki tüm mesajlar, dökümler, kayıtlar, ekler ve son özet kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
-  "aiClearConfirmAudioOnly": "Bu sohbetteki tüm kayıtlarınız ve yapay zekâ sesleri silinsin mi? Mesajlar, dökümler, görseller ve özet korunacak. Silinen sesler geri yüklenemez."
+  "aiClearConfirmAudioOnly": "Bu sohbetteki tüm kayıtlarınız ve yapay zekâ sesleri silinsin mi? Mesajlar, dökümler, görseller ve özet korunacak. Silinen sesler geri yüklenemez.",
+  "aiWaitingForReply": "Yapay zekâ yanıtı bekleniyor…",
+  "aiCheckingVocabulary": "Kelime listeniz kontrol ediliyor…"
 }

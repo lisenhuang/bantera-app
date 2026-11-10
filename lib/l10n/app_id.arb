@@ -834,5 +834,7 @@
   "vocabReviewGotIt": "Mengerti",
   "aiClearConfirmKeepSummary": "Hapus permanen semua pesan, transkrip, rekaman, dan lampiran dalam percakapan ini? Ringkasan terakhir akan disimpan. Tindakan ini tidak dapat dibatalkan.",
   "aiClearConfirmRemoveSummary": "Hapus permanen semua pesan, transkrip, rekaman, lampiran, dan ringkasan terakhir dalam percakapan ini? Tindakan ini tidak dapat dibatalkan.",
-  "aiClearConfirmAudioOnly": "Hapus semua rekaman Anda dan audio AI dalam percakapan ini? Pesan, transkrip, gambar, dan ringkasan tetap tersimpan. Audio yang dihapus tidak dapat dipulihkan."
+  "aiClearConfirmAudioOnly": "Hapus semua rekaman Anda dan audio AI dalam percakapan ini? Pesan, transkrip, gambar, dan ringkasan tetap tersimpan. Audio yang dihapus tidak dapat dipulihkan.",
+  "aiWaitingForReply": "Menunggu AI…",
+  "aiCheckingVocabulary": "Memeriksa kosakatamu…"
 }
