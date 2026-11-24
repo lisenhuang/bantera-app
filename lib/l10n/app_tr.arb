@@ -582,6 +582,8 @@
   "aiReminderReady": "Hazır",
   "aiReminderDelivered": "İletildi",
   "aiReminderCancelled": "İptal edildi",
+  "aiReminderMissedCall": "Cevapsız arama",
+  "aiReminderNoAnswerRecorded": "Yanıt kaydı yok",
   "aiReminderFailed": "İletilemedi",
   "aiReminderScheduleHelp": "Sesli mesaj için on dakika sonra pratik yapmayı hatırlatmasını iste. Yalnızca arama istiyorsan “Beni ara” de. Saatler mevcut saat dilimindedir. Hatırlatıcılar yedi gün görünür.",
   "aiReplyInterrupted": "Yanıt kesildi.",

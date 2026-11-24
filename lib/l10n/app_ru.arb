@@ -582,6 +582,8 @@
   "aiReminderReady": "Готово",
   "aiReminderDelivered": "Доставлено",
   "aiReminderCancelled": "Отменено",
+  "aiReminderMissedCall": "Пропущенный звонок",
+  "aiReminderNoAnswerRecorded": "Нет записи об ответе",
   "aiReminderFailed": "Не доставлено",
   "aiReminderScheduleHelp": "Попросите напомнить о практике через десять минут, чтобы получить голосовое сообщение. Скажите «Позвони мне», только если хотите звонок. Время указано в текущем часовом поясе. Напоминания хранятся семь дней.",
   "aiReplyInterrupted": "Ответ прерван.",

@@ -1951,6 +1951,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiReminderCancelled => 'İptal edildi';
 
   @override
+  String get aiReminderMissedCall => 'Cevapsız arama';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Yanıt kaydı yok';
+
+  @override
   String get aiReminderFailed => 'İletilemedi';
 
   @override

@@ -2028,6 +2028,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get aiReminderCancelled => 'Anulowane';
 
   @override
+  String get aiReminderMissedCall => 'Nieodebrane połączenie';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Brak potwierdzenia odbioru';
+
+  @override
   String get aiReminderFailed => 'Niedostarczone';
 
   @override

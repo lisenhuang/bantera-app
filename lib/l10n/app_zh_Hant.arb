@@ -582,6 +582,8 @@
   "aiReminderReady": "已就緒",
   "aiReminderDelivered": "已送達",
   "aiReminderCancelled": "已取消",
+  "aiReminderMissedCall": "未接來電",
+  "aiReminderNoAnswerRecorded": "無接聽記錄",
   "aiReminderFailed": "未送達",
   "aiReminderScheduleHelp": "說「10分鐘後提醒我練習」即可收到語音訊息。只有明確說「打電話給我」才會來電。以下時間按你目前的時區顯示，近期提醒保留7天。",
   "aiReplyInterrupted": "回覆中斷。",

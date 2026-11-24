@@ -2017,6 +2017,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get aiReminderCancelled => 'Скасовано';
 
   @override
+  String get aiReminderMissedCall => 'Пропущений виклик';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Немає запису про відповідь';
+
+  @override
   String get aiReminderFailed => 'Не доставлено';
 
   @override

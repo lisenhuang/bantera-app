@@ -83,6 +83,7 @@ class AiCallbackNotifier extends ChangeNotifier {
   String? _owner;
   bool ringing = false, accepted = false, accepting = false;
   Timer? _expiry, _statusTimer;
+  DateTime? _ringDeadline;
   final Set<String> _handled = {};
   bool handles(Map event) =>
       event['callerUserId'] == identity ||
@@ -103,9 +104,8 @@ class AiCallbackNotifier extends ChangeNotifier {
       return;
     }
     final expires = int.tryParse(payload['expiresAt']?.toString() ?? '') ?? 0;
-    final remaining = DateTime.fromMillisecondsSinceEpoch(
-      expires * 1000,
-    ).difference(DateTime.now());
+    final deadline = DateTime.fromMillisecondsSinceEpoch(expires * 1000);
+    final remaining = deadline.difference(DateTime.now());
     if (remaining.isNegative) {
       await _callKit.update('end', callId);
       return;
@@ -113,12 +113,13 @@ class AiCallbackNotifier extends ChangeNotifier {
     id = callId;
     _owner = AuthSessionNotifier.instance.session?.cacheKey;
     ringing = true;
+    _ringDeadline = deadline;
     accepted = false;
     _audioActive = false;
     _lastMuted = false;
     _lastSpeaker = false;
     notifyListeners();
-    _expiry = Timer(remaining, () => unawaited(close()));
+    _expiry = Timer(remaining, () => unawaited(close(expired: true)));
     if (!system) await _callKit.report('incoming', payload);
     _statusTimer = Timer.periodic(
       const Duration(seconds: 3),
@@ -353,18 +354,25 @@ class AiCallbackNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> close() => _closing ??= Future<void>.microtask(
-    _close,
-  ).whenComplete(() => _closing = null);
+  Future<void> close({bool expired = false}) =>
+      _closing ??= Future<void>.microtask(
+        () => _close(expired: expired),
+      ).whenComplete(() => _closing = null);
 
-  Future<void> _close() async {
+  Future<void> _close({required bool expired}) async {
     final current = id;
     if (current == null) return;
     _handled.add(current);
     if (_handled.length > 100) _handled.remove(_handled.first);
     _expiry?.cancel();
     _statusTimer?.cancel();
-    final cancel = ringing;
+    // The server marks unanswered calls missed. DELETE is an explicit cancellation.
+    final deadline = _ringDeadline;
+    final cancel =
+        ringing &&
+        !expired &&
+        (deadline == null || DateTime.now().isBefore(deadline));
+    _ringDeadline = null;
     final chat = controller;
     controller = null;
     chat?.removeListener(_callChanged);

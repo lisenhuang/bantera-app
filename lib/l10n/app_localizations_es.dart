@@ -2015,6 +2015,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiReminderCancelled => 'Cancelado';
 
   @override
+  String get aiReminderMissedCall => 'Llamada perdida';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Sin respuesta registrada';
+
+  @override
   String get aiReminderFailed => 'No entregado';
 
   @override

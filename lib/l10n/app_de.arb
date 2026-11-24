@@ -582,6 +582,8 @@
   "aiReminderReady": "Bereit",
   "aiReminderDelivered": "Zugestellt",
   "aiReminderCancelled": "Abgebrochen",
+  "aiReminderMissedCall": "Verpasster Anruf",
+  "aiReminderNoAnswerRecorded": "Keine Annahme verzeichnet",
   "aiReminderFailed": "Nicht zugestellt",
   "aiReminderScheduleHelp": "Bitte um eine Erinnerung in zehn Minuten, um eine Sprachnachricht zu erhalten. Sage ausdrücklich „Ruf mich an“, wenn du einen Anruf möchtest. Zeiten gelten für deine aktuelle Zeitzone. Erinnerungen bleiben sieben Tage sichtbar.",
   "aiReplyInterrupted": "Antwort unterbrochen.",

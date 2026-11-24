@@ -2019,6 +2019,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aiReminderCancelled => 'Отменено';
 
   @override
+  String get aiReminderMissedCall => 'Пропущенный звонок';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Нет записи об ответе';
+
+  @override
   String get aiReminderFailed => 'Не доставлено';
 
   @override

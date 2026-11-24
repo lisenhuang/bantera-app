@@ -2013,6 +2013,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get aiReminderCancelled => 'Cancelado';
 
   @override
+  String get aiReminderMissedCall => 'Chamada perdida';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Sem registo de resposta';
+
+  @override
   String get aiReminderFailed => 'Não entregue';
 
   @override

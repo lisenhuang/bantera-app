@@ -1955,6 +1955,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get aiReminderCancelled => 'Dibatalkan';
 
   @override
+  String get aiReminderMissedCall => 'Panggilan tak terjawab';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Tidak ada jawaban tercatat';
+
+  @override
   String get aiReminderFailed => 'Tidak terkirim';
 
   @override

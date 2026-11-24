@@ -582,6 +582,8 @@
   "aiReminderReady": "Pronto",
   "aiReminderDelivered": "Consegnato",
   "aiReminderCancelled": "Annullato",
+  "aiReminderMissedCall": "Chiamata persa",
+  "aiReminderNoAnswerRecorded": "Nessuna risposta registrata",
   "aiReminderFailed": "Non consegnato",
   "aiReminderScheduleHelp": "Chiedi un promemoria tra dieci minuti per ricevere un messaggio vocale. Di’ “Chiamami” solo se vuoi una chiamata. Gli orari usano il tuo fuso attuale. I promemoria restano visibili sette giorni.",
   "aiReplyInterrupted": "Risposta interrotta.",

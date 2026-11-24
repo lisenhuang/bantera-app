@@ -87,6 +87,21 @@ class CallKitService {
     }
   }
 
+  Future<Set<String>> presentedCallbacks(List<String> ids) async {
+    if (!_hasNativeBridge || ids.isEmpty) return {};
+    try {
+      final result = await _channel.invokeListMethod<String>(
+        'presentedCallbacks',
+        {'ids': ids},
+      );
+      return result?.toSet() ?? {};
+    } on MissingPluginException {
+      return {};
+    } on PlatformException {
+      return {};
+    }
+  }
+
   Future<List<String>> revokedTokens() async {
     if (!_hasNativeBridge) return [];
     return (await _channel.invokeListMethod<String>('revokedTokens')) ?? [];

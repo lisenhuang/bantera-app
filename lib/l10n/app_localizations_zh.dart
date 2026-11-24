@@ -1870,6 +1870,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiReminderCancelled => '已取消';
 
   @override
+  String get aiReminderMissedCall => '未接来电';
+
+  @override
+  String get aiReminderNoAnswerRecorded => '无接听记录';
+
+  @override
   String get aiReminderFailed => '未送达';
 
   @override
@@ -4553,6 +4559,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiReminderCancelled => '已取消';
+
+  @override
+  String get aiReminderMissedCall => '未接來電';
+
+  @override
+  String get aiReminderNoAnswerRecorded => '無接聽記錄';
 
   @override
   String get aiReminderFailed => '未送達';

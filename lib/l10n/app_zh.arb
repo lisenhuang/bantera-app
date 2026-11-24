@@ -617,6 +617,8 @@
   "aiReminderReady": "已就绪",
   "aiReminderDelivered": "已送达",
   "aiReminderCancelled": "已取消",
+  "aiReminderMissedCall": "未接来电",
+  "aiReminderNoAnswerRecorded": "无接听记录",
   "aiReminderFailed": "未送达",
   "aiReminderScheduleHelp": "说“10分钟后提醒我练习”即可收到语音消息。只有明确说“打电话给我”才会来电。以下时间按你当前时区显示，近期提醒保留7天。",
   "aiReplyInterrupted": "回复中断。",

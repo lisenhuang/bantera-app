@@ -1952,6 +1952,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get aiReminderCancelled => 'Đã hủy';
 
   @override
+  String get aiReminderMissedCall => 'Cuộc gọi nhỡ';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Chưa ghi nhận trả lời';
+
+  @override
   String get aiReminderFailed => 'Chưa gửi';
 
   @override

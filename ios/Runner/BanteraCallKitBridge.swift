@@ -215,6 +215,9 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
           await self.refreshRegion().value
           result(self.registrationInfo)
         }
+      case "presentedCallbacks":
+        let receipts = self.recentPresentedCallbacks()
+        result((args["ids"] as? [String] ?? []).filter { receipts[$0.lowercased()] != nil })
       case "revokedTokens":
         result(self.defaults.stringArray(forKey: "callkit.revokedTokens") ?? [])
       case "ackRevokedToken":
@@ -310,6 +313,16 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     reportIncoming(data, fromPush: true) { _ in completion() }
   }
 
+  // Keep only opaque IDs for the same seven-day window as reminder history.
+  private let presentedCallbacksKey = "callkit.presentedAiCallbacks"
+  private func recentPresentedCallbacks() -> [String: Double] {
+    let receipts = defaults.dictionary(forKey: presentedCallbacksKey) as? [String: Double] ?? [:]
+    let cutoff = Date().addingTimeInterval(-7 * 24 * 60 * 60).timeIntervalSince1970
+    let recent = receipts.filter { $0.value >= cutoff }
+    if recent.count != receipts.count { defaults.set(recent, forKey: presentedCallbacksKey) }
+    return recent
+  }
+
   private func reportIncoming(_ data: [String: Any], fromPush: Bool = false, completion: @escaping (Error?) -> Void) {
     guard systemCallsAllowed, let provider = provider(for: data) else {
       completion(NSError(domain: "BanteraCallKit", code: 1)); return
@@ -338,6 +351,11 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
           self.finish(id, reason: .unanswered)
           completion(nil)
           return
+        }
+        if Self.isAi(data), recipient != nil {
+          var receipts = self.recentPresentedCallbacks()
+          receipts[id.uuidString.lowercased()] = Date().timeIntervalSince1970
+          self.defaults.set(receipts, forKey: self.presentedCallbacksKey)
         }
         self.prepareAudio()
         self.timers[id] = Timer.scheduledTimer(withTimeInterval: min(45, max(1, expires - Date().timeIntervalSince1970)), repeats: false) { [weak self] _ in
@@ -439,6 +457,10 @@ final class BanteraCallKitBridge: NSObject, PKPushRegistryDelegate, CXProviderDe
     callProviders[action.callUUID] = provider
     if !Self.isAi(data) { answers[action.callUUID] = action }
     if Self.isAi(data) {
+      // A system answer can precede or outlive the server's acknowledgement.
+      var receipts = recentPresentedCallbacks()
+      receipts.removeValue(forKey: action.callUUID.uuidString.lowercased())
+      defaults.set(receipts, forKey: presentedCallbacksKey)
       // Reserve the native audio owner before asynchronous Dart acceptance.
       // A voice reply still arriving must not switch the session to playback.
       onAiAudioPreparing?()

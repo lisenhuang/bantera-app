@@ -617,6 +617,8 @@
   "aiReminderReady": "준비됨",
   "aiReminderDelivered": "전달됨",
   "aiReminderCancelled": "취소됨",
+  "aiReminderMissedCall": "부재중 전화",
+  "aiReminderNoAnswerRecorded": "응답 기록 없음",
   "aiReminderFailed": "전달되지 않음",
   "aiReminderScheduleHelp": "“10분 후에 연습하라고 알려 줘”라고 하면 음성 메시지가 와요. 통화를 원할 때만 “전화해 줘”라고 하세요. 현재 시간대로 표시되며 최근 알림은 7일간 보관돼요.",
   "aiReplyInterrupted": "응답이 중단되었습니다.",

@@ -1863,6 +1863,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiReminderCancelled => 'キャンセル済み';
 
   @override
+  String get aiReminderMissedCall => '不在着信';
+
+  @override
+  String get aiReminderNoAnswerRecorded => '応答記録なし';
+
+  @override
   String get aiReminderFailed => '未配信';
 
   @override

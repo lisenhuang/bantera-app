@@ -582,6 +582,8 @@
   "aiReminderReady": "พร้อมแล้ว",
   "aiReminderDelivered": "ส่งแล้ว",
   "aiReminderCancelled": "ยกเลิกแล้ว",
+  "aiReminderMissedCall": "สายที่ไม่ได้รับ",
+  "aiReminderNoAnswerRecorded": "ไม่มีบันทึกการรับสาย",
   "aiReminderFailed": "ยังไม่ได้ส่ง",
   "aiReminderScheduleHelp": "ขอให้เตือนให้ฝึกในอีกสิบนาทีเพื่อรับข้อความเสียง พูดว่า “โทรหาฉัน” เฉพาะเมื่อต้องการให้โทร เวลาใช้เขตเวลาปัจจุบันของคุณ การเตือนล่าสุดจะอยู่ที่นี่เจ็ดวัน",
   "aiReplyInterrupted": "การตอบกลับถูกขัดจังหวะ",

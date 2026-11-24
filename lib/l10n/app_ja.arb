@@ -617,6 +617,8 @@
   "aiReminderReady": "準備完了",
   "aiReminderDelivered": "配信済み",
   "aiReminderCancelled": "キャンセル済み",
+  "aiReminderMissedCall": "不在着信",
+  "aiReminderNoAnswerRecorded": "応答記録なし",
   "aiReminderFailed": "未配信",
   "aiReminderScheduleHelp": "「10分後に練習するようリマインドして」と頼むと音声メッセージが届きます。通話を希望する場合のみ「電話して」と伝えてください。時刻は現在のタイムゾーンで表示され、履歴は7日間残ります。",
   "aiReplyInterrupted": "応答が中断されました。",

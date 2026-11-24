@@ -582,6 +582,8 @@
   "aiReminderReady": "Sẵn sàng",
   "aiReminderDelivered": "Đã gửi",
   "aiReminderCancelled": "Đã hủy",
+  "aiReminderMissedCall": "Cuộc gọi nhỡ",
+  "aiReminderNoAnswerRecorded": "Chưa ghi nhận trả lời",
   "aiReminderFailed": "Chưa gửi",
   "aiReminderScheduleHelp": "Yêu cầu nhắc luyện tập sau mười phút để nhận tin nhắn thoại. Chỉ nói “Gọi cho tôi” khi muốn cuộc gọi. Giờ hiển thị theo múi giờ hiện tại. Lời nhắc được giữ trong bảy ngày.",
   "aiReplyInterrupted": "Phản hồi bị gián đoạn.",

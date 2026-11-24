@@ -2013,6 +2013,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiReminderCancelled => 'Abgebrochen';
 
   @override
+  String get aiReminderMissedCall => 'Verpasster Anruf';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'Keine Annahme verzeichnet';
+
+  @override
   String get aiReminderFailed => 'Nicht zugestellt';
 
   @override

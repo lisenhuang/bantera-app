@@ -582,6 +582,8 @@
   "aiReminderReady": "Siap",
   "aiReminderDelivered": "Terkirim",
   "aiReminderCancelled": "Dibatalkan",
+  "aiReminderMissedCall": "Panggilan tak terjawab",
+  "aiReminderNoAnswerRecorded": "Tidak ada jawaban tercatat",
   "aiReminderFailed": "Tidak terkirim",
   "aiReminderScheduleHelp": "Minta diingatkan berlatih sepuluh menit lagi untuk menerima pesan suara. Katakan “Telepon saya” hanya jika ingin panggilan. Waktu mengikuti zona waktu Anda saat ini. Pengingat disimpan tujuh hari.",
   "aiReplyInterrupted": "Balasan terputus.",

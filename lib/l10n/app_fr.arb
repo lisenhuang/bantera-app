@@ -582,6 +582,8 @@
   "aiReminderReady": "Prêt",
   "aiReminderDelivered": "Remis",
   "aiReminderCancelled": "Annulé",
+  "aiReminderMissedCall": "Appel manqué",
+  "aiReminderNoAnswerRecorded": "Aucune réponse enregistrée",
   "aiReminderFailed": "Non remis",
   "aiReminderScheduleHelp": "Demandez un rappel dans dix minutes pour recevoir un message vocal. Dites « Appelle-moi » uniquement pour un appel. Les heures suivent votre fuseau actuel. Les rappels restent visibles sept jours.",
   "aiReplyInterrupted": "Réponse interrompue.",

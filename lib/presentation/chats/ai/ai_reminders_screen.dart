@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/auth_session_notifier.dart';
 import '../../../infrastructure/ai/ai_api_client.dart';
+import '../../../infrastructure/callkit_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class AiRemindersScreen extends StatefulWidget {
-  const AiRemindersScreen({super.key, this.api, this.owner});
+  const AiRemindersScreen({super.key, this.api, this.owner, this.callKit});
   final AiApiClient? api;
+  final CallKitService? callKit;
   final String? owner;
   @override
   State<AiRemindersScreen> createState() => _AiRemindersScreenState();
@@ -18,6 +20,7 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
   late final _owner =
       widget.owner ?? AuthSessionNotifier.instance.session!.cacheKey;
   List<Map>? _items;
+  Set<String> _presentedCalls = {};
   bool _failed = false;
   bool _clearing = false;
   int _revision = 0;
@@ -40,9 +43,17 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
       final revision = _revision;
       final items =
           await _api.reminderRequest(_owner, 'GET', '/history') as List;
+      final missedCallIds = [
+        for (final item in items)
+          if (item['delivery'] == 'call' && item['status'] == 'missed')
+            item['id'] as String,
+      ];
+      final presented = await (widget.callKit ?? CallKitService.instance)
+          .presentedCallbacks(missedCallIds);
       if (mounted && revision == _revision) {
         setState(() {
           _items = items.cast<Map>();
+          _presentedCalls = presented;
           _failed = false;
         });
       }
@@ -148,6 +159,10 @@ class _AiRemindersScreenState extends State<AiRemindersScreen> {
     'generating' || 'ringing' => l.aiReminderPreparing,
     'ready' => l.aiReminderReady,
     'delivered' || 'answered' => l.aiReminderDelivered,
+    'missed' when item['delivery'] == 'call' =>
+      _presentedCalls.contains(item['id'])
+          ? l.aiReminderMissedCall
+          : l.aiReminderNoAnswerRecorded,
     'cancelled' => l.aiReminderCancelled,
     _ => l.aiReminderFailed,
   };

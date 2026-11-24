@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:app/infrastructure/ai/ai_api_client.dart';
 import 'package:app/l10n/app_localizations.dart';
+import 'package:app/infrastructure/callkit_service.dart';
+import 'package:flutter/services.dart';
 import 'package:app/presentation/chats/ai/ai_reminders_screen.dart';
 import 'package:app/presentation/shared/swipe_action_card.dart';
 import 'package:flutter/material.dart';
@@ -46,10 +48,51 @@ class FakeApi extends AiApiClient {
 }
 
 void main() {
-  Widget page(FakeApi api) => MaterialApp(
+  Widget page(FakeApi api, {CallKitService? callKit}) => MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: AiRemindersScreen(api: api, owner: 'test'),
+    home: AiRemindersScreen(api: api, owner: 'test', callKit: callKit),
+  );
+  testWidgets(
+    'missed calls require device presentation; failed messages and unconfirmed calls stay distinct',
+    (tester) async {
+      final api = FakeApi();
+      final template = api.items.last;
+      api.items = [
+        for (final id in ['confirmed', 'unconfirmed'])
+          {...template, 'id': id, 'status': 'missed'},
+        {
+          ...template,
+          'id': 'failure',
+          'delivery': 'message',
+          'status': 'failed',
+        },
+        {...template, 'id': 'answered', 'status': 'answered'},
+      ];
+      for (final item in api.items) {
+        item['reminder'] = item['id'];
+      }
+      const channel = MethodChannel('bantera/callkit');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        expect(call.method, 'presentedCallbacks');
+        expect(call.arguments['ids'], ['confirmed', 'unconfirmed']);
+        return ['confirmed'];
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+      await tester.pumpWidget(page(api, callKit: CallKitService.forTesting()));
+      await tester.pumpAndSettle();
+      Finder status(String id, String label) => find.descendant(
+        of: find.widgetWithText(SwipeActionCard, id),
+        matching: find.text(label),
+      );
+      expect(status('confirmed', 'Missed call'), findsOneWidget);
+      expect(status('unconfirmed', 'No answer recorded'), findsOneWidget);
+      expect(status('failure', 'Not delivered'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('answered'), 200);
+      expect(status('answered', 'Delivered'), findsOneWidget);
+    },
   );
   testWidgets(
     'swipe only reveals, API success removes, failures keep the reminder',

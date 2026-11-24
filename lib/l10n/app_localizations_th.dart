@@ -1933,6 +1933,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get aiReminderCancelled => 'ยกเลิกแล้ว';
 
   @override
+  String get aiReminderMissedCall => 'สายที่ไม่ได้รับ';
+
+  @override
+  String get aiReminderNoAnswerRecorded => 'ไม่มีบันทึกการรับสาย';
+
+  @override
   String get aiReminderFailed => 'ยังไม่ได้ส่ง';
 
   @override

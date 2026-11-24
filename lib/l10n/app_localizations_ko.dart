@@ -1874,6 +1874,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiReminderCancelled => '취소됨';
 
   @override
+  String get aiReminderMissedCall => '부재중 전화';
+
+  @override
+  String get aiReminderNoAnswerRecorded => '응답 기록 없음';
+
+  @override
   String get aiReminderFailed => '전달되지 않음';
 
   @override

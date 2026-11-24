@@ -3566,6 +3566,18 @@ abstract class AppLocalizations {
   /// **'Cancelled'**
   String get aiReminderCancelled;
 
+  /// No description provided for @aiReminderMissedCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed call'**
+  String get aiReminderMissedCall;
+
+  /// No description provided for @aiReminderNoAnswerRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer recorded'**
+  String get aiReminderNoAnswerRecorded;
+
   /// No description provided for @aiReminderFailed.
   ///
   /// In en, this message translates to:

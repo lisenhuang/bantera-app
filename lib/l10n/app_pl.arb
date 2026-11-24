@@ -582,6 +582,8 @@
   "aiReminderReady": "Gotowe",
   "aiReminderDelivered": "Dostarczone",
   "aiReminderCancelled": "Anulowane",
+  "aiReminderMissedCall": "Nieodebrane połączenie",
+  "aiReminderNoAnswerRecorded": "Brak potwierdzenia odbioru",
   "aiReminderFailed": "Niedostarczone",
   "aiReminderScheduleHelp": "Poproś o przypomnienie za dziesięć minut, aby otrzymać wiadomość głosową. Powiedz „Zadzwoń do mnie” tylko, jeśli chcesz połączenia. Godziny są w bieżącej strefie czasowej. Przypomnienia pozostają przez siedem dni.",
   "aiReplyInterrupted": "Odpowiedź została przerwana.",
