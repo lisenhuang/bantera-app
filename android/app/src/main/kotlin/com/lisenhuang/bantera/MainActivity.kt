@@ -1,18 +1,11 @@
 package com.lisenhuang.bantera
 
-import android.content.Context
-import android.content.Intent
-import android.media.AudioFormat
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelFileDescriptor
-import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
@@ -30,9 +23,7 @@ import java.io.File
 import java.io.IOException
 import java.util.Locale
 
-private const val SPEECH_TAG = "BanteraSpeech"
 private const val TRANSLATE_TAG = "BanteraTranslate"
-private const val TARGET_RATE = 16000
 
 /**
  * Android side of the `bantera/video_processing` MethodChannel.
@@ -147,6 +138,10 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "supportsPracticeTranscription" -> result.success(
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            SpeechRecognizer.isRecognitionAvailable(this),
+                    )
                     "ensureRecordedAudioTranscriptionReady" -> handleEnsureReady(result)
                     "transcribeRecordedAudio" -> handleTranscribe(
                         call.argument<String>("inputPath"),
@@ -220,219 +215,8 @@ class MainActivity : FlutterActivity() {
             )
             return
         }
-        RecordedAudioTranscriber(applicationContext)
-            .transcribe(File(inputPath), localeIdentifier ?: "en-US", result)
-    }
-}
-
-/**
- * Decodes one audio file to 16 kHz mono PCM, runs a single file-based recognition session,
- * and replies on the channel exactly once. Created only on API 33+.
- */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-private class RecordedAudioTranscriber(private val context: Context) {
-    private val mainHandler = Handler(Looper.getMainLooper())
-    @Volatile private var recognizer: SpeechRecognizer? = null
-    @Volatile private var pfd: ParcelFileDescriptor? = null
-    @Volatile private var pcmFile: File? = null
-    private val segmentedText = StringBuilder()
-    private var replied = false // only touched on the main thread
-
-    fun transcribe(input: File, rawLocale: String, result: MethodChannel.Result) {
-        val localeIdentifier = normalizeLocale(rawLocale)
-        // Decode off the main thread — chat voice messages can be long enough to ANR.
-        Thread {
-            val pcm: File
-            try {
-                pcm = decodeToMono16kPcm(input)
-            } catch (e: Exception) {
-                Log.e(SPEECH_TAG, "decode failed for ${input.path}", e)
-                mainHandler.post {
-                    replyError(result, "invalid_recording", "The recording could not be read for transcription.")
-                }
-                return@Thread
-            }
-            pcmFile = pcm
-            Log.i(SPEECH_TAG, "transcribe: locale=$localeIdentifier src=${input.length()}B pcm=${pcm.length()}B")
-
-            val descriptor: ParcelFileDescriptor
-            try {
-                descriptor = ParcelFileDescriptor.open(pcm, ParcelFileDescriptor.MODE_READ_ONLY)
-            } catch (e: Exception) {
-                Log.e(SPEECH_TAG, "open PFD failed", e)
-                mainHandler.post {
-                    replyError(result, "invalid_recording", "The recording could not be opened for transcription.")
-                }
-                return@Thread
-            }
-            pfd = descriptor
-
-            // Feed the decoded file to the recognizer instead of the live mic. The audio-source
-            // extras MUST match the decoded format: 16 kHz, mono, 16-bit PCM. EXTRA_SEGMENTED_SESSION
-            // is required so Google's recognizer consumes the file and reports via onSegmentResults().
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE, localeIdentifier)
-                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
-                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
-                putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, descriptor)
-                putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
-                putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
-                putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, TARGET_RATE)
-                putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION, RecognizerIntent.EXTRA_AUDIO_SOURCE)
-            }
-
-            mainHandler.post {
-                if (replied) {
-                    cleanup()
-                    return@post
-                }
-                val sr = SpeechRecognizer.createSpeechRecognizer(context)
-                recognizer = sr
-                sr.setRecognitionListener(object : RecognitionListener {
-                    // File-based recognition returns results here (segmented session),
-                    // not via onResults(). Accumulate each segment.
-                    override fun onSegmentResults(segmentResults: Bundle) {
-                        val part = segmentResults
-                            .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            ?.firstOrNull()
-                            ?.trim()
-                            .orEmpty()
-                        Log.i(SPEECH_TAG, "onSegmentResults: \"$part\"")
-                        if (part.isNotEmpty()) {
-                            if (segmentedText.isNotEmpty()) segmentedText.append(' ')
-                            segmentedText.append(part)
-                        }
-                    }
-
-                    override fun onEndOfSegmentedSession() {
-                        val text = segmentedText.toString().trim()
-                        Log.i(SPEECH_TAG, "onEndOfSegmentedSession: \"$text\"")
-                        replySuccess(result, text, localeIdentifier)
-                    }
-
-                    // Fallback for recognizers that ignore segmented mode.
-                    override fun onResults(results: Bundle?) {
-                        val text = results
-                            ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            ?.firstOrNull()
-                            ?.trim()
-                            .orEmpty()
-                        Log.i(SPEECH_TAG, "onResults: \"$text\"")
-                        replySuccess(result, text, localeIdentifier)
-                    }
-
-                    override fun onError(error: Int) {
-                        Log.w(SPEECH_TAG, "onError: code=$error (${errorName(error)})")
-                        // No speech detected → return an empty transcript so the Dart pipeline
-                        // surfaces the friendly "try again closer to the mic" message.
-                        if (error == SpeechRecognizer.ERROR_NO_MATCH ||
-                            error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
-                        ) {
-                            replySuccess(result, "", localeIdentifier)
-                            return
-                        }
-                        replyError(result, "speech_error_$error", errorMessage(error))
-                    }
-
-                    override fun onReadyForSpeech(params: Bundle?) {}
-                    override fun onBeginningOfSpeech() {}
-                    override fun onRmsChanged(rmsdB: Float) {}
-                    override fun onBufferReceived(buffer: ByteArray?) {}
-                    override fun onEndOfSpeech() {}
-                    override fun onPartialResults(partialResults: Bundle?) {}
-                    override fun onEvent(eventType: Int, params: Bundle?) {}
-                })
-                try {
-                    sr.startListening(intent)
-                } catch (e: Exception) {
-                    Log.e(SPEECH_TAG, "startListening threw", e)
-                    replyError(result, "speech_start_failed", "Speech recognition could not start.")
-                }
-            }
-        }.start()
-    }
-
-    private fun replySuccess(result: MethodChannel.Result, text: String, locale: String) {
-        if (replied) return
-        replied = true
-        result.success(
-            mapOf(
-                "transcriptText" to text,
-                "transcriptLanguage" to locale,
-                // Per-word confidence/timing isn't reliably exposed here; text-level
-                // comparison still works. Left empty rather than faking confidences.
-                "segments" to emptyList<Map<String, Any>>(),
-                "recognitionMode" to "unknown",
-            ),
-        )
-        cleanup()
-    }
-
-    private fun replyError(result: MethodChannel.Result, code: String, message: String) {
-        if (replied) return
-        replied = true
-        result.error(code, message, null)
-        cleanup()
-    }
-
-    private fun cleanup() {
-        mainHandler.post {
-            try { recognizer?.destroy() } catch (_: Exception) {}
-            recognizer = null
-        }
-        try { pfd?.close() } catch (_: Exception) {}
-        pfd = null
-        try { pcmFile?.delete() } catch (_: Exception) {}
-        pcmFile = null
-    }
-
-    /** Decodes any supported audio file to 16 kHz mono 16-bit PCM and writes a temp .pcm file. */
-    private fun decodeToMono16kPcm(input: File): File {
-        val (pcm16, srcRate, channels) = LocalAudioDecoder.readSourcePcm(input)
-        val converted = LocalAudioDecoder.downmixAndResample(pcm16, srcRate, channels)
-        Log.i(SPEECH_TAG, "decoded: srcRate=$srcRate ch=$channels -> 16k mono ${converted.size}B")
-        val out = File.createTempFile("bantera_pcm_", ".pcm", context.cacheDir)
-        out.outputStream().use { it.write(converted) }
-        return out
-    }
-
-    /** Normalizes e.g. "en-us"/"en_US" → "en-US" so the recognizer matches a language. */
-    private fun normalizeLocale(raw: String): String {
-        val parts = raw.trim().replace('_', '-').split('-')
-        return if (parts.size >= 2 && parts[1].isNotEmpty()) {
-            "${parts[0].lowercase()}-${parts[1].uppercase()}"
-        } else {
-            parts[0].lowercase()
-        }
-    }
-
-    private fun errorMessage(error: Int): String = when (error) {
-        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
-            "Microphone permission is required for speech recognition. (code $error)"
-        SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED,
-        SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE ->
-            "This language isn’t available for transcription on this device yet. (code $error)"
-        else -> "Speech recognition failed (code $error: ${errorName(error)})."
-    }
-
-    private fun errorName(error: Int): String = when (error) {
-        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "NETWORK_TIMEOUT"
-        SpeechRecognizer.ERROR_NETWORK -> "NETWORK"
-        SpeechRecognizer.ERROR_AUDIO -> "AUDIO"
-        SpeechRecognizer.ERROR_SERVER -> "SERVER"
-        SpeechRecognizer.ERROR_CLIENT -> "CLIENT"
-        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "SPEECH_TIMEOUT"
-        SpeechRecognizer.ERROR_NO_MATCH -> "NO_MATCH"
-        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "RECOGNIZER_BUSY"
-        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "INSUFFICIENT_PERMISSIONS"
-        SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> "TOO_MANY_REQUESTS"
-        SpeechRecognizer.ERROR_SERVER_DISCONNECTED -> "SERVER_DISCONNECTED"
-        SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED -> "LANGUAGE_NOT_SUPPORTED"
-        SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "LANGUAGE_UNAVAILABLE"
-        SpeechRecognizer.ERROR_CANNOT_CHECK_SUPPORT -> "CANNOT_CHECK_SUPPORT"
-        else -> "UNKNOWN"
+        RecordedAudioTranscriber(applicationContext, localeIdentifier ?: "en-US", result)
+            .transcribe(File(inputPath))
     }
 }
 
