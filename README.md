@@ -55,12 +55,6 @@ For Android, open the downloaded APK and allow installation from your browser or
 
 ---
 
-## Say “Hey Bantera” on iPhone
-
-On iOS 18 or later, sign in to Bantera, then create a shortcut in Apple's Shortcuts app with the **Talk to Bantera AI** action. Name the shortcut **Talk to Bantera AI**. In **Settings → Accessibility → Vocal Shortcuts**, choose that shortcut, enter **Hey Bantera**, and repeat the phrase when prompted. Each person sets this up on their own iPhone.
-
-Say **Hey Bantera** and wait for the AI to greet you. iOS recognises the phrase on-device. Unlock your phone if prompted. The first conversation also requires Bantera AI consent and microphone access.
-
 ## ✨ Feature Highlights
 
 | Feature                             | Description                                                         |
