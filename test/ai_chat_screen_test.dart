@@ -61,7 +61,7 @@ class _TranslationController extends AiChatController {
       endedCalls = 0,
       startedCalls = 0;
   @override
-  Future<void> startCall() async {
+  Future<void> startCall({Future<bool> Function()? beforeMicrophone}) async {
     startedCalls++;
     calling = true;
     changed();

@@ -19,7 +19,7 @@ class _Call extends AiChatController {
   }
 
   @override
-  Future<void> startCall() async {
+  Future<void> startCall({Future<bool> Function()? beforeMicrophone}) async {
     starts++;
     await startGate?.future;
     if (disposed || refuseStart) return;

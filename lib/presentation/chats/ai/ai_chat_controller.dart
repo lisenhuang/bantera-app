@@ -1407,7 +1407,7 @@ class AiChatController extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> startCall() async {
+  Future<void> startCall({Future<bool> Function()? beforeMicrophone}) async {
     if (_consentStopping) return;
     if (!_testing) {
       // A locked-screen callback cannot obtain new consent.
@@ -1456,6 +1456,14 @@ class AiChatController extends ChangeNotifier {
         throw StateError('Microphone denied');
       }
       if (!available || epoch != _epoch) return;
+      if (beforeMicrophone != null) {
+        final allowed = await beforeMicrophone();
+        if (!available || epoch != _epoch) return;
+        if (!allowed) {
+          await endCall();
+          return;
+        }
+      }
       _micEvents = microphone.receiveBroadcastStream().listen(
         (event) => _microphoneEvent(event, epoch),
         onError: (Object _) {

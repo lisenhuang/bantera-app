@@ -59,21 +59,25 @@ Future<void> openAiChatInNavigator(
 }) async {
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
   if (!await AiConsent.instance.request() || !navigator.mounted) return;
-  if (voiceShortcut != null &&
-      (!voiceShortcut.isCurrent(
-            AuthSessionNotifier.instance.session?.cacheKey,
-          ) ||
-          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed ||
-          voiceShortcutCallBlocked)) {
-    return;
-  }
-  activateChatPane?.call();
+  if (voiceShortcut == null) activateChatPane?.call();
   unawaited(
     _openAiNavigator(
       navigator,
+      canOpen: voiceShortcut == null
+          ? null
+          : () =>
+                voiceShortcut.isCurrent(
+                  AuthSessionNotifier.instance.session?.cacheKey,
+                ) &&
+                WidgetsBinding.instance.lifecycleState ==
+                    AppLifecycleState.resumed &&
+                !voiceShortcutCallBlocked,
       onReady: voiceShortcut == null
           ? null
-          : () => _voiceShortcutForChat.value = voiceShortcut,
+          : () {
+              activateChatPane?.call();
+              _voiceShortcutForChat.value = voiceShortcut;
+            },
     ),
   );
 }
@@ -102,20 +106,26 @@ Future<void> openAiWordExplanation(
 Future<void> _openAiNavigator(
   NavigatorState navigator, {
   VoidCallback? onReady,
-}) => _aiNavigation.open(navigator, (_) {
-  final callback = AiCallbackNotifier.instance;
-  return ListenableBuilder(
-    listenable: callback,
-    builder: (_, _) {
-      final controller = callback.accepted ? callback.controller : null;
-      return AiChatScreen(
-        key: ObjectKey(controller),
-        controller: controller,
-        voiceShortcut: controller == null ? _voiceShortcutForChat : null,
-      );
-    },
-  );
-}, onReady: onReady);
+  bool Function()? canOpen,
+}) => _aiNavigation.open(
+  navigator,
+  (_) {
+    final callback = AiCallbackNotifier.instance;
+    return ListenableBuilder(
+      listenable: callback,
+      builder: (_, _) {
+        final controller = callback.accepted ? callback.controller : null;
+        return AiChatScreen(
+          key: ObjectKey(controller),
+          controller: controller,
+          voiceShortcut: controller == null ? _voiceShortcutForChat : null,
+        );
+      },
+    );
+  },
+  onReady: onReady,
+  canOpen: canOpen,
+);
 
 void openAiReminderChat() => openAiChat();
 
@@ -168,6 +178,7 @@ class _AiChatScreenState extends State<AiChatScreen>
   String? _latestUserMessageId;
   bool _historyLoaded = false;
   bool _confirmingCall = false;
+  int _shortcutVisibilityRevision = 0;
   bool _initializationStarted = false;
   Animation<double>? _openingAnimation;
   @override
@@ -259,6 +270,7 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void didPushNext() {
+    _shortcutVisibilityRevision++;
     if (_chat.callKitManaged || _chat.calling) return;
     unawaited(_player.stop());
     _pauseVideo();
@@ -306,18 +318,54 @@ class _AiChatScreenState extends State<AiChatScreen>
       final request = widget.voiceShortcut?.value;
       if (request == null) return;
       widget.voiceShortcut!.value = null;
-      if (_canStartShortcut(request)) unawaited(_call(shortcut: request));
+      if (!voiceShortcutCallBlocked && _canStartShortcut(request)) {
+        unawaited(_call(shortcut: request));
+      }
     });
     WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   bool _canStartShortcut(VoiceConversationRequest request) =>
+      mounted &&
       request.isCurrent(_chat.owner) &&
       _chat.available &&
-      !voiceShortcutCallBlocked &&
+      AiCallbackNotifier.instance.id == null &&
+      !DmCallNotifier.instance.isActive &&
       _paneActive &&
       ModalRoute.of(context)?.isCurrent == true &&
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+  Future<bool> _shortcutMicrophoneReady(
+    VoiceConversationRequest request,
+    int revision,
+  ) async {
+    // iOS can return microphone permission before the permission sheet has
+    // finished dismissing. Wait only for that foreground transition.
+    if (mounted &&
+        revision == _shortcutVisibilityRevision &&
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.inactive) {
+      final transitioned = Completer<void>();
+      final listener = AppLifecycleListener(
+        onStateChange: (state) {
+          if (state != AppLifecycleState.inactive &&
+              !transitioned.isCompleted) {
+            transitioned.complete();
+          }
+        },
+      );
+      try {
+        final remaining = request.requestedAt
+            .add(VoiceConversationRequest.lifetime)
+            .difference(DateTime.now());
+        if (remaining <= Duration.zero) return false;
+        await transitioned.future.timeout(remaining, onTimeout: () {});
+      } finally {
+        listener.dispose();
+      }
+    }
+    return revision == _shortcutVisibilityRevision &&
+        _canStartShortcut(request);
+  }
 
   void _openingChanged(AnimationStatus status) {
     if (status == AnimationStatus.completed) _initializeWhenVisible();
@@ -392,6 +440,11 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _shortcutVisibilityRevision++;
+    }
     if (state == AppLifecycleState.resumed) unawaited(_chat.syncReminders());
     // A borrowed CallKit controller outlives the scene. iOS may detach the
     // Flutter view while its native call continues on the locked screen.
@@ -636,6 +689,7 @@ class _AiChatScreenState extends State<AiChatScreen>
         _chat.calling) {
       return;
     }
+    final revision = _shortcutVisibilityRevision;
     _confirmingCall = true;
     try {
       if (shortcut == null) {
@@ -671,11 +725,18 @@ class _AiChatScreenState extends State<AiChatScreen>
           _chat.busy ||
           _chat.recording ||
           _chat.calling ||
-          (shortcut != null && !_canStartShortcut(shortcut))) {
+          (shortcut != null &&
+              (voiceShortcutCallBlocked ||
+                  revision != _shortcutVisibilityRevision ||
+                  !_canStartShortcut(shortcut)))) {
         return;
       }
       _playing = null;
-      await _chat.startCall();
+      await _chat.startCall(
+        beforeMicrophone: shortcut == null
+            ? null
+            : () => _shortcutMicrophoneReady(shortcut, revision),
+      );
     } finally {
       _confirmingCall = false;
     }

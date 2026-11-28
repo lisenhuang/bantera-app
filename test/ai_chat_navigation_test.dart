@@ -4,6 +4,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('a shortcut invalidated during Back does not reopen the chat', (
+    tester,
+  ) async {
+    final navigator = GlobalKey<NavigatorState>();
+    final navigation = AiChatNavigation();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        home: const Scaffold(body: Text('Practice')),
+      ),
+    );
+    final nav = navigator.currentState!;
+    Widget chat(BuildContext context) => const Scaffold(body: Text('AI'));
+    unawaited(navigation.open(nav, chat));
+    await tester.pumpAndSettle();
+    nav.pop();
+    var valid = true;
+    var delivered = false;
+    unawaited(
+      navigation.open(
+        nav,
+        chat,
+        canOpen: () => valid,
+        onReady: () => delivered = true,
+      ),
+    );
+    valid = false;
+    await tester.pumpAndSettle();
+    expect(delivered, isFalse);
+    expect(find.text('Practice'), findsOneWidget);
+    expect(nav.canPop(), isFalse);
+  });
+
   testWidgets('word explanation waits for Back when AI is already open', (
     tester,
   ) async {

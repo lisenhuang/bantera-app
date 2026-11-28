@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/infrastructure/ai/ai_word_explanation.dart';
 import 'package:app/core/ai_callback_notifier.dart';
 import 'package:app/core/voice_conversation_shortcut.dart';
@@ -23,9 +25,12 @@ class _OpeningController extends AiChatController {
   _OpeningController() : super.forTesting(AiHistoryStore('test'));
   int loads = 0;
   int starts = 0;
+  Completer<void>? microphonePermission;
 
   @override
-  Future<void> startCall() async {
+  Future<void> startCall({Future<bool> Function()? beforeMicrophone}) async {
+    await microphonePermission?.future;
+    if (beforeMicrophone != null && !await beforeMicrophone()) return;
     starts++;
     calling = true;
     changed();
@@ -138,9 +143,33 @@ void main() {
       DateTime.now().subtract(const Duration(minutes: 5)),
     );
     await tester.pumpAndSettle();
+    request.value = VoiceConversationRequest(
+      'test',
+      DateTime.now().add(const Duration(minutes: 5)),
+    );
+    await tester.pumpAndSettle();
     expect(chat.starts, 1);
 
+    // If the phone locks before permission returns, unlocking it must not
+    // revive the old request, even if it still falls inside the time limit.
+    chat.microphonePermission = Completer<void>();
     request.value = fresh();
+    await tester.pumpAndSettle();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    chat.microphonePermission!.complete();
+    await tester.pumpAndSettle();
+    expect(chat.starts, 1);
+
+    // A system permission sheet itself briefly makes the app inactive.
+    chat.microphonePermission = Completer<void>();
+    request.value = fresh();
+    await tester.pumpAndSettle();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    chat.microphonePermission!.complete();
+    await tester.pump();
+    expect(chat.starts, 1);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pumpAndSettle();
     expect(chat.starts, 2);
     await tester.pumpWidget(const SizedBox());

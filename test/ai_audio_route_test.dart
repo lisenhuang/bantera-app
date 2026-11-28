@@ -23,6 +23,55 @@ void main() {
   });
 
   test(
+    'a shortcut cancelled during permission never opens native audio',
+    () async {
+      chat
+        ..calling = false
+        ..loaded = true;
+      const permissions = MethodChannel(
+        'flutter.baseflow.com/permissions/methods',
+      );
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('FlutterWebRTC.Method'),
+        (_) async => {'textureId': 1},
+      );
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('FlutterWebRTC/Texture1'),
+        (_) async => null,
+      );
+      final prompted = Completer<void>();
+      final permission = Completer<Map<int, int>>();
+      messenger.setMockMethodCallHandler(permissions, (call) async {
+        expect(call.method, 'requestPermissions');
+        prompted.complete();
+        return permission.future;
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(permissions, null));
+      final audioMethods = <String>[];
+      messenger.setMockMethodCallHandler(AiChatController.audio, (call) async {
+        audioMethods.add(call.method);
+        return null;
+      });
+      var current = true;
+      var checks = 0;
+      final starting = chat.startCall(
+        beforeMicrophone: () async {
+          checks++;
+          return current;
+        },
+      );
+      await prompted.future.timeout(const Duration(seconds: 3));
+      current = false;
+      permission.complete({7: 1});
+      await starting;
+      expect(checks, 1);
+      expect(audioMethods, isNot(contains('start')));
+      expect(chat.calling, isFalse);
+      expect(chat.failed, isFalse);
+    },
+  );
+
+  test(
     'button reflects hardware even when the requested route is unavailable',
     () async {
       final requested = <Object?>[];

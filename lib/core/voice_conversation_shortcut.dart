@@ -12,9 +12,12 @@ class VoiceConversationRequest {
   final DateTime requestedAt;
 
   // A delayed launch or a change of account must never open the microphone later.
-  bool isCurrent(String? currentOwner) =>
-      currentOwner == owner &&
-      DateTime.now().difference(requestedAt) < const Duration(minutes: 1);
+  static const lifetime = Duration(minutes: 1);
+
+  bool isCurrent(String? currentOwner) {
+    final age = DateTime.now().difference(requestedAt);
+    return currentOwner == owner && !age.isNegative && age < lifetime;
+  }
 }
 
 class VoiceConversationShortcut {
