@@ -6,6 +6,8 @@ import 'ai_clear_history_dialog.dart';
 import '../../../core/apple_system_version.dart';
 import '../../../core/practice_review_service.dart';
 import '../../../core/ai_consent.dart';
+import '../../../core/voice_conversation_shortcut.dart';
+import '../../../core/dm_call_notifier.dart';
 import '../../shared/ai_consent_dialog.dart';
 import 'ai_image_composer.dart';
 import 'ai_vocabulary_screen.dart';
@@ -34,6 +36,13 @@ import '../../../infrastructure/ai/ai_word_explanation.dart';
 
 final aiReminderNavigatorKey = GlobalKey<NavigatorState>();
 final _aiNavigation = AiChatNavigation();
+final _voiceShortcutForChat = ValueNotifier<VoiceConversationRequest?>(null);
+
+bool get voiceShortcutCallBlocked =>
+    AiCallbackNotifier.instance.id != null ||
+    AiCallbackNotifier.instance.aiActive ||
+    DmCallNotifier.instance.isActive;
+
 void openAiChat([BuildContext? context]) async {
   final navigator =
       chatPaneNavigatorKey.currentState ??
@@ -44,11 +53,29 @@ void openAiChat([BuildContext? context]) async {
   await openAiChatInNavigator(navigator);
 }
 
-Future<void> openAiChatInNavigator(NavigatorState navigator) async {
+Future<void> openAiChatInNavigator(
+  NavigatorState navigator, {
+  VoiceConversationRequest? voiceShortcut,
+}) async {
   if (!AuthSessionNotifier.instance.isAuthenticated) return;
   if (!await AiConsent.instance.request() || !navigator.mounted) return;
+  if (voiceShortcut != null &&
+      (!voiceShortcut.isCurrent(
+            AuthSessionNotifier.instance.session?.cacheKey,
+          ) ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed ||
+          voiceShortcutCallBlocked)) {
+    return;
+  }
   activateChatPane?.call();
-  unawaited(_openAiNavigator(navigator));
+  unawaited(
+    _openAiNavigator(
+      navigator,
+      onReady: voiceShortcut == null
+          ? null
+          : () => _voiceShortcutForChat.value = voiceShortcut,
+    ),
+  );
 }
 
 Future<void> openAiWordExplanation(
@@ -81,7 +108,11 @@ Future<void> _openAiNavigator(
     listenable: callback,
     builder: (_, _) {
       final controller = callback.accepted ? callback.controller : null;
-      return AiChatScreen(key: ObjectKey(controller), controller: controller);
+      return AiChatScreen(
+        key: ObjectKey(controller),
+        controller: controller,
+        voiceShortcut: controller == null ? _voiceShortcutForChat : null,
+      );
     },
   );
 }, onReady: onReady);
@@ -92,6 +123,7 @@ class AiChatScreen extends StatefulWidget {
   const AiChatScreen({
     super.key,
     this.startWithCall = false,
+    this.voiceShortcut,
     this.onClose,
     this.controller,
   }) : _controllerFactory = null;
@@ -99,6 +131,7 @@ class AiChatScreen extends StatefulWidget {
   const AiChatScreen.ownedControllerForTesting({
     super.key,
     required AiChatController Function() createController,
+    this.voiceShortcut,
   }) : _controllerFactory = createController,
        controller = null,
        startWithCall = false,
@@ -106,6 +139,7 @@ class AiChatScreen extends StatefulWidget {
   final AiChatController Function()? _controllerFactory;
   final AiChatController? controller;
   final bool startWithCall;
+  final ValueNotifier<VoiceConversationRequest?>? voiceShortcut;
   final VoidCallback? onClose;
   @override
   State<AiChatScreen> createState() => _AiChatScreenState();
@@ -150,6 +184,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     _chat.attachChat();
     _chat.addListener(_changed);
     pendingAiWordExplanation.addListener(_wordRequested);
+    widget.voiceShortcut?.addListener(_scheduleShortcutCall);
     _completion = _player.onPlayerComplete.listen((_) {
       final message = _chat.messages.where((m) => m.id == _playing).firstOrNull;
       final duration =
@@ -254,10 +289,35 @@ class _AiChatScreenState extends State<AiChatScreen>
     unawaited(
       _chat.initialize().then((_) async {
         if (mounted && widget.startWithCall) await _call();
+        if (mounted) _scheduleShortcutCall();
         _wordRequested();
       }),
     );
   }
+
+  void _scheduleShortcutCall() {
+    if (!_initializationStarted ||
+        !_chat.loaded ||
+        widget.voiceShortcut?.value == null) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final request = widget.voiceShortcut?.value;
+      if (request == null) return;
+      widget.voiceShortcut!.value = null;
+      if (_canStartShortcut(request)) unawaited(_call(shortcut: request));
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  bool _canStartShortcut(VoiceConversationRequest request) =>
+      request.isCurrent(_chat.owner) &&
+      _chat.available &&
+      !voiceShortcutCallBlocked &&
+      _paneActive &&
+      ModalRoute.of(context)?.isCurrent == true &&
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
   void _openingChanged(AnimationStatus status) {
     if (status == AnimationStatus.completed) _initializeWhenVisible();
@@ -354,6 +414,8 @@ class _AiChatScreenState extends State<AiChatScreen>
 
   @override
   void dispose() {
+    widget.voiceShortcut?.removeListener(_scheduleShortcutCall);
+    widget.voiceShortcut?.value = null;
     _routeObserver.unsubscribe(this);
     pendingAiWordExplanation.removeListener(_wordRequested);
     if (pendingAiWordExplanation.value?.owner == _chat.owner) {
@@ -566,7 +628,7 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
   }
 
-  Future<void> _call() async {
+  Future<void> _call({VoiceConversationRequest? shortcut}) async {
     if (_confirmingCall ||
         !_chat.loaded ||
         _chat.busy ||
@@ -576,34 +638,42 @@ class _AiChatScreenState extends State<AiChatScreen>
     }
     _confirmingCall = true;
     try {
-      final l = AppLocalizations.of(context)!;
-      final confirmed = await showBanteraDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l.aiCallConfirmTitle),
-          content: Text(l.aiCallConfirmBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l.aiCallConfirmStart),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true ||
-          !mounted ||
-          !_chat.loaded ||
-          _chat.busy ||
-          _chat.recording ||
-          _chat.calling) {
-        return;
+      if (shortcut == null) {
+        final l = AppLocalizations.of(context)!;
+        final confirmed = await showBanteraDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l.aiCallConfirmTitle),
+            content: Text(l.aiCallConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(l.aiCallConfirmStart),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true ||
+            !mounted ||
+            !_chat.loaded ||
+            _chat.busy ||
+            _chat.recording ||
+            _chat.calling) {
+          return;
+        }
       }
       await _player.stop();
-      if (!mounted || _chat.busy || _chat.recording || _chat.calling) return;
+      if (!mounted ||
+          _chat.busy ||
+          _chat.recording ||
+          _chat.calling ||
+          (shortcut != null && !_canStartShortcut(shortcut))) {
+        return;
+      }
       _playing = null;
       await _chat.startCall();
     } finally {

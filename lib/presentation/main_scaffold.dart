@@ -13,6 +13,8 @@ import '../core/word_activity_notifier.dart';
 import '../core/user_profile_notifier.dart';
 import 'shared/daily_goal_celebration_dialog.dart';
 import '../core/practice_widget_service.dart';
+import '../core/voice_conversation_shortcut.dart';
+import '../core/auth_session_notifier.dart';
 import 'chats/ai/ai_chat_screen.dart';
 import '../core/goal_reminder_service.dart';
 import '../core/dm_call_notifier.dart';
@@ -73,6 +75,8 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       _scheduleWidgetChat,
     );
     _scheduleWidgetChat();
+    VoiceConversationShortcut.pending.addListener(_scheduleVoiceConversation);
+    _scheduleVoiceConversation();
     _groupsSub = LocalChatRepository.instance.watchGroups().listen((groups) {
       _groups = groups;
       _updateUnread();
@@ -81,6 +85,32 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
       _dms = dms;
       _updateUnread();
     });
+  }
+
+  void _scheduleVoiceConversation() {
+    if (VoiceConversationShortcut.pending.value == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
+      final request = VoiceConversationShortcut.pending.value;
+      if (request == null) return;
+      VoiceConversationShortcut.pending.value = null;
+      if (!request.isCurrent(AuthSessionNotifier.instance.session?.cacheKey) ||
+          voiceShortcutCallBlocked) {
+        return;
+      }
+      // A settings or practice page can cover the nested Chats navigator.
+      final navigator = ModalRoute.of(context)?.isCurrent == true
+          ? chatPaneNavigatorKey.currentState
+          : null;
+      final target = navigator ?? aiReminderNavigatorKey.currentState;
+      if (target != null) {
+        unawaited(openAiChatInNavigator(target, voiceShortcut: request));
+      }
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   void _scheduleWidgetChat() {
@@ -230,6 +260,9 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
 
   @override
   void dispose() {
+    VoiceConversationShortcut.pending.removeListener(
+      _scheduleVoiceConversation,
+    );
     activateChatPane = null;
     RegionService.instance.removeListener(_updateUnread);
     _reviewTimer?.cancel();
@@ -250,6 +283,7 @@ class _MainScaffoldState extends State<MainScaffold> with RouteAware {
   }
 
   void _onResume() {
+    _scheduleVoiceConversation();
     _schedulePracticeReview();
     _scheduleWidgetChat();
     _checkForUpdate();

@@ -1,5 +1,6 @@
 import 'package:app/infrastructure/ai/ai_word_explanation.dart';
 import 'package:app/core/ai_callback_notifier.dart';
+import 'package:app/core/voice_conversation_shortcut.dart';
 import 'package:app/infrastructure/ai/ai_history_store.dart';
 import 'package:app/infrastructure/callkit_service.dart';
 import 'package:app/l10n/app_localizations.dart';
@@ -21,6 +22,15 @@ class _AppCallKit extends CallKitService {
 class _OpeningController extends AiChatController {
   _OpeningController() : super.forTesting(AiHistoryStore('test'));
   int loads = 0;
+  int starts = 0;
+
+  @override
+  Future<void> startCall() async {
+    starts++;
+    calling = true;
+    changed();
+  }
+
   final explanations = <String>[];
   @override
   Future<void> explainWord({
@@ -82,6 +92,60 @@ void main() {
     );
   });
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('a cold or warm vocal shortcut starts one foreground call', (
+    tester,
+  ) async {
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('FlutterWebRTC.Method'),
+      (_) async => {'textureId': 1},
+    );
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('FlutterWebRTC/Texture1'),
+      (_) async => null,
+    );
+    final chat = _OpeningController();
+    VoiceConversationRequest fresh() =>
+        VoiceConversationRequest('test', DateTime.now());
+    final request = ValueNotifier<VoiceConversationRequest?>(fresh());
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: AiChatScreen.ownedControllerForTesting(
+          createController: () => chat,
+          voiceShortcut: request,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(chat.starts, 1);
+    expect(request.value, isNull);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    request.value = fresh();
+    await tester.pumpAndSettle();
+    expect(chat.starts, 1);
+
+    chat.calling = false;
+    request.value = VoiceConversationRequest('another account', DateTime.now());
+    await tester.pumpAndSettle();
+    request.value = VoiceConversationRequest(
+      'test',
+      DateTime.now().subtract(const Duration(minutes: 5)),
+    );
+    await tester.pumpAndSettle();
+    expect(chat.starts, 1);
+
+    request.value = fresh();
+    await tester.pumpAndSettle();
+    expect(chat.starts, 2);
+    await tester.pumpWidget(const SizedBox());
+    request.dispose();
+  });
 
   testWidgets(
     'confirmed word request waits for chat and sends once without starting a call',
