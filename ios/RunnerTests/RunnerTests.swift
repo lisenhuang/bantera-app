@@ -9,6 +9,23 @@ import WidgetKit
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+  func testVoiceShortcutDeliversPendingLaunchOnceAndHandlesWarmRequests() {
+    let shortcut = BanteraVoiceShortcut()
+    var events: [Int64] = []
+    let receive: FlutterEventSink = { event in
+      if let timestamp = event as? Int64 { events.append(timestamp) }
+    }
+    shortcut.request()
+    shortcut.request()
+    XCTAssertNil(shortcut.onListen(withArguments: nil, eventSink: receive))
+    XCTAssertEqual(events.count, 1)
+    shortcut.request()
+    XCTAssertEqual(events.count, 2)
+    XCTAssertNil(shortcut.onCancel(withArguments: nil))
+    XCTAssertNil(shortcut.onListen(withArguments: nil, eventSink: receive))
+    XCTAssertEqual(events.count, 2)
+  }
+
   func testPracticeTranscriptionResamplesAacWithoutCrashingOrTruncating() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

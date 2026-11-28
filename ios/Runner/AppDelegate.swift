@@ -99,6 +99,7 @@ import UserNotifications
 
   private func configureEngine() {
     GeneratedPluginRegistrant.register(with: callEngine)
+    BanteraVoiceShortcut.shared.attach(messenger: callEngine.binaryMessenger)
     FlutterMethodChannel(name: "bantera/word_boundaries", binaryMessenger: callEngine.binaryMessenger)
       .setMethodCallHandler { call, result in
         guard call.method == "tokenize" else { result(FlutterMethodNotImplemented); return }

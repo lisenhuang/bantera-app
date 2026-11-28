@@ -1,6 +1,7 @@
 import 'presentation/shared/adaptive_viewport_state.dart';
 import 'infrastructure/local_audio_storage.dart';
 import 'core/ai_consent.dart';
+import 'core/voice_conversation_shortcut.dart';
 import 'presentation/shared/ai_consent_dialog.dart';
 import 'dart:async';
 
@@ -40,6 +41,7 @@ Future<void> main() async {
     SettingsNotifier.instance.initialize(),
     AuthSessionNotifier.instance.initialize(),
   ]);
+  VoiceConversationShortcut.initialize();
   await PracticeWidgetService.instance.initialize();
   UserProfileNotifier.instance;
   WordActivityNotifier.instance;
